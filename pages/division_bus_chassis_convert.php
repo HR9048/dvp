@@ -32,14 +32,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             alert("Restricted Page! You will be redirected to RWY Page");
             window.location = "rwy.php";
         </script>
-    <?php } elseif ($Aa == 'DIVISION') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Division Page");
-            window.location = "division.php";
-        </script>
-    <?php } 
+    <?php }
 }
 ?>
 <style>
@@ -49,7 +42,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     }
 </style>
 <marquee behavior="scroll" direction="left">
-    <h4 class="red">You are attending to convert vehicles Chassis  from your Division</h4>
+    <h4 class="red">You are attending to convert Bus to Domestic Vehicle with in your Division</h4>
 </marquee>
 <!-- HTML form with elements -->
 <div class="container-fluid mt-4" style="max-width: 90%;">
@@ -114,7 +107,8 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="order_date">Order Date:</label>
-                        <input type="date" class="form-control" id="order_date" name="order_date" required>
+                        <input type="date" class="form-control" id="order_date" name="order_date"max="<?php echo date('Y-m-d'); ?>" required>
+
                     </div>
                 </div>
             </div>
@@ -348,7 +342,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             console.log("Form Data:", formData);
             // AJAX request to submit form data
             $.ajax({
-                url: 'division_bus_scrap_submit.php',
+                url: 'division_bus_convert_submit.php',
                 type: 'POST',
                 data: formData,
                 dataType: 'json', // Expect JSON response

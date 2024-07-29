@@ -60,6 +60,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
 
+    // Check if schedule data already exists for today
+    $today = date('Y-m-d');
+    $checkQuery = "
+        SELECT COUNT(*) as count
+        FROM sch_veh_out
+        WHERE sch_no = '$sch_no'
+          AND division_id = '$division_id'
+          AND depot_id = '$depot_id'
+          AND departed_date = '$today'
+    ";
+
+    $checkResult = mysqli_query($db, $checkQuery);
+    $checkData = mysqli_fetch_assoc($checkResult);
+
+    if ($checkData['count'] > 0) {
+        echo '<script>alert("Data for this schedule already exists for today.");</script>';
+        echo '<script>window.location.href = "depot_schout1.php";</script>';
+        exit;
+    }
+
     // Fetch schedule details using sch_no
     $fetchScheduleDetails = "SELECT * FROM schedule_master WHERE sch_key_no = '$sch_no'";
     $scheduleDetailsResult = mysqli_query($db, $fetchScheduleDetails) or die(mysqli_error($db));
@@ -279,7 +299,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         if (details.half_releiver_token_1) driverTokenOptions1 += '<option value="' + details.half_releiver_token_1 + '">' + details.half_releiver_token_1 + ' - ' + details.half_releiver_name_1 + ' (allotted off releiver)</option>';
                         if (details.half_releiver_token_2) driverTokenOptions1 += '<option value="' + details.half_releiver_token_2 + '">' + details.half_releiver_token_2 + ' - ' + details.half_releiver_name_2 + ' (allotted off releiver)</option>';
 
-                        if (details.driver_token_2 || details.driver_token_3 || details.driver_token_4 || details.driver_token_5 || details.driver_token_6) {
+                        if (details.driver_token_4 || details.driver_token_5 || details.driver_token_6) {
                             if (details.driver_token_1) driverTokenOptions2 += '<option value="' + details.driver_pf_1 + '">' + details.driver_token_1 + ' - ' + details.driver_name_1 + ' (allotted)</option>';
                             if (details.driver_token_2) driverTokenOptions2 += '<option value="' + details.driver_pf_2 + '">' + details.driver_token_2 + ' - ' + details.driver_name_2 + ' (allotted)</option>';
                             if (details.driver_token_3) driverTokenOptions2 += '<option value="' + details.driver_pf_3 + '">' + details.driver_token_3 + ' - ' + details.driver_name_3 + ' (allotted)</option>';
@@ -308,7 +328,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                         driverData.forEach(function (driver) {
                             driverTokenOptions1 += `<option value="${driver.EMP_PF_NUMBER}">${driver.token_number} - ${driver.EMP_NAME}</option>`;
-                            if (details.driver_token_2 || details.driver_token_3 || details.driver_token_4 || details.driver_token_5 || details.driver_token_6) {
+                            if (details.driver_token_4 || details.driver_token_5 || details.driver_token_6) {
                                 driverTokenOptions2 += `<option value="${driver.EMP_PF_NUMBER}">${driver.token_number} - ${driver.EMP_NAME}</option>`;
                             } else {
                                 driverTokenOptions2 = ''; // If no valid tokens, clear the options
@@ -412,52 +432,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             });
         }
 
-        // function updateCurrentTime() {
-        //     var actDepTimeField = document.getElementById('act_dep_time');
-        //     if (actDepTimeField) {
-        //         setInterval(function () {
-        //             var now = new Date();
-        //             var hours = now.getHours();
-        //             var minutes = now.getMinutes();
-
-        //             hours = hours < 10 ? '0' + hours : hours;
-        //             minutes = minutes < 10 ? '0' + minutes : minutes;
-
-        //             var currentTime = hours + ':' + minutes;
-        //             actDepTimeField.value = currentTime;
-
-        //             // Call calculateTimeDifference after updating current time
-        //             var schDepTimeField = document.getElementById('sch_dep_time');
-        //             if (schDepTimeField) {
-        //                 calculateTimeDifference();
-        //             }
-        //         }, 1000);
-        //     }
-        // }
-
-        // function calculateTimeDifference() {
-        //     const scheduleStartTime = document.getElementById('sch_dep_time').value;
-        //     const actualDepartureTime = document.getElementById('act_dep_time').value;
-
-        //     if (scheduleStartTime && actualDepartureTime) {
-        //         const startTime = new Date(`1970-01-01T${scheduleStartTime}Z`);
-        //         const departureTime = new Date(`1970-01-01T${actualDepartureTime}Z`);
-
-        //         const timeDifference = (departureTime - startTime) / (1000 * 60); // Difference in minutes
-        //         document.getElementById('time_diff').value = timeDifference;
-
-        //         if (timeDifference > 15) {
-        //             document.getElementById('reason_for_late_departure').parentElement.style.display = 'block';
-        //             document.getElementById('reason_early_departure').parentElement.style.display = 'none';
-        //         } else if (timeDifference < -15) {
-        //             document.getElementById('reason_early_departure').parentElement.style.display = 'block';
-        //             document.getElementById('reason_for_late_departure').parentElement.style.display = 'none';
-        //         } else {
-        //             document.getElementById('reason_for_late_departure').parentElement.style.display = 'none';
-        //             document.getElementById('reason_early_departure').parentElement.style.display = 'none';
-        //         }
-        //     }
-        // }
         function calculateTimeDifference() {
             var schDepTime = document.getElementById('sch_dep_time').value;
             var actDepTime = document.getElementById('act_dep_time').value;
@@ -552,9 +526,66 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         filteredData.sort(function (a, b) {
                             return a.token_number - b.token_number;
                         });
-                        resolve(filteredData);
+                        fetchVechSchOutData().then(function (vehSchOutData) {
+                            filteredData = filteredData.filter(function (item) {
+                                return !vehSchOutData.some(function (vehItem) {
+                                    return vehItem.driver_1_pf === item.EMP_PF_NUMBER || vehItem.driver_2_pf === item.EMP_PF_NUMBER || vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
+                                });
+                            });
+                            resolve(filteredData);
+                        }).catch(function (error) {
+                            reject(error);
+                        });
                     } else if (xhr.readyState === 4) {
                         reject('Error fetching additional data');
+                    }
+                };
+                xhr.send();
+            });
+        }
+
+        function fetchAdditionalDataconductor() {
+            return new Promise(function (resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'http://localhost/data.php', true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText).data;
+                        var filteredData = data.filter(function (item) {
+                            return item.Division === '<?php echo $_SESSION['KMPL_DIVISION']; ?>' &&
+                                item.Depot === '<?php echo $_SESSION['KMPL_DEPOT']; ?>' &&
+                                item.EMP_DESGN_AT_APPOINTMENT !== 'DRIVER';
+                        });
+                        filteredData.sort(function (a, b) {
+                            return a.token_number - b.token_number;
+                        });
+                        fetchVechSchOutData().then(function (vehSchOutData) {
+                            filteredData = filteredData.filter(function (item) {
+                                return !vehSchOutData.some(function (vehItem) {
+                                    return vehItem.driver_1_pf === item.EMP_PF_NUMBER || vehItem.driver_2_pf === item.EMP_PF_NUMBER || vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
+                                });
+                            });
+                            resolve(filteredData);
+                        }).catch(function (error) {
+                            reject(error);
+                        });
+                    } else if (xhr.readyState === 4) {
+                        reject('Error fetching additional data');
+                    }
+                };
+                xhr.send();
+            });
+        }
+        function fetchVechSchOutData() {
+            return new Promise(function (resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'fetch_veh_sch_out.php', true); // Assuming you have an endpoint to fetch this data
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        resolve(data);
+                    } else if (xhr.readyState === 4) {
+                        reject('Error fetching VEH_SCH_OUT data');
                     }
                 };
                 xhr.send();
@@ -564,7 +595,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </script>
 
 <!-- Schedule In script -->
- <script>
+<script>
     function fetchScheduleIn() {
         $.ajax({
             url: '../includes/data_fetch.php',
@@ -581,5 +612,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $(document).ready(function () {
         fetchScheduleIn();
     });
- </script>
+</script>
 <?php include '../includes/footer.php'; ?>

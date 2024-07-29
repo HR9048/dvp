@@ -1,7 +1,6 @@
 <?php
 include '../includes/connection.php';
 include '../includes/division_sidebar.php';
-
 $division_id = $_SESSION['DIVISION_ID'];
 
 $query = 'SELECT ID, t.TYPE
@@ -13,29 +12,28 @@ while ($row = mysqli_fetch_assoc($result)) {
     $Aa = $row['TYPE'];
 
     if ($Aa == 'DEPOT') {
-        ?>
+?>
         <script type="text/javascript">
             //then it will be redirected
             alert("Restricted Page! You will be redirected to Depot Page");
             window.location = "../includes/depot_verify.php";
         </script>
     <?php } elseif ($Aa == 'RWY') {
-        ?>
+    ?>
         <script type="text/javascript">
             //then it will be redirected
             alert("Restricted Page! You will be redirected to RWY Page");
             window.location = "rwy.php";
         </script>
     <?php } elseif ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
-        ?>
+    ?>
         <script type="text/javascript">
             //then it will be redirected
             alert("Restricted Page! You will be redirected to RWY Page");
             window.location = "index.php";
         </script>
-        <?php
+<?php
     }
-
 }
 ?>
 <div class="container1">
@@ -49,26 +47,29 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <th>Camera Defect</th>
                 <th>PIS Defect</th>
                 <th>Camera & PIS Defect</th>
+                <th>VLTS Disconnected</th>
             </tr>
         </thead>
         <tbody>
             <?php
+            // Array to store rows grouped by division
             // Array to store rows grouped by division
             $data = [];
             $corporationTotal = [
                 'BS-6 Vehicles Held' => 0,
                 'Camera Defect' => 0,
                 'PIS Defect' => 0,
-                'Both Defect' => 0
+                'Both Defect' => 0,
+                'VLTS Disconnected' => 0 // Ensure this key is initialized
             ];
 
             // Fetch Leyland BS-6 buses data
             $queryLeylandBuses = "SELECT l.division, l.depot, COUNT(DISTINCT br.bus_number) AS num_leyland_buses
-                              FROM bus_registration br
-                              JOIN location l ON br.division_name = l.division_id AND br.depot_name = l.depot_id
-                              WHERE br.make = 'Leyland' AND br.emission_norms = 'BS-6' AND l.division_id = '$division_id'
-                              GROUP BY l.division, l.depot
-                              ORDER BY l.division_id, l.depot_id";
+                      FROM bus_registration br
+                      JOIN location l ON br.division_name = l.division_id AND br.depot_name = l.depot_id
+                      WHERE br.make = 'Leyland' AND br.emission_norms = 'BS-6' AND l.division_id = '$division_id'
+                      GROUP BY l.division, l.depot
+                      ORDER BY l.division_id, l.depot_id";
 
             $resultLeylandBuses = mysqli_query($db, $queryLeylandBuses) or die(mysqli_error($db));
 
@@ -82,12 +83,12 @@ while ($row = mysqli_fetch_assoc($result)) {
 
             // Fetch defective buses data
             $queryDefectiveBuses = "SELECT l.division, l.depot, dt.defect_name, COUNT(DISTINCT dcd.bus_number) AS num_defects
-                                FROM depot_camera_defect dcd
-                                JOIN depot_camera_defect_type dt ON dcd.defect_type_id = dt.id
-                                JOIN location l ON dcd.division_id = l.division_id AND dcd.depot_id = l.depot_id AND dcd.status = 1
-                                WHERE l.division_id = '$division_id'
-                                GROUP BY dt.defect_name, l.division, l.depot
-                                ORDER BY l.division_id, l.depot_id";
+                        FROM depot_camera_defect dcd
+                        JOIN depot_camera_defect_type dt ON dcd.defect_type_id = dt.id
+                        JOIN location l ON dcd.division_id = l.division_id AND dcd.depot_id = l.depot_id AND dcd.status = 1
+                        WHERE l.division_id = '$division_id'
+                        GROUP BY dt.defect_name, l.division, l.depot
+                        ORDER BY l.division_id, l.depot_id";
 
             $resultDefectiveBuses = mysqli_query($db, $queryDefectiveBuses) or die(mysqli_error($db));
 
@@ -104,6 +105,11 @@ while ($row = mysqli_fetch_assoc($result)) {
 
                 $columnHeading = getMatchingColumnHeading($defectName);
                 $data[$division][$depot][$columnHeading] = $count;
+
+                // Safely update the corporation total
+                if (!isset($corporationTotal[$columnHeading])) {
+                    $corporationTotal[$columnHeading] = 0;
+                }
                 $corporationTotal[$columnHeading] += $count;
             }
 
@@ -117,6 +123,8 @@ while ($row = mysqli_fetch_assoc($result)) {
                         return "PIS Defect";
                     case "Both Camera and PIS not working":
                         return "Both Defect";
+                    case "VLTS Status Showing as Disconnected":
+                        return "VLTS Disconnected";
                     default:
                         return $defectName;
                 }
@@ -128,6 +136,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 $divisionTotalCamera = 0;
                 $divisionTotalPIS = 0;
                 $divisionTotalBoth = 0;
+                $divisionTotalvlts = 0;
 
                 foreach ($depots as $depot => $counts) {
                     echo "<tr>";
@@ -138,17 +147,20 @@ while ($row = mysqli_fetch_assoc($result)) {
                     $Camera = isset($counts['Camera Defect']) ? $counts['Camera Defect'] : 0;
                     $PIS = isset($counts['PIS Defect']) ? $counts['PIS Defect'] : 0;
                     $Both = isset($counts['Both Defect']) ? $counts['Both Defect'] : 0;
+                    $vlts = isset($counts['VLTS Disconnected']) ? $counts['VLTS Disconnected'] : 0;
 
                     echo "<td>" . htmlspecialchars($BS6) . "</td>";
                     echo "<td>" . htmlspecialchars($Camera) . "</td>";
                     echo "<td>" . htmlspecialchars($PIS) . "</td>";
                     echo "<td>" . htmlspecialchars($Both) . "</td>";
+                    echo "<td>" . htmlspecialchars($vlts) . "</td>";
                     echo "</tr>";
 
                     $divisionTotalBS6 += $BS6;
                     $divisionTotalCamera += $Camera;
                     $divisionTotalPIS += $PIS;
                     $divisionTotalBoth += $Both;
+                    $divisionTotalvlts += $vlts;
                 }
 
                 echo "<tr style='font-weight: bold;'>";
@@ -157,6 +169,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 echo "<td>" . htmlspecialchars($divisionTotalCamera) . "</td>";
                 echo "<td>" . htmlspecialchars($divisionTotalPIS) . "</td>";
                 echo "<td>" . htmlspecialchars($divisionTotalBoth) . "</td>";
+                echo "<td>" . htmlspecialchars($divisionTotalvlts) . "</td>";
                 echo "</tr>";
             }
 
@@ -167,7 +180,9 @@ while ($row = mysqli_fetch_assoc($result)) {
             echo "<td>" . htmlspecialchars($corporationTotal['Camera Defect']) . "</td>";
             echo "<td>" . htmlspecialchars($corporationTotal['PIS Defect']) . "</td>";
             echo "<td>" . htmlspecialchars($corporationTotal['Both Defect']) . "</td>";
+            echo "<td>" . htmlspecialchars($corporationTotal['VLTS Disconnected']) . "</td>";
             echo "</tr>";
+
             ?>
         </tbody>
     </table>
@@ -196,7 +211,7 @@ while ($row = mysqli_fetch_assoc($result)) {
               JOIN depot_camera_defect_type dt ON dcd.defect_type_id = dt.id
               JOIN location l ON dcd.division_id = l.division_id AND dcd.depot_id = l.depot_id AND dcd.status = 1
               WHERE l.division_id = '$division_id'
-              ORDER BY l.division_id, l.depot_id, dcd.submitted_date_time DESC";
+              ORDER BY l.division_id, l.depot_id, dcd.defect_type_id ASC";
 
             $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
@@ -204,10 +219,10 @@ while ($row = mysqli_fetch_assoc($result)) {
             $overallSerialNo = 1;
             $prevDivision = "";
 
-            while ($row = mysqli_fetch_assoc($result)): ?>
+            while ($row = mysqli_fetch_assoc($result)) : ?>
                 <tr>
                     <td><?php echo $overallSerialNo++; ?></td>
-                    <?php if ($row['division'] !== $prevDivision): ?>
+                    <?php if ($row['division'] !== $prevDivision) : ?>
                     <?php endif; ?>
                     <?php $prevDivision = $row['division']; ?>
                     <td><?php echo htmlspecialchars($row['division']); ?></td>
@@ -237,7 +252,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 
 <script>
-    document.getElementById('downloadExcel').addEventListener('click', function () {
+    document.getElementById('downloadExcel').addEventListener('click', function() {
         // Get today's date
         var today = new Date();
         var dd = String(today.getDate()).padStart(2, '0');
@@ -256,7 +271,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         XLSX.writeFile(workbook, today + '_camera-PIS.xlsx');
     });
 
-    document.getElementById('downloadText').addEventListener('click', function () {
+    document.getElementById('downloadText').addEventListener('click', function() {
         // Get today's date
         var today = new Date();
         var dd = String(today.getDate()).padStart(2, '0');
@@ -269,7 +284,9 @@ while ($row = mysqli_fetch_assoc($result)) {
         var textContent = document.querySelector('.container1').innerText;
 
         // Create a Blob with the text content
-        var blob = new Blob([textContent], { type: 'text/plain' });
+        var blob = new Blob([textContent], {
+            type: 'text/plain'
+        });
 
         // Create a link element to trigger the download
         var link = document.createElement('a');

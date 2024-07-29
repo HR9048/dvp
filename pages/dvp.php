@@ -125,14 +125,14 @@ mysqli_free_result($result);
     /* For medium devices (tablets) */
     @media only screen and (min-width: 501px) and (max-width: 992px) {
         .input-group-text {
-            width: 240px;
+            width: 230px;
         }
     }
 
     /* For large devices (desktops) */
     @media only screen and (min-width: 993px) {
         .input-group-text {
-            width: 300px;
+            width: 350px;
             text-align: left;
             /* Adjust alignment as needed */
         }
@@ -269,7 +269,7 @@ mysqli_free_result($result);
             <div class="form-group col-md-6">
                 <div class="input-group">
                     <div class="input-group-prepend">
-                        <span class="input-group-text">Vehicles Loan given to Other Depot:</span>
+                        <span class="input-group-text">Vehicles loan given to other Depot/Training Center:</span>
                     </div>
                     <input type="number" class="form-control" id="loan" name="loan" oninput="calculateDifference()"
                         required>

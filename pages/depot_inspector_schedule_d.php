@@ -153,7 +153,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $driverPF = $_POST['pf_no_d' . $i];
                     $driverName = $_POST['driver_' . $i . '_name'];
 
-                    // Prepare the SQL statement for updating or inserting driver details
+                    // Pr epare the SQL statement for updating or inserting driver details
                     $updateDriverSql = "UPDATE schedule_master SET 
                         driver_token_" . $i . " = ?,
                         driver_pf_" . $i . " = ?,
@@ -443,7 +443,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         if (singleCrewOperation === 'yes') {
                             $('#number_of_drivers').prop('disabled', false);
                             $('#conductorColumn').hide();
-                            $('#number_of_conductor').val('');
+                            $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
                             $('#number_of_drivers').val('');
                             $('#driverFields').empty();
                             addConductorInputFields(0);

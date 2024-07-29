@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->close();
 
     if ($count > 0) {
-        echo "<script>alert('Bus number defect already submitted. Please try other bus numbers.'); window.location.href = 'depot_camera_defect.php';</script>";
+        echo "<script>alert('Bus number defect already submitted. Please update other bus numbers.'); window.location.href = 'depot_camera_defect.php';</script>";
         exit;
     }
 

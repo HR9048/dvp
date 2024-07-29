@@ -65,7 +65,7 @@ date_default_timezone_set('Asia/Kolkata');
 
 
 // Prepare and bind SQL statement for inserting into bus_scrap_data table
-$insert_sql = "INSERT INTO bus_scrap_data (bus_number, make, emission_norms, depot, division, doc, wheel_base, chassis_number, bus_category, bus_sub_category, seating_capacity, bus_body_builder, bus_username, bus_submitdatetime, transfer_order_no, order_date, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$insert_sql = "INSERT INTO bus_convert_data (bus_number, make, emission_norms, depot, division, doc, wheel_base, chassis_number, bus_category, bus_sub_category, seating_capacity, bus_body_builder, bus_username, bus_submitdatetime, convert_order_no, order_date, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $insert_stmt = $db->prepare($insert_sql);
 
 // Check if the statement was prepared successfully

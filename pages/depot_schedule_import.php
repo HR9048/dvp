@@ -82,7 +82,7 @@ if (isset($_POST['submit'])) {
         $query = "INSERT INTO schedule_master (division_id, depot_id, sch_key_no, sch_abbr, sch_km, sch_dep_time, sch_arr_time, sch_count,number_of_buses, service_class_id, service_type_id) VALUES ('$division_id', '$depot_id', '$sch_key_no', '$sch_abbr', '$sch_km', '$sch_dep_time', '$sch_arr_time', '$sch_count', '$number_of_buses', '$service_class_id', '$service_type_id')";
         mysqli_query($db, $query) or die(mysqli_error($db));
 
-        $query1 = "INSERT INTO schedule_master_import (division_id, depot_id, sch_key_no, sch_abbr, sch_km, sch_dep_time, sch_arr_time, sch_count, service_class_id, service_type_id) VALUES ('$division_id', '$depot_id', '$sch_key_no', '$sch_abbr', '$sch_km', '$sch_dep_time', '$sch_arr_time', '$sch_count', '$service_class_id', '$service_type_id')";
+        $query1 = "INSERT INTO schedule_master_import (division_id, depot_id, sch_key_no, sch_abbr, sch_km, sch_dep_time, sch_arr_time, sch_count,number_of_buses, service_class_id, service_type_id) VALUES ('$division_id', '$depot_id', '$sch_key_no', '$sch_abbr', '$sch_km', '$sch_dep_time', '$sch_arr_time', '$sch_count', '$number_of_buses',  '$service_class_id', '$service_type_id')";
         mysqli_query($db, $query1) or die(mysqli_error($db));
     }
 

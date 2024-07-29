@@ -9,13 +9,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
   crossorigin="anonymous"></script>
 
-<footer id="footer" class="sticky-footer bg-white">
-  <div class="footer">
+ 
+    <footer id="sticky-footer" class="flex-shrink-0 py-4">
     <div class="text-center">
-      <span>Copyright © 2024 KKRTC</span>
+    <span>Copyright © 2024 KKRTC</span>
     </div>
-  </div>
-</footer>
+  </footer>
 </div>
 </div>
 </div>
@@ -74,8 +73,6 @@
     // Set a timer to execute the sessionTimeoutRedirect function after sessionTimeout duration
     setTimeout(sessionTimeoutRedirect, sessionTimeout);
   </script> -->
-
-
 
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 <script type="text/javascript" charset="utf8"
@@ -157,8 +154,8 @@
       // Create a new workbook
       var wb = XLSX.utils.book_new();
       var ws_data = [['Serial Number', 'Bus Number', 'Division Name', 'Depot Name', 'Make', 'Emission norms', 'DOC', 'Wheel Base', 'Chassis Number', 'Bus Category', 'Bus Sub Category', 'Seating Capacity', 'Bus Body Builder']];
-      
-      filteredData.forEach(function(row, index) {
+
+      filteredData.forEach(function (row, index) {
         ws_data.push([
           index + 1, // Serial Number starting from 1 for filtered rows
           row[1], // Bus Number

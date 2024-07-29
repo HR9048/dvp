@@ -50,7 +50,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         style="color: white; text-decoration: none;">Bus Transfer</a></button>
     <!-- Button trigger modal -->
     <button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal">Bus Scrap</button>
-    <!-- <button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal1">Bus chassis convert</button> -->
+    <button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal1">Bus chassis convert</button>
 
     <!-- Modal -->
     <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel"

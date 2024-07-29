@@ -58,6 +58,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <th>Camera Defect</th>
                 <th>PIS Defect</th>
                 <th>Camera & PIS Defect</th>
+                <th>VLTS Disconnected</th>
             </tr>
         </thead>
         <tbody>
@@ -68,7 +69,8 @@ while ($row = mysqli_fetch_assoc($result)) {
                 'BS-6 Vehicles Held' => 0,
                 'Camera Defect' => 0,
                 'PIS Defect' => 0,
-                'Both Defect' => 0
+                'Both Defect' => 0,
+                'VLTS Disconnected' => 0
             ];
 
             // Fetch Leyland BS-6 buses data
@@ -125,6 +127,8 @@ while ($row = mysqli_fetch_assoc($result)) {
                         return "PIS Defect";
                     case "Both Camera and PIS not working":
                         return "Both Defect";
+                    case "VLTS Status Showing as Disconnected":
+                        return "VLTS Disconnected";
                     default:
                         return $defectName;
                 }
@@ -136,6 +140,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 $divisionTotalCamera = 0;
                 $divisionTotalPIS = 0;
                 $divisionTotalBoth = 0;
+                $divisionTotalvlts = 0;
 
                 foreach ($depots as $depot => $counts) {
                     echo "<tr>";
@@ -146,17 +151,20 @@ while ($row = mysqli_fetch_assoc($result)) {
                     $Camera = isset($counts['Camera Defect']) ? $counts['Camera Defect'] : 0;
                     $PIS = isset($counts['PIS Defect']) ? $counts['PIS Defect'] : 0;
                     $Both = isset($counts['Both Defect']) ? $counts['Both Defect'] : 0;
+                    $vlts = isset($counts['VLTS Disconnected']) ? $counts['VLTS Disconnected'] : 0;
 
                     echo "<td>" . htmlspecialchars($BS6) . "</td>";
                     echo "<td>" . htmlspecialchars($Camera) . "</td>";
                     echo "<td>" . htmlspecialchars($PIS) . "</td>";
                     echo "<td>" . htmlspecialchars($Both) . "</td>";
+                    echo "<td>" . htmlspecialchars($vlts) . "</td>";
                     echo "</tr>";
 
                     $divisionTotalBS6 += $BS6;
                     $divisionTotalCamera += $Camera;
                     $divisionTotalPIS += $PIS;
                     $divisionTotalBoth += $Both;
+                    $divisionTotalvlts += $vlts;
                 }
 
                 echo "<tr style='font-weight: bold;'>";
@@ -165,6 +173,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 echo "<td>" . htmlspecialchars($divisionTotalCamera) . "</td>";
                 echo "<td>" . htmlspecialchars($divisionTotalPIS) . "</td>";
                 echo "<td>" . htmlspecialchars($divisionTotalBoth) . "</td>";
+                echo "<td>" . htmlspecialchars($divisionTotalvlts) . "</td>";
                 echo "</tr>";
             }
 
@@ -175,6 +184,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             echo "<td>" . htmlspecialchars($corporationTotal['Camera Defect']) . "</td>";
             echo "<td>" . htmlspecialchars($corporationTotal['PIS Defect']) . "</td>";
             echo "<td>" . htmlspecialchars($corporationTotal['Both Defect']) . "</td>";
+            echo "<td>" . htmlspecialchars($corporationTotal['VLTS Disconnected']) . "</td>";
             echo "</tr>";
             ?>
         </tbody>
@@ -204,7 +214,7 @@ while ($row = mysqli_fetch_assoc($result)) {
               FROM depot_camera_defect dcd
               JOIN depot_camera_defect_type dt ON dcd.defect_type_id = dt.id
               JOIN location l ON dcd.division_id = l.division_id AND dcd.depot_id = l.depot_id and dcd.status=1
-              ORDER BY l.division_id, l.depot_id, dcd.submitted_date_time DESC";
+              ORDER BY l.division_id, l.depot_id, dcd.defect_type_id ASC";
 
         $result = mysqli_query($db, $query) or die(mysqli_error($db));
 

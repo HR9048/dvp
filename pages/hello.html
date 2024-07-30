@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collect Device Info and Location</title>
+</head>
+<body>
+    <img src="your-image.jpg" alt="Click me" id="clickable-image" style="cursor: pointer;">
+
+    <script>
+        document.getElementById('clickable-image').addEventListener('click', function() {
+            // Collect device information
+            const deviceInfo = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language
+            };
+
+            // Get user location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const locationInfo = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+
+                    // Combine device and location info
+                    const collectedInfo = {
+                        deviceInfo: deviceInfo,
+                        locationInfo: locationInfo
+                    };
+
+                    // Send the collected information to your server
+                    fetch('https://your-server-endpoint.com/collect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(collectedInfo)
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log('Success:', data))
+                    .catch(error => console.error('Error:', error));
+                }, function(error) {
+                    console.error('Geolocation error:', error);
+                });
+            } else {
+                console.error('Geolocation is not supported by this browser.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -212,12 +212,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <h2 class="mt-5">Depot: <?php echo $_SESSION['DEPOT']; ?></h2>
             <p style="color:red;">Schedule Vehicle In entry</p>
             <form method="POST" class="mt-4">
-                <div class="form-group">
-                    <label for="sch_no_in">Schedule Key Number</label>
-                    <select class="form-control select2" id="sch_no_in" name="sch_no_in" required style="width: 100%;">
-                        <option value="">Select a Schedule Number</option>
-                    </select>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="sch_no_in">Schedule Key Number</label>
+                            <select class="form-control select2" id="sch_no_in" name="sch_no_in" required style="min-width: 100px;">
+                                <option value="">Select a Schedule Number</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="sch_no_in">Schedule out Date</label>
+                            <input class="form-control" type="date" id="out_date" name="out_date" required>
+                        </div>
+                    </div>
                 </div>
+
                 <div id="scheduleInDetails">
                     <!-- Fields will be populated here dynamically using JavaScript -->
                 </div>
@@ -611,6 +622,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $(document).ready(function () {
         fetchScheduleIn();
+    });
+    $(document).ready(function() {
+        function fetchScheduleDetails() {
+            var scheduleNo = $('#sch_no_in').val();
+            var outDate = $('#out_date').val();
+
+            if (scheduleNo && outDate) {
+                $.ajax({
+                    url: 'fetch_schedulein_details.php',
+                    type: 'POST',
+                    data: { scheduleNo: scheduleNo, outDate: outDate },
+                    success: function(response) {
+                        $('#scheduleInDetails').html(response);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching schedule details:', error);
+                    }
+                });
+            }
+        }
+
+        $('#sch_no_in, #out_date').change(fetchScheduleDetails);
     });
 </script>
 <?php include '../includes/footer.php'; ?>

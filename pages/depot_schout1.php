@@ -25,7 +25,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             break;
     }
 }
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['act_dep_time'])) {
     // Function to fetch data from API
     function fetchEmployeeData($pfNumber)
     {
@@ -158,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Insert into schedules table
-    $insertQuery = "INSERT INTO sch_veh_out (sch_no, vehicle_no, driver_token_no_1, driver_token_no_2, act_dep_time, time_diff, reason_for_late_departure, reason_early_departure, bus_allotted_status, driver_1_allotted_status, driver_2_allotted_status, conductor_alloted_status, schedule_status, division_id, depot_id, driver_1_pf, driver_1_name, driver_2_pf, driver_2_name, conductor_token_no, conductor_pf_no, conductor_name) 
+    $insertQuery = "INSERT INTO sch_veh_out (sch_no, vehicle_no, driver_token_no_1, driver_token_no_2, act_dep_time, dep_time_diff, reason_for_late_departure, reason_early_departure, bus_allotted_status, driver_1_allotted_status, driver_2_allotted_status, conductor_alloted_status, schedule_status, division_id, depot_id, driver_1_pf, driver_1_name, driver_2_pf, driver_2_name, conductor_token_no, conductor_pf_no, conductor_name) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $db->prepare($insertQuery);
@@ -174,7 +174,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt->close();
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['arr_time'])) {
+    $id = $_POST['id'];
+    $arrTime = $_POST['arr_time']; // Actual arrival time from POST data
+    $schArrTime = $_POST['sch_arr_time'];
+    $reason = isset($_POST['reason']) ? $_POST['reason'] : '';
+    $scheduleNo = $_POST['sch_no_in'];
+    $division_id1 = $_SESSION['DIVISION_ID'];
+    $depot_id1 = $_SESSION['DEPOT_ID'];
+    $status = '2';
+
+    // Calculate the time difference
+    $arrTimeObj = new DateTime($arrTime);
+    $schArrTimeObj = new DateTime($schArrTime);
+    $arrTimeDiffInMinutes = ($arrTimeObj->getTimestamp() - $schArrTimeObj->getTimestamp()) / 60;
+
+    // Determine reason type
+    $reasonForLateArr = null;
+    $reasonForEarlyArr = null;
+    if ($arrTimeDiffInMinutes > 15) {
+        $reasonForEarlyArr = $reason;
+    } elseif ($arrTimeDiffInMinutes < -15) {
+        $reasonForLateArr = $reason;
+    }
+
+    date_default_timezone_set('Asia/Kolkata');
+    $currentTime = date("Y-m-d H:i:s");
+
+    // Update the sch_veh_out table
+    $updateQuery = "UPDATE sch_veh_out 
+                    SET arr_time = ?, act_arr_time = ?, arr_time_diff = ?, reason_for_late_arr = ?, reason_for_early_arr = ?, schedule_status = ?
+                    WHERE id = ? AND sch_no = ? AND division_id = ? AND depot_id = ? AND schedule_status = '1'";
+
+    $stmt = $db->prepare($updateQuery);
+
+    if (!$stmt) {
+        die("Error preparing statement: " . $db->error);
+    }
+
+    $stmt->bind_param("ssisssssss", $arrTime, $currentTime, $arrTimeDiffInMinutes, $reasonForLateArr, $reasonForEarlyArr, $status, $id, $scheduleNo, $division_id1, $depot_id1);
+
+    if ($stmt->execute()) {
+        echo '<script>alert("Schedule Status Updated successfully.");</script>';
+        echo '<script>window.location.href = "depot_schout1.php";</script>';
+    } else {
+        echo "Error updating record: " . $stmt->error;
+    }
+
+    $stmt->close();
+}
 ?>
+
+
+
 <style>
     .select2-results__option[aria-disabled="true"] {
         background-color: #FFE800 !important;
@@ -207,7 +260,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </form>
         </div>
     </div>
-    <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab"><br>
+    <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
         <div class="container">
             <h2 class="mt-5">Depot: <?php echo $_SESSION['DEPOT']; ?></h2>
             <p style="color:red;">Schedule Vehicle In entry</p>
@@ -216,7 +269,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="col">
                         <div class="form-group">
                             <label for="sch_no_in">Schedule Key Number</label>
-                            <select class="form-control select2" id="sch_no_in" name="sch_no_in" required style="min-width: 100px;">
+                            <select class="form-control select2" id="sch_no_in" name="sch_no_in" required
+                                style="min-width: 100px;">
                                 <option value="">Select a Schedule Number</option>
                             </select>
                         </div>
@@ -232,6 +286,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div id="scheduleInDetails">
                     <!-- Fields will be populated here dynamically using JavaScript -->
                 </div>
+
             </form>
         </div>
     </div>
@@ -284,7 +339,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             fetchBuses().then(buses => {
                 fetchAdditionalData().then(additionalData => {
                     if (details) {
-
                         var vehicleNoOptions = '<option value="">Select Vehicle No</option>';
                         if (details.bus_number_1) vehicleNoOptions += '<option value="' + details.bus_number_1 + '">' + details.bus_number_1 + ' (allotted)</option>';
                         if (details.bus_number_2) vehicleNoOptions += '<option value="' + details.bus_number_2 + '">' + details.bus_number_2 + ' (allotted)</option>';
@@ -310,7 +364,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         if (details.half_releiver_token_1) driverTokenOptions1 += '<option value="' + details.half_releiver_token_1 + '">' + details.half_releiver_token_1 + ' - ' + details.half_releiver_name_1 + ' (allotted off releiver)</option>';
                         if (details.half_releiver_token_2) driverTokenOptions1 += '<option value="' + details.half_releiver_token_2 + '">' + details.half_releiver_token_2 + ' - ' + details.half_releiver_name_2 + ' (allotted off releiver)</option>';
 
-                        if (details.driver_token_4 || details.driver_token_5 || details.driver_token_6) {
+                        if (details.single_crew === 'no' && ['2', '3', '4'].includes(details.service_type_id)) {
                             if (details.driver_token_1) driverTokenOptions2 += '<option value="' + details.driver_pf_1 + '">' + details.driver_token_1 + ' - ' + details.driver_name_1 + ' (allotted)</option>';
                             if (details.driver_token_2) driverTokenOptions2 += '<option value="' + details.driver_pf_2 + '">' + details.driver_token_2 + ' - ' + details.driver_name_2 + ' (allotted)</option>';
                             if (details.driver_token_3) driverTokenOptions2 += '<option value="' + details.driver_pf_3 + '">' + details.driver_token_3 + ' - ' + details.driver_name_3 + ' (allotted)</option>';
@@ -322,6 +376,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         } else {
                             driverTokenOptions2 = ''; // If no valid tokens, clear the options
                         }
+
                         if (details.single_crew === 'no') {
                             if (details.conductor_token_1) conductorTokenOptions += '<option value="' + details.conductor_pf_1 + '">' + details.conductor_token_1 + ' - ' + details.conductor_name_1 + ' (allotted)</option>';
                             if (details.conductor_token_2) conductorTokenOptions += '<option value="' + details.conductor_pf_2 + '">' + details.conductor_token_2 + ' - ' + details.conductor_name_2 + ' (allotted)</option>';
@@ -329,26 +384,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         } else {
                             conductorTokenOptions = '';
                         }
+
                         // Separate filtering for drivers and conductors
-                        var driverData = additionalData.filter(function (driver) {
-                            return driver.token_number !== details.driver_token_1 && driver.token_number !== details.driver_token_2 &&
-                                driver.token_number !== details.driver_token_3 && driver.token_number !== details.driver_token_4 &&
-                                driver.token_number !== details.driver_token_5 && driver.token_number !== details.driver_token_6 &&
-                                driver.token_number !== details.half_releiver_token_1 && driver.token_number !== details.half_releiver_token_2;
+                        var driverData = additionalData.filter(function (employee) {
+                            return employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER' &&
+                                ![details.driver_token_1, details.driver_token_2, details.driver_token_3, details.driver_token_4, details.driver_token_5, details.driver_token_6, details.half_releiver_token_1, details.half_releiver_token_2].includes(employee.token_number);
                         });
 
                         driverData.forEach(function (driver) {
                             driverTokenOptions1 += `<option value="${driver.EMP_PF_NUMBER}">${driver.token_number} - ${driver.EMP_NAME}</option>`;
-                            if (details.driver_token_4 || details.driver_token_5 || details.driver_token_6) {
+                            if (details.single_crew === 'no' && ['2', '3', '4'].includes(details.service_type_id)) {
                                 driverTokenOptions2 += `<option value="${driver.EMP_PF_NUMBER}">${driver.token_number} - ${driver.EMP_NAME}</option>`;
                             } else {
                                 driverTokenOptions2 = ''; // If no valid tokens, clear the options
                             }
                         });
 
-                        var conductorData = additionalData.filter(function (conductor) {
-                            return conductor.token_number !== details.conductor_token_1 && conductor.token_number !== details.conductor_token_2 &&
-                                conductor.token_number !== details.conductor_token_3;
+                        var conductorData = additionalData.filter(function (employee) {
+                            return employee.EMP_DESGN_AT_APPOINTMENT === 'CONDUCTOR' &&
+                                ![details.conductor_token_1, details.conductor_token_2, details.conductor_token_3].includes(employee.token_number);
                         });
 
                         conductorData.forEach(function (conductor) {
@@ -623,7 +677,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $(document).ready(function () {
         fetchScheduleIn();
     });
-    $(document).ready(function() {
+    $(document).ready(function () {
         function fetchScheduleDetails() {
             var scheduleNo = $('#sch_no_in').val();
             var outDate = $('#out_date').val();
@@ -633,10 +687,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     url: 'fetch_schedulein_details.php',
                     type: 'POST',
                     data: { scheduleNo: scheduleNo, outDate: outDate },
-                    success: function(response) {
+                    success: function (response) {
                         $('#scheduleInDetails').html(response);
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.error('Error fetching schedule details:', error);
                     }
                 });

@@ -26,6 +26,20 @@ if ($_SESSION['TYPE'] == 'DEPOT'){
             window.location = "../pages/depot_kmpl.php";
         </script>
         <?php
+    } elseif ($_SESSION['JOB_TITLE'] == 'INSPECTOR') {
+        ?>
+        <script type="text/javascript">
+            // Redirect to depot_clerk.php if the job title is Clerk
+            window.location = "../pages/depot_kmpl.php";
+        </script>
+        <?php
+    } elseif ($_SESSION['JOB_TITLE'] == 'SECURITY') {
+        ?>
+        <script type="text/javascript">
+            // Redirect to depot_clerk.php if the job title is Clerk
+            window.location = "../pages/depot_schinout.php";
+        </script>
+        <?php
     }
 }else {
     // Redirect to login.php if accessed directly without POST data

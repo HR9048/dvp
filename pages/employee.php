@@ -180,10 +180,8 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <div class="modal-body">
                     <!-- Add employee form here -->
                     <!-- Example: -->
-                    <form role="form" method="post" action="emp_transac.php?action=add">
-                        <div class="form-group">
-                            <input class="form-control" placeholder="PF No" name="PF_NO">
-                        </div><br>
+                    <form role="form" method="post" action="emp_transac.php?action=add"
+                        onsubmit="return validateForm()">
                         <div class="form-group">
                             <input class="form-control" placeholder="First Name" name="firstname" required>
                         </div><br>
@@ -198,10 +196,11 @@ while ($row = mysqli_fetch_assoc($result)) {
                             </select>
                         </div><br>
                         <div class="form-group">
-                            <input class="form-control" placeholder="Email" name="email" required>
+                            <input class="form-control" type="email" placeholder="Email" name="email" required>
                         </div><br>
                         <div class="form-group">
-                            <input class="form-control" placeholder="Phone Number" name="phonenumber" required>
+                            <input class="form-control" placeholder="Phone Number" name="phonenumber" pattern="\d{10}"
+                                required>
                         </div><br>
                         <div class="form-group">
                             <select class="form-control" id="designation" name="designation" required>
@@ -211,13 +210,11 @@ while ($row = mysqli_fetch_assoc($result)) {
                         <div class="form-group">
                             <select class="form-control" id="division" name="division" required>
                                 <option value="">Select Division</option>
-                                <!-- Bus Category options will be populated dynamically -->
                             </select>
                         </div><br>
-                        <div class="form-group"><!-- Depot select -->
+                        <div class="form-group">
                             <select class="form-control" id="depot" name="depot" required>
                                 <option value="">Select Depot</option>
-                                <!-- Bus Sub Category options will be populated dynamically -->
                             </select>
                         </div>
                         <hr>
@@ -225,8 +222,32 @@ while ($row = mysqli_fetch_assoc($result)) {
                                 class="fa fa-check fa-fw"></i>Save</button>
                         <button type="reset" class="btn btn-danger btn-block"><i
                                 class="fa fa-times fa-fw"></i>Reset</button>
-
                     </form>
+
+                    <script>
+                        function validateForm() {
+                            let form = document.forms[0];
+                            let email = form["email"].value;
+                            let phoneNumber = form["phonenumber"].value;
+
+                            // Email validation
+                            let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            if (!emailPattern.test(email)) {
+                                alert("Please enter a valid email address.");
+                                return false;
+                            }
+
+                            // Phone number validation (exactly 10 digits)
+                            let phonePattern = /^\d{10}$/;
+                            if (!phonePattern.test(phoneNumber)) {
+                                alert("Please enter a valid 10-digit phone number.");
+                                return false;
+                            }
+
+                            return true;
+                        }
+                    </script>
+
                 </div>
             </div>
         </div>
@@ -251,7 +272,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 $.each(divisions, function (index, division) {
                     // Exclude divisions named "HEAD-OFFICE" or "RWY"
                     if (division.DIVISION !== 'HEAD-OFFICE' && division.DIVISION !== 'RWY') {
-                        $('#division').append('<option value="' + division.DIVISION + '">' + division.DIVISION + '</option>');
+                        $('#division').append('<option value="' + division.division_id + '">' + division.DIVISION + '</option>');
                     }
                 });
             }
@@ -263,7 +284,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         $('#division').change(function () {
             var Division = $(this).val();
             $.ajax({
-                url: '../includes/data_fetch.php?action=fetchDepot1',
+                url: '../includes/data_fetch.php?action=fetchDepot',
                 method: 'POST',
                 data: { division: Division },
                 success: function (data) {

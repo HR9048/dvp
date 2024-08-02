@@ -79,6 +79,10 @@ function determineRedirect($type, $jobTitle)
                     return "depot_clerk.php";
                 case 'Bunk':
                     return "depot_kmpl.php";
+                case 'INSPECTOR':
+                    return "depot_kmpl.php";
+                case 'SECURITY':
+                    return "depot_schinout.php";
             }
     }
 }

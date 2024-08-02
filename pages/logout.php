@@ -16,6 +16,8 @@ unset($_SESSION['TYPE']);
 unset($_SESSION['USERNAME']);
 unset($_SESSION['DIVISION_ID']);
 unset($_SESSION['DEPOT_ID']);
+unset($_SESSION['DIVISION_KMPL']);
+unset($_SESSION['DEPOT_KMPL']);
 
 ?>
 <script type="text/javascript">

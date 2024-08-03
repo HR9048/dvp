@@ -39,8 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($schCount == 2 && $serverCurrentDateTime->format('Y-m-d') == $departedDateTime->format('Y-m-d')) {
             echo '<script>alert("The route has 2 schedule counts. The departure and arrival should not be allowed on the same date."); window.location.href="depot_schinout.php";</script>';
             exit;
-        } elseif ($schCount == 'Partial' || $schCount == 'BD') {
-            header("Location: bd_page.php");
+        } elseif ($schCount == 2 && $hoursDifference > 84) {
+            echo '<script>alert("The selected schedule is a 2-day schedule and the time difference is greater than 3 days 12 hours. Please contact higher authority to make the schedule in."); window.location.href="depot_schinout.php";</script>';
             exit;
         }
         echo '<input class="form-control" type="hidden" id="id" name="id" value="' . htmlspecialchars($id) . '" readonly>';

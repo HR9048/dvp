@@ -340,7 +340,7 @@ function fetchScheduleIn()
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
 
-    $query = "SELECT svo.sch_no 
+    $query = "SELECT DISTINCT  svo.sch_no 
               FROM schedule_master sm
               INNER JOIN sch_veh_out svo
               ON sm.sch_key_no = svo.sch_no 

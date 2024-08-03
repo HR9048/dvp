@@ -80,7 +80,7 @@ function determineRedirect($type, $jobTitle)
                 case 'Bunk':
                     return "depot_kmpl.php";
                 case 'INSPECTOR':
-                    return "depot_kmpl.php";
+                    return "depot_inspector_schedule_d.php";
                 case 'SECURITY':
                     return "depot_schinout.php";
             }

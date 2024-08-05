@@ -189,6 +189,23 @@ br.bus_number order by depot_id;'; // Assuming you want to filter by division_id
 
 
         </tbody>
+        <tfoot>
+                        <tr>
+                            <th ></th>
+                            <th>Bus Number</th>
+                            <th>Division Name</th>
+                            <th>Depot Name</th>
+                            <th>Make</th>
+                            <th>Emission norms</th>
+                            <th>DOC</th>
+                            <th>Wheel Base</th>
+                            <th>Chassis Number</th>
+                            <th>Bus Category</th>
+                            <th>Bus Sub Category</th>
+                            <th>Seating Capacity</th>
+                            <th>Bus Body Builder</th>
+                        </tr>
+                    </tfoot>
       </table>
     </div>
     <button class="btn btn-success" id="downloadExcel1">Download Excel</button>

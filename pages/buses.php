@@ -48,6 +48,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     }
 }
 
+
 // Fetch all rows from the database for the table and for JavaScript
 $query = 'SELECT br.bus_number, l.division AS division_name, l.depot AS depot_name, br.make, br.emission_norms, br.doc, br.wheel_base, br.chassis_number, br.bus_category, br.bus_sub_category, br.seating_capacity, br.bus_body_builder 
 FROM bus_registration br 
@@ -58,7 +59,6 @@ $rows = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $rows[] = $row;
 }
-
 ?>
 <div class="container-fluid">
     <h4 class="m-2 font-weight-bold text-primary" style="display: inline-block;">Buses</h4>
@@ -71,7 +71,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <table id="dataTable3">
                     <thead>
                         <tr>
-                            <th style="width:5%">Serial Number</th>
+                            <th style="width:5%">Sl No</th>
                             <th>Bus Number</th>
                             <th>Division Name</th>
                             <th>Depot Name</th>
@@ -108,12 +108,31 @@ while ($row = mysqli_fetch_assoc($result)) {
                         }
                         ?>
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th ></th>
+                            <th>Bus Number</th>
+                            <th>Division Name</th>
+                            <th>Depot Name</th>
+                            <th>Make</th>
+                            <th>Emission norms</th>
+                            <th>DOC</th>
+                            <th>Wheel Base</th>
+                            <th>Chassis Number</th>
+                            <th>Bus Category</th>
+                            <th>Bus Sub Category</th>
+                            <th>Seating Capacity</th>
+                            <th>Bus Body Builder</th>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
             <button class="btn btn-success" id="downloadExcel1">Download Excel</button>
         </div>
     </div>
 </div>
+
+
 
 
 

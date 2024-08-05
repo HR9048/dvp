@@ -239,56 +239,46 @@ $result = $db->query($sql);
                     );
 
                     $sql = "SELECT o1.*, 
-        l.depot AS depot_name,
-        br.emission_norms AS reg_emission_norms,
-        br.wheel_base,
-        DATEDIFF(CURDATE(), o1.off_road_date) AS days_off_road 
-    FROM off_road_data o1
-    JOIN location l ON o1.depot = l.depot_id
-    JOIN bus_registration br ON o1.bus_number = br.bus_number
-    WHERE o1.status = 'off_road' 
-      AND o1.off_road_location NOT IN ('RWY') 
-      AND NOT EXISTS (
-          SELECT 1 
-          FROM off_road_data o2 
-          WHERE o1.bus_number = o2.bus_number 
-            AND o2.off_road_location = 'RWY'
-            AND o2.id > o1.id
-      )
-    ORDER BY l.division_id, o1.off_road_location, l.depot_id ASC";
+       l.depot AS depot_name,
+       br.emission_norms AS reg_emission_norms,
+       br.wheel_base,
+       DATEDIFF(CURDATE(), o1.off_road_date) AS days_off_road 
+FROM off_road_data o1
+JOIN location l ON o1.depot = l.depot_id
+JOIN bus_registration br ON o1.bus_number = br.bus_number
+WHERE o1.status = 'off_road' 
+  AND o1.off_road_location NOT IN ('RWY') 
+  AND NOT EXISTS (
+      SELECT 1 
+      FROM off_road_data o2 
+      WHERE o1.bus_number = o2.bus_number 
+        AND o2.off_road_location = 'RWY'
+        AND o2.id > o1.id
+  )
+ORDER BY l.division_id, o1.off_road_location, l.depot_id ASC";
 
                     $result = mysqli_query($db, $sql) or die(mysqli_error($db));
 
-                    // Initialize variables for grouping data
-                    $bus_data = [];
+                    // Initialize variables for rowspan logic
+                    $bus_numbers = [];
+                    $bus_number_rowspans_count = [];
 
                     // Group data by bus number
                     while ($row = mysqli_fetch_assoc($result)) {
                         $bus_number = $row['bus_number'];
-                        if (!isset($bus_data[$bus_number])) {
-                            $bus_data[$bus_number] = [
-                                'details' => $row,
-                                'off_road_from_dates' => [],
-                                'days_off_road' => [],
-                                'off_road_locations' => [],
-                                'parts_required' => [],
-                                'remarks' => [],
-                                'dws_remarks' => []
-                            ];
+                        if (!in_array($bus_number, $bus_numbers)) {
+                            $bus_numbers[] = $bus_number;
                         }
-                        $bus_data[$bus_number]['off_road_from_dates'][] = $row['off_road_date'];
-                        $bus_data[$bus_number]['days_off_road'][] = $row['days_off_road'];
-                        $bus_data[$bus_number]['off_road_locations'][] = $row['off_road_location'];
-                        $bus_data[$bus_number]['parts_required'][] = $row['parts_required'];
-                        $bus_data[$bus_number]['remarks'][] = $row['remarks'];
-                        $bus_data[$bus_number]['dws_remarks'][] = $row['dws_remark'];
+                        if (!isset($bus_number_rowspans_count[$bus_number])) {
+                            $bus_number_rowspans_count[$bus_number] = 0;
+                        }
+                        $bus_number_rowspans_count[$bus_number]++;
                     }
-
+                    mysqli_data_seek($result, 0); // Reset the result pointer to the beginning
                     ?>
+
                     <br><br>
-
                     <h2 style="text-align:center;">DAILY VEHICLES OFF-ROAD POSITION</h2>
-
                     <table style="width: 100%; max-width: 100%;">
                         <thead>
                             <tr>
@@ -315,84 +305,99 @@ $result = $db->query($sql);
                             $current_division = null; // Track the current division
                             
                             // Loop through each bus number
-                            foreach ($bus_data as $bus_number => $data) {
-                                $row = $data['details'];
-
-                                // Concatenate details with comma separator
-                                $off_road_from_dates = implode(', ', $data['off_road_from_dates']);
-                                $days_off_road = implode(', ', $data['days_off_road']);
-                                $off_road_locations = implode(', ', $data['off_road_locations']);
-                                $parts_required = implode(', ', $data['parts_required']);
-                                $remarks = implode(', ', $data['remarks']);
-                                $dws_remarks = implode(', ', $data['dws_remarks']);
-
-                                echo "<tr>";
-                                echo "<td>$bus_serial_number</td>";
-
-                                // Output division serial number only if division has changed
-                                if ($row['division'] != $current_division) {
-                                    $current_division = $row['division'];
-                                    $division_serial_number = 1; // Reset division serial number
+                            foreach ($bus_numbers as $bus_number) {
+                                // Collect all rows for the current bus number
+                                $bus_rows = [];
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    if ($row['bus_number'] == $bus_number) {
+                                        $bus_rows[] = $row;
+                                    }
                                 }
-                                echo "<td>$division_serial_number</td>";
-                                echo "<td>" . ($division_abbreviations[$row['division']] ?? $row['division']) . "</td>";
-                                echo "<td>" . $row['depot_name'] . "</td>";
-                                echo "<td>" . $row['bus_number'] . "</td>";
-                                echo "<td>" . $row['make'] . "</td>";
+                                if (count($bus_rows) > 0) {
+                                    // Extract data from the first row
+                                    $first_row = $bus_rows[0];
+                                    $depot_name = $first_row['depot_name'];
+                                    $make = $first_row['make'];
+                                    $emission_norms = ($first_row['reg_emission_norms'] == 'BS-3' && $first_row['wheel_base'] == '193 Midi') ? 'BS-3 Midi' : $first_row['reg_emission_norms'];
 
-                                // Check the emission norms and wheelbase to determine if it should be "BS-3 Midi"
-                                if ($row['reg_emission_norms'] == 'BS-3' && $row['wheel_base'] == '193 Midi') {
-                                    $emission_norms = 'BS-3 Midi';
-                                } else {
-                                    $emission_norms = $row['reg_emission_norms'];
+                                    // Collect and format off-road dates, locations, parts required, remarks, and DWS remarks
+                                    $off_road_from_dates = array_map(function ($row) {
+                                        $dateObj = new DateTime($row['off_road_date']);
+                                        return $dateObj->format('d/m/Y');
+                                    }, $bus_rows);
+                                    $days_off_road = array_map(function ($row) {
+                                        return $row['days_off_road'];
+                                    }, $bus_rows);
+                                    $off_road_locations = array_map(function ($row) {
+                                        return $row['off_road_location'];
+                                    }, $bus_rows);
+                                    $parts_required = array_map(function ($row) {
+                                        return $row['parts_required'];
+                                    }, $bus_rows);
+                                    $remarks = array_map(function ($row) {
+                                        return $row['remarks'];
+                                    }, $bus_rows);
+                                    $dws_remarks = array_map(function ($row) {
+                                        return $row['dws_remark'];
+                                    }, $bus_rows);
+
+                                    // Output the data in table rows
+                                    echo "<tr>";
+                                    echo "<td>$bus_serial_number</td>";
+                                    if ($first_row['division'] != $current_division) {
+                                        $current_division = $first_row['division'];
+                                        $division_serial_number = 1; // Reset division serial number
+                                    }
+                                    echo "<td>$division_serial_number</td>";
+                                    echo "<td>" . ($division_abbreviations[$first_row['division']] ?? $first_row['division']) . "</td>";
+                                    echo "<td>$depot_name</td>";
+                                    echo "<td>$bus_number</td>";
+                                    echo "<td>$make</td>";
+                                    echo "<td>$emission_norms</td>";
+                                    echo "<td>" . implode(", ", $off_road_from_dates) . "</td>";
+                                    echo "<td>" . implode(", ", $days_off_road) . "</td>";
+                                    echo "<td>" . implode(", ", $off_road_locations) . "</td>";
+                                    echo "<td>" . implode(", ", $parts_required) . "</td>";
+                                    echo "<td>" . implode(", ", $remarks) . "</td>";
+                                    echo "<td>" . implode(", ", $dws_remarks) . "</td>";
+                                    echo "</tr>";
+
+                                    // Increment the bus serial number and division serial number
+                                    $bus_serial_number++;
+                                    $division_serial_number++;
                                 }
-
-                                echo "<td>" . $emission_norms . "</td>";
-                                echo "<td>" . $row['off_road_date'] . "</td>";
-                                echo "<td>$days_off_road</td>";
-                                echo "<td>$off_road_locations</td>";
-                                echo "<td>$parts_required</td>";
-                                echo "<td>$remarks</td>";
-                                echo "<td>$dws_remarks</td>";
-                                echo "</tr>";
-
-                                // Increment the bus serial number
-                                $bus_serial_number++;
-                                // Increment division serial number for each new division
-                                $division_serial_number++;
+                                // Reset the result pointer to the beginning for the next bus number
+                                mysqli_data_seek($result, 0);
                             }
                             ?>
                         </tbody>
                     </table>
 
+
                     <?php
                     // Fetching latest details of vehicles that are off-road and belong to the user's division
-                    
                     $sql = "SELECT r.*,
-               l.depot AS depot_name,
-               br.emission_norms AS reg_emission_norms,
-               br.wheel_base,
-               CASE 
-                   WHEN l.division = 'KALABURAGI-1' THEN 'KLB1'
-                   WHEN l.division = 'KALABURAGI-2' THEN 'KLB2'
-                   WHEN l.division = 'YADAGIRI' THEN 'YDG'
-                   WHEN l.division = 'BIDAR' THEN 'BDR'
-                   WHEN l.division = 'RAICHURU' THEN 'RCH'
-                   WHEN l.division = 'KOPPALA' THEN 'KPL'
-                   WHEN l.division = 'BALLARI' THEN 'BLR'
-                   WHEN l.division = 'HOSAPETE' THEN 'HSP'
-                   WHEN l.division = 'VIJAYAPURA' THEN 'VJP'
-                   ELSE 'Unknown'
-               END AS division_name,
-               IFNULL(r.no_of_days, DATEDIFF(CURDATE(), r.received_date)) AS days_off_road
-        FROM rwy_offroad r
-        JOIN location l ON r.depot = l.depot_id
-        JOIN bus_registration br ON r.bus_number = br.bus_number
-        WHERE r.status = 'off_road'
-        ORDER BY l.division_id, l.depot_id, r.received_date ASC";
-
-
-
+       l.depot AS depot_name,
+       br.emission_norms AS reg_emission_norms,
+       br.wheel_base,
+       CASE 
+           WHEN l.division = 'KALABURAGI-1' THEN 'KLB1'
+           WHEN l.division = 'KALABURAGI-2' THEN 'KLB2'
+           WHEN l.division = 'YADAGIRI' THEN 'YDG'
+           WHEN l.division = 'BIDAR' THEN 'BDR'
+           WHEN l.division = 'RAICHURU' THEN 'RCH'
+           WHEN l.division = 'KOPPALA' THEN 'KPL'
+           WHEN l.division = 'BALLARI' THEN 'BLR'
+           WHEN l.division = 'HOSAPETE' THEN 'HSP'
+           WHEN l.division = 'VIJAYAPURA' THEN 'VJP'
+           ELSE 'Unknown'
+       END AS division_name,
+       IFNULL(r.no_of_days, DATEDIFF(CURDATE(), r.received_date)) AS days_off_road
+FROM rwy_offroad r
+JOIN location l ON r.depot = l.depot_id
+JOIN bus_registration br ON r.bus_number = br.bus_number
+WHERE r.status = 'off_road'
+ORDER BY l.division_id, l.depot_id, r.received_date ASC";
 
                     $result = mysqli_query($db, $sql) or die(mysqli_error($db));
 
@@ -412,8 +417,7 @@ $result = $db->query($sql);
                         $bus_number_rowspans_count[$bus_number]++;
                     }
                     mysqli_data_seek($result, 0); // Reset the result pointer to the beginning
-                    $formatted_date = date('d/m/Y');
-
+                    
                     ?>
                     <br><br>
                     <h2 style="text-align:center;">RWY Off-Road</h2>
@@ -449,47 +453,38 @@ $result = $db->query($sql);
                                     }
                                 }
 
-                                // Output data for each row
-                                foreach ($rows as $key => $row) {
-                                    echo "<tr>";
+                                // Collect data for combined cells
+                                $received_dates = [];
+                                $days_off_road = [];
+                                $work_reasons = [];
+                                $work_statuses = [];
+                                $remarks = [];
 
-                                    // Output serial number only for the first row of the current bus number
-                                    if ($key === 0) {
-                                        echo "<td rowspan='" . count($rows) . "'>$serial_number</td>";
-                                        echo "<td rowspan='" . count($rows) . "'>" . $row['division_name'] . "</td>";
-                                        echo "<td rowspan='" . count($rows) . "'>" . $row['depot_name'] . "</td>";
-                                        echo "<td rowspan='" . count($rows) . "'>" . $row['bus_number'] . "</td>";
-                                        echo "<td rowspan='" . count($rows) . "'>" . $row['make'] . "</td>";
-                                        // Check the emission norms and wheelbase to determine if it should be "BS-3 Midi"
-                                        if ($row['reg_emission_norms'] == 'BS-3' && $row['wheel_base'] == '193 Midi') {
-                                            $emission_norms = 'BS-3 Midi';
-                                        } else {
-                                            $emission_norms = $row['reg_emission_norms'];
-                                        }
-
-                                        echo "<td rowspan='" . count($rows) . "'>" . $emission_norms . "</td>";
-                                    }
-
-                                    // Extract data from the row
-                                    $offRoadFromDate = $row['received_date'];
-                                    $partsRequired = $row['work_reason'];
-                                    $workstatus = $row['work_status'];
-                                    $remarks = $row['remarks'];
-                                    $daysOffRoad = $row['no_of_days'];
-                                    if ($daysOffRoad === null) {
-                                        $offRoadDate = new DateTime($offRoadFromDate);
-                                        $today = new DateTime();
-                                        $daysOffRoad = $today->diff($offRoadDate)->days;
-                                    }
-
-                                    // Output the data in table rows
-                                    echo "<td>$offRoadFromDate</td>";
-                                    echo "<td>$daysOffRoad</td>";
-                                    echo "<td>$partsRequired</td>";
-                                    echo "<td>$workstatus</td>";
-                                    echo "<td>$remarks</td>";
-                                    echo "</tr>";
+                                foreach ($rows as $row) {
+                                    $dateObj = new DateTime($row['received_date']);
+                                    $received_dates[] = $dateObj->format('d/m/Y');
+                                    $days_off_road[] = $row['days_off_road'];
+                                    $work_reasons[] = $row['work_reason'];
+                                    $work_statuses[] = $row['work_status'];
+                                    $remarks[] = $row['remarks'];
                                 }
+
+                                // Output data for each bus number
+                                echo "<tr>";
+                                echo "<td>$serial_number</td>";
+                                echo "<td>" . $rows[0]['division_name'] . "</td>";
+                                echo "<td>" . $rows[0]['depot_name'] . "</td>";
+                                echo "<td>" . $rows[0]['bus_number'] . "</td>";
+                                echo "<td>" . $rows[0]['make'] . "</td>";
+                                // Check the emission norms and wheelbase to determine if it should be "BS-3 Midi"
+                                $emission_norms = ($rows[0]['reg_emission_norms'] == 'BS-3' && $rows[0]['wheel_base'] == '193 Midi') ? 'BS-3 Midi' : $rows[0]['reg_emission_norms'];
+                                echo "<td>$emission_norms</td>";
+                                echo "<td>" . implode("<br>", $received_dates) . "</td>";
+                                echo "<td>" . implode("<br>", $days_off_road) . "</td>";
+                                echo "<td>" . $rows[0]['work_reason'] . "</td>";
+                                echo "<td>" . implode("<br>", $work_statuses) . "</td>";
+                                echo "<td>" . implode("<br>", $remarks) . "</td>";
+                                echo "</tr>";
 
                                 // Increment the serial number
                                 $serial_number++;

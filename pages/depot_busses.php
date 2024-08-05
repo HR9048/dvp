@@ -51,16 +51,17 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-    <h4 class="m-2 font-weight-bold text-primary">Buses&nbsp;<a href="register1.php" type="button"
+        <h4 class="m-2 font-weight-bold text-primary">Buses&nbsp;<a href="register1.php" type="button"
                 class="btn btn-primary bg-gradient-primary" style="border-radius: 0px;"><i
-                    class="fas fa-fw fa-plus"></i></a></h4>    </div>
+                    class="fas fa-fw fa-plus"></i></a></h4>
+    </div>
 
     <div class="card-body">
         <div class="table-responsive">
             <table id="dataTable3">
                 <thead>
                     <tr>
-                        <th class="serial-no">Serial No.</th>
+                        <th class="serial-no">Sl No.</th>
                         <th>Bus Number</th>
                         <th>Division Name</th>
                         <th>Depot Name</th>
@@ -118,6 +119,23 @@ while ($row = mysqli_fetch_assoc($result)) {
                     ?>
 
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th>Bus Number</th>
+                        <th>Division Name</th>
+                        <th>Depot Name</th>
+                        <th>Make</th>
+                        <th>Emission norms</th>
+                        <th>DOC</th>
+                        <th>Wheel Base</th>
+                        <th>Chassis Number</th>
+                        <th>Bus Category</th>
+                        <th>Bus Sub Category</th>
+                        <th>Seating Capacity</th>
+                        <th>Bus Body Builder</th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
         <button class="btn btn-success" id="downloadExcel1">Download Excel</button>

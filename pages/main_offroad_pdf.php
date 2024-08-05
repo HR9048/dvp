@@ -68,14 +68,17 @@ $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // Set document information
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('Your Name');
-$pdf->SetTitle('DVP Report');
-$pdf->SetSubject('DVP Report');
-$pdf->SetKeywords('DVP, Report, KKRTC');
+$pdf->SetTitle('DVP Report off-road');
+$pdf->SetSubject('DVP Report off-road');
+$pdf->SetKeywords('DVP, Report, KKRTC, off-road');
 
 // Remove default header/footer
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 $pdf->SetPageOrientation('L');
+$pdf->SetMargins(10, 3, 10, 10); // Left, Top, Right, Bottom margins
+$pdf->SetFooterMargin(0); // Ensure no footer margin
+$pdf->SetAutoPageBreak(true, 0); // Disable auto page break and set margin to zero
 
 // Add a page
 $pdf->AddPage();
@@ -88,9 +91,9 @@ $html = ''; // Initialize $html variable
 $html .= '<h1 style="text-align:center;">Kalyana Karnataka Road Transport Corporation (KKRTC)</h1><br><br><br>';
 $html .= '<table style="width: 100%; margin-top: 50px;">';
 $html .= '<tr>';
-$html .= '<td style="text-align: left;"><b>CENTRAL OFFICE</b></td>';
-$html .= '<td style="text-align: center;"><b>KALABURAGI</b></td>';
-$html .= '<td style="text-align: right; "><b>' . date('d/m/Y') . '</b></td>';
+$html .= '<td style="text-align: left;"><h1><b>CENTRAL OFFICE</b></h1></td>';
+$html .= '<td style="text-align: center;"><h1><b>KALABURAGI</b></h1></td>';
+$html .= '<td style="text-align: right; "><h1><b>' . date('d/m/Y') . '</b></h1></td>';
 $html .= '</tr>';
 $html .= '</table><br><br>';
 
@@ -210,24 +213,17 @@ $sql = "SELECT o1.*,
 
 $result = mysqli_query($db, $sql) or die(mysqli_error($db));
 
-// Initialize variables for rowspan logic
+// Initialize variables for grouping data
 $data = [];
-$bus_number_rowspans_count = [];
 
-// Group data by bus number and calculate rowspan counts
+// Group data by bus number
 while ($row = mysqli_fetch_assoc($result)) {
     $bus_number = $row['bus_number'];
     if (!isset($data[$bus_number])) {
         $data[$bus_number] = [];
     }
     $data[$bus_number][] = $row;
-    if (!isset($bus_number_rowspans_count[$bus_number])) {
-        $bus_number_rowspans_count[$bus_number] = 0;
-    }
-    $bus_number_rowspans_count[$bus_number]++;
 }
-
-
 
 // Set font
 $pdf->SetFont('helvetica', '', 7);
@@ -247,7 +243,7 @@ $html .= '<thead>
                 <th><b>Off Road From Date</b></th>
                 <th style="width:41px"><b>No. of days off-road</b></th>
                 <th style="width:35px"><b>Off Road Location</b></th>
-                <th style="width:75px"><b>Parts Required</b></th>
+                <th style="width:95px"><b>Parts Required</b></th>
                 <th style="width:190px"><b>Remarks</b></th>
                 <th style="width:150px"><b>DWS Remarks</b></th>
             </tr>
@@ -261,57 +257,56 @@ $current_division = null; // Track the current division
 
 // Loop through each bus number
 foreach ($data as $bus_number => $rows) {
-    // Flag to indicate if it's the first row for the current bus number
-    $first_row = true;
+    // Extract common data
+    $division = $rows[0]['division'];
+    $depot_name = $rows[0]['depot_name'];
+    $make = $rows[0]['make'];
+    $emission_norms = ($rows[0]['reg_emission_norms'] == 'BS-3' && $rows[0]['wheel_base'] == '193 Midi') ? 'BS-3 Midi' : $rows[0]['reg_emission_norms'];
 
-    // Loop through each row of the result set for the current bus number
-    foreach ($rows as $row) {
-        $html .= "<tr>";
-        if ($first_row) {
-            $html .= "<td rowspan=\"" . $bus_number_rowspans_count[$bus_number] . "\" style=\"width: 25px;\">$bus_serial_number</td>";
-            // Output division serial number only if division has changed
-            if ($row['division'] != $current_division) {
-                $current_division = $row['division'];
-                $division_serial_number = 1; // Reset division serial number
-            }
-            $html .= "<td rowspan=\"" . $bus_number_rowspans_count[$bus_number] . "\" style=\"width: 20px;\">$division_serial_number</td>";
-            $html .= "<td rowspan=\"" . $bus_number_rowspans_count[$bus_number] . "\" style=\"width: 33px;\">" . ($division_abbreviations[$row['division']] ?? $row['division']) . "</td>";
-            $html .= "<td rowspan=\"" . $bus_number_rowspans_count[$bus_number] . "\" style=\"width: 35px;\">" . $row['depot_name'] . "</td>";
-            $html .= "<td rowspan=\"" . $bus_number_rowspans_count[$bus_number] . "\" style=\"width: 45px;\">" . $row['bus_number'] . "</td>";
-            $html .= "<td rowspan=\"" . $bus_number_rowspans_count[$bus_number] . "\" style=\"width: 33px;\">" . $row['make'] . "</td>";
+    // Output data for each bus number
+    $html .= "<tr>";
+    $html .= "<td style=\"width: 25px;\">$bus_serial_number</td>";
 
-            if ($row['reg_emission_norms'] == 'BS-3' && $row['wheel_base'] == '193 Midi') {
-                $emission_norms = 'BS-3 Midi';
-            } else {
-                $emission_norms = $row['reg_emission_norms'];
-            }
-
-            $html .= "<td rowspan=\"" . $bus_number_rowspans_count[$bus_number] . "\" style=\"width: 39px;\">$emission_norms</td>";
-            $first_row = false;
-        }
-        // Extract data from the row
-        $offRoadFromDate = date('d-m-Y', strtotime($row['off_road_date']));
-        $offRoadLocation = $row['off_road_location'];
-        $partsRequired = $row['parts_required'];
-        $remarks = $row['remarks'];
-        $dws_remarks = $row['dws_remark'];
-
-        // Calculate the number of days off-road
-        $offRoadDate = new DateTime($offRoadFromDate);
-        $today = new DateTime();
-        $daysOffRoad = $today->diff($offRoadDate)->days;
-
-        // Output the data in table rows
-        $html .= "<td>$offRoadFromDate</td>";
-        $html .= "<td style=\"width: 42px;\">$daysOffRoad</td>";
-        $html .= "<td style=\"width: 34px;\">$offRoadLocation</td>";
-        $html .= "<td style=\"width: 75px;\">$partsRequired</td>";
-        $html .= "<td style=\"width: 190px;\">$remarks</td>";
-        $html .= "<td style=\"width: 150px;\">$dws_remarks</td>";
-        $html .= "</tr>";
+    // Output division serial number only if division has changed
+    if ($division != $current_division) {
+        $current_division = $division;
+        $division_serial_number = 1; // Reset division serial number
     }
 
-    // Increment the bus serial number only if there were rows for the current bus number
+    $html .= "<td style=\"width: 20px;\">$division_serial_number</td>";
+    $html .= "<td style=\"width: 33px;\">" . ($division_abbreviations[$division] ?? $division) . "</td>";
+    $html .= "<td style=\"width: 35px;\">$depot_name</td>";
+    $html .= "<td style=\"width: 45px;\">$bus_number</td>";
+    $html .= "<td style=\"width: 33px;\">$make</td>";
+    $html .= "<td style=\"width: 39px;\">$emission_norms</td>";
+
+    // Collect data for combined cells
+    $received_dates = [];
+    $days_off_road = [];
+    $off_road_locations = [];
+    $parts_required = [];
+    $remarks = [];
+    $dws_remarks = [];
+
+    foreach ($rows as $row) {
+        $received_dates[] = date('d/m/Y', strtotime($row['off_road_date']));
+        $days_off_road[] = $row['days_off_road'];
+        $off_road_locations[] = $row['off_road_location'];
+        $parts_required[] = $row['parts_required'];
+        $remarks[] = $row['remarks'];
+        $dws_remarks[] = $row['dws_remark'];
+    }
+
+    // Output the data in table rows
+    $html .= "<td>" . implode("<br>", $received_dates) . "</td>";
+    $html .= "<td style=\"width: 42px;\">" . implode("<br>", $days_off_road) . "</td>";
+    $html .= "<td style=\"width: 34px;\">" . implode("<br>", $off_road_locations) . "</td>";
+    $html .= "<td style=\"width: 95px;\">" . implode("<br>", $parts_required) . "</td>";
+    $html .= "<td style=\"width: 190px;\">" . implode("<br>", $remarks) . "</td>";
+    $html .= "<td style=\"width: 150px;\">" . implode("<br>", $dws_remarks) . "</td>";
+    $html .= "</tr>";
+
+    // Increment the bus serial number
     $bus_serial_number++;
     // Increment division serial number for each new division
     $division_serial_number++;
@@ -320,9 +315,10 @@ foreach ($data as $bus_number => $rows) {
 // Close the table
 $html .= '</tbody></table>';
 
-
 // Output the HTML content
 $pdf->writeHTML($html, true, false, true, false, '');
+
+
 
 // third table 
 
@@ -352,23 +348,17 @@ $sql = "SELECT r.*,
 
 $result = mysqli_query($db, $sql) or die(mysqli_error($db));
 
-// Initialize variables for rowspan logic
-$bus_numbers = [];
-$bus_number_rowspans_count = [];
+// Initialize variables for grouping data
+$data = [];
 
 // Group data by bus number
 while ($row = mysqli_fetch_assoc($result)) {
     $bus_number = $row['bus_number'];
-    if (!in_array($bus_number, $bus_numbers)) {
-        $bus_numbers[] = $bus_number;
+    if (!isset($data[$bus_number])) {
+        $data[$bus_number] = [];
     }
-    if (!isset($bus_number_rowspans_count[$bus_number])) {
-        $bus_number_rowspans_count[$bus_number] = 0;
-    }
-    $bus_number_rowspans_count[$bus_number]++;
+    $data[$bus_number][] = $row;
 }
-mysqli_data_seek($result, 0); // Reset the result pointer to the beginning
-
 
 // Set font
 $pdf->SetFont('helvetica', '', 9);
@@ -386,8 +376,8 @@ $html .= '<thead>
                 <th style="width:60px"><b>Emission Norms</b></th>
                 <th style="width:70px"><b>Received Date</b></th>
                 <th style="width:70px"><b>Number of days</b></th>
-                <th style="width:70px"><b>Work Reason</b></th>
-                <th style="width:70px"><b>Work Status</b></th>
+                <th style="width:80px"><b>Work Reason</b></th>
+                <th style="width:100px"><b>Work Status</b></th>
                 <th style="width:150px"><b>Remarks</b></th>
             </tr>
           </thead>
@@ -397,57 +387,41 @@ $html .= '<thead>
 $serial_number = 1;
 
 // Loop through each bus number
-foreach ($bus_numbers as $bus_number) {
-    // Fetch all rows for the current bus number
-    $rows = [];
-    mysqli_data_seek($result, 0); // Reset the result pointer
-    while ($row = mysqli_fetch_assoc($result)) {
-        if ($row['bus_number'] == $bus_number) {
-            $rows[] = $row;
-        }
+foreach ($data as $bus_number => $rows) {
+    // Extract common data
+    $division = $rows[0]['division_name'];
+    $depot_name = $rows[0]['depot_name'];
+    $make = $rows[0]['make'];
+    $work_reasons = $rows[0]['work_reason'];
+    $emission_norms = ($rows[0]['reg_emission_norms'] == 'BS-3' && $rows[0]['wheel_base'] == '193 Midi') ? 'BS-3 Midi' : $rows[0]['reg_emission_norms'];
+
+    // Collect data for combined cells
+    $received_dates = [];
+    $days_off_road = [];
+    $work_statuses = [];
+    $remarks = [];
+
+    foreach ($rows as $row) {
+        $received_dates[] = date('d/m/Y', strtotime($row['received_date']));
+        $days_off_road[] = $row['days_off_road'];
+        $work_statuses[] = $row['work_status'];
+        $remarks[] = $row['remarks'];
     }
 
-    // Output data for each row
-    foreach ($rows as $key => $row) {
-        $html .= "<tr>";
-
-        // Output serial number only for the first row of the current bus number
-        if ($key === 0) {
-            $html .= "<td rowspan=\"" . count($rows) . "\" style=\"width: 30px;\">$serial_number</td>";
-            $html .= "<td rowspan=\"" . count($rows) . "\" style=\"width: 45px;\">" . $row['division_name'] . "</td>";
-            $html .= "<td rowspan=\"" . count($rows) . "\" style=\"width: 60px;\">" . $row['depot_name'] . "</td>";
-            $html .= "<td rowspan=\"" . count($rows) . "\" style=\"width: 80px;\">" . $row['bus_number'] . "</td>";
-            $html .= "<td rowspan=\"" . count($rows) . "\" style=\"width: 60px;\">" . $row['make'] . "</td>";
-            // Check the emission norms and wheelbase to determine if it should be "BS-3 Midi"
-            if ($row['reg_emission_norms'] == 'BS-3' && $row['wheel_base'] == '193 Midi') {
-                $emission_norms = 'BS-3 Midi';
-            } else {
-                $emission_norms = $row['reg_emission_norms'];
-            }
-
-            $html .= "<td rowspan=\"" . count($rows) . "\" style=\"width: 60px;\">" . $emission_norms . "</td>";
-        }
-
-        // Extract data from the row
-        $offRoadFromDate = $row['received_date'];
-        $partsRequired = $row['work_reason'];
-        $workstatus = $row['work_status'];
-        $remarks = $row['remarks'];
-        $daysOffRoad = $row['no_of_days'];
-        if ($daysOffRoad === null) {
-            $offRoadDate = new DateTime($offRoadFromDate);
-            $today = new DateTime();
-            $daysOffRoad = $today->diff($offRoadDate)->days;
-        }
-
-        // Output the data in table rows
-        $html .= "<td style=\"width: 70px;\">$offRoadFromDate</td>";
-        $html .= "<td style=\"width: 70px;\">$daysOffRoad</td>";
-        $html .= "<td style=\"width: 70px;\">$partsRequired</td>";
-        $html .= "<td style=\"width: 70px;\">$workstatus</td>";
-        $html .= "<td style=\"width: 150px;\">$remarks</td>";
-        $html .= "</tr>";
-    }
+    // Output the data in table rows
+    $html .= "<tr>";
+    $html .= "<td style=\"width: 30px;\">$serial_number</td>";
+    $html .= "<td style=\"width: 45px;\">$division</td>";
+    $html .= "<td style=\"width: 60px;\">$depot_name</td>";
+    $html .= "<td style=\"width: 80px;\">$bus_number</td>";
+    $html .= "<td style=\"width: 60px;\">$make</td>";
+    $html .= "<td style=\"width: 60px;\">$emission_norms</td>";
+    $html .= "<td style=\"width: 70px;\">" . implode("<br>", $received_dates) . "</td>";
+    $html .= "<td style=\"width: 70px;\">" . implode("<br>", $days_off_road) . "</td>";
+    $html .= "<td style=\"width: 80px;\">$work_reasons</td>";
+    $html .= "<td style=\"width: 100px;\">" . implode("<br>", $work_statuses) . "</td>";
+    $html .= "<td style=\"width: 150px;\">" . implode("<br>", $remarks) . "</td>";
+    $html .= "</tr>";
 
     // Increment the serial number
     $serial_number++;
@@ -457,6 +431,7 @@ $html .= '</tbody></table>';
 
 // Output the HTML content
 $pdf->writeHTML($html, true, false, true, false, '');
+
 
 // fourth table
 
@@ -991,20 +966,19 @@ $html .= '</tbody></table>';
 
 
 // Output the HTML content
-$pdf->writeHTML($html, true, false, true, false, '');
 
 // Set font
 $pdf->SetFont('helvetica', '', 7);
 
 
 // Add the final table at the end of the PDF
-$html .= '<br><br><br><br>';
+$html .= '<br><br><br><br><br><br>';
 $html .= '<table style="width: 90%;">';
 $html .= '<tr>';
-$html .= '<td style="text-align: left;"><b>JTO</b></td>';
-$html .= '<td style="text-align: center;"><b>DME</b></td>';
-$html .= '<td style="text-align: center;"><b>Dy-CME</b></td>';
-$html .= '<td style="text-align: right;"><b>CME</b></td>';
+$html .= '<td style="text-align: left;"><h1><b>JTO</b></h1></td>';
+$html .= '<td style="text-align: center;"><h1><b>DME</b></h1></td>';
+$html .= '<td style="text-align: center;"><h1><b>Dy-CME</b></h1></td>';
+$html .= '<td style="text-align: right;"><h1><b>CME</b></h1></td>';
 $html .= '</tr>';
 $html .= '</table>';
 
@@ -1016,5 +990,5 @@ $formattedFileName = date('d_m_Y');
 $fileName = $formattedFileName . '_offorad_position.pdf';
 
 // Close and output PDF document
-$pdf->Output($fileName, 'D');
+$pdf->Output($fileName, 'I');
 ?>

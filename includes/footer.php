@@ -117,19 +117,34 @@
 <script>
   $(document).ready(function () {
     var table = $('#dataTable3').DataTable({
-      "paging": true, // Enable pagination
-      "lengthChange": true, // Enable the row count dropdown
-      "searching": true, // Enable search functionality
-      "ordering": true, // Enable sorting
-      "info": true, // Show table information summary
-      "autoWidth": true, // Automatically adjust column widths
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
       "columnDefs": [
         {
           "orderable": false,
           "targets": 0
-        } // Make serial number column non-orderable
+        }
       ],
-      "order": [] // Disable initial ordering
+      "order": [],
+      initComplete: function () {
+        // Add a text input to each footer cell
+        this.api().columns().every(function () {
+          var column = this;
+          var input = $('<input type="text" placeholder="Search" style="width: 100%;"/>')
+            .appendTo($(column.footer()).empty())
+            .on('keyup change', function () {
+              if (column.search() !== this.value) {
+                column
+                  .search(this.value)
+                  .draw();
+              }
+            });
+        });
+      }
     });
 
     // Update serial numbers after each draw event (including filtering)
@@ -144,7 +159,7 @@
     $('#downloadExcel1').on('click', function () {
       var today = new Date();
       var dd = String(today.getDate()).padStart(2, '0');
-      var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+      var mm = String(today.getMonth() + 1).padStart(2, '0');
       var yyyy = today.getFullYear();
       today = dd + '-' + mm + '-' + yyyy;
 
@@ -157,31 +172,48 @@
 
       filteredData.forEach(function (row, index) {
         ws_data.push([
-          index + 1, // Serial Number starting from 1 for filtered rows
-          row[1], // Bus Number
-          row[2], // Division Name
-          row[3], // Depot Name
-          row[4], // Make
-          row[5], // Emission norms
-          row[6], // DOC
-          row[7], // Wheel Base
-          row[8], // Chassis Number
-          row[9], // Bus Category
-          row[10], // Bus Sub Category
-          row[11], // Seating Capacity
-          row[12]  // Bus Body Builder
+          index + 1,
+          row[1],
+          row[2],
+          row[3],
+          row[4],
+          row[5],
+          row[6],
+          row[7],
+          row[8],
+          row[9],
+          row[10],
+          row[11],
+          row[12]
         ]);
       });
 
       var ws = XLSX.utils.aoa_to_sheet(ws_data);
       XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
 
-      // Save the workbook as an Excel file with today's date
-      XLSX.writeFile(wb, today + 'bus_master.xlsx');
+      // Get filter values to use in the file name
+      var filterValues = [];
+      table.columns().every(function () {
+        var value = this.search();
+        if (value) {
+          filterValues.push(value);
+        }
+      });
+
+      // Create file name based on filters
+      var fileName = filterValues.slice(0, 2).join('_');
+      if (filterValues.length > 2) {
+        fileName += '_' + filterValues.slice(2).join('_');
+      }
+
+      // Append today's date to the file name
+      fileName = (fileName ? fileName + '_' : '') + today + '_bus_master.xlsx';
+
+      // Save the workbook as an Excel file with the dynamic file name
+      XLSX.writeFile(wb, fileName);
     });
   });
 </script>
-
 
 
 

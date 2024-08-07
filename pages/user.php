@@ -267,10 +267,12 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 <?php
 
-$sql = "SELECT PF_ID, FIRST_NAME, LAST_NAME, j.JOB_TITLE
-        FROM employee e
-        JOIN job j ON j.JOB_ID=e.JOB_ID
-        order by e.LAST_NAME asc";
+$sql = "SELECT e.PF_ID, e.FIRST_NAME, e.LAST_NAME, j.JOB_TITLE
+FROM employee e
+JOIN job j ON j.JOB_ID = e.JOB_ID
+LEFT JOIN users u ON u.PF_ID = e.PF_ID
+WHERE u.PF_ID IS NULL
+ORDER BY e.LAST_NAME ASC";
 $res = mysqli_query($db, $sql) or die("Bad SQL: $sql");
 
 $opt = "<select class='form-control' name='empid' required>

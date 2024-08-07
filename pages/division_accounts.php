@@ -101,7 +101,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                     JOIN employee e ON e.PF_ID = u.PF_ID
                     JOIN type t ON t.TYPE_ID = u.TYPE_ID
                     JOIN location l ON e.LOCATION_ID = l.LOCATION_ID
-                    WHERE u.TYPE_ID = 3 AND l.DIVISION = '{$_SESSION['DIVISION']}'";
+                    WHERE u.TYPE_ID = 3 AND l.DIVISION = '{$_SESSION['DIVISION']}' AND e.LAST_NAME NOT IN ('TI', 'SECURITY')";
 
                     $result = mysqli_query($db, $query) or die(mysqli_error($db));
 

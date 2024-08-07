@@ -2,38 +2,13 @@
 include '../includes/connection.php';
 include '../includes/division_sidebar.php';
 
-$query = 'SELECT ID, t.TYPE
-          FROM users u
-          JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-    if ($Aa == 'DEPOT') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to the Depot Page");
-            window.location = "../includes/depot_varify.php";
-        </script>
-        <?php
-    } elseif ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to the Head Office");
-            window.location = "index.php";
-        </script>
-        <?php
-    } elseif ($Aa == 'RWY') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php }
+// Check if session variables are set
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    exit;
 }
+if ($_SESSION['TYPE'] == '123' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
+    // Allow access
 ?>
 <style>
     /* Style for the red color */
@@ -240,8 +215,13 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 
 
-
-<?php include '../includes/footer.php'; ?>
+<?php
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?>
 
 <script>
     function searchBus() {

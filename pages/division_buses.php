@@ -42,15 +42,15 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 <div class="card shadow mb-4">
   <div class="card-header py-3">
-  <h4 class="m-2 font-weight-bold text-primary" style="display: inline-block;">Buses</h4>
-  <!-- <h4 class="m-2 font-weight-bold text-primary" style="display: inline-block;">Buses&nbsp;<a href="division_bus_allocation.php" type="button"
+    <h4 class="m-2 font-weight-bold text-primary" style="display: inline-block;">Buses</h4>
+    <!-- <h4 class="m-2 font-weight-bold text-primary" style="display: inline-block;">Buses&nbsp;<a href="division_bus_allocation.php" type="button"
                 class="btn btn-primary bg-gradient-primary" style="border-radius: 0px;"><i
                     class="fas fa-fw fa-plus"></i></a></h4> -->
     <button class="btn btn-primary ml-3"><a href="division_bus_transfer.php"
         style="color: white; text-decoration: none;">Bus Transfer</a></button>
     <!-- Button trigger modal -->
     <button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal">Bus Scrap</button>
-    <button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal1">Bus chassis convert</button>
+    <!--<button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal1">Bus chassis convert</button>-->
 
     <!-- Modal -->
     <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel"
@@ -185,27 +185,24 @@ br.bus_number order by depot_id;'; // Assuming you want to filter by division_id
             echo '<tr><td colspan="13">No data available</td></tr>';
           }
           ?>
-
-
-
         </tbody>
         <tfoot>
-                        <tr>
-                            <th ></th>
-                            <th>Bus Number</th>
-                            <th>Division Name</th>
-                            <th>Depot Name</th>
-                            <th>Make</th>
-                            <th>Emission norms</th>
-                            <th>DOC</th>
-                            <th>Wheel Base</th>
-                            <th>Chassis Number</th>
-                            <th>Bus Category</th>
-                            <th>Bus Sub Category</th>
-                            <th>Seating Capacity</th>
-                            <th>Bus Body Builder</th>
-                        </tr>
-                    </tfoot>
+          <tr>
+            <th></th>
+            <th>Bus Number</th>
+            <th>Division Name</th>
+            <th>Depot Name</th>
+            <th>Make</th>
+            <th>Emission norms</th>
+            <th>DOC</th>
+            <th>Wheel Base</th>
+            <th>Chassis Number</th>
+            <th>Bus Category</th>
+            <th>Bus Sub Category</th>
+            <th>Seating Capacity</th>
+            <th>Bus Body Builder</th>
+          </tr>
+        </tfoot>
       </table>
     </div>
     <button class="btn btn-success" id="downloadExcel1">Download Excel</button>

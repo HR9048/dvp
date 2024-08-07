@@ -1,33 +1,13 @@
 <?php
 include '../includes/connection.php';
 include '../includes/depot_sidebar.php';
-$query = 'SELECT ID, t.TYPE
-            FROM users u
-            JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DIVISION') {
-        echo "<script type='text/javascript'>
-                alert('Restricted Page! You will be redirected to Division Page');
-                window.location = 'division.php';
-              </script>";
-    } elseif ($Aa == 'HEAD-OFFICE') {
-        echo "<script type='text/javascript'>
-                alert('Restricted Page! You will be redirected to Head Office Page');
-                window.location = 'index.php';
-              </script>";
-    } elseif ($_SESSION['TYPE'] == 'DEPOT') {
-        if ($_SESSION['JOB_TITLE'] == 'Bunk') {
-            echo "<script type='text/javascript'>
-                    alert('Restricted Page! You will be redirected to Bunk Page');
-                    window.location = '../includes/depot_verify.php';
-                  </script>";
-        }
-    }
+// Check if session variables are set
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    exit;
 }
+if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') {
+    // Allow access
 // Check if session variables are set
 if (!isset($_SESSION['DIVISION_ID']) || !isset($_SESSION['DEPOT_ID'])) {
     // Redirect or handle accordingly if session variables are not set
@@ -418,4 +398,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         window.history.replaceState({}, document.title, window.location.pathname);
     });
 </script>
-<?php include '../includes/footer.php' ?>
+<?php
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?>

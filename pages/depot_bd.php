@@ -1,51 +1,13 @@
 <?php
 include '../includes/connection.php';
 include '../includes/depot_sidebar.php';
-$query = 'SELECT ID, t.TYPE
-            FROM users u
-            JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DIVISION') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Division Page");
-            window.location = "division.php";
-        </script>
-    <?php } elseif ($Aa == 'HEAD-OFFICE') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Head Office Page");
-            window.location = "index.php";
-        </script>
-    <?php } elseif ($Aa == 'RWY') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php } elseif ($_SESSION['TYPE'] == 'DEPOT') {
-        // Check the job title of the user
-        if ($_SESSION['JOB_TITLE'] == 'Bunk') {
-            ?>
-            <script type="text/javascript">
-                // Redirect to depot_clerk.php if the job title is Clerk
-                alert("Restricted Page! You will be redirected to Bunk Page");
-                window.location = "../pages/depot_kmpl.php";
-            </script>
-            <?php
-        }
-    }
+// Check if session variables are set
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    exit;
 }
+if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' ||$_SESSION['JOB_TITLE'] == 'Mech' ) {
+    // Allow access
 
 ?>
 
@@ -297,4 +259,10 @@ while ($row = mysqli_fetch_assoc($result)) {
         });
     });
 </script>
-<?php include '../includes/footer.php'; ?>
+<?php
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?>

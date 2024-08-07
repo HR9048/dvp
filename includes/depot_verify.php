@@ -26,11 +26,11 @@ if ($_SESSION['TYPE'] == 'DEPOT'){
             window.location = "../pages/depot_kmpl.php";
         </script>
         <?php
-    } elseif ($_SESSION['JOB_TITLE'] == 'INSPECTOR') {
+    } elseif ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
         ?>
         <script type="text/javascript">
             // Redirect to depot_clerk.php if the job title is Clerk
-            window.location = "../pages/depot_kmpl.php";
+            window.location = "../pages/depot_inspector_schedule_d.php";
         </script>
         <?php
     } elseif ($_SESSION['JOB_TITLE'] == 'SECURITY') {

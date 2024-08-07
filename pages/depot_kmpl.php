@@ -1,43 +1,13 @@
 <?php
 include '../includes/connection.php';
 include '../includes/depot_sidebar.php';
-$query = 'SELECT ID, t.TYPE
-            FROM users u
-            JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DIVISION') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Division Page");
-            window.location = "division.php";
-        </script>
-    <?php } elseif ($Aa == 'HEAD-OFFICE') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Head Office Page");
-            window.location = "index.php";
-        </script>
-    <?php } elseif ($_SESSION['TYPE'] == 'DEPOT') {
-        // Check the job title of the user
-        if ($_SESSION['JOB_TITLE'] == 'Mech') {
-            ?>
-            <script type="text/javascript">
-                // Redirect to depot_clerk.php if the job title is Clerk
-                alert("Restricted Page! You will be redirected to Mech Page");
-                window.location = "../includes/depot_verify.php";
-            </script>
-            <?php
-        }
-    }
+// Check if session variables are set
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    exit;
 }
+if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') {
+    // Allow access
 ?>
 <style>
     #dataEntryModal {
@@ -475,8 +445,13 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 
 </div>
-<?php include '../includes/footer.php'; ?>
-<!-- Bootstrap JS -->
+<?php
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?><!-- Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

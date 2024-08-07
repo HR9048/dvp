@@ -263,3 +263,80 @@
     border-radius: 5px;
     background-color: #f9f9f9;
   }
+
+  #passwordRequirements {
+    display: none; /* Initially hidden */
+}
+
+.requirement {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.requirement.valid::before {
+    content: "\f00c"; /* Font Awesome check icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: green;
+    margin-right: 5px;
+}
+
+.requirement.invalid::before {
+    content: "\f00d"; /* Font Awesome times icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: red;
+    margin-right: 5px;
+}
+
+.requirement.valid {
+    color: green;
+}
+
+.requirement.invalid {
+    color: red;
+}
+
+/* Make the modal responsive */
+.custom-modal-dialog {
+    max-width: 90vw; /* Adjust the maximum width */
+}
+
+.custom-modal-content {
+    border-radius: 0.3rem; /* Optional: add border radius */
+}
+
+.custom-modal-body {
+    max-height: 80vh; /* Set a max height for the modal body */
+    overflow-y: auto; /* Add vertical scrollbar if needed */
+}
+
+.custom-modal-header {
+    padding: 15px;
+}
+
+.custom-modal-title {
+    margin: 0;
+}
+
+.custom-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #000;
+}
+
+@media (max-width: 768px) {
+    .custom-modal-dialog {
+        width: 100%;
+        margin: 0;
+    }
+
+    .custom-modal-content {
+        border-radius: 0;
+    }
+
+    .custom-modal-header {
+        text-align: center;
+    }
+}

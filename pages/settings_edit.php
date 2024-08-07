@@ -35,36 +35,18 @@ $sql = 'SELECT ID
                           FROM users';
 $result2 = mysqli_query($db, $sql) or die(mysqli_error($db));
 
-while ($row = mysqli_fetch_assoc($result2)) {
-    $a = $row['ID'];
+if ($result2) {
+    // Redirect to processlogin.php after successful update
+    echo '<script type="text/javascript">
+            alert("You\'ve updated your account successfully.");
+            window.location = "processlogin.php";
+          </script>';
+} else {
+    // Handle errors
+    echo '<script type="text/javascript">
+            alert("Failed to update your account. Please try again.");
+            window.location = "processlogin.php";
+          </script>';
+}
 
-    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') { ?>
-
-        <script type="text/javascript">
-            alert("You've updated your account successfully.");
-            window.location = "index.php";
-        </script><?php
-
-    } elseif ($_SESSION['TYPE'] == 'DIVISION') { ?>
-
-        <script type="text/javascript">
-            alert("You've updated your account successfully.");
-            window.location = "division.php";
-        </script><?php
-    } elseif ($_SESSION['TYPE'] == 'DEPOT') { ?>
-
-        <script type="text/javascript">
-            alert("You've updated your account successfully.");
-            window.location = "../includes/depot_verify.php";
-        </script><?php
-    } elseif ($_SESSION['TYPE'] == 'RWY') { ?>
-
-        <script type="text/javascript">
-            alert("You've updated your account successfully.");
-            window.location = "rwy.php";
-        </script>
-        <?php
-    }
-    ?>
-
-<?php } ?>
+?>

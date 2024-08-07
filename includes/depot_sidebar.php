@@ -117,6 +117,11 @@ confirm_logged_in();
           <span>Camera/PIS defect</span></a>
       </li>
       <li class="nav-item">
+        <a class="nav-link1" href="depot_inspector_schedule_b.php">
+          <i class="fas fa-fw fa-bus"></i>
+          <span>Vehicle Fixation</span></a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link1" href="depot_busses.php">
           <i class="fas fa-fw fa-bus"></i>
           <span>Buses</span>

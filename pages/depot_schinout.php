@@ -144,7 +144,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         }
 
         // Insert into schedules table
-        $insertQuery = "INSERT INTO sch_veh_out (sch_no, vehicle_no, driver_token_no_1, driver_token_no_2, act_dep_time, dep_time_diff, reason_for_late_departure, reason_early_departure, bus_allotted_status, driver_1_allotted_status, driver_2_allotted_status, conductor_alloted_status, schedule_status, division_id, depot_id, driver_1_pf, driver_1_name, driver_2_pf, driver_2_name, conductor_token_no, conductor_pf_no, conductor_name) 
+        $insertQuery = "INSERT INTO sch_veh_out (sch_no, vehicle_no, driver_token_no_1, driver_token_no_2, dep_time, dep_time_diff, reason_for_late_departure, reason_early_departure, bus_allotted_status, driver_1_allotted_status, driver_2_allotted_status, conductor_alloted_status, schedule_status, division_id, depot_id, driver_1_pf, driver_1_name, driver_2_pf, driver_2_name, conductor_token_no, conductor_pf_no, conductor_name) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $db->prepare($insertQuery);
@@ -187,10 +187,11 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
         date_default_timezone_set('Asia/Kolkata');
         $currentTime = date("Y-m-d H:i:s");
+        $currentDate = date("Y-m-d");
 
         // Update the sch_veh_out table
         $updateQuery = "UPDATE sch_veh_out 
-                    SET arr_time = ?, act_arr_time = ?, arr_time_diff = ?, reason_for_late_arr = ?, reason_for_early_arr = ?, schedule_status = ?
+                    SET arr_time = ?, arr_date=?, act_arr_time = ?, arr_time_diff = ?, reason_for_late_arr = ?, reason_for_early_arr = ?, schedule_status = ?
                     WHERE id = ? AND sch_no = ? AND division_id = ? AND depot_id = ? AND schedule_status = '1'";
 
         $stmt = $db->prepare($updateQuery);
@@ -199,7 +200,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             die("Error preparing statement: " . $db->error);
         }
 
-        $stmt->bind_param("ssisssssss", $arrTime, $currentTime, $arrTimeDiffInMinutes, $reasonForLateArr, $reasonForEarlyArr, $status, $id, $scheduleNo, $division_id1, $depot_id1);
+        $stmt->bind_param("sssisssssss", $arrTime, $currentDate, $currentTime, $arrTimeDiffInMinutes, $reasonForLateArr, $reasonForEarlyArr, $status, $id, $scheduleNo, $division_id1, $depot_id1);
 
         if ($stmt->execute()) {
             echo '<script>alert("Schedule Status Updated successfully.");</script>';

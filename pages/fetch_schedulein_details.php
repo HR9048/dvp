@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $query = "SELECT svo.id, svo.driver_token_no_1, svo.driver_token_no_2, svo.conductor_token_no, 
                      svo.driver_1_name, svo.driver_2_name, svo.conductor_name,
-                     sm.sch_arr_time, sm.sch_count, svo.departed_date, svo.act_dep_time
+                     sm.sch_arr_time, sm.sch_count, svo.departed_date, svo.dep_time
               FROM sch_veh_out svo
               JOIN schedule_master sm ON svo.sch_no = sm.sch_key_no AND svo.division_id = sm.division_id AND svo.depot_id = sm.depot_id
               WHERE svo.sch_no = ? AND svo.departed_date = ? AND svo.division_id = ? AND svo.depot_id = ? AND svo.schedule_status='1'";

@@ -361,7 +361,23 @@ function fetchScheduleIn()
     }
     return $schno;
 }
+function driverdefecttype()
+{
+    global $db;
+    $query = "SELECT id, defect_name FROM driver_defect";
+    $result = $db->query($query);
+    $defect = array();
 
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $defect[] = array(
+                'id' => $row['id'],
+                'defect_name' => $row['defect_name']
+            );
+        }
+    }
+    return $defect;
+}
 
 // Check if an action is specified in the request
 if (isset($_GET['action'])) {
@@ -422,6 +438,9 @@ if (isset($_GET['action'])) {
             break;
         case 'fetchScheduleIn':
             echo json_encode(fetchScheduleIn());
+            break;
+        case 'driverdefecttype':
+            echo json_encode(driverdefecttype());
             break;
         default:
             echo json_encode(array('error' => 'Invalid action'));

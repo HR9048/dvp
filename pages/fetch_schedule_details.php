@@ -12,7 +12,7 @@ if (isset($_POST['sch_no'])) {
         WHERE sch_no = '$sch_no'
           AND division_id = '{$_SESSION['DIVISION_ID']}'
           AND depot_id = '{$_SESSION['DEPOT_ID']}'
-          AND schedule_status IN (1, 2)
+          AND schedule_status IN (1, 2,3,4)
         ORDER BY id DESC
     ";
 
@@ -47,7 +47,7 @@ if (isset($_POST['sch_no'])) {
     if (!empty($step1Data)) {
         // Process each row from step 1 data
         foreach ($step1Data as $row) {
-            if ($row['schedule_status'] == 1) {
+            if ($row['schedule_status'] == 1 || $row['schedule_status'] == 2) {
                 // Nullify bus numbers if they match
                 if ($scheduleData['bus_number_1'] == $row['vehicle_no']) {
                     $finalData['bus_number_1'] = NULL;
@@ -198,7 +198,7 @@ if (isset($_POST['sch_no'])) {
                     $finalData['conductor_token_3'] = NULL;
                     $finalData['conductor_name_3'] = NULL;
                 }
-            } elseif ($row['schedule_status'] == 2) {
+            } elseif ($row['schedule_status'] == 3 || $row['schedule_status'] == 4) {
                 // Nullify bus numbers if they match
                 if ($scheduleData['bus_number_1'] == $row['vehicle_no']) {
                     $finalData['bus_number_1'] = NULL;

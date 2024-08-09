@@ -308,7 +308,8 @@ while ($row = mysqli_fetch_array($result)) {
 ?>
 
 <!-- User Edit Info Modal -->
-<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -316,7 +317,7 @@ while ($row = mysqli_fetch_array($result)) {
         <button class="close" type="button" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">×</span>
         </button>
-      </div>  
+      </div>
       <div class="modal-body">
         <form id="settingsForm" role="form" method="post" action="settings_edit.php">
           <input type="hidden" name="id" value="<?php echo $zz; ?>" />
@@ -365,9 +366,10 @@ while ($row = mysqli_fetch_array($result)) {
               <div class="input-group">
 
                 <input class="form-control" type="password" id="passwordInput" placeholder="Password" name="password"
-                  pattern="(?=.*[a-z A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{6,}"
-                  title="Must contain at least one number, one letter and one Special charecter(@/#/%/*/!/&), and at least 6 or more characters"
+                  pattern="^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*])(?!.*\s).{6,}$"
+                  title="Must contain at least one number, one letter, one special character (@/#/%/*/!/&), no spaces, and at least 6 or more characters"
                   required>
+
                 <div class="input-group-append">
                   <span class="input-group-text" id="togglePassword">
                     <i class="fa fa-eye-slash" aria-hidden="true"></i>
@@ -443,8 +445,7 @@ while ($row = mysqli_fetch_array($result)) {
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Toggle password visibility
+ document.addEventListener('DOMContentLoaded', function () {
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('passwordInput');
     const passwordRequirements = document.getElementById('passwordRequirements');
@@ -452,85 +453,69 @@ while ($row = mysqli_fetch_array($result)) {
     const number = document.getElementById('number');
     const special = document.getElementById('special');
     const length = document.getElementById('length');
+    const noSpaces = document.createElement('div');
 
-    // Toggle password visibility when the eye icon is clicked
+    noSpaces.id = "noSpaces";
+    noSpaces.className = "requirement invalid";
+    noSpaces.textContent = "No spaces allowed";
+    passwordRequirements.appendChild(noSpaces);
+
     togglePassword.addEventListener("click", function () {
-      // Toggle the type attribute of the password input
-      var type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
-      passwordInput.setAttribute("type", type);
-
-      // Change the eye icon accordingly
-      if (type === "password") {
-        togglePassword.innerHTML = '<i class="fa fa-eye-slash" aria-hidden="true"></i>';
-      } else {
-        togglePassword.innerHTML = '<i class="fa fa-eye" aria-hidden="true"></i>';
-      }
+        var type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
+        togglePassword.innerHTML = type === "password" ? '<i class="fa fa-eye-slash" aria-hidden="true"></i>' : '<i class="fa fa-eye" aria-hidden="true"></i>';
     });
 
     passwordInput.addEventListener('input', function () {
-      const value = passwordInput.value;
-      // Validate the password against the criteria
-      letter.classList.toggle('valid', /[a-zA-Z]/.test(value));
-      letter.classList.toggle('invalid', !/[a-zA-Z]/.test(value));
-      number.classList.toggle('valid', /\d/.test(value));
-      number.classList.toggle('invalid', !/\d/.test(value));
-      special.classList.toggle('valid', /[!@#$%^&*]/.test(value));
-      special.classList.toggle('invalid', !/[!@#$%^&*]/.test(value));
-      length.classList.toggle('valid', value.length >= 6);
-      length.classList.toggle('invalid', value.length < 6);
+        const value = passwordInput.value;
+        letter.classList.toggle('valid', /[a-zA-Z]/.test(value));
+        letter.classList.toggle('invalid', !/[a-zA-Z]/.test(value));
+        number.classList.toggle('valid', /\d/.test(value));
+        number.classList.toggle('invalid', !/\d/.test(value));
+        special.classList.toggle('valid', /[!@#$%^&*]/.test(value));
+        special.classList.toggle('invalid', !/[!@#$%^&*]/.test(value));
+        length.classList.toggle('valid', value.length >= 6);
+        length.classList.toggle('invalid', value.length < 6);
+        noSpaces.classList.toggle('valid', !/\s/.test(value));
+        noSpaces.classList.toggle('invalid', /\s/.test(value));
 
-      passwordRequirements.style.display = 'block';
+        passwordRequirements.style.display = 'block';
     });
 
-    // Show password requirements when the password field is focused
     passwordInput.addEventListener('focus', function () {
-      passwordRequirements.style.display = 'block';
+        passwordRequirements.style.display = 'block';
     });
 
-    // Hide password requirements when the password field loses focus and the field is empty
     passwordInput.addEventListener('blur', function () {
-      if (passwordInput.value === '') {
-        passwordRequirements.style.display = 'none';
-      }
+        if (passwordInput.value === '') {
+            passwordRequirements.style.display = 'none';
+        }
     });
 
-    // Hide the password requirements when clicking outside of the password input
     window.addEventListener('click', function (event) {
-      if (event.target !== passwordInput) {
-        passwordRequirements.style.display = 'none';
-      }
+        if (event.target !== passwordInput) {
+            passwordRequirements.style.display = 'none';
+        }
     });
 
-    // Form validation for email, phone, and password
     const form = document.getElementById('settingsForm');
-
     form.addEventListener('submit', function (event) {
-      const email = form.querySelector('input[name="email"]').value;
-      const phone = form.querySelector('input[name="phone"]').value;
+        const email = form.querySelector('input[name="email"]').value;
+        const phone = form.querySelector('input[name="phone"]').value;
 
-      // Simple validation checks
-      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        alert('Please enter a valid email address.');
-        event.preventDefault(); // Prevent form submission
-      }
+        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            alert('Please enter a valid email address.');
+            event.preventDefault();
+        }
 
-      if (!phone.match(/^\d{10}$/)) {
-        alert('Please enter a valid 10-digit phone number.');
-        event.preventDefault(); // Prevent form submission
-      }
+        if (!phone.match(/^\d{10}$/)) {
+            alert('Please enter a valid 10-digit phone number.');
+            event.preventDefault();
+        }
     });
-  });
+});
+
 </script>
-
-
-
-
-
-
-
-
-
-
 <!-- Include Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 

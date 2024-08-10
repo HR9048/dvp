@@ -319,18 +319,9 @@ ORDER BY l.division_id, o1.off_road_location, l.depot_id ASC";
                                     $depot_name = $first_row['depot_name'];
                                     $make = $first_row['make'];
                                     $emission_norms = ($first_row['reg_emission_norms'] == 'BS-3' && $first_row['wheel_base'] == '193 Midi') ? 'BS-3 Midi' : $first_row['reg_emission_norms'];
-
-                                    // Collect and format off-road dates, locations, parts required, remarks, and DWS remarks
-                                    $off_road_from_dates = array_map(function ($row) {
-                                        $dateObj = new DateTime($row['off_road_date']);
-                                        return $dateObj->format('d/m/Y');
-                                    }, $bus_rows);
-                                    $days_off_road = array_map(function ($row) {
-                                        return $row['days_off_road'];
-                                    }, $bus_rows);
-                                    $off_road_locations = array_map(function ($row) {
-                                        return $row['off_road_location'];
-                                    }, $bus_rows);
+                                    $off_road_from_dates = $first_row['off_road_date'];
+                                    $days_off_road = $first_row['days_off_road'];
+                                    $off_road_locations =$first_row['off_road_location'];
                                     $parts_required = array_map(function ($row) {
                                         return $row['parts_required'];
                                     }, $bus_rows);
@@ -354,9 +345,9 @@ ORDER BY l.division_id, o1.off_road_location, l.depot_id ASC";
                                     echo "<td>$bus_number</td>";
                                     echo "<td>$make</td>";
                                     echo "<td>$emission_norms</td>";
-                                    echo "<td>" . implode(", ", $off_road_from_dates) . "</td>";
-                                    echo "<td>" . implode(", ", $days_off_road) . "</td>";
-                                    echo "<td>" . implode(", ", $off_road_locations) . "</td>";
+                                    echo "<td>" . date('d/m/Y', strtotime($off_road_from_dates)) . "</td>";
+                                    echo "<td>$days_off_road</td>";
+                                    echo "<td>$off_road_locations</td>";
                                     echo "<td>" . implode(", ", $parts_required) . "</td>";
                                     echo "<td>" . implode(", ", $remarks) . "</td>";
                                     echo "<td>" . implode(", ", $dws_remarks) . "</td>";
@@ -441,6 +432,7 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                             <?php
                             // Initialize serial number counter
                             $serial_number = 1;
+                            $today = new DateTime();
 
                             // Loop through each bus number
                             foreach ($bus_numbers as $bus_number) {
@@ -463,7 +455,11 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                                 foreach ($rows as $row) {
                                     $dateObj = new DateTime($row['received_date']);
                                     $received_dates[] = $dateObj->format('d/m/Y');
-                                    $days_off_road[] = $row['days_off_road'];
+                    
+                                    // Calculate the number of days difference
+                                    $days_diff = $today->diff($dateObj)->days;
+                                    $days_off_road[] = $days_diff;
+                    
                                     $work_reasons[] = $row['work_reason'];
                                     $work_statuses[] = $row['work_status'];
                                     $remarks[] = $row['remarks'];
@@ -479,11 +475,11 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                                 // Check the emission norms and wheelbase to determine if it should be "BS-3 Midi"
                                 $emission_norms = ($rows[0]['reg_emission_norms'] == 'BS-3' && $rows[0]['wheel_base'] == '193 Midi') ? 'BS-3 Midi' : $rows[0]['reg_emission_norms'];
                                 echo "<td>$emission_norms</td>";
-                                echo "<td>" . implode("<br>", $received_dates) . "</td>";
-                                echo "<td>" . implode("<br>", $days_off_road) . "</td>";
+                                echo "<td>" . date('d/m/Y', strtotime($rows[0]['received_date'])) . "</td>";
+                                echo "<td>" . $days_off_road[0] . "</td>"; // Use the calculated days difference
                                 echo "<td>" . $rows[0]['work_reason'] . "</td>";
-                                echo "<td>" . implode("<br>", $work_statuses) . "</td>";
-                                echo "<td>" . implode("<br>", $remarks) . "</td>";
+                                echo "<td>" . implode(", ", $work_statuses) . "</td>";
+                                echo "<td>" . implode(", ", $remarks) . "</td>";
                                 echo "</tr>";
 
                                 // Increment the serial number

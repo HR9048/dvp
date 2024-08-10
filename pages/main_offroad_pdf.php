@@ -123,7 +123,7 @@ $html .= '<tr>
 while ($row = mysqli_fetch_assoc($result)) {
     // Increment serial number
     $serial_number++;
-    
+
     $html .= "<tr>";
     $html .= "<td>{$serial_number}</td>";
     $html .= "<td>{$row['DIVISION']}</td>";
@@ -140,7 +140,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     $html .= "<td>{$row['POLICE_COUNT']}</td>";
     $html .= "<td><b>{$row['G. TOTAL']}</b></td>";
     $html .= "</tr>";
-    
+
     // Accumulate totals
     $total_DEPOT_COUNT += $row['DEPOT_COUNT'];
     $total_DEPOT_WUP_COUNT += $row['DEPOT_WUP_COUNT'];
@@ -159,18 +159,18 @@ while ($row = mysqli_fetch_assoc($result)) {
 // Add totals row
 $html .= '<tr style="font-weight:bold;">
             <td colspan="2">CORPORATION</td>
-            <td>'.$total_DEPOT_COUNT.'</td>
-            <td>'.$total_DEPOT_WUP_COUNT.'</td>
-            <td>'.$total_FCR_RTO.'</td>
-            <td>'.$total_FCR_HBR.'</td>
-            <td>'.$total_AMW.'</td>
-            <td>'.$total_ACCIDENT_REPAIR.'</td>
-            <td>'.$total_SCRAP_PROPOSAL.'</td>
-            <td>'.$total_OTHERS.'</td>
-            <td>'.$total_DWS.'</td>
-            <td>'.$total_RWY.'</td>
-            <td>'.$total_POLICE.'</td>
-            <td>'.$total_G_TOTAL.'</td>
+            <td>' . $total_DEPOT_COUNT . '</td>
+            <td>' . $total_DEPOT_WUP_COUNT . '</td>
+            <td>' . $total_FCR_RTO . '</td>
+            <td>' . $total_FCR_HBR . '</td>
+            <td>' . $total_AMW . '</td>
+            <td>' . $total_ACCIDENT_REPAIR . '</td>
+            <td>' . $total_SCRAP_PROPOSAL . '</td>
+            <td>' . $total_OTHERS . '</td>
+            <td>' . $total_DWS . '</td>
+            <td>' . $total_RWY . '</td>
+            <td>' . $total_POLICE . '</td>
+            <td>' . $total_G_TOTAL . '</td>
           </tr>';
 $html .= '</table>';
 
@@ -242,7 +242,7 @@ $html .= '<thead>
                 <th style="width:39px"><b>Emission Norms</b></th>
                 <th><b>Off Road From Date</b></th>
                 <th style="width:41px"><b>No. of days off-road</b></th>
-                <th style="width:35px"><b>Off Road Location</b></th>
+                <th style="width:38px"><b>Off Road Location</b></th>
                 <th style="width:95px"><b>Parts Required</b></th>
                 <th style="width:190px"><b>Remarks</b></th>
                 <th style="width:150px"><b>DWS Remarks</b></th>
@@ -262,7 +262,9 @@ foreach ($data as $bus_number => $rows) {
     $depot_name = $rows[0]['depot_name'];
     $make = $rows[0]['make'];
     $emission_norms = ($rows[0]['reg_emission_norms'] == 'BS-3' && $rows[0]['wheel_base'] == '193 Midi') ? 'BS-3 Midi' : $rows[0]['reg_emission_norms'];
-
+    $received_dates = date('d/m/Y', strtotime($rows[0]['off_road_date']));
+    $days_off_road = $rows[0]['days_off_road'];
+    $off_road_locations = $rows[0]['off_road_location'];
     // Output data for each bus number
     $html .= "<tr>";
     $html .= "<td style=\"width: 25px;\">$bus_serial_number</td>";
@@ -279,31 +281,25 @@ foreach ($data as $bus_number => $rows) {
     $html .= "<td style=\"width: 45px;\">$bus_number</td>";
     $html .= "<td style=\"width: 33px;\">$make</td>";
     $html .= "<td style=\"width: 39px;\">$emission_norms</td>";
+    $html .= "<td>$received_dates</td>";
+    $html .= "<td style=\"width: 41px;\">$days_off_road</td>";
+    $html .= "<td style=\"width: 38px;\">$off_road_locations</td>";
 
     // Collect data for combined cells
-    $received_dates = [];
-    $days_off_road = [];
-    $off_road_locations = [];
     $parts_required = [];
     $remarks = [];
     $dws_remarks = [];
 
     foreach ($rows as $row) {
-        $received_dates[] = date('d/m/Y', strtotime($row['off_road_date']));
-        $days_off_road[] = $row['days_off_road'];
-        $off_road_locations[] = $row['off_road_location'];
         $parts_required[] = $row['parts_required'];
         $remarks[] = $row['remarks'];
         $dws_remarks[] = $row['dws_remark'];
     }
 
     // Output the data in table rows
-    $html .= "<td>" . implode("<br>", $received_dates) . "</td>";
-    $html .= "<td style=\"width: 42px;\">" . implode("<br>", $days_off_road) . "</td>";
-    $html .= "<td style=\"width: 34px;\">" . implode("<br>", $off_road_locations) . "</td>";
-    $html .= "<td style=\"width: 95px;\">" . implode("<br>", $parts_required) . "</td>";
-    $html .= "<td style=\"width: 190px;\">" . implode("<br>", $remarks) . "</td>";
-    $html .= "<td style=\"width: 150px;\">" . implode("<br>", $dws_remarks) . "</td>";
+    $html .= "<td style=\"width: 95px;\">" . implode(" , ", $parts_required) . "</td>";
+    $html .= "<td style=\"width: 190px;\">" . implode(" , ", $remarks) . "</td>";
+    $html .= "<td style=\"width: 150px;\">" . implode(" , ", $dws_remarks) . "</td>";
     $html .= "</tr>";
 
     // Increment the bus serial number
@@ -392,21 +388,14 @@ foreach ($data as $bus_number => $rows) {
     $division = $rows[0]['division_name'];
     $depot_name = $rows[0]['depot_name'];
     $make = $rows[0]['make'];
-    $work_reasons = $rows[0]['work_reason'];
     $emission_norms = ($rows[0]['reg_emission_norms'] == 'BS-3' && $rows[0]['wheel_base'] == '193 Midi') ? 'BS-3 Midi' : $rows[0]['reg_emission_norms'];
+    $received_date = $rows[0]['received_date'];
+    $received_dates = date('d/m/Y', strtotime($received_date));
+    $today = new DateTime();
 
-    // Collect data for combined cells
-    $received_dates = [];
-    $days_off_road = [];
-    $work_statuses = [];
-    $remarks = [];
-
-    foreach ($rows as $row) {
-        $received_dates[] = date('d/m/Y', strtotime($row['received_date']));
-        $days_off_road[] = $row['days_off_road'];
-        $work_statuses[] = $row['work_status'];
-        $remarks[] = $row['remarks'];
-    }
+    // Calculate the number of days difference only for row 0
+    $dateObj = new DateTime($received_date);
+    $days_diff = $today->diff($dateObj)->days;
 
     // Output the data in table rows
     $html .= "<tr>";
@@ -416,11 +405,11 @@ foreach ($data as $bus_number => $rows) {
     $html .= "<td style=\"width: 80px;\">$bus_number</td>";
     $html .= "<td style=\"width: 60px;\">$make</td>";
     $html .= "<td style=\"width: 60px;\">$emission_norms</td>";
-    $html .= "<td style=\"width: 70px;\">" . implode("<br>", $received_dates) . "</td>";
-    $html .= "<td style=\"width: 70px;\">" . implode("<br>", $days_off_road) . "</td>";
-    $html .= "<td style=\"width: 80px;\">$work_reasons</td>";
-    $html .= "<td style=\"width: 100px;\">" . implode("<br>", $work_statuses) . "</td>";
-    $html .= "<td style=\"width: 150px;\">" . implode("<br>", $remarks) . "</td>";
+    $html .= "<td style=\"width: 70px;\">$received_dates</td>";
+    $html .= "<td style=\"width: 70px;\">$days_diff</td>";
+    $html .= "<td style=\"width: 80px;\">" . $rows[0]['work_reason'] . "</td>";
+    $html .= "<td style=\"width: 100px;\">" . implode(" , ", array_column($rows, 'work_status')) . "</td>";
+    $html .= "<td style=\"width: 150px;\">" . implode(" , ", array_column($rows, 'remarks')) . "</td>";
     $html .= "</tr>";
 
     // Increment the serial number
@@ -428,6 +417,8 @@ foreach ($data as $bus_number => $rows) {
 }
 
 $html .= '</tbody></table>';
+
+
 
 // Output the HTML content
 $pdf->writeHTML($html, true, false, true, false, '');
@@ -679,7 +670,7 @@ if (mysqli_num_rows($result) > 0) {
 
     // Write HTML content to PDF
     $pdf->writeHTML($html, true, false, true, false, '');
-} 
+}
 
 //sixth table
 
@@ -816,7 +807,7 @@ if ($result) {
     // Write HTML content to PDF
     $pdf->writeHTML($html, true, false, true, false, '');
 
-} 
+}
 
 //seventh table
 
@@ -990,5 +981,5 @@ $formattedFileName = date('d_m_Y');
 $fileName = $formattedFileName . '_offorad_position.pdf';
 
 // Close and output PDF document
-$pdf->Output($fileName, 'I');
+$pdf->Output($fileName, 'D');
 ?>

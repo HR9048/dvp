@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Prepare and execute the SQL query to insert data into schedule_defect_data
     $sqlInsert = "INSERT INTO sch_veh_in 
-                  (schedule_no, driver_token_no_1, vehicle_no, driver_1_pf, driver_token_no_2, driver_2_pf, conductor_token_no, conductor_pf_no, departed_date, departed_time, arr_date, arr_time, logsheet_no, km_operated, hsd, kmpl, driver_defect, remark,division_id,depot_id) 
+                  (schedule_no, driver_token_no_1, vehicle_no, driver_1_pf, driver_token_no_2, driver_2_pf, conductor_token_no, conductor_pf_no, departed_date, departed_time, arr_date, arr_time, logsheet_no, km_operated, hsd, kmpl, driver_defect, driver_remark,division_id,depot_id) 
                   VALUES 
                   (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 

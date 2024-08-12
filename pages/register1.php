@@ -1,6 +1,6 @@
 <?php
 include '../includes/connection.php';
-include '../includes/depot_sidebar.php';
+include '../includes/depot_top.php';
 $query = 'SELECT ID, t.TYPE
             FROM users u
             JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';

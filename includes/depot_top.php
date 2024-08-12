@@ -35,18 +35,38 @@ confirm_logged_in();
   <link
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
-<!-- Bootstrap CSS -->
+  <!-- Bootstrap CSS -->
 
-<!-- Bootstrap Datepicker CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+  <!-- Bootstrap Datepicker CSS -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 
   <!-- Custom styles for this template -->
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
-  
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <!-- Custom styles for this page -->
+  <style>
+    .dropdown:hover .dropdown-menu {
+      display: block;
+      margin-top: 0;
+    }
+
+    .dropdown-toggle {
+      font-size: 12px;
+    }
+
+    .nav-link {
+      font-size: 18px;
+    }
+
+    .dropdown-menu {
+      font-size: 15px;
+    }
+  </style>
 </head>
 
 <body id="page-top">
@@ -58,87 +78,170 @@ confirm_logged_in();
     <div id="content-wrapper" class="d-flex flex-column">
 
       <!-- Main Content -->
-      <div id="content">
+      <div id="content" style="max-width: 100%; overflow-x: hidden;">
+      <nav class="navbar navbar-expand-md fixed-top" style="background-color: #bfc9ca;">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="../includes/depot_verify.php" style="color: black;">
+              <img src="../images/kkrtclogo.png" width="40" height="40" alt="KKRTC">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+              aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <i class="fa-duotone fa-solid fa-sliders"></i> </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                  <h4>
+                    <a class="nav-link active" aria-current="page" href="../includes/depot_verify.php"
+                      style="color: black; font-size: 18px;">Home</a>
+                  </h4>
+                </li>
+                <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') {   ?>
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                      <b>Off-road</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="depot_offroad.php">Add Off-Road</a></li>
+                      <li><a class="dropdown-item" href="depot_offroad_print.php">Print Offroad</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                      <b>DVP</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="dvp.php">Add DVP</a></li>
+                      <li><a class="dropdown-item" href="dvp_print.php">Print DVP</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                      <b>Route Vehicles</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="depot_ramp.php">Route Ramp Section</a></li>
+                      <li><a class="dropdown-item" href="depot_schedule_b.php">Vehicle Fixation</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                      <b>Buses</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="register1.php">Add Bus</a></li>
+                      <li><a class="dropdown-item" href="depot_busses.php">View Buses</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                     <b> Break Down</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="depot_bd.php">Add BD</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <?php } ?>
+                <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') {   ?>
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                      <b>KMPL</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="depot_kmpl.php">Add Depot KMPL</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <?php } ?>
+                <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {   ?>
 
-        <!-- Topbar -->
-        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                      <b>Report</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="depot_offroad_fromto.php">Off-Road From to To date</a></li>
+                      <li><a class="dropdown-item" href="depot_report.php">Off-Road One day report</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <?php } ?>
+                </ul>
+                <ul class="navbar-nav ml-auto">
+                <div class="topbar-divider d-none d-sm-block"></div>
 
-          <a class="sidebar-brand d-flex align-items-center justify-content-center"
-            style="text-decoration: none; font-size: 18px; font-weight: bold;" href="../includes/depot_verify.php">
-
-            <div class="sidebar-brand-text mx-3">Home</div>
-          </a>
-          <a class="sidebar-brand d-flex align-items-center justify-content-center"
-            style="text-decoration: none; font-size: 18px; font-weight: bold;" href="depot_offroad_print.php">
-
-            <div class="sidebar-brand-text mx-3">Off-road Position</div>
-          </a>
-
-          <!-- Topbar Navbar -->
-          <ul class="navbar-nav ml-auto">
-
-            <!-- <li class="nav-item dropdown no-arrow">
-              <a class="nav-link" href="dvp.php" role="button">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small">DVP</span>
-              </a>
-            </li> -->
-
-            <div class="topbar-divider d-none d-sm-block"></div>
-
-            <!-- Nav Item - User Information -->
-            <li class="nav-item dropdown no-arrow">
-              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
-                aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                  <?php echo $_SESSION['FIRST_NAME'] . ' ' . $_SESSION['LAST_NAME']; ?>
-                </span>
-                <img class="img-profile rounded-circle profile-img" <?php
-                if ($_SESSION['GENDER'] == 'Male') {
-                  echo 'src="../images/male.jpeg"';
-                } else {
-                  echo 'src="../images/female2.jpeg"';
-                }
-                ?>>
-
-              </a>
-
-              <?php
-
-              $query = 'SELECT ID, FIRST_NAME,LAST_NAME,USERNAME,PASSWORD, t.TYPE
-                          FROM users u
-                          JOIN employee e ON e.PF_ID=u.PF_ID
-                          JOIN type t ON t.TYPE_ID=u.TYPE_ID';
-              $result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-              while ($row = mysqli_fetch_assoc($result)) {
-                $a = $_SESSION['MEMBER_ID'];
-                $bbb = $_SESSION['TYPE'];
+                <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
+              <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                <?php echo $_SESSION['FIRST_NAME'] . ' ' . $_SESSION['LAST_NAME']; ?>
+              </span>
+              <img class="img-profile rounded-circle profile-img" <?php
+              if ($_SESSION['GENDER'] == 'Male') {
+                echo 'src="../images/male.jpeg"';
+              } else {
+                echo 'src="../images/female2.jpeg"';
               }
+              ?>>
 
-              ?>
+            </a>
 
-              <!-- Dropdown - User Information -->
-              <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                <button class="dropdown-item" onclick="on()">
-                  <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                  Profile
-                </button>
-                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal"
-                  data-href="settings.php?action=edit & id='<?php echo $a; ?>'">
-                  <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                  Settings
-                </a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                  Logout
-                </a>
-              </div>
-            </li>
+            <?php
 
-          </ul>
+            $query = 'SELECT ID, FIRST_NAME,LAST_NAME,USERNAME,PASSWORD, t.TYPE
+                      FROM users u
+                      JOIN employee e ON e.PF_ID=u.PF_ID
+                      JOIN type t ON t.TYPE_ID=u.TYPE_ID';
+            $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
+            while ($row = mysqli_fetch_assoc($result)) {
+              $a = $_SESSION['MEMBER_ID'];
+              $bbb = $_SESSION['TYPE'];
+            }
+
+            ?>
+
+            <!-- Dropdown - User Information -->
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+              <button class="dropdown-item" onclick="on()">
+                <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                Profile
+              </button>
+              <a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal"
+                data-href="settings.php?action=edit & id='<?php echo $a; ?>'">
+                <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                Settings
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                Logout
+              </a>
+            </div>
+          </li>
+              </ul>
+            </div>
+          </div>
         </nav>
+        <br><br><br>
         <!-- End of Topbar -->
         <script>
           $(document).ready(function () {

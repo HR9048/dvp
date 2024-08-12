@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (mysqli_query($db, $sql)) {
         echo "<script>
         alert('Schedule updated successfully');
-        window.location.href = 'depot_inspector_schedule_b.php';
+        window.location.href = 'depot_schedule_b.php';
       </script>";
     } else {
         echo "<script>alert('Error updating schedule: " . $db->error . "');</script>";

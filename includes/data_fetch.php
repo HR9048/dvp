@@ -378,6 +378,23 @@ function driverdefecttype()
     }
     return $defect;
 }
+function rampdefecttype()
+{
+    global $db;
+    $query = "SELECT id, defect_name FROM ramp_defect";
+    $result = $db->query($query);
+    $defect = array();
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $defect[] = array(
+                'id' => $row['id'],
+                'defect_name' => $row['defect_name']
+            );
+        }
+    }
+    return $defect;
+}
 
 // Check if an action is specified in the request
 if (isset($_GET['action'])) {
@@ -441,6 +458,9 @@ if (isset($_GET['action'])) {
             break;
         case 'driverdefecttype':
             echo json_encode(driverdefecttype());
+            break;
+        case 'rampdefecttype':
+            echo json_encode(rampdefecttype());
             break;
         default:
             echo json_encode(array('error' => 'Invalid action'));

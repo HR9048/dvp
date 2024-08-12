@@ -1,6 +1,6 @@
 <?php
 include '../includes/connection.php';
-include '../includes/depot_sidebar.php';
+include '../includes/depot_top.php';
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
@@ -190,7 +190,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {
     } else {
         // Show the date and like items selection form
         ?>
-        <button><a href="depot_offroad_fromto.php">Report From-To Date</a></button>
         <div class="container-fluid custom-container">
             <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                 <div class="form-row">

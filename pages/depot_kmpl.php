@@ -54,7 +54,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
         h4,
         h5,
         h6 {
-            font-size: calc(1rem + 1vw);
+            font-size: calc(0.3rem + 1vw);
             /* Responsive heading sizes */
         }
 

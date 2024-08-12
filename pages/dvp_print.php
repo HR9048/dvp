@@ -2,7 +2,7 @@
 <?php
 error_reporting(E_ERROR | E_PARSE);
 include '../includes/connection.php';
-include '../includes/depot_sidebar.php';
+include '../includes/depot_top.php';
 
 $query = 'SELECT ID, t.TYPE
             FROM users u

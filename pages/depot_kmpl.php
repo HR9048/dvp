@@ -696,7 +696,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
 
                     // Submit the form data using AJAX
                     $.ajax({
-                        url: 'depot_driver_defect_insert.php',
+                        url: '../database/depot_driver_defect_insert.php',
                         type: 'POST',
                         data: formData,
                         dataType: 'json', // Expecting JSON response

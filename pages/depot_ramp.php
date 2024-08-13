@@ -16,7 +16,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         <table class="table2">
             <thead>
                 <tr>
-                    <th class="d-none">ID</th>
+                    <th class="d-none">sch out ID</th>
+                    <th class="d-none">sch in ID</th>
                     <th class="d-none">defect ID</th>
                     <th>Sch No</th>
                     <th>Vehicle No</th>
@@ -30,34 +31,27 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             </thead>
             <tbody>
                 <?php
-
                 $sql = "SELECT 
-svo.*, 
-svi.logsheet_no, 
-svi.driver_defect, 
-svi.driver_remark,
-dd.defect_name
-FROM 
-sch_veh_out svo
-JOIN 
-sch_veh_in svi 
-ON 
-svo.division_id = svi.division_id 
-AND svo.depot_id = svi.depot_id
-AND svo.sch_no = svi.schedule_no
-AND svo.departed_date = svi.departed_date
-AND svo.arr_date = svi.arr_date
-LEFT JOIN 
-driver_defect dd
-ON 
-svi.driver_defect = dd.id
-WHERE 
-svo.division_id = '$division_id' 
-AND svo.depot_id = '$depot_id' 
-AND svo.schedule_status = 3
-ORDER BY 
-svo.arr_time ASC;";
-
+                    svi.id AS sch_in_id,
+                    svi.*,
+                    svo.*,
+                    dd.defect_name
+                    FROM 
+                    sch_veh_in svi
+                    JOIN 
+                    sch_veh_out svo
+                    ON 
+                    svo.id = svi.sch_out_id
+                    LEFT JOIN 
+                    driver_defect dd
+                    ON 
+                    svi.driver_defect = dd.id
+                    WHERE 
+                    svo.division_id = '$division_id'
+                    AND svo.depot_id = '$depot_id' 
+                    AND svo.schedule_status = 3
+                    ORDER BY 
+                    svo.arr_time ASC;";
                 $result = $db->query($sql);
 
                 if ($result->num_rows > 0) {
@@ -70,7 +64,8 @@ svo.arr_time ASC;";
                         $conductor_token = !empty($row["conductor_token_no"]) ? $row["conductor_token_no"] : "Single Crew";
 
                         echo "<tr>
-                                    <td class='d-none'>" . $row["id"] . "</td>
+                                    <td class='d-none'>" . $row["sch_out_id"] . "</td>
+                                    <td class='d-none'>" . $row["sch_in_id"] . "</td>
                                     <td class='d-none'>" . $row["driver_defect"] . "</td>
                                     <td>" . $row["sch_no"] . "</td>
                                     <td>" . $row["vehicle_no"] . "</td>
@@ -101,10 +96,12 @@ svo.arr_time ASC;";
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
+
                 </div>
                 <div class="modal-body">
-                    <form id="driverDefectForm">
-                        <input type="hidden" class="form-control" id="id" name="id" readonly>
+                    <form id="rampDefectForm">
+                        <input type="hidden" class="form-control" id="sch_out_id" name="sch_out_id" readonly>
+                        <input type="hidden" class="form-control" id="sch_in_id" name="sch_in_id" readonly>
 
                         <div class="row">
                             <div class="col">
@@ -171,8 +168,8 @@ svo.arr_time ASC;";
                                 <div class="col" id="remarkContainer1" style="display: none;">
                                     <div class="form-group">
                                         <label for="ramp_remark">Ramp Remark</label>
-                                        <input type="text" class="form-control" id="ramp_remark" name="ramp_remark" required>
-                                        </div>
+                                        <textarea class="form-control" id="ramp_remark" name="ramp_remark"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -190,17 +187,18 @@ svo.arr_time ASC;";
             // Get the row data
             var row = $(button).closest('tr');
             var id = row.find('td:eq(0)').text();
-            var scheduleNo = row.find('td:eq(2)').text();
-            var vehicleNo = row.find('td:eq(3)').text();
-            var driverToken = row.find('td:eq(4)').text();
-            var conductorToken = row.find('td:eq(5)').text();
-            var arrivalTime = row.find('td:eq(6)').text();
-            var defectname = row.find('td:eq(7)').text();
-            var defecttype = row.find('td:eq(1)').text();
-            var remark = row.find('td:eq(8)').text();
+            var scheduleNo = row.find('td:eq(3)').text();
+            var vehicleNo = row.find('td:eq(4)').text();
+            var driverToken = row.find('td:eq(5)').text();
+            var conductorToken = row.find('td:eq(6)').text();
+            var arrivalTime = row.find('td:eq(7)').text();
+            var defectname = row.find('td:eq(8)').text();
+            var defecttype = row.find('td:eq(2)').text();
+            var remark = row.find('td:eq(9)').text();
+            var sch_in_id = row.find('td:eq(1)').text();
 
             // Set the modal input values
-            $('#id').val(id);
+            $('#sch_out_id').val(id);
             $('#scheduleNo').val(scheduleNo);
             $('#vehicleNo').val(vehicleNo);
             $('#driverToken').val(driverToken);
@@ -209,6 +207,7 @@ svo.arr_time ASC;";
             $('#defectname').val(defectname);
             $('#driverDefect').val(defecttype);
             $('#remark').val(remark);
+            $('#sch_in_id').val(sch_in_id);
 
             // Show the remark container if defect type is not 1
             if (defecttype != '1') {
@@ -275,6 +274,84 @@ svo.arr_time ASC;";
             $('#remarkContainer1').hide();
             $('#ramp_remark').prop('required', false);
         });
+
+        $(document).ready(function () {
+            // Form submission
+            $('#rampDefectForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent the form from submitting traditionally
+
+                // Validate the form
+                if (!validateForm()) {
+                    return false; // Stop if validation fails
+                }
+
+                // Serialize the form data
+                var formData = $(this).serialize();
+
+                // Send the AJAX request
+                $.ajax({
+                    url: '../database/depot_route_ramp_data.php', // Ensure this path is correct
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        console.log("Raw Response: ", response); // Log the raw response
+
+                        try {
+                            var result = JSON.parse(response);
+
+                            if (result.status === 'success') {
+                                alert('Data updated successfully!');
+                                $('#rampDefectForm').modal('hide');
+                                location.reload(); // Reload the page to see the updated data
+                            } else {
+                                alert('Failed to update data: ' + result.message);
+                            }
+                        } catch (e) {
+                            console.error('JSON Parsing Error: ', e, response);
+                            alert('An error occurred while processing the response.');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while updating the data.');
+                    }
+                });
+
+            });
+
+            // Function to validate the form
+            function validateForm() {
+                var isValid = true;
+
+                // Check if ID is present
+                if ($('#sch_out_id').val().trim() === '') {
+                    alert('something went wrong. Please refresh the page and try again.');
+                    isValid = false;
+                }
+                if ($('#sch_in_id').val().trim() === '') {
+                    alert('something went wrong2. Please refresh the page and try again.');
+                    isValid = false;
+                }
+                if ($('#ramp_defect').val().trim() === '') {
+                    alert('Pleaste select a ramp defect type');
+                    isValid = false;
+                }
+                // Check if ramp remark is required and not empty
+                var rampDefect = $('#ramp_defect').val();
+                if ($('#remarkContainer1').is(':visible') && rampDefect !== '1' && $('#ramp_remark').val().trim() === '') {
+                    alert('Please enter a ramp remark.');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+        });
+        $('.close').on('click', function (e) {
+            e.preventDefault();
+            // other code...
+            $('#dataModal').modal('hide');
+
+        });
+
 
     </script>
 

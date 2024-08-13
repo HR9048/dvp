@@ -128,6 +128,7 @@ confirm_logged_in();
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     <li><a class="dropdown-item" href="depot_ramp.php">Route Ramp Section</a></li>
+                    <li><a class="dropdown-item" href="depot_ramp_attend.php">Ramp Defect Attend</a></li>
                       <li><a class="dropdown-item" href="depot_schedule_b.php">Vehicle Fixation</a></li>
                     </ul>
                   </div>

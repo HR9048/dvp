@@ -75,7 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     $db->close();
-} else {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid request method.']);
+}else {
+    // Redirect to login.php if accessed directly without POST data
+    header("Location: login.php");
+    exit;
 }
 ?>

@@ -7,7 +7,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
+if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $_SESSION['JOB_TITLE'] == 'DM') {
     // Allow access
 
     $division = $_SESSION['KMPL_DIVISION'];
@@ -281,7 +281,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
         <thead>
             <tr>
                 <th class="hide">ID</th>
-                <th>Key</th>
+                <th>Sch NO</th>
                 <th>Description</th>
                 <th>Sch Km</th>
                 <th>Sch Dep Time</th>

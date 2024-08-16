@@ -357,7 +357,7 @@ while ($row = mysqli_fetch_array($result)) {
               Username:
             </div>
             <div class="col-sm-9">
-              <input class="form-control" placeholder="Username" name="username" value="<?php echo $d; ?>" readonly>
+              <input class="form-control" placeholder="Username" name="username" value="<?php echo $d; ?>" readonly autocomplete="username">
             </div>
           </div>
           <div class="form-group row text-left text-primary">
@@ -370,7 +370,7 @@ while ($row = mysqli_fetch_array($result)) {
                 <input class="form-control" type="password" id="passwordInput" placeholder="Password" name="password"
                   pattern="^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*])(?!.*\s).{6,}$"
                   title="Must contain at least one number, one letter, one special character (@/#/%/*/!/&), no spaces, and at least 6 or more characters"
-                  required>
+                  required autocomplete="current-password">
 
                 <div class="input-group-append">
                   <span class="input-group-text" id="togglePassword">

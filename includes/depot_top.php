@@ -170,7 +170,21 @@ confirm_logged_in();
                   </div>
                 </li>
                 <?php } ?>
-                <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {   ?>
+                 <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {   ?>
+
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                      <b>Crew Fixation</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Route Crew Fixation</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <?php } ?>
+                <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {   ?>
 
                 <li class="nav-item">
                   <div class="dropdown">
@@ -179,8 +193,13 @@ confirm_logged_in();
                       <b>Report</b>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {   ?>
+
                       <li><a class="dropdown-item" href="depot_offroad_fromto.php">Off-Road From to To date</a></li>
                       <li><a class="dropdown-item" href="depot_report.php">Off-Road One day report</a></li>
+                      <?php } ?>
+                      <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
+                      <li><a class="dropdown-item" href="depot_crew_report_m.php">Route Monthly Crew report</a></li>
                     </ul>
                   </div>
                 </li>

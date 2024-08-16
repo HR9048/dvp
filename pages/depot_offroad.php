@@ -20,14 +20,14 @@ while ($row = mysqli_fetch_assoc($result)) {
             alert("Restricted Page! You will be redirected to Division Page");
             window.location = "division.php";
         </script>
-    <?php
+        <?php
     } elseif ($userType == 'HEAD-OFFICE') {
         ?>
         <script type="text/javascript">
             alert("Restricted Page! You will be redirected to Head Office Page");
             window.location = "index.php";
         </script>
-    <?php
+        <?php
     } elseif ($userType == 'RWY') {
         ?>
         <script type="text/javascript">
@@ -390,24 +390,24 @@ mysqli_data_seek($result, 0);
     </div>
 </div>
 <script>
-document.getElementById('submitBtn').addEventListener('click', function() {
-    // Disable the submit button to prevent multiple clicks
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
+    document.getElementById('submitBtn').addEventListener('click', function () {
+        // Disable the submit button to prevent multiple clicks
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
 
-    // Show the loading modal
-    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
-    loadingModal.show();
+        // Show the loading modal
+        const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
 
-    // Simulate form submission process (replace with your actual form submission logic)
-    setTimeout(() => {
-        // Hide the loading modal once submission is complete
-        loadingModal.hide();
+        // Simulate form submission process (replace with your actual form submission logic)
+        setTimeout(() => {
+            // Hide the loading modal once submission is complete
+            loadingModal.hide();
 
-        // Enable the submit button if needed (optional)
-        submitBtn.disabled = false;
-    }, 3000); // Adjust the timeout duration to match your form submission process
-});
+            // Enable the submit button if needed (optional)
+            submitBtn.disabled = false;
+        }, 3000); // Adjust the timeout duration to match your form submission process
+    });
 </script>
 <!-- Modal for adding/editing bus -->
 <div id="myModal1" class="modal">
@@ -716,20 +716,29 @@ document.getElementById('submitBtn').addEventListener('click', function() {
             type: 'POST',
             data: { tableData: tableData },
             success: function (response) {
-                // Handle success
-                // Display success message
-                alert('Data submitted successfully.');
-                // Redirect to dvp.php
-                window.location.href = 'depot_offroad.php';
+                // Parse the JSON response
+                var res = JSON.parse(response);
+
+                if (res.status === 'success') {
+                    // Handle success
+                    alert(res.message);
+                    // Redirect to the desired page
+                    window.location.href = 'depot_offroad.php';
+                } else {
+                    // Handle the error message from the server
+                    alert('Error: ' + res.message);
+                    window.location.href = 'depot_offroad.php';
+
+                }
             },
             error: function (xhr, status, error) {
-                // Handle error
+                // General error handling for network errors or other unexpected errors
                 console.log('Error submitting data:', error);
-                // Display error message
                 alert('Error submitting data: ' + error);
-                // Optionally, you can display an error message to the user.
+                window.location.href = 'depot_offroad.php';
             }
         });
+
     });
 
     function updateStatus(id, busNumber) {

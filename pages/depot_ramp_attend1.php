@@ -769,13 +769,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         window.location.href = 'depot_ramp_attend.php';
                     } else {
                         alert('Error: ' + response.message);
-                        window.location.href = 'depot_ramp.php';
+                        window.location.href = 'depot_ramp_attend.php';
                     }
                 },
                 error: function (xhr, status, error) {
                     console.log('Error submitting data:', error); // Log AJAX error
                     alert('Error submitting data: ' + error);
-                    window.location.href = 'depot.php';
+                    window.location.href = 'depot_ramp_attend.php';
                 }
             });
 

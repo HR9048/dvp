@@ -7,48 +7,78 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' ||$_SESSION['JOB_TITLE'] == 'DM') {
+if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM')) {
     // Allow access
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form data
-    $scheduleId = $_POST['id'];
-    $busNumber1 = $_POST['bus_number_1'];
-    $busMake1 = $_POST['make1'];
-    $busEmissionNorms1 = $_POST['emission_norms1'];
-    // Check if bus number 2 details are present, otherwise set them to NULL
-    $busNumber2 = !empty($_POST['bus_number_2']) ? $_POST['bus_number_2'] : NULL;
-    $busMake2 = !empty($_POST['make2']) ? $_POST['make2'] : NULL;
-    $busEmissionNorms2 = !empty($_POST['emission_norms2']) ? $_POST['emission_norms2'] : NULL;
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Retrieve form data
+        $sch_dep_time = $_POST['sch_dep_time'];
+        $sch_arr_time = $_POST['sch_arr_time'];
+        $sch_key_no = $_POST['sch_key_no'];
+        $scheduleId = $_POST['id'];
+        $busNumber1 = $_POST['bus_number_1'];
+        $busMake1 = $_POST['make1'];
+        $busEmissionNorms1 = $_POST['emission_norms1'];
+        $divisionId = $_SESSION['DIVISION_ID'];
+        $depotId = $_SESSION['DEPOT_ID'];
+        
+        // Check if bus number 2 details are present, otherwise set them to NULL
+        $busNumber2 = !empty($_POST['bus_number_2']) ? $_POST['bus_number_2'] : NULL;
+        $busMake2 = !empty($_POST['make2']) ? $_POST['make2'] : NULL;
+        $busEmissionNorms2 = !empty($_POST['emission_norms2']) ? $_POST['emission_norms2'] : NULL;
 
-    // Check if additional bus details are present, otherwise set them to NULL
-    $additionalBusNumber = !empty($_POST['bus_number_3']) ? $_POST['bus_number_3'] : NULL;
-    $additionalBusMake = !empty($_POST['make3']) ? $_POST['make3'] : NULL;
-    $additionalBusEmissionNorms = !empty($_POST['emission_norms3']) ? $_POST['emission_norms3'] : NULL;
+        // Check if additional bus details are present, otherwise set them to NULL
+        $additionalBusNumber = !empty($_POST['bus_number_3']) ? $_POST['bus_number_3'] : NULL;
+        $additionalBusMake = !empty($_POST['make3']) ? $_POST['make3'] : NULL;
+        $additionalBusEmissionNorms = !empty($_POST['emission_norms3']) ? $_POST['emission_norms3'] : NULL;
 
+        // Update query for schedule_master table
+        $sql = "UPDATE schedule_master SET 
+                    bus_number_1 = '$busNumber1',
+                    bus_make_1 = '$busMake1',
+                    bus_emission_norms_1 = '$busEmissionNorms1',
+                    bus_number_2 = " . ($busNumber2 !== NULL ? "'$busNumber2'" : "NULL") . ",
+                    bus_make_2 = " . ($busMake2 !== NULL ? "'$busMake2'" : "NULL") . ",
+                    bus_emission_norms_2 = " . ($busEmissionNorms2 !== NULL ? "'$busEmissionNorms2'" : "NULL") . ",
+                    additional_bus_number = " . ($additionalBusNumber !== NULL ? "'$additionalBusNumber'" : "NULL") . ",
+                    additional_bus_make = " . ($additionalBusMake !== NULL ? "'$additionalBusMake'" : "NULL") . ",
+                    additional_bus_emission_norms = " . ($additionalBusEmissionNorms !== NULL ? "'$additionalBusEmissionNorms'" : "NULL") . "
+                WHERE id = $scheduleId";
 
-    // Update query for schedule_master table
-    $sql = "UPDATE schedule_master SET 
-                bus_number_1 = '$busNumber1',
-                bus_make_1 = '$busMake1',
-                bus_emission_norms_1 = '$busEmissionNorms1',
-                bus_number_2 = " . ($busNumber2 !== NULL ? "'$busNumber2'" : "NULL") . ",
-        bus_make_2 = " . ($busMake2 !== NULL ? "'$busMake2'" : "NULL") . ",
-        bus_emission_norms_2 = " . ($busEmissionNorms2 !== NULL ? "'$busEmissionNorms2'" : "NULL") . ",
-        additional_bus_number = " . ($additionalBusNumber !== NULL ? "'$additionalBusNumber'" : "NULL") . ",
-        additional_bus_make = " . ($additionalBusMake !== NULL ? "'$additionalBusMake'" : "NULL") . ",
-        additional_bus_emission_norms = " . ($additionalBusEmissionNorms !== NULL ? "'$additionalBusEmissionNorms'" : "NULL") . "
-            WHERE id = $scheduleId";
+        if (mysqli_query($db, $sql)) {
+            // Insert query for bus_fix_data table
+            $insertSql = "INSERT INTO bus_fix_data (
+                            sch_no, division_id, depot_id, 
+                             dep_time, arr_time, 
+                            bus_number_1, bus_make_1, bus_emission_norms_1, 
+                            bus_number_2, bus_make_2, bus_emission_norms_2, 
+                            additional_bus_number, additional_bus_make, additional_bus_emission_norms
+                        ) VALUES (
+                            $sch_key_no, $divisionId, $depotId, 
+                            '$sch_dep_time', '$sch_arr_time', 
+                            '$busNumber1', '$busMake1', '$busEmissionNorms1', 
+                            " . ($busNumber2 !== NULL ? "'$busNumber2'" : "NULL") . ", 
+                            " . ($busMake2 !== NULL ? "'$busMake2'" : "NULL") . ", 
+                            " . ($busEmissionNorms2 !== NULL ? "'$busEmissionNorms2'" : "NULL") . ", 
+                            " . ($additionalBusNumber !== NULL ? "'$additionalBusNumber'" : "NULL") . ", 
+                            " . ($additionalBusMake !== NULL ? "'$additionalBusMake'" : "NULL") . ", 
+                            " . ($additionalBusEmissionNorms !== NULL ? "'$additionalBusEmissionNorms'" : "NULL") . "
+                        )";
 
-    if (mysqli_query($db, $sql)) {
-        echo "<script>
-        alert('Schedule updated successfully');
-        window.location.href = 'depot_schedule_b.php';
-      </script>";
-    } else {
-        echo "<script>alert('Error updating schedule: " . $db->error . "');</script>";
+            if (mysqli_query($db, $insertSql)) {
+                echo "<script>
+                alert('Schedule updated and data inserted successfully');
+                window.location.href = 'depot_schedule_b.php';
+              </script>";
+            } else {
+                echo "<script>alert('Error inserting data: " . $db->error . "');</script>";
+            }
+        } else {
+            echo "<script>alert('Error updating schedule: " . $db->error . "');</script>";
+        }
     }
-}
+
 ?>
+
 <style>
     .hide {
         display: none;

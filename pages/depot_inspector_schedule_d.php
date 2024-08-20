@@ -12,7 +12,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
 
     $division = $_SESSION['KMPL_DIVISION'];
     $depot = $_SESSION['KMPL_DEPOT'];
-   
+
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Function to get maximum allowed drivers based on service class and single crew operation choice
@@ -209,40 +209,93 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
 
                     // Execute update query
                     if ($stmt->execute()) {
-                        // Insert or update driver details
+                        // Insert or update driver details in schedule_master
                         for ($i = 1; $i <= $numberOfDrivers; $i++) {
                             $driverToken = $_POST['driver_token_' . $i];
                             $driverPF = $_POST['pf_no_d' . $i];
                             $driverName = $_POST['driver_' . $i . '_name'];
 
-                            // Prepare the SQL statement for updating or inserting driver details
+                            // Prepare the SQL statement for updating or inserting driver details in schedule_master
                             $updateDriverSql = "UPDATE schedule_master SET driver_token_" . $i . " = ?, driver_pf_" . $i . " = ?, driver_name_" . $i . " = ? WHERE id = ?";
                             $driverStmt = $db->prepare($updateDriverSql);
                             $driverStmt->bind_param('sssi', $driverToken, $driverPF, $driverName, $id);
                             $driverStmt->execute();
                         }
 
-                        // Insert or update conductor details
+                        // Insert or update conductor details in schedule_master
                         for ($i = 1; $i <= $numberOfConductor; $i++) {
                             $conductorToken = $_POST['conductor_token_' . $i];
                             $conductorPF = $_POST['pf_no_c' . $i];
                             $conductorName = $_POST['conductor_' . $i . '_name'];
 
-                            // Prepare the SQL statement for updating or inserting conductor details
+                            // Prepare the SQL statement for updating or inserting conductor details in schedule_master
                             $updateConductorSql = "UPDATE schedule_master SET conductor_token_" . $i . " = ?, conductor_pf_" . $i . " = ?, conductor_name_" . $i . " = ? WHERE id = ?";
                             $conductorStmt = $db->prepare($updateConductorSql);
                             $conductorStmt->bind_param('sssi', $conductorToken, $conductorPF, $conductorName, $id);
                             $conductorStmt->execute();
                         }
+                        $division1 = $_SESSION['DIVISION_ID'];
+                        $depot1 = $_SESSION['DEPOT_ID'];
+                        // Insert data into crew_fixed_data table
+                        $insertCrewDataSql = "INSERT INTO crew_fix_data (sch_no, division_id, depot_id,dep_time,arr_time, driver_token_1, driver_pf_1, driver_name_1, driver_token_2, driver_pf_2, driver_name_2, driver_token_3, driver_pf_3, driver_name_3, driver_token_4, driver_pf_4, driver_name_4, driver_token_5, driver_pf_5, driver_name_5, driver_token_6, driver_pf_6, driver_name_6, conductor_token_1, conductor_pf_1, conductor_name_1, conductor_token_2, conductor_pf_2, conductor_name_2, conductor_token_3, conductor_pf_3, conductor_name_3) 
+                                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        $crewStmt = $db->prepare($insertCrewDataSql);
 
-                        echo "<script>
-                            alert('Schedule updated successfully');
-                            window.location.href = 'depot_inspector_schedule_d.php';
-                        </script>";
+                        // Bind the parameters for the insert statement
+                        $crewStmt->bind_param(
+                            'sissssssssssssssssssssssssssssss',
+                            $sch_key_no,
+                            $division1,
+                            $depot1,
+                            $sch_dep_time,
+                            $sch_arr_time,
+                            $_POST['driver_token_1'],
+                            $_POST['pf_no_d1'],
+                            $_POST['driver_1_name'],
+                            $_POST['driver_token_2'],
+                            $_POST['pf_no_d2'],
+                            $_POST['driver_2_name'],
+                            $_POST['driver_token_3'],
+                            $_POST['pf_no_d3'],
+                            $_POST['driver_3_name'],
+                            $_POST['driver_token_4'],
+                            $_POST['pf_no_d4'],
+                            $_POST['driver_4_name'],
+                            $_POST['driver_token_5'],
+                            $_POST['pf_no_d5'],
+                            $_POST['driver_5_name'],
+                            $_POST['driver_token_6'],
+                            $_POST['pf_no_d6'],
+                            $_POST['driver_6_name'],
+                            $_POST['conductor_token_1'],
+                            $_POST['pf_no_c1'],
+                            $_POST['conductor_1_name'],
+                            $_POST['conductor_token_2'],
+                            $_POST['pf_no_c2'],
+                            $_POST['conductor_2_name'],
+                            $_POST['conductor_token_3'],
+                            $_POST['pf_no_c3'],
+                            $_POST['conductor_3_name']
+                        );
+
+                        // Execute the insert query
+                        if ($crewStmt->execute()) {
+                            echo "<script>
+                                alert('Schedule and crew data updated successfully');
+                                window.location.href = 'depot_inspector_schedule_d.php';
+                            </script>";
+                        } else {
+                            $insertError = 'Error inserting crew data: ' . $crewStmt->error;
+                            echo "<script>alert('$insertError');</script>";
+                        }
+
+                        // Close the statement
+                        $crewStmt->close();
                     } else {
                         $updateError = 'Error updating schedule: ' . $stmt->error;
                         echo "<script>alert('$updateError');</script>";
                     }
+
 
                     $stmt->close();
                 }
@@ -407,86 +460,86 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                     success: function (response) {
                         var details = JSON.parse(response);
                         var scheduleFieldsHtml = `
-                                                <div class="row">
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label for="sch_key_no">Schedule Key Number</label>
-                                                            <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="sch_key_no">Schedule Key Number</label>
+                                                                <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="sch_abbr">Schedule Abbreviation</label>
+                                                                <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="sch_km">Schedule KM</label>
+                                                                <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label for="sch_abbr">Schedule Abbreviation</label>
-                                                            <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label for="sch_km">Schedule KM</label>
-                                                            <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
-                                                <input type="hidden" id="id" name="id" value="${details.id}">
-                                                <input type="hidden" id="service_class" name="service_class" value="${details.service_type_id}">
-                                                <input type="hidden" id="service_type" name="service_type" value="${details.service_type_name}">
+                                                    <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
+                                                    <input type="hidden" id="id" name="id" value="${details.id}">
+                                                    <input type="hidden" id="service_class" name="service_class" value="${details.service_type_id}">
+                                                    <input type="hidden" id="service_type" name="service_type" value="${details.service_type_name}">
                     
-                                                <div class="row">
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label for="sch_dep_time">Departure Time</label>
-                                                            <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="sch_dep_time">Departure Time</label>
+                                                                <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label for="sch_arr_time">Arrival Time</label>
-                                                            <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="sch_arr_time">Arrival Time</label>
+                                                                <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label for="service_class_name">Service Class</label>
-                                                            <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="service_class_name">Service Class</label>
+                                                                <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>`;
+                                                    </div>`;
 
                         $('#scheduleFields').html(scheduleFieldsHtml);
                         $('#updateModal').modal('show');
 
                         // Add the single crew operation checkboxes and number of drivers/conductors fields
                         var crewOperationFieldsHtml = `
-                                                <div class="row">
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label>Single Crew Operation:</label>
-                                                            <div>
-                                                                <input type="radio" id="single_crew_yes" name="single_crew_operation" value="yes" required>
-                                                                <label for="single_crew_yes">Yes</label>
-                                                                <input type="radio" id="single_crew_no" name="single_crew_operation" value="no" required>
-                                                                <label for="single_crew_no">No</label>
+                                                    <div class="row">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label>Single Crew Operation:</label>
+                                                                <div>
+                                                                    <input type="radio" id="single_crew_yes" name="single_crew_operation" value="yes" required>
+                                                                    <label for="single_crew_yes">Yes</label>
+                                                                    <input type="radio" id="single_crew_no" name="single_crew_operation" value="no" required>
+                                                                    <label for="single_crew_no">No</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="number_of_drivers">Enter the number of drivers:</label>
+                                                                <input type="number" id="number_of_drivers" name="number_of_drivers" class="form-control" disabled required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col" id="conductorColumn" style="display: none;">
+                                                            <div class="form-group">
+                                                                <label for="number_of_conductor">Enter the number of Conductors:</label>
+                                                                <input type="number" id="number_of_conductor" name="number_of_conductor" class="form-control" required>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                            <label for="number_of_drivers">Enter the number of drivers:</label>
-                                                            <input type="number" id="number_of_drivers" name="number_of_drivers" class="form-control" disabled required>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col" id="conductorColumn" style="display: none;">
-                                                        <div class="form-group">
-                                                            <label for="number_of_conductor">Enter the number of Conductors:</label>
-                                                            <input type="number" id="number_of_conductor" name="number_of_conductor" class="form-control" required>
-                                                        </div>
-                                                    </div>
-                                                </div>
 
-                                                <div id="driverFields"></div>
-                                                <div id="conductorFields"></div>
-                                                <div id="driverAllocationMessage"></div>`;
+                                                    <div id="driverFields"></div>
+                                                    <div id="conductorFields"></div>
+                                                    <div id="driverAllocationMessage"></div>`;
 
                         $('#crewOperationFields').html(crewOperationFieldsHtml);
 
@@ -542,26 +595,26 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                             var driverFieldsHtml = '';
                             for (var i = 1; i <= numberOfDrivers; i++) {
                                 driverFieldsHtml += `
-                                                        <div class="row driver-field">
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="driver_token_${i}">Driver ${i} Token:</label>
-                                                                    <input type="number" id="driver_token_${i}" name="driver_token_${i}" class="form-control" required>
+                                                            <div class="row driver-field">
+                                                                <div class="col">
+                                                                    <div class="form-group">
+                                                                        <label for="driver_token_${i}">Driver ${i} Token:</label>
+                                                                        <input type="number" id="driver_token_${i}" name="driver_token_${i}" class="form-control" required>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="pf_no_d${i}">Driver ${i} PF:</label>
-                                                                    <input type="text" id="pf_no_d${i}" name="pf_no_d${i}" class="form-control" readonly>
+                                                                <div class="col">
+                                                                    <div class="form-group">
+                                                                        <label for="pf_no_d${i}">Driver ${i} PF:</label>
+                                                                        <input type="text" id="pf_no_d${i}" name="pf_no_d${i}" class="form-control" readonly>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="driver_${i}_name">Driver ${i} Name:</label>
-                                                                    <input type="text" id="driver_${i}_name" name="driver_${i}_name" class="form-control" readonly>
+                                                                <div class="col">
+                                                                    <div class="form-group">
+                                                                        <label for="driver_${i}_name">Driver ${i} Name:</label>
+                                                                        <input type="text" id="driver_${i}_name" name="driver_${i}_name" class="form-control" readonly>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>`;
+                                                            </div>`;
                             }
 
                             $('#driverFields').html(driverFieldsHtml);
@@ -595,26 +648,26 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                             var conductorFieldsHtml = '';
                             for (var i = 1; i <= numberOfConductors; i++) {
                                 conductorFieldsHtml += `
-                                                        <div class="row conductor-field">
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="conductor_token_${i}">Conductor ${i} Token:</label>
-                                                                    <input type="number" id="conductor_token_${i}" name="conductor_token_${i}" class="form-control" required>
+                                                            <div class="row conductor-field">
+                                                                <div class="col">
+                                                                    <div class="form-group">
+                                                                        <label for="conductor_token_${i}">Conductor ${i} Token:</label>
+                                                                        <input type="number" id="conductor_token_${i}" name="conductor_token_${i}" class="form-control" required>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="pf_no_c${i}">Conductor ${i} PF:</label>
-                                                                    <input type="text" id="pf_no_c${i}" name="pf_no_c${i}" class="form-control" readonly>
+                                                                <div class="col">
+                                                                    <div class="form-group">
+                                                                        <label for="pf_no_c${i}">Conductor ${i} PF:</label>
+                                                                        <input type="text" id="pf_no_c${i}" name="pf_no_c${i}" class="form-control" readonly>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="conductor_${i}_name">Conductor ${i} Name:</label>
-                                                                    <input type="text" id="conductor_${i}_name" name="conductor_${i}_name" class="form-control" readonly>
+                                                                <div class="col">
+                                                                    <div class="form-group">
+                                                                        <label for="conductor_${i}_name">Conductor ${i} Name:</label>
+                                                                        <input type="text" id="conductor_${i}_name" name="conductor_${i}_name" class="form-control" readonly>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>`;
+                                                            </div>`;
                             }
 
                             $('#conductorFields').html(conductorFieldsHtml);

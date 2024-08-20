@@ -179,9 +179,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         // Determine reason type
         $reasonForLateArr = null;
         $reasonForEarlyArr = null;
-        if ($arrTimeDiffInMinutes > 15) {
+        if ($arrTimeDiffInMinutes > 60) {
             $reasonForEarlyArr = $reason;
-        } elseif ($arrTimeDiffInMinutes < -15) {
+        } elseif ($arrTimeDiffInMinutes < -30) {
             $reasonForLateArr = $reason;
         }
 
@@ -495,10 +495,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                     var timeDiff = (actDepDate - schDepDate) / 60000; // Convert milliseconds to minutes
 
                     document.getElementById('time_diff').value = timeDiff;
-                    if (timeDiff > 15) {
+                    if (timeDiff > 30) {
                         document.getElementById('reason_for_late_departure').parentElement.style.display = 'block';
                         document.getElementById('reason_early_departure').parentElement.style.display = 'none';
-                    } else if (timeDiff < -15) {
+                    } else if (timeDiff < -60) {
                         document.getElementById('reason_early_departure').parentElement.style.display = 'block';
                         document.getElementById('reason_for_late_departure').parentElement.style.display = 'none';
                     } else {
@@ -654,6 +654,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             $('#sch_no_in, #out_date').change(fetchScheduleDetails);
         });
     </script>
+    
     <?php 
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";

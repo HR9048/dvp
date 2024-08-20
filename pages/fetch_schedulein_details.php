@@ -117,11 +117,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var reasonField = document.getElementById('reason_field');
         var reasonInput = document.getElementById('reason');
 
-        if (diff > 15) {
+        if (diff > 30) {
             reasonField.style.display = 'block';
             reasonInput.setAttribute('placeholder', 'Enter reason for early arrival');
             reasonInput.setAttribute('required', 'required');
-        } else if (diff < -15) {
+        } else if (diff < -30) {
             reasonField.style.display = 'block';
             reasonInput.setAttribute('placeholder', 'Enter reason for late arrival');
             reasonInput.setAttribute('required', 'required');

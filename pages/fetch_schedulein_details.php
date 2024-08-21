@@ -29,20 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $serverCurrentDateTime = new DateTime('now', new DateTimeZone('Asia/Kolkata'));
         $serverCurrentDateTimeFormatted = $serverCurrentDateTime->format('Y-m-d H:i:s');
         
-        // Check the time constraints based on sch_count
-        $departedDateTime = new DateTime("$departedDate $departedTime", new DateTimeZone('Asia/Kolkata'));
-        $interval = $departedDateTime->diff($serverCurrentDateTime);
-        $hoursDifference = $interval->days * 24 + $interval->h + $interval->i / 60;
-        if ($schCount == 1 && $hoursDifference > 36) {
-            echo '<script>alert("The selected schedule is a 1-day schedule and the time difference is greater than 1 day 12 hours. Please contact higher authority to make the schedule in."); window.location.href="depot_schinout.php";</script>';
-            exit;
-        } elseif ($schCount == 2 && $serverCurrentDateTime->format('Y-m-d') == $departedDateTime->format('Y-m-d')) {
-            echo '<script>alert("The route has 2 schedule counts. The departure and arrival should not be allowed on the same date."); window.location.href="depot_schinout.php";</script>';
-            exit;
-        } elseif ($schCount == 2 && $hoursDifference > 84) {
-            echo '<script>alert("The selected schedule is a 2-day schedule and the time difference is greater than 3 days 12 hours. Please contact higher authority to make the schedule in."); window.location.href="depot_schinout.php";</script>';
-            exit;
-        }
+        echo '<input class="form-control" type="hidden" id="server_current_time" name="server_current_time" value="' . htmlspecialchars($serverCurrentDateTimeFormatted) . '">';
+        echo '<input class="form-control" type="hidden" id="sch_arr_time" name="sch_arr_time" value="' . htmlspecialchars($schArrTime) . '">';
         echo '<input class="form-control" type="hidden" id="id" name="id" value="' . htmlspecialchars($id) . '" readonly>';
 
         echo '<div class="row">';
@@ -81,10 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '</div>';
         echo '</div>'; // Close row
 
-        // Hidden field to store scheduled arrival time
-        echo '<input type="hidden" id="sch_arr_time" name="sch_arr_time" value="' . htmlspecialchars($schArrTime) . '">';
-        echo '<input type="hidden" id="server_current_time" name="server_current_time" value="' . htmlspecialchars($serverCurrentDateTimeFormatted) . '">';
-
         echo '<div class="form-group" id="reason_field" style="display:none;">';
         echo '<label for="reason">Reason</label>';
         echo '<input class="form-control" type="text" id="reason" name="reason" placeholder="Enter reason">';
@@ -107,12 +91,20 @@ $db->close();
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Convert server current time and scheduled arrival time to Date objects
     var serverCurrentTime = new Date(document.getElementById('server_current_time').value);
     var schArrTime = new Date('1970-01-01T' + document.getElementById('sch_arr_time').value + 'Z');
 
+    // Function to calculate time difference in minutes
+    function calculateTimeDifference(time1, time2) {
+        var diff = (time1 - time2) / (1000 * 60); // Difference in minutes
+        return diff;
+    }
+
+    // Event listener for changes in the arrival time input
     document.getElementById('arr_time').addEventListener('change', function() {
         var arrTime = new Date('1970-01-01T' + this.value + 'Z');
-        var diff = (arrTime - schArrTime) / (1000 * 60); // difference in minutes
+        var diff = calculateTimeDifference(arrTime, schArrTime);
 
         var reasonField = document.getElementById('reason_field');
         var reasonInput = document.getElementById('reason');

@@ -13,7 +13,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
     ?>
     <form id="dateForm">
         <label for="date">Select Date:</label>
-        <input type="date" id="date" name="date" required>
+        <input type="date" id="date" name="date" required max="<?php echo date('Y-m-d'); ?>">
         <button class="btn btn-primary" type="submit">Generate Report</button>
         <button class="btn btn-success" onclick="window.print()">Print</button>
 

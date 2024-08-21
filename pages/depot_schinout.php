@@ -67,7 +67,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         }
 
         // Fetch schedule details using sch_no
-        $fetchScheduleDetails = "SELECT * FROM schedule_master WHERE sch_key_no = '$sch_no'";
+        $fetchScheduleDetails = "SELECT * FROM schedule_master WHERE sch_key_no = '$sch_no'  AND division_id = '$division_id' AND depot_id = '$depot_id'";
         $scheduleDetailsResult = mysqli_query($db, $fetchScheduleDetails) or die(mysqli_error($db));
         $scheduleDetails = mysqli_fetch_assoc($scheduleDetailsResult);
 

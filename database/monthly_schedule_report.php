@@ -2,155 +2,243 @@
 include '../includes/connection.php';
 include '../pages/session.php';
 
-header('Content-Type: application/json');
+// Get JSON input
+$data = json_decode(file_get_contents('php://input'), true);
+$month = $data['month'];
+$year = $data['year'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = file_get_contents('php://input');
-    $data = json_decode($input, true);
+// Get session variables
+$depot_id = $_SESSION['DEPOT_ID'];
+$division_id = $_SESSION['DIVISION_ID'];
+$depotname = $_SESSION['KMPL_DEPOT'];
+// Calculate start and end dates of the selected month
+$start_date = date("$year-$month-01");
+$end_date = date("Y-m-t", strtotime($start_date));
 
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        echo json_encode(['html' => 'Invalid JSON input']);
-        exit;
-    }
+// Adjust the end date if the selected month is the current month
+if ($year == date('Y') && $month == date('m')) {
+    $end_date = date('Y-m-d');
+}
 
-    $month = $data['month'];
-    $year = $data['year'];
-    $division_id = $_SESSION['DIVISION_ID'];
-    $depot_id = $_SESSION['DEPOT_ID'];
-
-    // Fetch all schedules for the selected month and year
-    $query = "
-    SELECT 
+// Query to get all schedules
+$query = "SELECT 
         sm.sch_key_no AS sch_no,
-        cfd.driver_token_1, cfd.conductor_token_1, cfd.from_date, cfd.to_date,
-        bfd.bus_number_1
+        sm.sch_dep_time,
+        sm.bus_number_1,
+        sm.bus_number_2,
+        sm.driver_token_1,
+        sm.driver_token_2,
+        sm.driver_token_3,
+        sm.driver_token_4,
+        sm.driver_token_5,
+        sm.driver_token_6,
+        sm.sch_arr_time,
+        DATE(svo.departed_date) AS date,
+        COALESCE(svo.dep_time_diff, 'N/A') AS dep_time_diff,
+        COALESCE(svo.bus_allotted_status, 'N/A') AS bus_allotted_status,
+        COALESCE(svo.driver_1_allotted_status, 'N/A') AS driver_1_allotted_status,
+        COALESCE(svo.driver_2_allotted_status, 'N/A') AS driver_2_allotted_status,
+        COALESCE(svo.arr_time_diff, 'N/A') AS arr_time_diff,
+        sm.single_crew,
+        sm.service_type_id
     FROM 
         schedule_master sm
     LEFT JOIN 
-        crew_fix_data cfd ON sm.sch_key_no = cfd.sch_no
-    LEFT JOIN 
-        bus_fix_data bfd ON sm.sch_key_no = bfd.sch_no
+        sch_veh_out svo ON sm.sch_key_no = svo.sch_no AND svo.departed_date BETWEEN ? AND ?
     WHERE 
-        sm.division_id = ? AND sm.depot_id = ?
-    GROUP BY 
-        sm.sch_key_no, cfd.from_date, cfd.to_date
-    ORDER BY 
-        sm.sch_key_no";
+        sm.division_id = ?
+        AND sm.depot_id = ?
+    ORDER BY
+        sm.sch_dep_time, DATE(svo.departed_date)
+";
 
-    $stmt = $db->prepare($query);
-    $stmt->bind_param('ii', $division_id, $depot_id);
-    $stmt->execute();
+$stmt = $db->prepare($query);
+$stmt->bind_param('ssss', $start_date, $end_date, $division_id, $depot_id);
+
+if ($stmt->execute()) {
     $result = $stmt->get_result();
 
-    if ($result === false) {
-        echo json_encode(['html' => 'Error fetching data: ' . $stmt->error]);
-        exit;
-    }
-
-    $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-    $html = '';
-
+    // Initialize an array to store data by schedule
+    $schedules = [];
     while ($row = $result->fetch_assoc()) {
-        $html .= '<div class="schedule-container">';
-        $html .= '<h3>Schedule No: ' . htmlspecialchars($row['sch_no']) . '</h3>';
-        $html .= '<p><strong>Driver Token:</strong> ' . htmlspecialchars($row['driver_token_1']) . '</p>';
-        $html .= '<p><strong>Conductor Token:</strong> ' . htmlspecialchars($row['conductor_token_1']) . '</p>';
-        $html .= '<p><strong>Bus Number:</strong> ' . htmlspecialchars($row['bus_number_1']) . '</p>';
+        $schedule_no = $row['sch_no'];
+        $date = $row['date'];
 
-        // Table structure with dates as headers
-        $html .= '<table border="1">';
-        $html .= '<thead>';
-        $html .= '<tr>';
-        $html .= '<th>Content</th>';
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $html .= '<th>' . $day . '</th>';
+        if (!isset($schedules[$schedule_no])) {
+            $schedules[$schedule_no] = [
+                'sch_dep_time' => $row['sch_dep_time'],
+                'bus_numbers' => [
+                    $row['bus_number_1'],
+                    $row['bus_number_2']
+                ],
+                'driver_tokens' => [
+                    $row['driver_token_1'],
+                    $row['driver_token_2'],
+                    $row['driver_token_3'],
+                    $row['driver_token_4'],
+                    $row['driver_token_5'],
+                    $row['driver_token_6']
+                ],
+                'sch_arr_time' => $row['sch_arr_time'],
+                'dates' => [],
+                'single_crew' => $row['single_crew'],
+                'service_type_id' => $row['service_type_id']
+            ];
         }
-        $html .= '</tr>';
-        $html .= '</thead>';
-        $html .= '<tbody>';
-        
-        // Rows for each schedule containing dep_time, vehicle_no, driver_no1, driver_no2, arr_time
-        $html .= '<tr><td>Dep Time</td>';
-        $html .= generateTableRow($row['sch_no'], $daysInMonth, 'dep_time', $db);
-        $html .= '</tr>';
-        
-        $html .= '<tr><td>Vehicle No</td>';
-        $html .= generateTableRow($row['sch_no'], $daysInMonth, 'vehicle_no', $db);
-        $html .= '</tr>';
 
-        $html .= '<tr><td>Driver No1</td>';
-        $html .= generateTableRow($row['sch_no'], $daysInMonth, 'driver_1_name', $db);
-        $html .= '</tr>';
-        
-        $html .= '<tr><td>Driver No2</td>';
-        $html .= generateTableRow($row['sch_no'], $daysInMonth, 'driver_2_name', $db);
-        $html .= '</tr>';
-
-        $html .= '<tr><td>Arr Time</td>';
-        $html .= generateTableRow($row['sch_no'], $daysInMonth, 'arr_time', $db);
-        $html .= '</tr>';
-
-        $html .= '</tbody></table></div><br>';
+        $schedules[$schedule_no]['dates'][$date] = [
+            'dep_time_diff' => $row['dep_time_diff'],
+            'bus_allotted_status' => $row['bus_allotted_status'],
+            'driver_1_allotted_status' => $row['driver_1_allotted_status'],
+            'driver_2_allotted_status' => $row['driver_2_allotted_status'],
+            'arr_time_diff' => $row['arr_time_diff']
+        ];
     }
 
-    $stmt->close();
+    // Generate HTML report
+    $report = '<h2>Depot: ' . htmlspecialchars($depotname) . '<h2 style="text-align:center;"> Monthly Report for ' . htmlspecialchars(date('F', mktime(0, 0, 0, $month, 10))) . ' ' . htmlspecialchars($year) . '</h2>';
+    $report .= '<p style="color: red;">Note * : (RNO = Route not Operated),(RNC = Route not Completed), (NA = Not Alloted), (N/A = Not Applicable)</p>';
 
-    echo json_encode(['html' => $html]);
-} else {
-    echo json_encode(['html' => 'Invalid request method']);
-}
-// Function to generate table rows for each day
-function generateTableRow($sch_no, $daysInMonth, $field, $db) {
-    $validFields = ['dep_time', 'arr_time', 'bus_number_1', 'driver_token_1', 'driver_token_2']; // Valid fields
-    if (!in_array($field, $validFields)) {
-        return ''; // Return an empty string if the field is not valid
-    }
+    foreach ($schedules as $schedule_no => $schedule) {
+        $report .= '<h3>Schedule No: ' . htmlspecialchars($schedule_no) . '</h3>';
+        $report .= '<table border="1">';
+        $report .= '<tr><th>Content</th>';
 
-    $rowHtml = '';
-    for ($day = 1; $day <= $daysInMonth; $day++) {
-        $currentDate = date('Y-m') . '-' . str_pad($day, 2, '0', STR_PAD_LEFT);
-
-        // Correctly reference the schedule_master column
-        $sch_field = 'sch_' . $field;
-
-        $dailyQuery = "
-        SELECT 
-            svo.$field, TIMESTAMPDIFF(MINUTE, svo.$field, sm.$sch_field) AS time_diff
-        FROM 
-            sch_veh_out svo
-        LEFT JOIN 
-            schedule_master sm ON svo.sch_no = sm.sch_key_no
-        WHERE 
-            svo.departed_date = ? AND svo.sch_no = ?";
-        
-        $dailyStmt = $db->prepare($dailyQuery);
-        if (!$dailyStmt) {
-            // Output the SQL error
-            die('Error in preparing statement: ' . $db->error . " with query: " . $dailyQuery);
+        // Header for dates
+        for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+            $report .= '<th>' . $i . '</th>';
         }
+        $report .= '</tr>';
 
-        $dailyStmt->bind_param('si', $currentDate, $sch_no);
-        if (!$dailyStmt->execute()) {
-            die('Error in executing statement: ' . $dailyStmt->error);
+        // Populate rows
+        $report .= '<tr>';
+        $report .= '<td>Dep:' . htmlspecialchars($schedule['sch_dep_time']) . '</td>';
+        for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+            $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
+            $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
+                'dep_time_diff' => 'RNO',
+                'bus_allotted_status' => 'NO',
+                'driver_1_allotted_status' => 'NO',
+                'driver_2_allotted_status' => 'NO',
+                'arr_time_diff' => 'NO'
+            ];
+
+            $symbol = $data['dep_time_diff'] === 'RNO' ? 'RNO' : ($data['dep_time_diff'] > 30 ? '❌' : '✅');
+            $report .= '<td>' . $symbol . '</td>';
         }
+        $report .= '</tr>';
 
-        $dailyResult = $dailyStmt->get_result();
-        if ($dailyRow = $dailyResult->fetch_assoc()) {
-            if ($field == 'dep_time' || $field == 'arr_time') {
-                // Time difference checks for dep_time and arr_time
-                if ($dailyRow['time_diff'] > 30 || $dailyRow['time_diff'] < -30) {
-                    $rowHtml .= '<td style="color:red;">&#x2716;</td>';
-                } else {
-                    $rowHtml .= '<td style="color:green;">&#x2714;</td>';
-                }
-            } else {
-                // Display the field's value for other cases
-                $rowHtml .= '<td>' . htmlspecialchars($dailyRow[$field]) . '</td>';
+        $report .= '<tr>';
+        // Filter out empty bus numbers and join the remaining with a comma
+        $filtered_bus_numbers = array_filter($schedule['bus_numbers']);
+        $bus_numbers = !empty($filtered_bus_numbers) ? implode(', ', $filtered_bus_numbers) : 'NA';
+
+        // Append the bus numbers to the report, ensuring HTML special characters are properly escaped
+        $report .= '<td>' . htmlspecialchars($bus_numbers) . '</td>';
+        for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+            $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
+            $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
+                'dep_time_diff' => 'NO',
+                'bus_allotted_status' => 'NO',
+                'driver_1_allotted_status' => 'NO',
+                'driver_2_allotted_status' => 'NO',
+                'arr_time_diff' => 'NO'
+            ];
+
+            $symbol = $data['bus_allotted_status'] == 0 ? '✅' : ($data['bus_allotted_status'] == 1 ? '❌' : 'N/A');
+            $report .= '<td>' . $symbol . '</td>';
+        }
+        $report .= '</tr>';
+
+        if ($schedule['single_crew'] == 'no' && in_array($schedule['service_type_id'], [2, 3, 4, 5])) {
+            // Add rowspan for Driver Allotted Status
+            $report .= '<tr>';
+            $filtered_bus_numbers1 = array_filter($schedule['driver_tokens']);
+            $crew = !empty($filtered_bus_numbers) ? implode(', ', $filtered_bus_numbers1) : 'NA';
+
+            $report .= '<td rowspan="2">' . htmlspecialchars($crew) . '</td>'; // Rowspan of 2 rows
+            for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+                $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
+                $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
+                    'dep_time_diff' => 'NO',
+                    'bus_allotted_status' => 'NO',
+                    'driver_1_allotted_status' => 'NO',
+                    'driver_2_allotted_status' => 'NO',
+                    'arr_time_diff' => 'NO'
+                ];
+
+                $symbol1 = $data['driver_1_allotted_status'] == 0 ? '✅' : ($data['driver_1_allotted_status'] == 1 ? '❌' : 'N/A');
+                $report .= '<td>' . $symbol1 . '</td>';
             }
-        } else {
-            $rowHtml .= '<td>NA</td>';
-        }
-    }
-    return $rowHtml;
-}
+            $report .= '</tr>';
 
+            $report .= '<tr>';
+            for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+                $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
+                $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
+                    'dep_time_diff' => 'NO',
+                    'bus_allotted_status' => 'NO',
+                    'driver_1_allotted_status' => 'NO',
+                    'driver_2_allotted_status' => 'NO',
+                    'arr_time_diff' => 'NO'
+                ];
+
+                $symbol2 = $data['driver_2_allotted_status'] == 0 ? '✅' : ($data['driver_2_allotted_status'] == 1 ? '❌' : 'N/A');
+                $report .= '<td>' . $symbol2 . '</td>';
+            }
+            $report .= '</tr>';
+        } else {
+            // Normal Driver Allotted Status row
+            $report .= '<tr>';
+            $filtered_bus_numbers2 = array_filter($schedule['driver_tokens']);
+            $crew1 = !empty($filtered_bus_numbers) ? implode(', ', $filtered_bus_numbers2) : 'NA';
+
+            $report .= '<td>' . htmlspecialchars($crew1) . '</td>';
+            for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+                $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
+                $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
+                    'dep_time_diff' => 'NO',
+                    'bus_allotted_status' => 'NO',
+                    'driver_1_allotted_status' => 'NO',
+                    'driver_2_allotted_status' => 'NO',
+                    'arr_time_diff' => 'NO'
+                ];
+
+                $symbol = $data['driver_1_allotted_status'] == 0 ? '✅' : ($data['driver_1_allotted_status'] == 1 ? '❌' : 'N/A');
+                $report .= '<td>' . $symbol . '</td>';
+            }
+            $report .= '</tr>';
+        }
+
+        $report .= '<tr>';
+
+
+        $report .= '<tr>';
+        $report .= '<td>Arr:' . htmlspecialchars($schedule['sch_arr_time']) . '</td>';
+        for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+            $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
+            $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
+                'dep_time_diff' => 'NO',
+                'bus_allotted_status' => 'NO',
+                'driver_1_allotted_status' => 'NO',
+                'driver_2_allotted_status' => 'NO',
+                'arr_time_diff' => 'NO'
+            ];
+
+            if ($data['arr_time_diff'] === 'N/A' && $data['dep_time_diff'] !== 'N/A') {
+                $symbol = 'RNC'; // Show RNC if arr_time_diff is 'N/A' and dep_time_diff is present
+            } else {
+                $symbol = $data['arr_time_diff'] === 'NO' ? 'RNO' : ($data['arr_time_diff'] > 30 ? '❌' : '✅');
+            }
+            $report .= '<td>' . $symbol . '</td>';
+        }
+        $report .= '</tr>';
+
+        $report .= '</table>';
+    }
+
+    echo json_encode(['html' => $report]);
+} else {
+    echo json_encode(['html' => '<p>Error executing query: ' . htmlspecialchars($stmt->error) . '</p>']);
+}
+?>

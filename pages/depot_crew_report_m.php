@@ -65,7 +65,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
     <div id="reportContainer"></div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
        $(document).ready(function() {
             $('#scheduleForm').on('submit', function(e) {
@@ -75,7 +74,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
 
                 $.ajax({
                     type: 'POST',
-                    url: '../database/monthly_schedule_report.php',
+                    url: '../database/monthly_schedule_report1.php',
                     data: JSON.stringify({ month: month, year: year }),
                     contentType: 'application/json',
                     success: function(response) {

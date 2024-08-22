@@ -7,12 +7,12 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
-    
+
     if (json_last_error() !== JSON_ERROR_NONE) {
         echo json_encode(['html' => 'Invalid JSON input']);
         exit;
     }
-    
+
     $selectedDate = $data['date'];
     $formattedDate = DateTime::createFromFormat('Y-m-d', $selectedDate)->format('d/m/Y');
     $division_id = $_SESSION['DIVISION_ID'];
@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         sm.sch_key_no AS sch_no,
         sm.sch_abbr AS description,
         sm.sch_dep_time AS dep_time,
+        sc.name AS service_class_name,
         svo.vehicle_no AS bus_number_went,
         svo.driver_1_name,
         svo.driver_2_name,
@@ -29,12 +30,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         svo.driver_token_no_2,
         svo.conductor_name,
         svo.conductor_token_no,
-        IFNULL(svo.dep_time, 'RNO') AS departed_time,
+        IFNULL(svo.dep_time, 'SNO') AS departed_time,
         sm.sch_arr_time AS arr_time,
         CASE
-            WHEN svo.dep_time IS NULL AND svo.arr_time IS NULL THEN 'RNO'
-            WHEN svo.dep_time IS NOT NULL AND svo.arr_time IS NULL THEN 'RNC'
-            ELSE IFNULL(svo.arr_time, 'RNO')
+            WHEN svo.dep_time IS NULL AND svo.arr_time IS NULL THEN 'SNO'
+            WHEN svo.dep_time IS NOT NULL AND svo.arr_time IS NULL THEN 'SNA'
+            ELSE IFNULL(svo.arr_time, 'SNO')
         END AS act_arr_time,
         IFNULL(bfd.bus_number_1, 'N/A') AS bus_number_1,
         IFNULL(bfd.bus_number_2, 'N/A') AS bus_number_2,
@@ -72,6 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         AND cfd.division_id = ?
         AND cfd.depot_id = ?
         AND cfd.status = 0
+    LEFT JOIN
+        service_class sc ON sm.service_class_id = sc.id
     WHERE
         sm.depot_id = ?
         AND sm.division_id = ?
@@ -83,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $stmt->bind_param('siisssiisssiiii', $selectedDate, $division_id, $depot_id, $selectedDate, $selectedDate, $selectedDate, $division_id, $depot_id,$selectedDate, $selectedDate, $selectedDate, $division_id, $depot_id, $depot_id, $division_id);
+    $stmt->bind_param('siisssiisssiiii', $selectedDate, $division_id, $depot_id, $selectedDate, $selectedDate, $selectedDate, $division_id, $depot_id, $selectedDate, $selectedDate, $selectedDate, $division_id, $depot_id, $depot_id, $division_id);
     if (!$stmt->execute()) {
         echo json_encode(['html' => 'Error in executing statement: ' . $stmt->error]);
         exit;
@@ -97,8 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $html = '<table><br><br>';
     $html .= '<h2 style="text-align: center;">Schedule Operation on Date: ' . $formattedDate . '</h2><br>';
-    $html .= '<p style="color: red;">Note * : (RNO = Route not Operated),(RNC = Route not Completed), (NA = Not Alloted), (N/A = Not Applicable)</p>';
-    $html .= '<tr><th>Sl No</th><th>Schedule Key No</th><th>Description</th><th>Sch Dep Time</th><th>Dep Time</th><th>Sch Arr Time</th><th>Arr Time</th><th>Buses</th><th>Drivers</th><th>Conductors</th><th>Bus Status</th><th>Driver 1 Status</th><th>Driver 2 Status</th><th>Conductor Status</th></tr>';
+    $html .= '<p style="color: red;">Note * : (SNO = Schedule not Operated),(SNA = Schedule not Arrived), (NA = Not Alloted), (N/A = Not Applicable)</p>';
+    $html .= '<tr><th>Sl No</th><th>Schedule Key No</th><th>Description</th><th>Sch Dep Time</th><th>Dep Time</th><th>Sch Arr Time</th><th>Arr Time</th><th>Service Class</th><th>Buses</th><th>Drivers</th><th>Conductors</th><th>Bus Status</th><th>Driver 1 Status</th><th>Driver 2 Status</th><th>Conductor Status</th></tr>';
 
     $sl_no = 1;
     while ($row = $result->fetch_assoc()) {
@@ -133,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Bus status logic
         if ($row['bus_status'] == '0') {
-            $bus_status_display = '<span style="color:green;">&#x2714;</span>';
+            $bus_status_display = '<span>✅</span>';
         } elseif ($row['bus_status'] == '1') {
             $bus_status_display = htmlspecialchars($row['bus_number_went']);
         } else {
@@ -142,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Driver 1 status logic
         if ($row['driver1_status'] == '0') {
-            $driver1_status_display = '<span style="color:green;">&#x2714;</span>';
+            $driver1_status_display = '<span>✅</span>';
         } elseif ($row['driver1_status'] == '1') {
             $driver1_status_display = htmlspecialchars($row['driver_1_name']) . ' (' . htmlspecialchars($row['driver_token_no_1']) . ')';
         } else {
@@ -151,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Driver 2 status logic
         if ($row['driver2_status'] == '0') {
-            $driver2_status_display = '<span style="color:green;">&#x2714;</span>';
+            $driver2_status_display = '<span">✅</span>';
         } elseif ($row['driver2_status'] == '1') {
             $driver2_status_display = htmlspecialchars($row['driver_2_name']) . ' (' . htmlspecialchars($row['driver_token_no_2']) . ')';
         } else {
@@ -160,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Conductor status logic
         if ($row['conductor_status'] == '0') {
-            $conductor_status_display = '<span style="color:green;">&#x2714;</span>';
+            $conductor_status_display = '<span>✅</span>';
         } elseif ($row['conductor_status'] == '1') {
             $conductor_status_display = htmlspecialchars($row['conductor_name']) . ' (' . htmlspecialchars($row['conductor_token_no']) . ')';
         } else {
@@ -175,6 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $html .= '<td>' . htmlspecialchars($row['departed_time']) . '</td>';
         $html .= '<td>' . htmlspecialchars($row['arr_time']) . '</td>';
         $html .= '<td>' . htmlspecialchars($row['act_arr_time']) . '</td>';
+        $html .= '<td>' . htmlspecialchars($row['service_class_name']) . '</td>';
         $html .= '<td>' . $bus_display . '</td>';
         $html .= '<td>' . $drivers_display . '</td>';
         $html .= '<td>' . $conductors_display . '</td>';

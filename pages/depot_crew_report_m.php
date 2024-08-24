@@ -12,7 +12,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
     $depot_id = $_SESSION['DEPOT_ID'];
     ?>
 
-    <h2>Select Month and Year for Schedule Report</h2>
+    <h6>Select Month and Year for Schedule Report</h6>
     <form id="scheduleForm">
     <?php
             $currentDate = new DateTime();
@@ -74,7 +74,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
 
                 $.ajax({
                     type: 'POST',
-                    url: '../database/monthly_schedule_report1.php',
+                    url: '../database/monthly_schedule_report.php',
                     data: JSON.stringify({ month: month, year: year }),
                     contentType: 'application/json',
                     success: function(response) {

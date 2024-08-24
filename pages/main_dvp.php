@@ -74,20 +74,18 @@ while ($row = mysqli_fetch_assoc($result)) {
     }
 </style>
 
-<nav class="navbar bg-body-tertiary">
-    <div class="container-fluid">
+   
+
+<?php $formatted_date = date('d/m/Y', strtotime($_POST['selected_date'])); ?>
+<div class="container-fluid">
         <form class="d-flex" action="" method="POST" style="width: 40%; text-align: left;">
             <input type="date" id="selected_date" name="selected_date" max="<?php echo date('Y-m-d'); ?>"
                 class="form-control me-2">
             <button class="btn btn-outline-success" style="width: 40%;" type="submit">Show Data</button>
         </form>
     </div>
-</nav>
-
-<br>
-
-<?php $formatted_date = date('d/m/Y', strtotime($_POST['selected_date'])); ?>
 <div class="container1">
+    
 <h1 style="text-align:center;">Kalyana Karnataka Road Transport Corporation (KKRTC)</h1><br>
     <div style="display: flex; justify-content: space-between;">
         <h2 style="text-align:left; padding: 2%; margin: 0;">CENTRAL OFFICE </h2>

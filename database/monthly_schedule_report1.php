@@ -37,9 +37,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Log the date for debugging
         error_log("Fetching data for date: $date");
 
-        // Query to fetch the data for each day
-        $query = "SELECT 
-                    COUNT(*) as total_departures,
+        // Query to fetch the actual departures from schedule_master table
+        $scheduleQuery = "SELECT COUNT(*) as total_departures
+                          FROM schedule_master
+                          WHERE depot_id = '$depot_id' AND division_id = '$division_id'";
+
+        $scheduleResult = mysqli_query($db, $scheduleQuery);
+        $scheduleData = mysqli_fetch_assoc($scheduleResult);
+        $total_departures = $scheduleData['total_departures'];
+
+        // Query to fetch the sch_veh_out data for each day
+        $query = "SELECT COUNT(*) as departure_held,
                     COUNT(CASE WHEN dep_time_diff < 30 THEN 1 END) as departures_on_time,
                     COUNT(CASE WHEN arr_time_diff < 30 THEN 1 END) as arrivals_on_time,
                     COUNT(CASE WHEN bus_allotted_status = 0 THEN 1 END) as bus_operated,
@@ -57,8 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log(print_r($data, true)); // This will log the data to the server's error log
 
             // Calculate the required values
-            $total_departures = $data['total_departures'];
-            $departures_held = $total_departures; // Assuming all scheduled departures are held
+            $departures_held =$data['departure_held']; // Assuming all scheduled departures are held
             $departures_not_operated = $total_departures - $departures_held;
 
             $reportData['Actual Departures'][] = $total_departures;

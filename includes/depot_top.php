@@ -156,6 +156,17 @@ confirm_logged_in();
                     </ul>
                   </div>
                 </li>
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                     <b>Defect records</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="depot_camera_defect.php">Add/view camera/VLTS/PIS Defect</a></li>
+                    </ul>
+                  </div>
+                </li>
                 <?php } ?>
                 <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') {   ?>
                 <li class="nav-item">

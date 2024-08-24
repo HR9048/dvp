@@ -4,6 +4,7 @@ include '../pages/session.php';
 
 // Get JSON input
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $data = json_decode(file_get_contents('php://input'), true);
     $month = $data['month'];
     $year = $data['year'];
@@ -12,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $depot_id = $_SESSION['DEPOT_ID'];
     $division_id = $_SESSION['DIVISION_ID'];
     $depotname = $_SESSION['KMPL_DEPOT'];
+
     // Calculate start and end dates of the selected month
     $start_date = date("$year-$month-01");
     $end_date = date("Y-m-t", strtotime($start_date));
@@ -21,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $end_date = date('Y-m-d');
     }
 
-    // Query to get all schedules
+    // First Report: Schedule Report
     $query = "SELECT 
         sm.sch_key_no AS sch_no,
         sm.sch_dep_time,
@@ -50,8 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         sm.division_id = ?
         AND sm.depot_id = ?
     ORDER BY
-        sm.sch_dep_time, DATE(svo.departed_date)
-";
+        sm.sch_dep_time, DATE(svo.departed_date)";
 
     $stmt = $db->prepare($query);
     $stmt->bind_param('ssss', $start_date, $end_date, $division_id, $depot_id);
@@ -96,24 +97,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
         }
 
-        // Generate HTML report
-        $report = '<h2>Depot: ' . htmlspecialchars($depotname) . '<h2 style="text-align:center;"> Monthly Report for ' . htmlspecialchars(date('F', mktime(0, 0, 0, $month, 10))) . ' ' . htmlspecialchars($year) . '</h2>';
-        $report .= '<p style="color: red;">Note * : (SNO = Schedule not Operated),(SNA = Schedule not Arrived), (NA = Not Alloted), (N/A = Not Applicable)</p>';
+        // Generate HTML for Schedule Report
+        $scheduleReport = '<h2>Depot: ' . htmlspecialchars($depotname) . '<h2 style="text-align:center;"> Monthly Report for ' . htmlspecialchars(date('F', mktime(0, 0, 0, $month, 10))) . ' ' . htmlspecialchars($year) . '</h2>';
+        $scheduleReport .= '<p style="color: red;">Note * : (SNO = Schedule not Operated),(SNA = Schedule not Arrived), (NA = Not Alloted), (N/A = Not Applicable)</p>';
 
         foreach ($schedules as $schedule_no => $schedule) {
-            $report .= '<h3>Schedule No: ' . htmlspecialchars($schedule_no) . '</h3>';
-            $report .= '<table border="1">';
-            $report .= '<tr><th>Content</th>';
+            $scheduleReport .= '<h3>Schedule No: ' . htmlspecialchars($schedule_no) . '</h3>';
+            $scheduleReport .= '<table border="1">';
+            $scheduleReport .= '<tr><th>Content</th>';
 
             // Header for dates
             for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
-                $report .= '<th>' . $i . '</th>';
+                $scheduleReport .= '<th>' . $i . '</th>';
             }
-            $report .= '</tr>';
+            $scheduleReport .= '</tr>';
 
             // Populate rows
-            $report .= '<tr>';
-            $report .= '<td>Dep:' . htmlspecialchars($schedule['sch_dep_time']) . '</td>';
+            $scheduleReport .= '<tr>';
+            $scheduleReport .= '<td>Dep:' . htmlspecialchars($schedule['sch_dep_time']) . '</td>';
             for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
                 $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                 $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
@@ -124,18 +125,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'arr_time_diff' => 'NO'
                 ];
 
-                $symbol = $data['dep_time_diff'] === 'SNO' ? 'SNO' : ($data['dep_time_diff'] > 30 ? '❌' : '✅');
-                $report .= '<td>' . $symbol . '</td>';
+                $symbol = $data['dep_time_diff'] === 'SNO' ? 'SNO' : ($data['dep_time_diff'] > 30 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '✅');
+                $scheduleReport .= '<td>' . $symbol . '</td>';
             }
-            $report .= '</tr>';
+            $scheduleReport .= '</tr>';
 
-            $report .= '<tr>';
-            // Filter out empty bus numbers and join the remaining with a comma
+            $scheduleReport .= '<tr>';
             $filtered_bus_numbers = array_filter($schedule['bus_numbers']);
             $bus_numbers = !empty($filtered_bus_numbers) ? implode(', ', $filtered_bus_numbers) : 'NA';
-
-            // Append the bus numbers to the report, ensuring HTML special characters are properly escaped
-            $report .= '<td>' . htmlspecialchars($bus_numbers) . '</td>';
+            $scheduleReport .= '<td>' . htmlspecialchars($bus_numbers) . '</td>';
             for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
                 $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                 $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
@@ -146,18 +144,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'arr_time_diff' => 'NO'
                 ];
 
-                $symbol = $data['bus_allotted_status'] == 0 ? '✅' : ($data['bus_allotted_status'] == 1 ? '❌' : 'N/A');
-                $report .= '<td>' . $symbol . '</td>';
+                $symbol = $data['bus_allotted_status'] == 0 ? '✅' : ($data['bus_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                $scheduleReport .= '<td>' . $symbol . '</td>';
             }
-            $report .= '</tr>';
+            $scheduleReport .= '</tr>';
 
             if ($schedule['single_crew'] == 'no' && in_array($schedule['service_type_id'], [2, 3, 4, 5])) {
                 // Add rowspan for Driver Allotted Status
-                $report .= '<tr>';
-                $filtered_bus_numbers1 = array_filter($schedule['driver_tokens']);
-                $crew = !empty($filtered_bus_numbers) ? implode(', ', $filtered_bus_numbers1) : 'NA';
+                $scheduleReport .= '<tr>';
+                $filtered_driver_tokens = array_filter($schedule['driver_tokens']);
+                $crew = !empty($filtered_driver_tokens) ? implode(', ', $filtered_driver_tokens) : 'NA';
 
-                $report .= '<td rowspan="2">' . htmlspecialchars($crew) . '</td>'; // Rowspan of 2 rows
+                $scheduleReport .= '<td rowspan="2">' . htmlspecialchars($crew) . '</td>'; // Rowspan of 2 rows
                 for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
                     $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                     $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
@@ -168,12 +166,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '✅' : ($data['driver_1_allotted_status'] == 1 ? '❌' : 'N/A');
-                    $report .= '<td>' . $symbol1 . '</td>';
+                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '✅' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $scheduleReport .= '<td>' . $symbol1 . '</td>';
                 }
-                $report .= '</tr>';
+                $scheduleReport .= '</tr>';
 
-                $report .= '<tr>';
+                $scheduleReport .= '<tr>';
                 for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
                     $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                     $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
@@ -184,17 +182,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol2 = $data['driver_2_allotted_status'] == 0 ? '✅' : ($data['driver_2_allotted_status'] == 1 ? '❌' : 'N/A');
-                    $report .= '<td>' . $symbol2 . '</td>';
+                    $symbol2 = $data['driver_2_allotted_status'] == 0 ? '✅' : ($data['driver_2_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $scheduleReport .= '<td>' . $symbol2 . '</td>';
                 }
-                $report .= '</tr>';
+                $scheduleReport .= '</tr>';
             } else {
-                // Normal Driver Allotted Status row
-                $report .= '<tr>';
-                $filtered_bus_numbers2 = array_filter($schedule['driver_tokens']);
-                $crew1 = !empty($filtered_bus_numbers) ? implode(', ', $filtered_bus_numbers2) : 'NA';
+                // Single Driver Row
+                $scheduleReport .= '<tr>';
+                $filtered_driver_tokens = array_filter($schedule['driver_tokens']);
+                $crew = !empty($filtered_driver_tokens) ? implode(', ', $filtered_driver_tokens) : 'NA';
+                $scheduleReport .= '<td>' . htmlspecialchars($crew) . '</td>';
 
-                $report .= '<td>' . htmlspecialchars($crew1) . '</td>';
                 for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
                     $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                     $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
@@ -205,17 +203,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol = $data['driver_1_allotted_status'] == 0 ? '✅' : ($data['driver_1_allotted_status'] == 1 ? '❌' : 'N/A');
-                    $report .= '<td>' . $symbol . '</td>';
+                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '✅' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $scheduleReport .= '<td>' . $symbol1 . '</td>';
                 }
-                $report .= '</tr>';
+                $scheduleReport .= '</tr>';
             }
 
-            $report .= '<tr>';
-
-
-            $report .= '<tr>';
-            $report .= '<td>Arr:' . htmlspecialchars($schedule['sch_arr_time']) . '</td>';
+            $scheduleReport .= '<tr>';
+            $scheduleReport .= '<td>Arr:' . htmlspecialchars($schedule['sch_arr_time']) . '</td>';
             for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
                 $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                 $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
@@ -226,25 +221,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'arr_time_diff' => 'NO'
                 ];
 
-                if ($data['arr_time_diff'] === 'N/A' && $data['dep_time_diff'] !== 'N/A') {
-                    $symbol = 'SNA'; // Show SNA if arr_time_diff is 'N/A' and dep_time_diff is present
-                } else {
-                    $symbol = $data['arr_time_diff'] === 'NO' ? 'SNO' : ($data['arr_time_diff'] > 30 ? '❌' : '✅');
-                }
-                $report .= '<td>' . $symbol . '</td>';
+                $symbol = $data['arr_time_diff'] === 'NO' ? 'SNA' : ($data['arr_time_diff'] > 30 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '✅');
+                $scheduleReport .= '<td>' . $symbol . '</td>';
             }
-            $report .= '</tr>';
+            $scheduleReport .= '</tr>';
 
-            $report .= '</table>';
+            $scheduleReport .= '</table><br>';
         }
-
-        echo json_encode(['html' => $report]);
-    } else {
-        echo json_encode(['html' => '<p>Error executing query: ' . htmlspecialchars($stmt->error) . '</p>']);
     }
-}else {
-    header('Location: ../pages/login.php');
-    exit;
-}
 
+    // Second Report: Monthly Summary Report
+    $daysInMonth = date('t', strtotime($start_date));
+
+    $reportData = [
+        'Actual Departures' => [],
+        'Departures Held' => [],
+        'Departures Not Operated' => [],
+        'Departures On Time' => [],
+        'Arrivals On Time' => [],
+        'Fixed Vehicles Operated (%)' => [],
+        'Fixed Driver 1 Operated (%)' => [],
+        'Fixed Driver 2 Operated (%)' => [],
+        'Fixed Conductor Operated (%)' => [],
+    ];
+
+    for ($day = 1; $day <= $daysInMonth; $day++) {
+        $date = sprintf('%04d-%02d-%02d', $year, $month, $day);
+
+        $scheduleQuery = "SELECT COUNT(*) as total_departures
+                          FROM schedule_master sm
+                          LEFT JOIN sch_veh_out svo ON sm.sch_key_no = svo.sch_no AND DATE(svo.departed_date) = '$date'
+                          WHERE sm.depot_id = ? AND sm.division_id = ?";
+
+        $stmt = $db->prepare($scheduleQuery);
+        $stmt->bind_param('ss', $depot_id, $division_id);
+        $stmt->execute();
+        $scheduleResult = $stmt->get_result();
+        $scheduleData = $scheduleResult->fetch_assoc();
+        $total_departures = $scheduleData['total_departures'];
+
+        $query = "SELECT COUNT(*) as departure_held,
+        COUNT(CASE WHEN dep_time_diff <= 30 THEN 1 END) as departures_on_time,
+        COUNT(CASE WHEN arr_time_diff <= 30 THEN 1 END) as arrivals_on_time,
+        COUNT(CASE WHEN bus_allotted_status = 0 THEN 1 END) as bus_operated,
+        COUNT(CASE WHEN driver_1_allotted_status = 0 THEN 1 END) as driver1_operated,
+        COUNT(CASE WHEN driver_2_allotted_status = 0 THEN 1 END) as driver2_operated,
+        COUNT(CASE WHEN conductor_alloted_status = 0 THEN 1 END) as conductor_operated
+      FROM sch_veh_out
+      WHERE depot_id = '$depot_id' AND division_id = '$division_id' AND departed_date = '$date'";
+
+        $result = mysqli_query($db, $query);
+        $data = $result->fetch_assoc();
+
+        // Populate the report data
+        $reportData['Actual Departures'][] = $total_departures;
+        $reportData['Departures Held'][] = $data['departure_held'];
+        $reportData['Departures Not Operated'][] = $total_departures - $data['departure_held'];
+        $reportData['Departures On Time'][] = $data['departures_on_time'];
+        $reportData['Arrivals On Time'][] = $data['arrivals_on_time'];
+
+       // Calculate percentages with division by zero check
+    if ($data['departure_held'] > 0) {
+        $reportData['Fixed Vehicles Operated (%)'][] = number_format(($data['bus_operated'] / $data['departure_held']) * 100, 0) . '%';
+        $reportData['Fixed Driver 1 Operated (%)'][] = number_format(($data['driver1_operated'] / $data['departure_held']) * 100, 0) . '%';
+        $reportData['Fixed Driver 2 Operated (%)'][] = number_format(($data['driver2_operated'] / $data['departure_held']) * 100, 0) . '%';
+        $reportData['Fixed Conductor Operated (%)'][] = number_format(($data['conductor_operated'] / $data['departure_held']) * 100, 0) . '%';
+    } else {
+        $reportData['Fixed Vehicles Operated (%)'][] = 'NA';
+        $reportData['Fixed Driver 1 Operated (%)'][] = 'NA';
+        $reportData['Fixed Driver 2 Operated (%)'][] = 'NA';
+        $reportData['Fixed Conductor Operated (%)'][] = 'NA';
+    }
+    }
+
+    $monthlySummaryReport = '<h2>Monthly Summary Report for ' . htmlspecialchars(date('F', mktime(0, 0, 0, $month, 10))) . ' ' . htmlspecialchars($year) . '</h2>';
+    $monthlySummaryReport .= '<table border="1"><thead><tr>';
+    $monthlySummaryReport .= '<th>Particulars</th>';
+
+    // Header for dates
+    for ($day = 1; $day <= $daysInMonth; $day++) {
+        $monthlySummaryReport .= '<th>' . $day . '</th>';
+    }
+
+    $monthlySummaryReport .= '</tr></thead><tbody>';
+
+    foreach ($reportData as $metric => $values) {
+        $monthlySummaryReport .= '<tr><td>' . htmlspecialchars($metric) . '</td>';
+        foreach ($values as $value) {
+            $monthlySummaryReport .= '<td>' . htmlspecialchars($value) . '</td>';
+        }
+        $monthlySummaryReport .= '</tr>';
+    }
+
+    $monthlySummaryReport .= '</tbody></table>';
+
+    // Combine both reports
+    $combinedReport = $scheduleReport . '<br>' . $monthlySummaryReport;
+
+    // Return the combined HTML report
+    echo json_encode(['html' => $combinedReport]);
+}
 ?>

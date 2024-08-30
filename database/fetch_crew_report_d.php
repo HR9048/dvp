@@ -191,7 +191,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $html .= '</table>';
     echo json_encode(['html' => $html]);
-} else {
-    echo json_encode(['html' => 'Invalid request method']);
+}else {
+    header('Location: ../pages/login.php');
+    exit;
 }
+
 ?>

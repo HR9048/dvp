@@ -27,71 +27,69 @@ INNER JOIN location l ON br.division_name = l.division_id AND br.depot_name = l.
                 style="color: white; text-decoration: none;">Bus Transfer</a></button>
         <button class="btn btn-primary ml-3"><a href="main_rwy_alllocation.php"
                 style="color: white; text-decoration: none;">RWY Bus Allocation</a></button>
-        <div class="card shadow mb-4">
-            <div class="card-body">
-                <div class="container1">
-                    <table id="dataTable3">
-                        <thead>
-                            <tr>
-                                <th style="width:5%">Sl No</th>
-                                <th>Bus Number</th>
-                                <th>Division Name</th>
-                                <th>Depot Name</th>
-                                <th>Make</th>
-                                <th>Emission norms</th>
-                                <th>DOC</th>
-                                <th>Wheel Base</th>
-                                <th>Chassis Number</th>
-                                <th>Bus Category</th>
-                                <th>Bus Sub Category</th>
-                                <th>Seating Capacity</th>
-                                <th>Bus Body Builder</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $serial_number = 1;
-                            foreach ($rows as $row) {
-                                echo '<tr>';
-                                echo '<td>' . $serial_number++ . '</td>';
-                                echo '<td>' . $row['bus_number'] . '</td>';
-                                echo '<td>' . $row['division_name'] . '</td>';
-                                echo '<td>' . $row['depot_name'] . '</td>';
-                                echo '<td>' . $row['make'] . '</td>';
-                                echo '<td>' . $row['emission_norms'] . '</td>';
-                                echo '<td>' . date('d/m/Y', strtotime($row['doc'])) . '</td>';
-                                echo '<td>' . $row['wheel_base'] . '</td>';
-                                echo '<td>' . $row['chassis_number'] . '</td>';
-                                echo '<td>' . $row['bus_category'] . '</td>';
-                                echo '<td>' . $row['bus_sub_category'] . '</td>';
-                                echo '<td>' . $row['seating_capacity'] . '</td>';
-                                echo '<td>' . $row['bus_body_builder'] . '</td>';
-                                echo '</tr>';
-                            }
-                            ?>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th></th>
-                                <th>Bus Number</th>
-                                <th>Division Name</th>
-                                <th>Depot Name</th>
-                                <th>Make</th>
-                                <th>Emission norms</th>
-                                <th>DOC</th>
-                                <th>Wheel Base</th>
-                                <th>Chassis Number</th>
-                                <th>Bus Category</th>
-                                <th>Bus Sub Category</th>
-                                <th>Seating Capacity</th>
-                                <th>Bus Body Builder</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-                <button class="btn btn-success" id="downloadExcel1">Download Excel</button>
-            </div>
+
+        <div class="container1">
+            <table id="dataTable3" style="max-width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="width:5%">Sl No</th>
+                        <th>Bus Number</th>
+                        <th>Division Name</th>
+                        <th>Depot Name</th>
+                        <th>Make</th>
+                        <th>Emission norms</th>
+                        <th>DOC</th>
+                        <th>Wheel Base</th>
+                        <th>Chassis Number</th>
+                        <th>Bus Category</th>
+                        <th>Bus Sub Category</th>
+                        <th>Seating Capacity</th>
+                        <th>Bus Body Builder</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $serial_number = 1;
+                    foreach ($rows as $row) {
+                        echo '<tr>';
+                        echo '<td>' . $serial_number++ . '</td>';
+                        echo '<td>' . $row['bus_number'] . '</td>';
+                        echo '<td>' . $row['division_name'] . '</td>';
+                        echo '<td>' . $row['depot_name'] . '</td>';
+                        echo '<td>' . $row['make'] . '</td>';
+                        echo '<td>' . $row['emission_norms'] . '</td>';
+                        echo '<td>' . date('d/m/Y', strtotime($row['doc'])) . '</td>';
+                        echo '<td>' . $row['wheel_base'] . '</td>';
+                        echo '<td>' . $row['chassis_number'] . '</td>';
+                        echo '<td>' . $row['bus_category'] . '</td>';
+                        echo '<td>' . $row['bus_sub_category'] . '</td>';
+                        echo '<td>' . $row['seating_capacity'] . '</td>';
+                        echo '<td>' . $row['bus_body_builder'] . '</td>';
+                        echo '</tr>';
+                    }
+                    ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th>Bus Number</th>
+                        <th>Division Name</th>
+                        <th>Depot Name</th>
+                        <th>Make</th>
+                        <th>Emission norms</th>
+                        <th>DOC</th>
+                        <th>Wheel Base</th>
+                        <th>Chassis Number</th>
+                        <th>Bus Category</th>
+                        <th>Bus Sub Category</th>
+                        <th>Seating Capacity</th>
+                        <th>Bus Body Builder</th>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
+        <button class="btn btn-success" id="downloadExcel1">Download Excel</button>
+
     </div>
 
 

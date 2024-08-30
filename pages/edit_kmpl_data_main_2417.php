@@ -12,179 +12,140 @@ function deleteRecord($id, $db)
     mysqli_stmt_close($stmt);
 }
 
-$query = 'SELECT ID, t.TYPE
-            FROM users u
-            JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DIVISION') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Division Page");
-            window.location = "division.php";
-        </script>
-    <?php } elseif ($Aa == 'DEPOT') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Head Office Page");
-            window.location = "index.php";
-        </script>
-    <?php } elseif ($Aa == 'RWY') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php } elseif ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
-    // Check the job title of the user
-    if ($_SESSION['JOB_TITLE'] == 'CO_STORE') {
-      ?>
-      <script type="text/javascript">
-        // Redirect to depot_clerk.php if the job title is Clerk
-        alert("Restricted Page! You will be redirected to Stores Page");
-        window.location = "index.php";
-      </script>
-      <?php
-    }
-  }
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! YouR session is experied please Login'); window.location = 'logout.php';</script>";
+    exit;
 }
-?>
-<div class="container mt-5">
-    <h2 class="mb-4">Select Date Range</h2>
-    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-        <div class="form-group">
-            <label for="startDate">Start Date:</label>
-            <input type="date" id="startDate" class="form-control" name="startDate" required>
-        </div>
-        <div class="form-group">
-            <label for="endDate">End Date:</label>
-            <input type="date" id="endDate" class="form-control" name="endDate" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-    <?php
-    // Include your database connection file
+if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
+    ?>
+    <div class="container mt-5">
+        <h2 class="mb-4">Select Date Range</h2>
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
+            <div class="form-group">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" class="form-control" name="startDate" required>
+            </div>
+            <div class="form-group">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" class="form-control" name="endDate" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        <?php
+        // Include your database connection file
     
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $startDate = $_POST['startDate'];
-        $endDate = $_POST['endDate'];
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $startDate = $_POST['startDate'];
+            $endDate = $_POST['endDate'];
 
-        $query = "SELECT k.*, 
+            $query = "SELECT k.*, 
         loc.division AS division_name, 
         loc.depot AS depot_name 
  FROM kmpl_data k 
  INNER JOIN location loc ON k.depot = loc.depot_id 
  WHERE k.date BETWEEN '$startDate' AND '$endDate'";
-$result = mysqli_query($db, $query);
+            $result = mysqli_query($db, $query);
 
-        if ($result) {
-            ?>
-            <div class="mt-5">
-                <h2 class="mb-4">KMPL Data from
-                    <?php echo $startDate; ?> to
-                    <?php echo $endDate; ?>
-                </h2>
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <!-- Add table headers -->
-                            <th>ID</th>
-                            <th>Gross KM</th>
-                            <th>HSD</th>
-                            <th>KMPL</th>
-                            <th>Username</th>
-                            <th>Division</th>
-                            <th>Depot</th>
-                            <th>Submitted Datetime</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        // Output table data
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            echo "<tr>";
+            if ($result) {
+                ?>
+                <div class="mt-5">
+                    <h2 class="mb-4">KMPL Data from
+                        <?php echo $startDate; ?> to
+                        <?php echo $endDate; ?>
+                    </h2>
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <!-- Add table headers -->
+                                <th>ID</th>
+                                <th>Gross KM</th>
+                                <th>HSD</th>
+                                <th>KMPL</th>
+                                <th>Username</th>
+                                <th>Division</th>
+                                <th>Depot</th>
+                                <th>Submitted Datetime</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
                             // Output table data
-                            echo "<td>" . $row['id'] . "</td>";
-                            echo "<td>" . $row['total_km'] . "</td>";
-                            echo "<td>" . $row['hsd'] . "</td>";
-                            echo "<td>" . $row['kmpl'] . "</td>";
-                            echo "<td>" . $row['username'] . "</td>";
-                            echo "<td>" . $row['division_name'] . "</td>";
-                            echo "<td>" . $row['depot_name'] . "</td>";
-                            echo "<td>" . $row['submitted_datetime'] . "</td>";
-                            echo "<td>" . $row['date'] . "</td>";
-                            // Add buttons for edit and delete
-                            echo "<td><button type='button' class='btn btn-primary btn-sm editBtn' data-toggle='modal' data-target='#editModal' data-id='" . $row['id'] . "'>Edit</button> <form action='' method='POST' style='display:inline-block'><input type='hidden' name='delete_id' value='" . $row['id'] . "'><button type='submit' name='delete_btn' class='btn btn-danger btn-sm'>Delete</button></form></td>";
-                            echo "</tr>";
-                        }
-                        ?>
-                    </tbody>
-                </table>
-            </div>
-
-            <?php
-            // Check if delete button is clicked
-            if (isset($_POST['delete_btn'])) {
-                $delete_id = $_POST['delete_id'];
-                deleteRecord($delete_id, $db);
-                echo "<script>alert('Record deleted successfully!'); window.location.href = 'edit_kmpl_data_main_2417.php';</script>";
-            }
-        } else {
-            echo "Error: " . $query . "<br>" . mysqli_error($db);
-        }
-
-        mysqli_close($db);
-    }
-    ?>
-
-    <!-- Edit Modal -->
-    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Edit KMPL Data</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                echo "<tr>";
+                                // Output table data
+                                echo "<td>" . $row['id'] . "</td>";
+                                echo "<td>" . $row['total_km'] . "</td>";
+                                echo "<td>" . $row['hsd'] . "</td>";
+                                echo "<td>" . $row['kmpl'] . "</td>";
+                                echo "<td>" . $row['username'] . "</td>";
+                                echo "<td>" . $row['division_name'] . "</td>";
+                                echo "<td>" . $row['depot_name'] . "</td>";
+                                echo "<td>" . $row['submitted_datetime'] . "</td>";
+                                echo "<td>" . $row['date'] . "</td>";
+                                // Add buttons for edit and delete
+                                echo "<td><button type='button' class='btn btn-primary btn-sm editBtn' data-toggle='modal' data-target='#editModal' data-id='" . $row['id'] . "'>Edit</button> <form action='' method='POST' style='display:inline-block'><input type='hidden' name='delete_id' value='" . $row['id'] . "'><button type='submit' name='delete_btn' class='btn btn-danger btn-sm'>Delete</button></form></td>";
+                                echo "</tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="modal-body">
-                    <form id="editForm">
-                        <div class="form-group">
-                            <label for="effective_km">Date</label>
-                            <input type="text" class="form-control" id="date" name="date">
-                        </div>
-                        <div class="form-group">
-                            <label for="total_km">Total KM:</label>
-                            <input type="text" class="form-control" id="total_km" name="total_km">
-                        </div>
-                        <div class="form-group">
-                            <label for="hsd">HSD:</label>
-                            <input type="text" class="form-control" id="hsd" name="hsd">
-                        </div>
-                        <div class="form-group">
-                            <label for="kmpl">KMPL:</label>
-                            <input type="text" class="form-control" id="kmpl" name="kmpl">
-                        </div>
-                        <!-- Add a hidden input field to store the ID of the selected row -->
-                        <input type="hidden" id="editId" name="editId">
-                        <button type="submit" class="btn btn-primary">Update</button>
-                    </form>
+
+                <?php
+                // Check if delete button is clicked
+                if (isset($_POST['delete_btn'])) {
+                    $delete_id = $_POST['delete_id'];
+                    deleteRecord($delete_id, $db);
+                    echo "<script>alert('Record deleted successfully!'); window.location.href = 'edit_kmpl_data_main_2417.php';</script>";
+                }
+            } else {
+                echo "Error: " . $query . "<br>" . mysqli_error($db);
+            }
+
+            mysqli_close($db);
+        }
+        ?>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Edit KMPL Data</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editForm">
+                            <div class="form-group">
+                                <label for="effective_km">Date</label>
+                                <input type="text" class="form-control" id="date" name="date">
+                            </div>
+                            <div class="form-group">
+                                <label for="total_km">Total KM:</label>
+                                <input type="text" class="form-control" id="total_km" name="total_km">
+                            </div>
+                            <div class="form-group">
+                                <label for="hsd">HSD:</label>
+                                <input type="text" class="form-control" id="hsd" name="hsd">
+                            </div>
+                            <div class="form-group">
+                                <label for="kmpl">KMPL:</label>
+                                <input type="text" class="form-control" id="kmpl" name="kmpl">
+                            </div>
+                            <!-- Add a hidden input field to store the ID of the selected row -->
+                            <input type="hidden" id="editId" name="editId">
+                            <button type="submit" class="btn btn-primary">Update</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Include jQuery and Bootstrap JS -->
     <!-- Include jQuery (full version) -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -228,4 +189,10 @@ $result = mysqli_query($db, $query);
 
         });
     </script>
-    <?php include '../includes/footer.php'; ?>
+    <?php
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?>

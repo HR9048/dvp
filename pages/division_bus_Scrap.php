@@ -2,246 +2,222 @@
 include '../includes/connection.php';
 include '../includes/division_sidebar.php';
 
-$query = 'SELECT ID, t.TYPE
-          FROM users u
-          JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-    if ($Aa == 'DEPOT') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to the Depot Page");
-            window.location = "../includes/depot_varify.php";
-        </script>
-        <?php
-    } elseif ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to the Head Office");
-            window.location = "index.php";
-        </script>
-        <?php
-    } elseif ($Aa == 'RWY') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php } 
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    exit;
 }
-?>
-<style>
-    /* Style for the red color */
-    .red {
-        color: red;
-    }
-</style>
-<marquee behavior="scroll" direction="left">
-    <h4 class="red">You are attending to Scrap vehicles from your Division</h4>
-</marquee>
-<!-- HTML form with elements -->
-<div class="container-fluid mt-4" style="max-width: 90%;">
-    <div class="border p-6">
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
+    // Allow access
+    ?>
 
-        <form method="post">
-            <h2 style="text-align:center;">BUS SCRAP</h2>
-            <nav class="navbar navbar-light bg-light">
-                <div id="searchBar" class="d-flex align-items-center">
-                    <input type="text" id="busSearch" class="form-control mr-sm-2" placeholder="Search Bus Number">
-                    <button type="button" class="btn btn-outline-success my-2 my-sm-0"
-                        onclick="searchBus()">Search</button>
-                </div>
-            </nav>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="vehicle_no">Bus Number:</label>
-                        <input type="text" class="form-control" id="bus_number" name="bus_number" readonly>
+    <style>
+        /* Style for the red color */
+        .red {
+            color: red;
+        }
+    </style>
+    <marquee behavior="scroll" direction="left">
+        <h4 class="red">You are attending to Scrap vehicles from your Division</h4>
+    </marquee>
+    <!-- HTML form with elements -->
+    <div class="container-fluid mt-4" style="max-width: 90%;">
+        <div class="border p-6">
+
+            <form method="post">
+                <h2 style="text-align:center;">BUS SCRAP</h2>
+                <nav class="navbar navbar-light bg-light">
+                    <div id="searchBar" class="d-flex align-items-center">
+                        <input type="text" id="busSearch" class="form-control mr-sm-2" placeholder="Search Bus Number">
+                        <button type="button" class="btn btn-outline-success my-2 my-sm-0"
+                            onclick="searchBus()">Search</button>
+                    </div>
+                </nav>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="vehicle_no">Bus Number:</label>
+                            <input type="text" class="form-control" id="bus_number" name="bus_number" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="make">Make:</label>
+                            <input type="text" class="form-control" id="make" name="make" readonly>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="make">Make:</label>
-                        <input type="text" class="form-control" id="make" name="make" readonly>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="norms">Emission Norms:</label>
+                            <input type="text" class="form-control" id="emission_norms" name="emission_norms" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="from_depot">Depot:</label>
+                            <input type="text" class="form-control" id="depot" name="depot" readonly>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="norms">Emission Norms:</label>
-                        <input type="text" class="form-control" id="emission_norms" name="emission_norms" readonly>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="from_depot">Division:</label>
+                            <input type="text" class="form-control" id="division" name="division" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="transfer_order_no">Scrap Order No:</label>
+                            <input type="text" class="form-control" id="transfer_order_no" name="transfer_order_no"
+                                required>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="from_depot">Depot:</label>
-                        <input type="text" class="form-control" id="depot" name="depot" readonly>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="order_date">Scrap Date:</label>
+                            <input type="date" class="form-control" id="order_date" name="order_date" required>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="from_depot">Division:</label>
-                        <input type="text" class="form-control" id="division" name="division" readonly>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="transfer_order_no">Scrap Order No:</label>
-                        <input type="text" class="form-control" id="transfer_order_no" name="transfer_order_no"
-                            required>
-                    </div>
-                </div>
-            </div>
+                <!-- Hidden fields -->
+                <input type="hidden" id="doc" name="doc">
+                <input type="hidden" id="wheel_base" name="wheel_base">
+                <input type="hidden" id="chassis_number" name="chassis_number">
+                <input type="hidden" id="bus_category" name="bus_category">
+                <input type="hidden" id="bus_sub_category" name="bus_sub_category">
+                <input type="hidden" id="seating_capacity" name="seating_capacity">
+                <input type="hidden" id="bus_body_builder" name="bus_body_builder">
+                <input type="hidden" id="bus_username" name="bus_username">
+                <input type="hidden" id="bus_submit_datetime" name="bus_submit_datetime">
+                <input type="hidden" id="depotID" name="depotID">
+                <input type="hidden" id="divisionID" name="divisionID">
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="order_date">Scrap Date:</label>
-                        <input type="date" class="form-control" id="order_date" name="order_date" required>
-                    </div>
-                </div>
-            </div>
+                <div class="text-center"> <!-- Wrap the button in a div with text-center class -->
+                    <button type="button" class="btn btn-primary" onclick="validateAndSubmit()">Submit</button>
+                    <script>
+                        function validateAndSubmit() {
+                            // Get all the form input elements
+                            var formInputs = document.querySelectorAll('input[type="text"], input[type="date"]');
 
-            <!-- Hidden fields -->
-            <input type="hidden" id="doc" name="doc">
-            <input type="hidden" id="wheel_base" name="wheel_base">
-            <input type="hidden" id="chassis_number" name="chassis_number">
-            <input type="hidden" id="bus_category" name="bus_category">
-            <input type="hidden" id="bus_sub_category" name="bus_sub_category">
-            <input type="hidden" id="seating_capacity" name="seating_capacity">
-            <input type="hidden" id="bus_body_builder" name="bus_body_builder">
-            <input type="hidden" id="bus_username" name="bus_username">
-            <input type="hidden" id="bus_submit_datetime" name="bus_submit_datetime">
-            <input type="hidden" id="depotID" name="depotID">
-            <input type="hidden" id="divisionID" name="divisionID">
+                            // Flag to track if any field is empty
+                            var allFieldsFilled = true;
 
-            <div class="text-center"> <!-- Wrap the button in a div with text-center class -->
-                <button type="button" class="btn btn-primary" onclick="validateAndSubmit()">Submit</button>
-                <script>
-                    function validateAndSubmit() {
-                        // Get all the form input elements
-                        var formInputs = document.querySelectorAll('input[type="text"], input[type="date"]');
+                            // Iterate through each form input element
+                            formInputs.forEach(function (input) {
+                                // Check if the input value is empty
+                                if (input.value.trim() === "") {
+                                    // If any field is empty, set the flag to false and break out of the loop
+                                    allFieldsFilled = false;
+                                    return;
+                                }
+                            });
 
-                        // Flag to track if any field is empty
-                        var allFieldsFilled = true;
-
-                        // Iterate through each form input element
-                        formInputs.forEach(function (input) {
-                            // Check if the input value is empty
-                            if (input.value.trim() === "") {
-                                // If any field is empty, set the flag to false and break out of the loop
-                                allFieldsFilled = false;
-                                return;
+                            // If any field is empty, display an alert to the user
+                            if (!allFieldsFilled) {
+                                alert("Please fill in all form fields.");
+                            } else {
+                                // If all fields are filled, proceed to open the confirmation modal
+                                openConfirmationModal();
                             }
-                        });
-
-                        // If any field is empty, display an alert to the user
-                        if (!allFieldsFilled) {
-                            alert("Please fill in all form fields.");
-                        } else {
-                            // If all fields are filled, proceed to open the confirmation modal
-                            openConfirmationModal();
                         }
-                    }
-                </script>
+                    </script>
 
-            </div>
-        </form>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-<!-- Modal -->
-<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document"> <!-- Add modal-dialog-centered class -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmationModalLabel">Confirm Scrap Submission</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="cancelButton">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Please verify the form details before submitting:</p>
-                <div id="formDetails"></div> <!-- This will display the form details -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="submitFormData()">Submit</button>
+    <!-- Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document"> <!-- Add modal-dialog-centered class -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Scrap Submission</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="cancelButton">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Please verify the form details before submitting:</p>
+                    <div id="formDetails"></div> <!-- This will display the form details -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitFormData()">Submit</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
-<script>
-    function openConfirmationModal() {
-        // Get form values
-        var busNumber = document.getElementById('bus_number').value;
-        var make = document.getElementById('make').value;
-        var emissionNorms = document.getElementById('emission_norms').value;
-        var depot = document.getElementById('depot').value;
-        var division = document.getElementById('division').value;
-        var scrapOrderNo = document.getElementById('transfer_order_no').value;
-        var scrapDate = document.getElementById('order_date').value;
-        var depotID = document.getElementById('depotID').value;
-        var divisionID = document.getElementById('divisionID').value;
+    <script>
+        function openConfirmationModal() {
+            // Get form values
+            var busNumber = document.getElementById('bus_number').value;
+            var make = document.getElementById('make').value;
+            var emissionNorms = document.getElementById('emission_norms').value;
+            var depot = document.getElementById('depot').value;
+            var division = document.getElementById('division').value;
+            var scrapOrderNo = document.getElementById('transfer_order_no').value;
+            var scrapDate = document.getElementById('order_date').value;
+            var depotID = document.getElementById('depotID').value;
+            var divisionID = document.getElementById('divisionID').value;
 
-        // Populate modal with form data
-        document.getElementById('formDetails').innerHTML =
-            "<p><strong>Bus Number:</strong> " + busNumber + "</p>" +
-            "<p><strong>Make:</strong> " + make + "</p>" +
-            "<p><strong>Emission Norms:</strong> " + emissionNorms + "</p>" +
-            "<p><strong>Depot:</strong> " + depot + "</p>" +
-            "<p><strong>Division:</strong> " + division + "</p>" +
-            "<p><strong>Scrap Order No:</strong> " + scrapOrderNo + "</p>" +
-            "<p><strong>Scrap Date:</strong> " + scrapDate + "</p>";
+            // Populate modal with form data
+            document.getElementById('formDetails').innerHTML =
+                "<p><strong>Bus Number:</strong> " + busNumber + "</p>" +
+                "<p><strong>Make:</strong> " + make + "</p>" +
+                "<p><strong>Emission Norms:</strong> " + emissionNorms + "</p>" +
+                "<p><strong>Depot:</strong> " + depot + "</p>" +
+                "<p><strong>Division:</strong> " + division + "</p>" +
+                "<p><strong>Scrap Order No:</strong> " + scrapOrderNo + "</p>" +
+                "<p><strong>Scrap Date:</strong> " + scrapDate + "</p>";
 
-        $('#confirmationModal').modal('show');
-    }
+            $('#confirmationModal').modal('show');
+        }
 
-    function submitFormData() {
-        // Submit form data
-        document.getElementById("scrapForm").submit();
-    }
+        function submitFormData() {
+            // Submit form data
+            document.getElementById("scrapForm").submit();
+        }
 
-    $(document).ready(function () {
-        // Intercept form submission
-        $('#scrapForm').submit(function (event) {
-            event.preventDefault(); // Prevent the default form submission
+        $(document).ready(function () {
+            // Intercept form submission
+            $('#scrapForm').submit(function (event) {
+                event.preventDefault(); // Prevent the default form submission
 
-            // Open the confirmation modal
-            openConfirmationModal();
+                // Open the confirmation modal
+                openConfirmationModal();
+            });
+
+            // Handle cancel button click in modal
+            $('#cancelButton').click(function () {
+                // Close the modal
+                $('#confirmationModal').modal('hide');
+
+                // Show alert
+                alert('Scrap canceled.');
+
+                // Redirect to division_buses.php
+                window.location.href = 'division_buses.php';
+            });
         });
-
-        // Handle cancel button click in modal
-        $('#cancelButton').click(function () {
-            // Close the modal
-            $('#confirmationModal').modal('hide');
-
-            // Show alert
-            alert('Scrap canceled.');
-
-            // Redirect to division_buses.php
-            window.location.href = 'division_buses.php';
-        });
-    });
-</script>
-
-
-
-
-<?php include '../includes/footer.php'; ?>
-
+    </script>
+    <?php
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?>
 <script>
     function searchBus() {
         var busNumber = $('#busSearch').val();
@@ -365,7 +341,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             // Exit if user cancels the transfer
             alert('Scrap canceled.');
             window.location.href = 'division_buses.php';
-            
+
         }
     }
 

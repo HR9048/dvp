@@ -1,43 +1,14 @@
 <?php
 include '../includes/connection.php';
 include '../includes/division_sidebar.php';
-$query = 'SELECT ID, t.TYPE
-            FROM users u
-            JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DEPOT') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Depot Page");
-            window.location = "../includes/depot_verify.php";
-        </script>
-    <?php } elseif ($Aa == 'HEAD-OFFICE') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Head Office Page");
-            window.location = "index.php";
-        </script>
-    <?php } elseif ($Aa == 'RWY') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php } 
-
-
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    exit;
 }
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
+    // Allow access
+    ?>
 
-?>
 <div class="row show-grid">
     <div class="col-md-3">
         <div class="col-md-12 mb-3">
@@ -246,5 +217,9 @@ while ($row = mysqli_fetch_assoc($result)) {
         </div>
     </div>
     <?php
-    include '../includes/footer.php';
-    ?>
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?>

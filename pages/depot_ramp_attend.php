@@ -65,7 +65,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             /* Same as the table's background color */
             z-index: 1;
         }
-        
     </style>
     <div class="table-responsive">
         <table class="table2">
@@ -407,7 +406,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         </div>
                         <!-- Submit button -->
                         <div class="text-center mt-2" style="width: 100%;">
-                            <button id="submitBtn" class="btn btn-primary" >Submit</button>
+                            <button id="submitBtn" class="btn btn-primary">Submit</button>
                         </div>
                     </form>
                     <!-- Loading Modal -->
@@ -664,54 +663,54 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         // Function to add a bus to the table
         // Function to add a bus to the table
         function addBus(formData) {
-    var formContainer = document.getElementById("busFormContainer");
+            var formContainer = document.getElementById("busFormContainer");
 
-    // Create a new div for each row
-    var rowDiv = document.createElement("div");
-    rowDiv.style.display = "flex";
-    rowDiv.style.width = "100%";
-    rowDiv.style.marginBottom = "5px"; // Add a small gap between rows
+            // Create a new div for each row
+            var rowDiv = document.createElement("div");
+            rowDiv.style.display = "flex";
+            rowDiv.style.width = "100%";
+            rowDiv.style.marginBottom = "5px"; // Add a small gap between rows
 
-    // Define column widths (these should match your table column widths)
-    var columnWidth = "13%";
+            // Define column widths (these should match your table column widths)
+            var columnWidth = "13%";
 
-    var keys = ['sch_out_id1', 'busNumber', 'make', 'emissionNorms', 'offRoadFromDate', 'offRoadLocation', 'partsRequired', 'remarks'];
-    keys.forEach(function (key) {
-        var input = document.createElement("input");
-        input.type = "text";
-        input.name = key + "[]"; // Use array notation for names
-        input.value = formData[key];
-        input.className = "form-control";
-        input.readOnly = true;
-        input.style.flex = `0 0 ${columnWidth}`; // Set the width for each column
-        input.style.margin = "0"; // Remove margin between elements
-        input.style.padding = "5px"; // Adjust padding for tightness
-        input.style.border = "1px solid #ccc"; // Optional: To visually separate elements
-        input.style.width ="12%";
-        // Hide sch_out_id1 input field
-        if (key === 'sch_out_id1') {
-            input.style.display = "none";
+            var keys = ['sch_out_id1', 'busNumber', 'make', 'emissionNorms', 'offRoadFromDate', 'offRoadLocation', 'partsRequired', 'remarks'];
+            keys.forEach(function (key) {
+                var input = document.createElement("input");
+                input.type = "text";
+                input.name = key + "[]"; // Use array notation for names
+                input.value = formData[key];
+                input.className = "form-control";
+                input.readOnly = true;
+                input.style.flex = `0 0 ${columnWidth}`; // Set the width for each column
+                input.style.margin = "0"; // Remove margin between elements
+                input.style.padding = "5px"; // Adjust padding for tightness
+                input.style.border = "1px solid #ccc"; // Optional: To visually separate elements
+                input.style.width = "12%";
+                // Hide sch_out_id1 input field
+                if (key === 'sch_out_id1') {
+                    input.style.display = "none";
+                }
+
+                rowDiv.appendChild(input);
+            });
+
+            var removeBtn = document.createElement("button");
+            removeBtn.className = "btn btn-danger";
+            removeBtn.type = "button";
+            removeBtn.textContent = "Remove";
+            removeBtn.style.width = "13%";
+            removeBtn.onclick = function () {
+                formContainer.removeChild(rowDiv);
+            };
+            removeBtn.style.margin = "0"; // Remove margin around the button
+            removeBtn.style.padding = "5px"; // Adjust padding for tightness
+
+            rowDiv.appendChild(removeBtn);
+
+            // Add the new row to the form container
+            formContainer.appendChild(rowDiv);
         }
-
-        rowDiv.appendChild(input);
-    });
-
-    var removeBtn = document.createElement("button");
-    removeBtn.className = "btn btn-danger";
-    removeBtn.type = "button";
-    removeBtn.textContent = "Remove";
-    removeBtn.style.width= "13%";
-    removeBtn.onclick = function () {
-        formContainer.removeChild(rowDiv);
-    };
-    removeBtn.style.margin = "0"; // Remove margin around the button
-    removeBtn.style.padding = "5px"; // Adjust padding for tightness
-
-    rowDiv.appendChild(removeBtn);
-
-    // Add the new row to the form container
-    formContainer.appendChild(rowDiv);
-}
 
 
 

@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'arr_time_diff' => 'NO'
                 ];
 
-                $symbol = $data['dep_time_diff'] === 'SNO' ? 'SNO' : ($data['dep_time_diff'] > 30 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '✅');
+                $symbol = $data['dep_time_diff'] === 'SNO' ? 'SNO' : ($data['dep_time_diff'] > 30 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>');
                 $scheduleReport .= '<td>' . $symbol . '</td>';
             }
             $scheduleReport .= '</tr>';
@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'arr_time_diff' => 'NO'
                 ];
 
-                $symbol = $data['bus_allotted_status'] == 0 ? '✅' : ($data['bus_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                $symbol = $data['bus_allotted_status'] == 0 ? '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>' : ($data['bus_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
                 $scheduleReport .= '<td>' . $symbol . '</td>';
             }
             $scheduleReport .= '</tr>';
@@ -166,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '✅' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
                     $scheduleReport .= '<td>' . $symbol1 . '</td>';
                 }
                 $scheduleReport .= '</tr>';
@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol2 = $data['driver_2_allotted_status'] == 0 ? '✅' : ($data['driver_2_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $symbol2 = $data['driver_2_allotted_status'] == 0 ? '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>' : ($data['driver_2_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
                     $scheduleReport .= '<td>' . $symbol2 . '</td>';
                 }
                 $scheduleReport .= '</tr>';
@@ -203,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '✅' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
                     $scheduleReport .= '<td>' . $symbol1 . '</td>';
                 }
                 $scheduleReport .= '</tr>';
@@ -221,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'arr_time_diff' => 'NO'
                 ];
 
-                $symbol = $data['arr_time_diff'] === 'NO' ? 'SNA' : ($data['arr_time_diff'] > 30 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '✅');
+                $symbol = $data['arr_time_diff'] === 'NO' ? 'SNA' : ($data['arr_time_diff'] > 30 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>');
                 $scheduleReport .= '<td>' . $symbol . '</td>';
             }
             $scheduleReport .= '</tr>';
@@ -320,5 +320,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Return the combined HTML report
     echo json_encode(['html' => $combinedReport]);
+}else {
+    header('Location: ../pages/login.php');
+    exit;
 }
 ?>

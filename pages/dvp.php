@@ -107,7 +107,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         }
     </style>
 
-    <div class="container" style="width: 100%;">
+    <div class="container" style="width: 80%;">
         <form id="dvpForm" action="save_dvp.php" method="post">
             <div class="form-group col-md-6">
                 <div class="input-group">

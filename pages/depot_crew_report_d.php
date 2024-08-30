@@ -24,33 +24,33 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
     </div>
     <script>
         document.getElementById('dateForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var selectedDate = document.getElementById('date').value;
+            e.preventDefault();
+            var selectedDate = document.getElementById('date').value;
 
-    fetch('../database/fetch_crew_report_d.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ date: selectedDate })
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text); });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.html.includes('Error')) {
-            throw new Error('Server Error: ' + data.html);
-        }
-        document.getElementById('reportTable').innerHTML = data.html;
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('reportTable').innerHTML = 'An error occurred while fetching the report.';
-    });
-});
+            fetch('../database/fetch_crew_report_d.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ date: selectedDate })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.html.includes('Error')) {
+                        throw new Error('Server Error: ' + data.html);
+                    }
+                    document.getElementById('reportTable').innerHTML = data.html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('reportTable').innerHTML = 'An error occurred while fetching the report.';
+                });
+        });
 
 
     </script>

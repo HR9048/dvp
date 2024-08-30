@@ -1,6 +1,10 @@
 <?php
 include '../includes/connection.php'; // Your database connection file
-
+include '../pages/session.php';
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! Your session is experied please Login'); window.location = '../pages/logout.php';</script>";
+    exit;
+}
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
     $sql = "SELECT 
@@ -34,6 +38,8 @@ if (isset($_GET['id'])) {
         echo json_encode(['error' => 'No details found']);
     }
 } else {
-    echo json_encode(['error' => 'Invalid request']);
+    // Redirect to login.php if accessed directly without POST data
+    header("Location: login.php");
+    exit;
 }
 ?>

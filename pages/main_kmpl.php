@@ -2,48 +2,11 @@
 include '../includes/connection.php';
 include '../includes/sidebar.php';
 
-$query = 'SELECT ID, t.TYPE
-            FROM users u
-            JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DEPOT') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Depot Page");
-            window.location = "../includes/depot_verify.php";
-        </script>
-    <?php } elseif ($Aa == 'DIVISION') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Head Office Page");
-            window.location = "division.php";
-        </script>
-    <?php } elseif ($Aa == 'RWY') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php } elseif ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
-    // Check the job title of the user
-    if ($_SESSION['JOB_TITLE'] == 'CO_STORE') {
-      ?>
-      <script type="text/javascript">
-        // Redirect to depot_clerk.php if the job title is Clerk
-        alert("Restricted Page! You will be redirected to Stores Page");
-        window.location = "index.php";
-      </script>
-      <?php
-    }
-  }
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! YouR session is experied please Login'); window.location = 'logout.php';</script>";
+    exit;
 }
+if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 ?>
 <style>
     @media print {
@@ -146,4 +109,10 @@ while ($row = mysqli_fetch_assoc($result)) {
     <div class="text-center mt-3">
         <button class="btn btn-primary" onclick="window.print()">Print</button>
     </div>
-    <?php include '../includes/footer.php'; ?>
+    <?php
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?>

@@ -2,39 +2,12 @@
 include '../includes/connection.php';
 include '../includes/division_sidebar.php';
 
-$query = 'SELECT ID, t.TYPE
-            FROM users u
-            JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DEPOT') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Depot Page");
-            window.location = "../includes/depot_verify.php";
-        </script>
-    <?php } elseif ($Aa == 'HEAD-OFFICE') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Head Office Page");
-            window.location = "index.php";
-        </script>
-    <?php } elseif ($Aa == 'RWY') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php }
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    exit;
 }
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
+    // Allow access
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['selected_date'])) {
     $selected_date = $_POST['selected_date'];
     $selected_like_items = $_POST['like_items'];
@@ -206,6 +179,9 @@ AND ('$selected_date' BETWEEN ord.off_road_date AND IFNULL(ord.on_road_date, CUR
     <?php
 }
 
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
 include '../includes/footer.php';
-$db->close();
 ?>

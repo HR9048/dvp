@@ -13,9 +13,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Get additional information from session variables 
     $username = $_SESSION['USERNAME'];
-    $depot = $_SESSION['DEPOT_ID']; 
+    $depot = $_SESSION['DEPOT_ID'];
     $division = $_SESSION['DIVISION_ID'];
-    
+
     // Get current date and time
     $submittedDateTime = date("Y-m-d H:i:s");
 
@@ -27,19 +27,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Convert the parts required string to an array
     $partsRequiredArray = explode(', ', $partsRequired);
-    
+
     // Convert the array back to a comma-separated string
     $partsRequiredString = implode(', ', $partsRequiredArray);
 
     // Assuming you have a database table named 'off_road_data'
     $sql = "INSERT INTO off_road_data (bus_number, make, emission_norms, off_road_date, off_road_location, parts_required, remarks, username, division, depot, submission_datetime, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
+
     // Prepare the SQL statement
     $stmt = $db->prepare($sql);
 
     // Bind the parameters
-    $stmt->bind_param("ssssssssiiss", $busNumber, $make, $emissionNorms, $offRoadFromDate, $offRoadLocation, $partsRequiredString, $remarks, $username,  $division, $depot, $submittedDateTime, $status);
+    $stmt->bind_param("ssssssssiiss", $busNumber, $make, $emissionNorms, $offRoadFromDate, $offRoadLocation, $partsRequiredString, $remarks, $username, $division, $depot, $submittedDateTime, $status);
 
     // Execute the statement
     if ($stmt->execute()) {
@@ -52,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Close the statement
     $stmt->close();
-}else {
+} else {
     // Redirect to login.php if accessed directly without POST data
     header("Location: login.php");
     exit;

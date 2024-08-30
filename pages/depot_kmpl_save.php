@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->close();
         $db->close();
     }
-}else {
+} else {
     // Redirect to login.php if accessed directly without POST data
     header("Location: login.php");
     exit;

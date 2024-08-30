@@ -68,17 +68,17 @@ confirm_logged_in();
 
 <body id="page-top">
 
-  <!-- Page Wrapper -->
-  <div id="wrapper">
     <div id="content" style="max-width: 100%; overflow-x: hidden;">
       <nav class="navbar navbar-expand-md fixed-top" style="background-color: #bfc9ca;">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="../includes/depot_verify.php" style="color: black;">
-            <img src="../images/kkrtclogo.png" width="40" height="40" alt="KKRTC">
+        <div class="container-fluid ">
+          <a class="navbar-brand" href="../includes/depot_verify.php" style="color: black; padding-right:0;">
+            <img src="../images/kkrtclogo.png" width="50" height="40" alt="KKRTC" style="padding-right: 0;">
           </a>
+          <!--<h4>KKRTC</h4>&nbsp;&nbsp;-->
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
             aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <i class="fa-duotone fa-solid fa-sliders"></i> </button>
+            <i class="fa-duotone fa-solid fa-sliders"></i>
+          </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav me-auto mb-2 mb-md-0">
               <li class="nav-item">
@@ -87,7 +87,7 @@ confirm_logged_in();
                     style="color: black; font-size: 18px;">Home</a>
                 </h4>
               </li>
-              <?php if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') { ?>
+              <?php if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || $_SESSION['JOB_TITLE'] == 'CO_STORE') { ?>
                 <li class="nav-item">
                   <div class="dropdown">
                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -112,6 +112,8 @@ confirm_logged_in();
                     </ul>
                   </div>
                 </li>
+              <?php } ?>
+              <?php if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') { ?>
                 <li class="nav-item">
                   <div class="dropdown">
                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -129,7 +131,7 @@ confirm_logged_in();
                   <div class="dropdown">
                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
                       style="font-size: 15px;">
-                     <b>Defect records</b>
+                      <b>Defect records</b>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                       <li><a class="dropdown-item" href="main_camera_defect.php">View camera/VLTS/PIS Defect</a></li>
@@ -143,53 +145,23 @@ confirm_logged_in();
                       <b>Buses</b>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li><a class="dropdown-item" href="buses.php">Vies Bus</a></li>
+                      <li><a class="dropdown-item" href="buses.php">View Bus</a></li>
                       <li><a class="dropdown-item" href="main_bus_transfer.php">Buse Transfer</a></li>
                       <li><a class="dropdown-item" href="main_rwy_alllocation.php">View RWY Buse Allocation</a></li>
                     </ul>
                   </div>
                 </li>
-                <!--<li class="nav-item">
-                  <div class="dropdown">
-                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                      style="font-size: 15px;">
-                      <b>Route Vehicles</b>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li><a class="dropdown-item" href="depot_ramp.php">Route Ramp Section</a></li>
-                      <li><a class="dropdown-item" href="depot_ramp_attend.php">Ramp Defect Attend</a></li>
-                      <li><a class="dropdown-item" href="depot_schedule_b.php">Vehicle Fixation</a></li>
-                    </ul>
-                  </div>
-                </li>
                 <li class="nav-item">
                   <div class="dropdown">
                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
                       style="font-size: 15px;">
-                      <b> Break Down</b>
+                      <b>Fixation Data</b>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li><a class="dropdown-item" href="depot_bd.php">Add BD</a></li>
-                    </ul>
-                  </div>
-                </li>-->
-              <?php } ?>
-              <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
-
-                <li class="nav-item">
-                  <div class="dropdown">
-                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                      style="font-size: 15px;">
-                      <b>Crew Fixation</b>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Route Crew Fixation</a></li>
+                      <li><a class="dropdown-item" href="main_schedule_info.php">Route Crew/vehicle Fixation</a></li>
                     </ul>
                   </div>
                 </li>
-              <?php } ?>
-              <?php if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') { ?>
-
                 <li class="nav-item">
                   <div class="dropdown">
                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -197,10 +169,19 @@ confirm_logged_in();
                       <b>Report</b>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="report.php">Off-Road Report</a></li>
-                        <li><a class="dropdown-item" href="depot_report.php">Off-Road One day report</a></li>
-                      <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
-                      <li><a class="dropdown-item" href="depot_crew_report_m.php">Route Monthly Crew report</a></li>
+                      <li><a class="dropdown-item" href="report.php">Off-Road Report</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item">
+                  <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      style="font-size: 15px;">
+                      <b>Users</b>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                      <li><a class="dropdown-item" href="employee.php">Employees</a></li>
+                      <li><a class="dropdown-item" href="user.php">User Accounts</a></li>
                     </ul>
                   </div>
                 </li>
@@ -263,7 +244,6 @@ confirm_logged_in();
         </div>
       </nav>
     </div>
-  </div>
   <br><br><br>
   <!-- End of Topbar -->
   <script>

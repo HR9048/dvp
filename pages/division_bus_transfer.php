@@ -2,129 +2,109 @@
 include '../includes/connection.php';
 include '../includes/division_sidebar.php';
 
-$query = 'SELECT ID, t.TYPE
-          FROM users u
-          JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-    if ($Aa == 'DEPOT') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to the Depot Page");
-            window.location = "../includes/depot_varify.php";
-        </script>
-        <?php
-    } elseif ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to the Head Office");
-            window.location = "index.php";
-        </script>
-        <?php
-    } elseif ($Aa == 'RWY') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php } 
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    exit;
 }
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
+    // Allow access
+    ?>
+
+    <style>
+        /* Style for the red color */
+        .red {
+            color: red;
+        }
+    </style>
+    <marquee behavior="scroll" direction="left">
+        <h4 class="red">You are attending to transfer vehicle from one depot to another depot within your Division</h4>
+    </marquee>
+    <!-- HTML form with elements -->
+    <div class="container mt-4" style="width:80%;">
+        <form method="post">
+            <h2>BUS TRANSFER</h2>
+            <nav class="navbar navbar-light bg-light">
+                <div id="searchBar" class="d-flex align-items-center">
+                    <input type="text" id="busSearch" class="form-control mr-sm-2" placeholder="Search Bus Number">
+                    <button type="button" class="btn btn-outline-success my-2 my-sm-0" onclick="searchBus()">Search</button>
+                </div>
+            </nav>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="bus_number">Bus Number:</label>
+                        <input type="text" class="form-control" id="bus_number" name="bus_number" readonly>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="make">Make:</label>
+                        <input type="text" class="form-control" id="make" name="make" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="emission_norms">Emission Norms:</label>
+                        <input type="text" class="form-control" id="emission_norms" name="norms" readonly>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="from_depot">From Depot:</label>
+                        <input type="text" class="form-control" id="from_depot" name="from_depot" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <select class="form-control" id="division" name="division" required onchange="fetchDivision()"
+                    style="display:none;">
+                    <option value="">Select Division</option>
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="to_depot">To Depot:</label>
+                        <select class="form-control" id="to_depot" name="to_depot" required>
+                            <option value="">Select Depot</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="transfer_order_no">Transfer Order No:</label>
+                        <input type="text" class="form-control" id="transfer_order_no" name="transfer_order_no" required>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="from_depot_id" name="from_depot_id">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="order_date">Order Date:</label>
+                        <input type="date" class="form-control" id="order_date" name="order_date" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+
+    <?php
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
 ?>
-<style>
-    /* Style for the red color */
-    .red {
-        color: red;
-    }
-</style>
-<marquee behavior="scroll" direction="left">
-    <h4 class="red">You are attending to transfer vehicle from one depot to another depot within your Division</h4>
-</marquee>
-<!-- HTML form with elements -->
-<div class="container mt-4" style="width:80%;">
-    <form method="post">
-        <h2>BUS TRANSFER</h2>
-        <nav class="navbar navbar-light bg-light">
-            <div id="searchBar" class="d-flex align-items-center">
-                <input type="text" id="busSearch" class="form-control mr-sm-2" placeholder="Search Bus Number">
-                <button type="button" class="btn btn-outline-success my-2 my-sm-0" onclick="searchBus()">Search</button>
-            </div>
-        </nav>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="bus_number">Bus Number:</label>
-                    <input type="text" class="form-control" id="bus_number" name="bus_number" readonly>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="make">Make:</label>
-                    <input type="text" class="form-control" id="make" name="make" readonly>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="emission_norms">Emission Norms:</label>
-                    <input type="text" class="form-control" id="emission_norms" name="norms" readonly>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="from_depot">From Depot:</label>
-                    <input type="text" class="form-control" id="from_depot" name="from_depot" readonly>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <select class="form-control" id="division" name="division" required onchange="fetchDivision()"
-                style="display:none;">
-                <option value="">Select Division</option>
-            </select>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="to_depot">To Depot:</label>
-                    <select class="form-control" id="to_depot" name="to_depot" required>
-                        <option value="">Select Depot</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="transfer_order_no">Transfer Order No:</label>
-                    <input type="text" class="form-control" id="transfer_order_no" name="transfer_order_no" required>
-                </div>
-            </div>
-        </div>
-        <input type="hidden" id="from_depot_id" name="from_depot_id">
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="order_date">Order Date:</label>
-                    <input type="date" class="form-control" id="order_date" name="order_date" required>
-                </div>
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-</div>
-
-
-<?php include '../includes/footer.php'; ?>
-
 <script>
     function searchBus() {
         var busNumber = $('#busSearch').val();

@@ -1,6 +1,10 @@
 <?php
 include '../includes/connection.php';
-include 'session.php';
+include '../pages/session.php';
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! Your session is experied please Login'); window.location = '../pages/logout.php';</script>";
+    exit;
+}
 $division_id = $_SESSION['DIVISION_ID'];
 $depot_id = $_SESSION['DEPOT_ID'];
 

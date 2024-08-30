@@ -1,8 +1,13 @@
 <?php
 require_once ('../includes/tcpdf/tcpdf.php');
 require_once ('../includes/connection.php');
-
-// Perform SQL query
+include 'session.php';
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! YouR session is experied please Login'); window.location = 'logout.php';</script>";
+    exit;
+}
+if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || $_SESSION['JOB_TITLE'] == 'CO_STORE') {
+    // Perform SQL query
 $sql = "SELECT 
     CASE 
         WHEN o.division = '1' THEN 1
@@ -982,4 +987,10 @@ $fileName = $formattedFileName . '_offorad_position.pdf';
 
 // Close and output PDF document
 $pdf->Output($fileName, 'D');
+
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
 ?>
+

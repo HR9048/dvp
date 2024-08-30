@@ -1,4 +1,4 @@
-<?php require ('session.php'); ?>
+<?php require('session.php'); ?>
 <?php if (logged_in()) { ?>
     <script type="text/javascript">
         window.location = "processlogin.php";
@@ -20,138 +20,142 @@
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap");
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Open Sans", sans-serif;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Open Sans", sans-serif;
+        }
 
-body {
-    height: 100vh;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #E5E7E9;
-}
+        body {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #E5E7E9;
+        }
 
-.form-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 800px; /* Default max width */
-    background: #fff;
-    border-radius: 25px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 800px;
+            /* Default max width */
+            background: #fff;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-.form-image {
-    display: block;
-    width: 100%;
-    background-size: cover;
-    background-position: center;
-}
+        .form-image {
+            display: block;
+            width: 100%;
+            background-size: cover;
+            background-position: center;
+        }
 
-.form-image img {
-    width: 30%;
-    height: auto;
-}
+        .form-image img {
+            width: 30%;
+            height: auto;
+        }
 
-.form-content {
-    width: 100%;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
+        .form-content {
+            width: 100%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-.form-content h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-    color: #333;
-}
+        .form-content h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: #333;
+        }
 
-.form-group {
-    margin-bottom: 20px;
-}
+        .form-group {
+            margin-bottom: 20px;
+        }
 
-.form-control-user {
-    border-radius: 25px;
-}
+        .form-control-user {
+            border-radius: 25px;
+        }
 
-.btn-user {
-    border-radius: 25px;
-    background-color: #4e73df;
-    color: #fff;
-}
+        .btn-user {
+            border-radius: 25px;
+            background-color: #4e73df;
+            color: #fff;
+        }
 
-.btn-user:hover {
-    background-color: #2e59d9;
-}
+        .btn-user:hover {
+            background-color: #2e59d9;
+        }
 
-@media (min-width: 768px) {
-    .form-container {
-        flex-direction: row;
-        max-width: 700px;
-    }
+        @media (min-width: 768px) {
+            .form-container {
+                flex-direction: row;
+                max-width: 700px;
+            }
 
-    .form-image {
-        width: 50%;
-    }
+            .form-image {
+                width: 50%;
+            }
 
-    .form-content {
-        width: 50%;
-    }
-}
+            .form-content {
+                width: 50%;
+            }
+        }
 
-@media (max-width: 767px) {
-    .form-container {
-        width: 70%; /* Set width to 80% on mobile view */
-        max-width: none; /* Remove max-width restriction */
-    }
+        @media (max-width: 767px) {
+            .form-container {
+                width: 70%;
+                /* Set width to 80% on mobile view */
+                max-width: none;
+                /* Remove max-width restriction */
+            }
 
-    .form-image img {
-        width: 30%; /* Make image full width */
-        height: auto; /* Maintain aspect ratio */
-    }
-}
+            .form-image img {
+                width: 30%;
+                /* Make image full width */
+                height: auto;
+                /* Maintain aspect ratio */
+            }
+        }
 
-.overlay-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 10px;
-    background-color: #85C1E9;
-}
+        .overlay-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            background-color: #85C1E9;
+        }
 
-.overlay-panel img {
-    margin-bottom: 30px;
-    margin-top: 20px;
-}
+        .overlay-panel img {
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
 
-.overlay-panel h3 {
-    font-size: 1.2rem;
-    color: #333;
-    margin: 0;
-    font-weight: 600;
-}
+        .overlay-panel h3 {
+            font-size: 1.2rem;
+            color: #333;
+            margin: 0;
+            font-weight: 600;
+        }
 
-.overlay-panel h4 {
-    font-size: 1rem;
-    color: #333;
-    margin-top: 5px;
-}
-
+        .overlay-panel h4 {
+            font-size: 1rem;
+            color: #333;
+            margin-top: 5px;
+        }
     </style>
 </head>
 
 <body>
-<div class="form-container">
+    <div class="form-container">
         <div class="form-image">
             <div class="overlay-panel overlay-right">
                 <img src="../images/kkrtclogo.png" alt="Logo" width="40" height="40">

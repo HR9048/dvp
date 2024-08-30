@@ -245,9 +245,10 @@ if (isset($_POST['sch_no'])) {
 
     echo json_encode($finalData);
 } else {
-    echo json_encode(null); // No sch_no parameter passed
+    // Redirect to login.php if accessed directly without POST data
+    header("Location: login.php");
+    exit;
 }
-
 
 // SELECT sm.*, svo.schedule_status,svo.departed_date
 //         FROM schedule_master sm

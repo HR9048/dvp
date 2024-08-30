@@ -14,47 +14,47 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
 
     <h6>Select Month and Year for Schedule Report</h6>
     <form id="scheduleForm">
-    <?php
-            $currentDate = new DateTime();
-            $currentYear = $currentDate->format("Y");
-            $currentMonth = $currentDate->format("m");
-            $startYear = 2024;
-            $startMonth = 4;
+        <?php
+        $currentDate = new DateTime();
+        $currentYear = $currentDate->format("Y");
+        $currentMonth = $currentDate->format("m");
+        $startYear = 2024;
+        $startMonth = 4;
 
-            // Generate year range
-            $year_range = range($startYear, $currentYear);
-            ?>
+        // Generate year range
+        $year_range = range($startYear, $currentYear);
+        ?>
 
         <label for="month">Month:</label>
         <select id="month" name="month">
-        <?php
-                    $month_range = array();
-                    $selected_year = isset($_GET['year']) ? $_GET['year'] : date('Y');
-                    $selected_month = isset($_GET['month']) ? $_GET['month'] : date('n');
+            <?php
+            $month_range = array();
+            $selected_year = isset($_GET['year']) ? $_GET['year'] : date('Y');
+            $selected_month = isset($_GET['month']) ? $_GET['month'] : date('n');
 
-                    // Calculate start and end month based on selected year
-                    $start = ($selected_year == $startYear) ? $startMonth : 1;
-                    $end = ($selected_year == $currentYear) ? $currentMonth : 12;
+            // Calculate start and end month based on selected year
+            $start = ($selected_year == $startYear) ? $startMonth : 1;
+            $end = ($selected_year == $currentYear) ? $currentMonth : 12;
 
-                    for ($i = $start; $i <= $end; $i++) {
-                        $month_range[$i] = date("F", mktime(0, 0, 0, $i, 1));
-                    }
+            for ($i = $start; $i <= $end; $i++) {
+                $month_range[$i] = date("F", mktime(0, 0, 0, $i, 1));
+            }
 
-                    foreach ($month_range as $month_number => $month_name) {
-                        $selected = ($selected_month == $month_number) ? 'selected' : '';
-                        echo '<option ' . $selected . ' value ="' . $month_number . '">' . $month_name . '</option>';
-                    }
-                    ?>
+            foreach ($month_range as $month_number => $month_name) {
+                $selected = ($selected_month == $month_number) ? 'selected' : '';
+                echo '<option ' . $selected . ' value ="' . $month_number . '">' . $month_name . '</option>';
+            }
+            ?>
         </select>
 
         <label for="year">Year:</label>
         <select id="year" name="year">
-        <?php
-                foreach ($year_range as $year_val) {
-                    $selected_year = (isset($_GET['year']) && $year_val == $_GET['year']) ? 'selected' : '';
-                    echo '<option ' . $selected_year . ' value ="' . $year_val . '">' . $year_val . '</option>';
-                }
-                ?>
+            <?php
+            foreach ($year_range as $year_val) {
+                $selected_year = (isset($_GET['year']) && $year_val == $_GET['year']) ? 'selected' : '';
+                echo '<option ' . $selected_year . ' value ="' . $year_val . '">' . $year_val . '</option>';
+            }
+            ?>
         </select>
 
         <button class="btn btn-primary" type="submit">Submit</button>
@@ -62,12 +62,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
 
     </form>
     <div class="container1">
-    <div id="reportContainer"></div>
+        <div id="reportContainer"></div>
     </div>
 
     <script>
-       $(document).ready(function() {
-            $('#scheduleForm').on('submit', function(e) {
+        $(document).ready(function () {
+            $('#scheduleForm').on('submit', function (e) {
                 e.preventDefault();
                 const month = $('#month').val();
                 const year = $('#year').val();
@@ -77,7 +77,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
                     url: '../database/monthly_schedule_report.php',
                     data: JSON.stringify({ month: month, year: year }),
                     contentType: 'application/json',
-                    success: function(response) {
+                    success: function (response) {
                         try {
                             const data = JSON.parse(response);
                             $('#reportContainer').html(data.html);
@@ -86,7 +86,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
                             $('#reportContainer').html('<p>Error parsing response.</p>');
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.error('AJAX Error:', status, error);
                         $('#reportContainer').html('<p>Error loading report.</p>');
                     }
@@ -102,4 +102,3 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
 }
 include '../includes/footer.php';
 ?>
- 

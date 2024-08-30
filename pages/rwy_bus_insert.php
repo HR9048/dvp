@@ -55,5 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Prepare failed: ' . mysqli_error($db)]);
     }
+}else {
+    // Redirect to login.php if accessed directly without POST data
+    header("Location: login.php");
+    exit;
 }
 ?>

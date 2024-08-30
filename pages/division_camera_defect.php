@@ -12,27 +12,27 @@ while ($row = mysqli_fetch_assoc($result)) {
     $Aa = $row['TYPE'];
 
     if ($Aa == 'DEPOT') {
-?>
+        ?>
         <script type="text/javascript">
             //then it will be redirected
             alert("Restricted Page! You will be redirected to Depot Page");
             window.location = "../includes/depot_verify.php";
         </script>
     <?php } elseif ($Aa == 'RWY') {
-    ?>
+        ?>
         <script type="text/javascript">
             //then it will be redirected
             alert("Restricted Page! You will be redirected to RWY Page");
             window.location = "rwy.php";
         </script>
     <?php } elseif ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
-    ?>
+        ?>
         <script type="text/javascript">
             //then it will be redirected
             alert("Restricted Page! You will be redirected to RWY Page");
             window.location = "index.php";
         </script>
-<?php
+        <?php
     }
 }
 ?>
@@ -219,10 +219,10 @@ while ($row = mysqli_fetch_assoc($result)) {
             $overallSerialNo = 1;
             $prevDivision = "";
 
-            while ($row = mysqli_fetch_assoc($result)) : ?>
+            while ($row = mysqli_fetch_assoc($result)): ?>
                 <tr>
                     <td><?php echo $overallSerialNo++; ?></td>
-                    <?php if ($row['division'] !== $prevDivision) : ?>
+                    <?php if ($row['division'] !== $prevDivision): ?>
                     <?php endif; ?>
                     <?php $prevDivision = $row['division']; ?>
                     <td><?php echo htmlspecialchars($row['division']); ?></td>
@@ -252,7 +252,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 
 <script>
-    document.getElementById('downloadExcel').addEventListener('click', function() {
+    document.getElementById('downloadExcel').addEventListener('click', function () {
         // Get today's date
         var today = new Date();
         var dd = String(today.getDate()).padStart(2, '0');
@@ -271,7 +271,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         XLSX.writeFile(workbook, today + '_camera-PIS.xlsx');
     });
 
-    document.getElementById('downloadText').addEventListener('click', function() {
+    document.getElementById('downloadText').addEventListener('click', function () {
         // Get today's date
         var today = new Date();
         var dd = String(today.getDate()).padStart(2, '0');

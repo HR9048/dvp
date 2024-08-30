@@ -3,42 +3,12 @@ error_reporting(E_ERROR | E_PARSE);
 include '../includes/connection.php';
 include '../includes/sidebar.php';
 
-$query = 'SELECT ID, t.TYPE FROM users u JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DEPOT') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Depot Page");
-            window.location = "../includes/depot_verify.php";
-        </script>
-    <?php } elseif ($Aa == 'DIVISION') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Division Page");
-            window.location = "division.php";
-        </script>
-    <?php } elseif ($Aa == 'RWY') {
-
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php }
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+    echo "<script type='text/javascript'>alert('Restricted Page! YouR session is experied please Login'); window.location = 'logout.php';</script>";
+    exit;
 }
-?>
-<?php
+if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' ||$_SESSION['JOB_TITLE'] == 'CO_STORE' ) {
 $formatted_date = date('d/m/Y');
-
 ?>
 <div class="container1">
     <h1 style="text-align:center;">Kalyana Karnataka Road Transport Corporation (KKRTC)</h1><br><br>
@@ -289,4 +259,9 @@ $formatted_date = date('d/m/Y');
 
 
 <?php $db->close();
-include '../includes/footer.php'; ?>
+} else {
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    exit;
+}
+include '../includes/footer.php';
+?>

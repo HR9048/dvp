@@ -1,10 +1,10 @@
 <?php
-include ('../includes/connection.php');
-require_once ('session.php');
+include('../includes/connection.php');
+require_once('session.php');
 if (empty($_POST)) {
-    // If accessed directly without POST data, redirect to login.php
-    header("Location: login.php");
-    exit;
+  // If accessed directly without POST data, redirect to login.php
+  header("Location: login.php");
+  exit;
 }
 $zz = $_POST['id'];
 $a = $_POST['firstname'];
@@ -36,14 +36,14 @@ $sql = 'SELECT ID
 $result2 = mysqli_query($db, $sql) or die(mysqli_error($db));
 
 if ($result2) {
-    // Redirect to processlogin.php after successful update
-    echo '<script type="text/javascript">
+  // Redirect to processlogin.php after successful update
+  echo '<script type="text/javascript">
             alert("You\'ve updated your account successfully.");
             window.location = "processlogin.php";
           </script>';
 } else {
-    // Handle errors
-    echo '<script type="text/javascript">
+  // Handle errors
+  echo '<script type="text/javascript">
             alert("Failed to update your account. Please try again.");
             window.location = "processlogin.php";
           </script>';

@@ -76,10 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $db->close();
 }else {
-    // Redirect to login.php if accessed directly without POST data
-    header("Location: login.php");
-    exit;
-}else {
     header('Location: ../pages/login.php');
     exit;
 }

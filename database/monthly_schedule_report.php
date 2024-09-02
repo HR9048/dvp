@@ -234,11 +234,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $daysInMonth = date('t', strtotime($start_date));
 
     $reportData = [
+        'Schedule Departures' => [],
         'Actual Departures' => [],
-        'Departures Held' => [],
-        'Departures Not Operated' => [],
+        'Departures Not Departed' => [],
         'Departures On Time' => [],
+        '% of Departure' => [],
         'Arrivals On Time' => [],
+        '% of Arrival' => [],
         'Fixed Vehicles Operated (%)' => [],
         'Fixed Driver 1 Operated (%)' => [],
         'Fixed Driver 2 Operated (%)' => [],
@@ -262,6 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $query = "SELECT COUNT(*) as departure_held,
         COUNT(CASE WHEN dep_time_diff <= 30 THEN 1 END) as departures_on_time,
+        count(dep_time_diff) as total_dep, 
         COUNT(CASE WHEN arr_time_diff <= 30 THEN 1 END) as arrivals_on_time,
         COUNT(CASE WHEN bus_allotted_status = 0 THEN 1 END) as bus_operated,
         COUNT(CASE WHEN driver_1_allotted_status = 0 THEN 1 END) as driver1_operated,
@@ -274,24 +277,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = $result->fetch_assoc();
 
         // Populate the report data
-        $reportData['Actual Departures'][] = $total_departures;
-        $reportData['Departures Held'][] = $data['departure_held'];
-        $reportData['Departures Not Operated'][] = $total_departures - $data['departure_held'];
+        $reportData['Schedule Departures'][] = $total_departures;
+        $reportData['Actual Departures'][] = $data['departure_held'];
+        $reportData['Departures Not Departed'][] = $total_departures - $data['departure_held'];
         $reportData['Departures On Time'][] = $data['departures_on_time'];
+        if ($data['departure_held'] > 0) {
+            $reportData['% of Departure'][] = number_format(($data['departures_on_time'] / $data['departure_held']) * 100, 0) . '%';
+        } else {
+            $reportData['% of Departure'][] = 'NA';
+        }
         $reportData['Arrivals On Time'][] = $data['arrivals_on_time'];
-
-       // Calculate percentages with division by zero check
-    if ($data['departure_held'] > 0) {
-        $reportData['Fixed Vehicles Operated (%)'][] = number_format(($data['bus_operated'] / $data['departure_held']) * 100, 0) . '%';
-        $reportData['Fixed Driver 1 Operated (%)'][] = number_format(($data['driver1_operated'] / $data['departure_held']) * 100, 0) . '%';
-        $reportData['Fixed Driver 2 Operated (%)'][] = number_format(($data['driver2_operated'] / $data['departure_held']) * 100, 0) . '%';
-        $reportData['Fixed Conductor Operated (%)'][] = number_format(($data['conductor_operated'] / $data['departure_held']) * 100, 0) . '%';
-    } else {
-        $reportData['Fixed Vehicles Operated (%)'][] = 'NA';
-        $reportData['Fixed Driver 1 Operated (%)'][] = 'NA';
-        $reportData['Fixed Driver 2 Operated (%)'][] = 'NA';
-        $reportData['Fixed Conductor Operated (%)'][] = 'NA';
-    }
+        if ($data['departure_held'] > 0) {
+            $reportData['% of Arrival'][] = number_format(($data['arrivals_on_time'] / $data['departure_held']) * 100, 0) . '%';
+        } else {
+            $reportData['% of Arrival'][] = 'NA';
+        }
+        // Calculate percentages with division by zero check
+        if ($data['departure_held'] > 0) {
+            $reportData['Fixed Vehicles Operated (%)'][] = number_format(($data['bus_operated'] / $data['departure_held']) * 100, 0) . '%';
+            $reportData['Fixed Driver 1 Operated (%)'][] = number_format(($data['driver1_operated'] / $data['departure_held']) * 100, 0) . '%';
+            $reportData['Fixed Driver 2 Operated (%)'][] = number_format(($data['driver2_operated'] / $data['departure_held']) * 100, 0) . '%';
+            $reportData['Fixed Conductor Operated (%)'][] = number_format(($data['conductor_operated'] / $data['departure_held']) * 100, 0) . '%';
+        } else {
+            $reportData['Fixed Vehicles Operated (%)'][] = 'NA';
+            $reportData['Fixed Driver 1 Operated (%)'][] = 'NA';
+            $reportData['Fixed Driver 2 Operated (%)'][] = 'NA';
+            $reportData['Fixed Conductor Operated (%)'][] = 'NA';
+        }
     }
 
     $monthlySummaryReport = '<h2>Monthly Summary Report for ' . htmlspecialchars(date('F', mktime(0, 0, 0, $month, 10))) . ' ' . htmlspecialchars($year) . '</h2>';
@@ -320,7 +332,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Return the combined HTML report
     echo json_encode(['html' => $combinedReport]);
-}else {
+} else {
     header('Location: ../pages/login.php');
     exit;
 }

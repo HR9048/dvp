@@ -36,7 +36,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 <thead>
                     <tr>
                         <th class="hide">ID</th>
-                        <th>Division</th>
+                        <th>Division1</th>
                         <th>Depot</th>
                         <th>Key</th>
                         <th>Description</th>
@@ -69,7 +69,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         ON skm.service_class_id = sc.id
     LEFT JOIN 
         schedule_type st 
-        ON skm.service_type_id = st.id";
+        ON skm.service_type_id = st.id
+        order by loc.division_id,loc.depot_id,sch_dep_time";
 
                     $result = $db->query($sql);
 
@@ -149,7 +150,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         ON skm.service_class_id = sc.id
     LEFT JOIN 
         schedule_type st 
-        ON skm.service_type_id = st.id";
+        ON skm.service_type_id = st.id
+    order by loc.division_id,loc.depot_id,sch_dep_time";
 
                     $result = $db->query($sql);
 

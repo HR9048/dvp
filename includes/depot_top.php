@@ -129,7 +129,6 @@ confirm_logged_in();
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     <li><a class="dropdown-item" href="depot_ramp.php">Route Ramp Section</a></li>
                     <li><a class="dropdown-item" href="depot_ramp_attend.php">Ramp Defect Attend</a></li>
-                      <li><a class="dropdown-item" href="depot_schedule_b.php">Vehicle Fixation</a></li>
                     </ul>
                   </div>
                 </li>
@@ -181,16 +180,21 @@ confirm_logged_in();
                   </div>
                 </li>
                 <?php } ?>
-                 <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {   ?>
+                 <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {   ?>
 
                 <li class="nav-item">
                   <div class="dropdown">
                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
                       style="font-size: 15px;">
-                      <b>Crew Fixation</b>
+                      <b>Schedule Master</b>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Route Crew Fixation</a></li>
+                    <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {   ?>
+                      <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Update Schedule</a></li>
+                      <?php } ?>
+                      <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') {   ?>
+                      <li><a class="dropdown-item" href="depot_schedule_b.php">Update Schedule</a></li>
+                      <?php } ?>
                     </ul>
                   </div>
                 </li>

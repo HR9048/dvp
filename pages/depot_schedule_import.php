@@ -25,24 +25,24 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             $sch_arr_time = substr($data[6], 0, 5); // Extract HH:MM
             $service_class_id = $data[7];
             $service_type_id = $data[8];
-
+            $status='1';
             // Determine schedule count based on service type id
-            if ($service_type_id == 1 || $service_type_id == 2) {
+            if ($service_type_id == 1 ) {
                 $sch_count = 1;
-            } elseif ($service_type_id == 3 || $service_type_id == 4 || $service_type_id == 5) {
+            } elseif ($service_type_id == 3 || $service_type_id == 4 || $service_type_id == 2) {
                 $sch_count = 2;
             } else {
                 $sch_count = 0; // Default value if service type id is not 1-5
             }
-            if ($service_type_id == 1 || $service_type_id == 2) {
+            if ($service_type_id == 1) {
                 $number_of_buses = 1;
-            } elseif ($service_type_id == 3 || $service_type_id == 4 || $service_type_id == 5) {
+            } elseif ($service_type_id == 3 || $service_type_id == 4 || $service_type_id == 2) {
                 $number_of_buses = 2;
             } else {
                 $number_of_buses = 0; // Default value if service type id is not 1-5
             }
 
-            $query = "INSERT INTO schedule_master (division_id, depot_id, sch_key_no, sch_abbr, sch_km, sch_dep_time, sch_arr_time, sch_count,number_of_buses, service_class_id, service_type_id) VALUES ('$division_id', '$depot_id', '$sch_key_no', '$sch_abbr', '$sch_km', '$sch_dep_time', '$sch_arr_time', '$sch_count', '$number_of_buses', '$service_class_id', '$service_type_id')";
+            $query = "INSERT INTO schedule_master (division_id, depot_id, sch_key_no, sch_abbr, sch_km, sch_dep_time, sch_arr_time, sch_count,number_of_buses, service_class_id, service_type_id,status) VALUES ('$division_id', '$depot_id', '$sch_key_no', '$sch_abbr', '$sch_km', '$sch_dep_time', '$sch_arr_time', '$sch_count', '$number_of_buses', '$service_class_id', '$service_type_id',$status)";
             mysqli_query($db, $query) or die(mysqli_error($db));
         }
 

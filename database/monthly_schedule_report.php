@@ -14,13 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $division_id = $_SESSION['DIVISION_ID'];
     $depotname = $_SESSION['KMPL_DEPOT'];
 
-    // Calculate start and end dates of the selected month
     $start_date = date("$year-$month-01");
     $end_date = date("Y-m-t", strtotime($start_date));
 
     // Adjust the end date if the selected month is the current month
     if ($year == date('Y') && $month == date('m')) {
-        $end_date = date('Y-m-d');
+        $end_date = date('Y-m-d'); // Set end date to current date
     }
 
     // First Report: Schedule Report
@@ -43,7 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         COALESCE(svo.driver_2_allotted_status, 'N/A') AS driver_2_allotted_status,
         COALESCE(svo.arr_time_diff, 'N/A') AS arr_time_diff,
         sm.single_crew,
-        sm.service_type_id
+        sm.service_type_id,
+        svo.vehicle_no,
+        svo.driver_token_no_1,
+        svo.driver_token_no_2,
+        svo.arr_time,
+        svo.dep_time
     FROM 
         schedule_master sm
     LEFT JOIN 
@@ -84,7 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'sch_arr_time' => $row['sch_arr_time'],
                     'dates' => [],
                     'single_crew' => $row['single_crew'],
-                    'service_type_id' => $row['service_type_id']
+                    'service_type_id' => $row['service_type_id'],
+                    'vehicle_no' => $row['vehicle_no'],
+                    'driver_token_no_1' => $row['driver_token_no_1'],
+                    'driver_token_no_2' => $row['driver_token_no_2'],
+                    'arr_time' => $row['arr_time'],
+                    'dep_time' => $row['dep_time']
+
                 ];
             }
 
@@ -102,20 +112,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $scheduleReport .= '<p style="color: red;">Note * : (SNO = Schedule not Operated),(SNA = Schedule not Arrived), (NA = Not Alloted), (N/A = Not Applicable)</p>';
 
         foreach ($schedules as $schedule_no => $schedule) {
-            $scheduleReport .= '<h3>Schedule No: ' . htmlspecialchars($schedule_no) . '</h3>';
+            $safe_schedule_no = htmlspecialchars($schedule_no, ENT_QUOTES, 'UTF-8');
+
+            // Use the sanitized version in the data-target attribute
+            $scheduleReport .= '<h3>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#scheduleModal' . $safe_schedule_no . '">
+      Schedule No: ' . $safe_schedule_no . '
+    </button>
+</h3>';
+           
             $scheduleReport .= '<table border="1">';
             $scheduleReport .= '<tr><th>Content</th>';
 
             // Header for dates
-            for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+            $days_in_month = date('t', strtotime($start_date));
+            $current_day = $year == date('Y') && $month == date('m') ? date('j') : $days_in_month;
+            for ($i = 1; $i <= $current_day; $i++) {
                 $scheduleReport .= '<th>' . $i . '</th>';
             }
             $scheduleReport .= '</tr>';
-
             // Populate rows
             $scheduleReport .= '<tr>';
             $scheduleReport .= '<td>Dep:' . htmlspecialchars($schedule['sch_dep_time']) . '</td>';
-            for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+            for ($i = 1; $i <= $current_day; $i++) {
                 $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                 $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
                     'dep_time_diff' => 'SNO',
@@ -134,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $filtered_bus_numbers = array_filter($schedule['bus_numbers']);
             $bus_numbers = !empty($filtered_bus_numbers) ? implode(', ', $filtered_bus_numbers) : 'NA';
             $scheduleReport .= '<td>' . htmlspecialchars($bus_numbers) . '</td>';
-            for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+            for ($i = 1; $i <= $current_day; $i++) {
                 $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                 $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
                     'dep_time_diff' => 'NO',
@@ -156,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $crew = !empty($filtered_driver_tokens) ? implode(', ', $filtered_driver_tokens) : 'NA';
 
                 $scheduleReport .= '<td rowspan="2">' . htmlspecialchars($crew) . '</td>'; // Rowspan of 2 rows
-                for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+                for ($i = 1; $i <= $current_day; $i++) {
                     $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                     $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
                         'dep_time_diff' => 'NO',
@@ -172,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $scheduleReport .= '</tr>';
 
                 $scheduleReport .= '<tr>';
-                for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+                for ($i = 1; $i <= $current_day; $i++) {
                     $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                     $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
                         'dep_time_diff' => 'NO',
@@ -193,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $crew = !empty($filtered_driver_tokens) ? implode(', ', $filtered_driver_tokens) : 'NA';
                 $scheduleReport .= '<td>' . htmlspecialchars($crew) . '</td>';
 
-                for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+                for ($i = 1; $i <= $current_day; $i++) {
                     $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                     $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
                         'dep_time_diff' => 'NO',
@@ -211,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $scheduleReport .= '<tr>';
             $scheduleReport .= '<td>Arr:' . htmlspecialchars($schedule['sch_arr_time']) . '</td>';
-            for ($i = 1; $i <= date('t', strtotime($start_date)); $i++) {
+            for ($i = 1; $i <= $current_day; $i++) {
                 $date_key = sprintf('%04d-%02d-%02d', $year, $month, $i);
                 $data = isset($schedule['dates'][$date_key]) ? $schedule['dates'][$date_key] : [
                     'dep_time_diff' => 'NO',
@@ -221,17 +240,175 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'arr_time_diff' => 'NO'
                 ];
 
-                $symbol = $data['arr_time_diff'] === 'NO' ? 'SNA' : ($data['arr_time_diff'] > 30 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>');
+                $symbol = '';
+
+                if ($data['arr_time_diff'] === 'NO') {
+                    $symbol = 'SNO'; // Handle 'NO' case
+                } elseif (is_numeric($data['arr_time_diff'])) {
+                    // Check if the value is numeric and perform the following checks
+                    if ($data['arr_time_diff'] > 30) {
+                        $symbol = '<i class="fa-solid fa-square-xmark fa-xl" style="color: #3aad08f5;"></i>'; // Green Cross for time > 30
+                    } elseif ($data['arr_time_diff'] > 0 && $data['arr_time_diff'] <= 30) {
+                        $symbol = '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>'; // Green Check for time between 0 and 30
+                    } elseif ($data['arr_time_diff'] < 0) {
+                        $symbol = '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>'; // Red Cross for time < 0
+                    }
+                } else {
+                    $symbol = 'SNA'; // Handle null or non-numeric values
+                }
+
                 $scheduleReport .= '<td>' . $symbol . '</td>';
             }
             $scheduleReport .= '</tr>';
 
             $scheduleReport .= '</table><br>';
+            // Modal for Schedule Details
+            $scheduleReport .= '
+            <div class="modal fade" id="scheduleModal' . htmlspecialchars($schedule_no) . '" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel' . htmlspecialchars($schedule_no) . '" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="scheduleModalLabel' . htmlspecialchars($schedule_no) . '">Schedule Report for Schedule No: ' . htmlspecialchars($schedule_no) . '</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-bordered">
+                                <thead><tr><th>Date</th><th>Bus Number</th><th>Driver 1 Token</th>';
+
+            if ($schedule['single_crew'] == 'no' && in_array($schedule['service_type_id'], [2, 3, 4, 5])) {
+                $scheduleReport .= '<th>Driver 2 Token</th>';
+            }
+
+            $scheduleReport .= '<th>Departure Time</th><th>Arrival Time</th></tr></thead><tbody>';
+
+            $currentMonth = date('m');
+            $currentYear = date('Y');
+            $currentDate = date('Y-m-d');
+            // Extract the date keys from the schedule
+            // Extract the date keys from the schedule
+            $dateKeys = array_keys($schedule['dates']);
+
+            // Check if the date keys array is empty or contains empty strings
+            if (!empty($dateKeys) && !empty($dateKeys[0])) {
+                // Use the first date from the array if available
+                $firstDayOfMonth = date('Y-m-01', strtotime(reset($dateKeys)));
+            } else {
+                // If no data found for the entire month, use the provided month and year
+                $firstDayOfMonth = date('Y-m-01', strtotime("$year-$month-01"));
+            }
+
+
+
+            // Get the list of all dates in the month
+
+            $lastDayOfMonth = date('Y-m-t', strtotime($firstDayOfMonth));
+
+            // Show details up to today's date if the month is the current month
+            if ($currentMonth == date('m', strtotime($firstDayOfMonth)) && $currentYear == date('Y', strtotime($firstDayOfMonth))) {
+                $lastDayOfMonth = $currentDate;
+            }
+
+            $dateInterval = new DateInterval('P1D');
+            $period = new DatePeriod(new DateTime($firstDayOfMonth), $dateInterval, (new DateTime($lastDayOfMonth))->modify('+1 day'));
+
+            foreach ($period as $dateObj) {
+                $date = $dateObj->format('Y-m-d');
+
+                $scheduleReport .= '<tr><td>' . htmlspecialchars(date('d/m/Y', strtotime($date))) . '</td>';
+
+                if (isset($schedule['dates'][$date])) {
+                    $data = $schedule['dates'][$date];
+
+                    // Display Bus Number or Check Mark
+                    if ($data['bus_allotted_status'] === '0') {
+                        $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
+                    } elseif ($data['bus_allotted_status'] === '1') {
+                        $vehicle_no = isset($schedule['vehicle_no']) ? htmlspecialchars($schedule['vehicle_no']) : 'N/A';
+                        $scheduleReport .= '<td>' . $vehicle_no . '</td>';
+                    } else {
+                        $scheduleReport .= '<td>SNO</td>';
+                    }
+
+                    // Driver 1 Token or Check Mark
+                    if ($data['driver_1_allotted_status'] === '0') {
+                        $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
+                    } elseif ($data['driver_1_allotted_status'] === '1') {
+                        $scheduleReport .= '<td>' . htmlspecialchars($schedule['driver_token_no_1']) . '</td>';
+                    } else {
+                        $scheduleReport .= '<td>SNO</td>';
+                    }
+
+                    // Driver 2 Token or Check Mark (if applicable)
+                    if ($schedule['single_crew'] == 'no' && in_array($schedule['service_type_id'], [2, 3, 4, 5])) {
+                        if ($data['driver_2_allotted_status'] === '0') {
+                            $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
+                        } elseif ($data['driver_2_allotted_status'] === '1') {
+                            $scheduleReport .= '<td>' . htmlspecialchars($schedule['driver_token_no_2']) . '</td>';
+                        } else {
+                            $scheduleReport .= '<td>SNO</td>';
+                        }
+                    }
+
+                    // Departure Time
+                    if ($data['dep_time_diff'] <= '30') {
+                        $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
+                    } elseif ($data['dep_time_diff'] === 'N/A') {
+                        $scheduleReport .= '<td>SNO</td>';
+                    } elseif ($data['dep_time_diff'] > '30') {
+                        $scheduleReport .= '<td style="color:red">' . htmlspecialchars($schedule['dep_time']) . '</td>';
+                    }
+
+                    // Arrival Time
+                    if ($data['arr_time_diff'] <= '30' && $data['arr_time_diff'] > '0') {
+                        $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
+                    } elseif ($data['arr_time_diff'] === 'N/A') {
+                        $scheduleReport .= '<td>SNO</td>';
+                    } elseif ($data['arr_time_diff'] > '30') {
+                        $scheduleReport .= '<td style="color:green">' . htmlspecialchars($schedule['arr_time']) . '</td>';
+                    } elseif ($data['arr_time_diff'] < '0') {
+                        $scheduleReport .= '<td style="color:red">' . htmlspecialchars($schedule['arr_time']) . '</td>';
+                    }
+                } else {
+                    // If no data found for this date, display "SNO"
+                    $scheduleReport .= '<td>SNO</td><td>SNO</td>';
+                    if ($schedule['single_crew'] == 'no' && in_array($schedule['service_type_id'], [2, 3, 4, 5])) {
+                        $scheduleReport .= '<td>SNO</td>';
+                    }
+                    $scheduleReport .= '<td>SNO</td><td>SNO</td>';
+                }
+
+                $scheduleReport .= '</tr>';
+            }
+
+            $scheduleReport .= '</tbody></table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+
+
         }
     }
 
     // Second Report: Monthly Summary Report
+    $today = date('Y-m-d');
+    $currentMonth = date('m');
+    $currentYear = date('Y');
+
+    // Determine if the selected month and year are the current month and year
+    $isCurrentMonthYear = ($month == $currentMonth && $year == $currentYear);
+
+    // Calculate the number of days in the month
     $daysInMonth = date('t', strtotime($start_date));
+
+    // Adjust the number of days if it's the current month
+    if ($isCurrentMonthYear) {
+        $todayDay = date('j'); // Get today's day of the month
+        $daysInMonth = min($daysInMonth, $todayDay); // Limit days to today
+    }
 
     $reportData = [
         'Schedule Departures' => [],
@@ -270,8 +447,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         COUNT(CASE WHEN driver_1_allotted_status = 0 THEN 1 END) as driver1_operated,
         COUNT(CASE WHEN driver_2_allotted_status = 0 THEN 1 END) as driver2_operated,
         COUNT(CASE WHEN conductor_alloted_status = 0 THEN 1 END) as conductor_operated
-      FROM sch_veh_out
-      WHERE depot_id = '$depot_id' AND division_id = '$division_id' AND departed_date = '$date'";
+        FROM sch_veh_out
+        WHERE depot_id = '$depot_id' AND division_id = '$division_id' AND departed_date = '$date'";
 
         $result = mysqli_query($db, $query);
         $data = $result->fetch_assoc();
@@ -327,13 +504,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $monthlySummaryReport .= '</tbody></table>';
 
+
     // Combine both reports
     $combinedReport = $scheduleReport . '<br>' . $monthlySummaryReport;
 
     // Return the combined HTML report
     echo json_encode(['html' => $combinedReport]);
-} else {
-    header('Location: ../pages/login.php');
-    exit;
 }
 ?>

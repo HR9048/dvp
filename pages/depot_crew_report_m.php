@@ -19,7 +19,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
         $currentYear = $currentDate->format("Y");
         $currentMonth = $currentDate->format("m");
         $startYear = 2024;
-        $startMonth = 9;
+        $startMonth = 8;
 
         // Generate year range
         $year_range = range($startYear, $currentYear);

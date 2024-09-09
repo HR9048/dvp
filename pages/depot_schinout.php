@@ -264,7 +264,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                         </div>
                         <div class="col">
                             <div class="form-group">
-                                <label for="sch_no_in">Schedule out Date</label>
+                                <label for="out_date">Schedule out Date</label>
                                 <input class="form-control" type="date" id="out_date" name="out_date" required>
                             </div>
                         </div>
@@ -398,64 +398,64 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
                             var schDepTime = details.sch_dep_time || '';
                             scheduleDetailsDiv.innerHTML = `
-                                                            <div class="form-group">
-                                                                <label for="vehicle_no">Vehicle No</label>
-                                                                <select class="form-control select2" id="vehicle_no" name="vehicle_no" required style="width: 100%;">
-                                                                    ${vehicleNoOptions}
-                                                                </select>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label for="driver_token_no_1">Driver Token No 1</label>
-                                                                <select class="form-control select2" id="driver_token_no_1" name="driver_token_no_1" required style="width: 100%;">
-                                                                    ${driverTokenOptions1}
-                                                                </select>
-                                                            </div>
-                                                            ${driverTokenOptions2 ? `
                                                                 <div class="form-group">
-                                                                    <label for="driver_token_no_2">Driver Token No 2</label>
-                                                                    <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;">
-                                                                        ${driverTokenOptions2}
+                                                                    <label for="vehicle_no">Vehicle No</label>
+                                                                    <select class="form-control select2" id="vehicle_no" name="vehicle_no" required style="width: 100%;">
+                                                                        ${vehicleNoOptions}
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="driver_token_no_1">Driver Token No 1</label>
+                                                                    <select class="form-control select2" id="driver_token_no_1" name="driver_token_no_1" required style="width: 100%;">
+                                                                        ${driverTokenOptions1}
+                                                                    </select>
+                                                                </div>
+                                                                ${driverTokenOptions2 ? `
+                                                                    <div class="form-group">
+                                                                        <label for="driver_token_no_2">Driver Token No 2</label>
+                                                                        <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;">
+                                                                            ${driverTokenOptions2}
+                                                                        </select>
+                                                                    </div>
+                                                                ` : ''}
+                                                                ${details.single_crew === 'no' ? `
+                                                                <div class="form-group">
+                                                                    <label for="conductor_token_no">Conductor Token No</label>
+                                                                    <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;">
+                                                                        ${conductorTokenOptions}
                                                                     </select>
                                                                 </div>
                                                             ` : ''}
-                                                            ${details.single_crew === 'no' ? `
-                                                            <div class="form-group">
-                                                                <label for="conductor_token_no">Conductor Token No</label>
-                                                                <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;">
-                                                                    ${conductorTokenOptions}
-                                                                </select>
-                                                            </div>
-                                                        ` : ''}
-                                                            <div class="row">
-                                                                <div class="col">
-                                                                    <div class="form-group">
-                                                                        <label for="sch_dep_time">Sch Departure time</label>
-                                                                        <input type="time" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${schDepTime}" required readonly>
+                                                                <div class="row">
+                                                                    <div class="col">
+                                                                        <div class="form-group">
+                                                                            <label for="sch_dep_time">Sch Departure time</label>
+                                                                            <input type="time" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${schDepTime}" required readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="form-group">
+                                                                            <label for="act_dep_time">Act Departure time</label>
+                                                                            <input type="time" class="form-control" id="act_dep_time" name="act_dep_time" value="" required>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                                <div class="col">
-                                                                    <div class="form-group">
-                                                                        <label for="act_dep_time">Act Departure time</label>
-                                                                        <input type="time" class="form-control" id="act_dep_time" name="act_dep_time" value="" required>
-                                                                    </div>
+                                                                <div class="form-group" style="display: none;">
+                                                                    <label for="time_diff">Time Difference (minutes)</label>
+                                                                    <input type="text" class="form-control" id="time_diff" name="time_diff" readonly>
                                                                 </div>
-                                                            </div>
-                                                            <div class="form-group" style="display: none;">
-                                                                <label for="time_diff">Time Difference (minutes)</label>
-                                                                <input type="text" class="form-control" id="time_diff" name="time_diff" readonly>
-                                                            </div>
-                                                            <div class="form-group" style="display: none;">
-                                                                <label for="reason_for_late_departure">Reason for Late Departure:</label>
-                                                                <textarea class="form-control" id="reason_for_late_departure" name="reason_for_late_departure"></textarea>
-                                                            </div>
-                                                            <div class="form-group" style="display: none;">
-                                                                <label for="reason_early_departure">Reason for Early Departure:</label>
-                                                                <textarea class="form-control" id="reason_early_departure" name="reason_early_departure"></textarea>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <button type="submit" class="btn btn-primary">Submit</button>
-                                                            </div>
-                                                        `;
+                                                                <div class="form-group" style="display: none;">
+                                                                    <label for="reason_for_late_departure">Reason for Late Departure:</label>
+                                                                    <textarea class="form-control" id="reason_for_late_departure" name="reason_for_late_departure"></textarea>
+                                                                </div>
+                                                                <div class="form-group" style="display: none;">
+                                                                    <label for="reason_early_departure">Reason for Early Departure:</label>
+                                                                    <textarea class="form-control" id="reason_early_departure" name="reason_early_departure"></textarea>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                                </div>
+                                                            `;
 
                             $('.select2').select2();
                             $(document).on('change', '#act_dep_time', function () {
@@ -653,9 +653,37 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
             $('#sch_no_in, #out_date').change(fetchScheduleDetails);
         });
+        function handleArrivalTimeChange() {
+            var serverCurrentTime = new Date(document.getElementById('server_current_time').value);
+            var schArrTime = new Date('1970-01-01T' + document.getElementById('sch_arr_time').value + 'Z');
+
+            var arrTime = new Date('1970-01-01T' + document.getElementById('arr_time').value);
+            var diff = (schArrTime - arrTime) / (1000 * 60); // difference in minutes
+
+            var reasonField = document.getElementById('reason_field');
+            var reasonInput = document.getElementById('reason');
+
+            if (diff > 30) {
+                reasonField.style.display = 'block';
+                reasonInput.setAttribute('placeholder', 'Enter reason for early arrival');
+                reasonInput.setAttribute('required', 'required');
+            } else if (diff < -30) {
+                reasonField.style.display = 'block';
+                reasonInput.setAttribute('placeholder', 'Enter reason for late arrival');
+                reasonInput.setAttribute('required', 'required');
+            } else {
+                reasonField.style.display = 'none';
+                reasonInput.removeAttribute('required');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('arr_time').addEventListener('change', handleArrivalTimeChange);
+        });
+
     </script>
 
-<?php
+    <?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
     exit;

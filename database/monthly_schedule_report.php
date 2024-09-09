@@ -112,15 +112,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $scheduleReport .= '<p style="color: red;">Note * : (SNO = Schedule not Operated),(SNA = Schedule not Arrived), (NA = Not Alloted), (N/A = Not Applicable)</p>';
 
         foreach ($schedules as $schedule_no => $schedule) {
-            $safe_schedule_no = htmlspecialchars($schedule_no, ENT_QUOTES, 'UTF-8');
+            $safe_schedule_no = str_replace('/', '-', $schedule_no);
 
             // Use the sanitized version in the data-target attribute
             $scheduleReport .= '<h3>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#scheduleModal' . $safe_schedule_no . '">
-      Schedule No: ' . $safe_schedule_no . '
-    </button>
-</h3>';
-           
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#scheduleModal' . $safe_schedule_no . '">
+                  Schedule No: ' . htmlspecialchars($schedule_no, ENT_QUOTES, 'UTF-8') . '
+                </button>
+            </h3>';
             $scheduleReport .= '<table border="1">';
             $scheduleReport .= '<tr><th>Content</th>';
 
@@ -263,23 +262,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $scheduleReport .= '</table><br>';
             // Modal for Schedule Details
-            $scheduleReport .= '
-            <div class="modal fade" id="scheduleModal' . htmlspecialchars($schedule_no) . '" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel' . htmlspecialchars($schedule_no) . '" aria-hidden="true">
-                <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="scheduleModalLabel' . htmlspecialchars($schedule_no) . '">Schedule Report for Schedule No: ' . htmlspecialchars($schedule_no) . '</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        </div>
-                        <div class="modal-body">
-                            <table class="table table-bordered">
-                                <thead><tr><th>Date</th><th>Bus Number</th><th>Driver 1 Token</th>';
 
+            $scheduleReport .= '
+<div class="modal fade" id="scheduleModal' . $safe_schedule_no . '" tabindex="-1" role="dialog" aria-labelledby="scheduleModalLabel' . $safe_schedule_no . '" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scheduleModalLabel' . $safe_schedule_no . '">Schedule Report for Schedule No: ' . htmlspecialchars($schedule_no, ENT_QUOTES, 'UTF-8') . ' for Month ' . htmlspecialchars(date('F', mktime(0, 0, 0, $month, 10))) . ' ' . htmlspecialchars($year) . '</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p><b>Vehicle No:</b> ' . htmlspecialchars($bus_numbers) . '  <b>Driver(s):</b> ' . htmlspecialchars($crew) . ' <b>Departure Time:</b> ' . htmlspecialchars($schedule['sch_dep_time']) . '  <b>Arrival Time:</b> ' . htmlspecialchars($schedule['sch_arr_time']) . '</p>
+                <!-- Add .table-responsive to make table responsive -->
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Bus Number</th>
+                                <th>Driver 1 Token</th>';
             if ($schedule['single_crew'] == 'no' && in_array($schedule['service_type_id'], [2, 3, 4, 5])) {
                 $scheduleReport .= '<th>Driver 2 Token</th>';
             }
-
-            $scheduleReport .= '<th>Departure Time</th><th>Arrival Time</th></tr></thead><tbody>';
+            $scheduleReport .= '
+                                <th>Departure Time</th>
+                                <th>Arrival Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
 
             $currentMonth = date('m');
             $currentYear = date('Y');
@@ -324,7 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
                     } elseif ($data['bus_allotted_status'] === '1') {
                         $vehicle_no = isset($schedule['vehicle_no']) ? htmlspecialchars($schedule['vehicle_no']) : 'N/A';
-                        $scheduleReport .= '<td>' . $vehicle_no . '</td>';
+                        $scheduleReport .= '<td><b>' . $vehicle_no . '</b></td>';
                     } else {
                         $scheduleReport .= '<td>SNO</td>';
                     }
@@ -333,7 +343,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($data['driver_1_allotted_status'] === '0') {
                         $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
                     } elseif ($data['driver_1_allotted_status'] === '1') {
-                        $scheduleReport .= '<td>' . htmlspecialchars($schedule['driver_token_no_1']) . '</td>';
+                        $scheduleReport .= '<td><b>' . htmlspecialchars($schedule['driver_token_no_1']) . '</b></td>';
                     } else {
                         $scheduleReport .= '<td>SNO</td>';
                     }
@@ -343,7 +353,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($data['driver_2_allotted_status'] === '0') {
                             $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
                         } elseif ($data['driver_2_allotted_status'] === '1') {
-                            $scheduleReport .= '<td>' . htmlspecialchars($schedule['driver_token_no_2']) . '</td>';
+                            $scheduleReport .= '<td><b>' . htmlspecialchars($schedule['driver_token_no_2']) . '</b></td>';
                         } else {
                             $scheduleReport .= '<td>SNO</td>';
                         }
@@ -355,7 +365,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } elseif ($data['dep_time_diff'] === 'N/A') {
                         $scheduleReport .= '<td>SNO</td>';
                     } elseif ($data['dep_time_diff'] > '30') {
-                        $scheduleReport .= '<td style="color:red">' . htmlspecialchars($schedule['dep_time']) . '</td>';
+                        $scheduleReport .= '<td style="color:red"><b>' . htmlspecialchars($schedule['dep_time']) . '</b></td>';
                     }
 
                     // Arrival Time
@@ -364,9 +374,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } elseif ($data['arr_time_diff'] === 'N/A') {
                         $scheduleReport .= '<td>SNO</td>';
                     } elseif ($data['arr_time_diff'] > '30') {
-                        $scheduleReport .= '<td style="color:green">' . htmlspecialchars($schedule['arr_time']) . '</td>';
+                        $scheduleReport .= '<td style="color:green"><b>' . htmlspecialchars($schedule['arr_time']) . '</b></td>';
                     } elseif ($data['arr_time_diff'] < '0') {
-                        $scheduleReport .= '<td style="color:red">' . htmlspecialchars($schedule['arr_time']) . '</td>';
+                        $scheduleReport .= '<td style="color:red"><b>' . htmlspecialchars($schedule['arr_time']) . '</b></td>';
                     }
                 } else {
                     // If no data found for this date, display "SNO"
@@ -380,14 +390,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $scheduleReport .= '</tr>';
             }
 
-            $scheduleReport .= '</tbody></table>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>';
+            $scheduleReport .= '</tbody>
+                    </table>
+                    <p style="color: red;">Note * : (SNO = Schedule not Operated),(SNA = Schedule not Arrived), (NA = Not Alloted), (N/A = Not Applicable)</p>
+                </div> <!-- End of .table-responsive -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>';
 
 
         }

@@ -121,9 +121,9 @@ function determineRedirect($db, $type, $jobTitle, $member_id)
             case 'DEPOT':
                 switch ($jobTitle) {
                     case 'DM':
-                        return "depot_manager.php";
+                        return "depot_dashboard.php";
                     case 'Mech':
-                        return "depot_clerk.php";
+                        return "depot_dashboard.php";
                     case 'Bunk':
                         return "depot_kmpl.php";
                     case 'T_INSPECTOR':

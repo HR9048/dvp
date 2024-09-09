@@ -322,6 +322,7 @@ function fetchSchedule()
     AND svo.departed_date = '$todays_date'
     WHERE sm.division_id = '$division_id' 
     AND sm.depot_id = '$depot_id'
+    AND sm.status='1'
     AND svo.sch_no IS NULL order by sm.sch_dep_time ASC";
     $result = $db->query($query);
     $schno = array();

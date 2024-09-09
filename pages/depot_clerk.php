@@ -1,264 +1,144 @@
 <?php
-include '../includes/connection.php';
-include '../includes/depot_top.php';
-// Check if session variables are set
-if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
-  echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
-  exit;
+require_once('session.php');
+confirm_logged_in();
+
+// Set default language to English if session not set
+if (!isset($_SESSION['language'])) {
+    $_SESSION['language'] = 'english';
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') {
-  // Allow access
-  $division = $_SESSION['DIVISION_ID'];
-  $depot = $_SESSION['DEPOT_ID'];
-  ?>
-  <div class="row show-grid">
-    <!-- Customer ROW -->
-    <div class="col-md-3">
-      <!-- Customer record -->
-      <div class="col-md-12 mb-3">
-        <div class="card border-left-primary shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-              <div class="col mr-0">
-                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Off Road</div>
-                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                  <?php
-                  $query = "SELECT 
-                COUNT(DISTINCT bus_number) AS total_off_road_count
-              FROM off_road_data
-              WHERE status = 'off_road' AND division = '{$_SESSION['DIVISION_ID']}' AND depot = '{$_SESSION['DEPOT_ID']}'";
 
-                  // Execute the query
-                  $result = mysqli_query($db, $query) or die(mysqli_error($db));
+$language = $_SESSION['language'];
 
-                  // Fetch the count
-                  $row = mysqli_fetch_array($result);
-
-                  // Output the count
-                  echo "$row[0]";
-                  ?>
-
-                  Record(s)
-                </div>
-              </div>
-              <div class="col-auto">
-                <i class="fas fa-tools fa-2x text-gray-300"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Supplier record -->
-      <div class="col-md-12 mb-3">
-        <div class="card border-left-warning shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-              <div class="col mr-0">
-                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Employee</div>
-                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                  <?php
-
-                  // Prepare the SQL query to count the number of employees based on division and depot names
-                  $query = "SELECT COUNT(*) FROM employee 
-                INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                WHERE location.division = '{$_SESSION['DIVISION']}' AND location.depot = '{$_SESSION['DEPOT']}'";
-
-                  // Execute the query
-                  $result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-                  // Fetch the count
-                  $row = mysqli_fetch_array($result);
-
-                  // Output the count
-                  echo "Number of employees: $row[0]";
-                  ?>
-                  Record(s)
-                </div>
-              </div>
-              <div class="col-auto">
-                <i class="fas fa-users fa-2x text-gray-300"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-    <!-- Employee ROW -->
-    <div class="col-md-3">
-      <!-- Employee record -->
-      <div class="col-md-12 mb-3">
-        <div class="card border-left-success shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-              <div class="col mr-0">
-                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Today's DVP</div>
-                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                  <?php
-                  $current_date = date("Y-m-d");
-                  // Prepare the SQL query to check if the current date is present in the database for the given session division
-                  $query = "SELECT COUNT(*) FROM dvp_data WHERE date = '$current_date' AND division = '{$_SESSION['DIVISION_ID']}' and depot = '{$_SESSION['DEPOT_ID']}'";
-                  $result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-                  // Fetch the count
-                  $row = mysqli_fetch_array($result);
-
-                  // Check if any record is found for the current date and session division
-                  if ($row[0] > 0) {
-                    echo "Submitted";
-                  } else {
-                    echo "Not Submitted";
-                  }
-                  ?>
-                </div>
-              </div>
-              <div class="col-auto">
-                <i class="fas fa-bus fa-2x text-gray-300"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- User record -->
-      <div class="col-md-12 mb-3">
-        <div class="card border-left-danger shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-              <div class="col mr-0">
-                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Account</div>
-                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                  <?php
-                  // Assuming you have already established a connection to your database and stored it in $db variable
-                
-                  // Make sure to sanitize and validate the session division and depot name inputs to prevent SQL injection
-                
-                  // Example session division and depot name variables
-                  $session_division = $_SESSION['DIVISION']; // Assuming you're getting this from a session variable
-                  $session_depot = $_SESSION['DEPOT']; // Assuming you're getting this from a session variable
-                
-                  // Prepare the SQL query to count registered accounts based on division and depot names
-                  $query = "SELECT COUNT(*) FROM users 
-                INNER JOIN employee ON users.PF_ID = employee.PF_ID 
-                INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                WHERE users.TYPE_ID = 3 
-                AND location.DIVISION = '$session_division' 
-                AND location.DEPOT = '$session_depot'";
-
-                  // Execute the query
-                  $result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-                  // Fetch the count
-                  $row = mysqli_fetch_array($result);
-
-                  // Output the count
-                  echo "Registered accounts: $row[0]";
-                  ?>
-                  Record(s)
-                </div>
-              </div>
-              <div class="col-auto">
-                <i class="fas fa-user-check fa-2x text-gray-300"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-    <!-- PRODUCTS ROW -->
-    <div class="col-md-3">
-      <!-- Product record -->
-      <div class="col-md-12 mb-3">
-        <div class="card border-left-info shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-
-              <div class="col mr-0">
-                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Buses</div>
-                <div class="row no-gutters align-items-center">
-                  <div class="col-auto">
-                    <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
-                      <?php
-                      $query = "SELECT COUNT(*) FROM bus_registration WHERE division_name = '{$_SESSION['DIVISION_ID']}' and depot_name = '{$_SESSION['DEPOT_ID']}'";
-                      $result = mysqli_query($db, $query);
-                      while ($row = mysqli_fetch_array($result)) {
-                        echo "$row[0]";
-                      }
-                      ?> Record(s)
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-auto">
-                <i class="fas fa-bus fa-2x text-gray-300"></i>
-                <i class="fas fa-bus fa-2x text-gray-300"></i>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="col-lg-3">
-      <div class="card shadow h-100">
-        <div class="card-body">
-          <div class="row no-gutters align-items-center">
-
-            <div class="col-auto">
-              <i class="fa fa-th-list fa-fw"></i>
-            </div>
-
-            <div class="panel-heading"> Recent Off Road
-            </div>
-            <div class="row no-gutters align-items-center mt-1">
-              <div class="col-auto">
-                <div class="h6 mb-0 mr-0 text-gray-800">
-                  <!-- /.panel-heading -->
-
-                  <div class="panel-body">
-                    <div class="list-group">
-                      <?php
-                      // Assuming you have already established a connection to your database and stored it in $db variable
-                    
-                      // Prepare the SQL query to fetch data from the off_road_data table
-                      $query = "SELECT bus_number FROM off_road_data WHERE division = '{$_SESSION['DIVISION_ID']}' and depot = '{$_SESSION['DEPOT_ID']}' and status = 'off_road' ORDER BY submission_datetime DESC LIMIT 5";
-
-                      // Execute the query
-                      $result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-                      // Output the fetched data
-                      while ($row = mysqli_fetch_array($result)) {
-                        echo "<a href='#' class='list-group-item text-gray-800'>
-              <i class='fa fa-tasks fa-fw'></i> $row[0]
-          </a>";
-                      }
-                      ?>
-
-                    </div>
-                    <!-- /.list-group -->
-                    <a href="depot_offroad.php" class="btn btn-default btn-block">View All Off Roads</a>
-                  </div>
-                  <!-- /.panel-body -->
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-
-    </div>
-
-
-    <?php
-} else {
-  echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
-  exit;
-}
-include '../includes/footer.php';
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>KKRTC-DVP</title>
+
+    <!-- jQuery library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Google Translate API -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+        }
+
+        // Automatically translate based on session language
+        $(document).ready(function() {
+            var language = "<?php echo $language; ?>";
+            if (language === 'kannada') {
+                setTimeout(function() {
+                    triggerGoogleTranslate('kn');
+                }, 1000); // delay to ensure Google Translate is ready
+            }else{
+              setTimeout(function() {
+                    triggerGoogleTranslate('en');
+                }, 1000); // delay to ensure Google Translate is ready
+            }
+        });
+
+        // Function to trigger Google Translate for a specific language
+        function triggerGoogleTranslate(languageCode) {
+            var selectField = document.querySelector('select.goog-te-combo');
+            if (selectField) {
+                selectField.value = languageCode; // set the value to Kannada
+                selectField.dispatchEvent(new Event('change')); // trigger the change event
+            }
+        }
+    </script>
+
+<style>
+        /* Hide Google Translate bar */
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+
+        /* Hide Google Translate menu frame */
+        .goog-te-menu-frame {
+            display: none !important;
+        }
+
+        /* Adjust page content to prevent shifting */
+        body {
+            top: 0px !important; 
+        }
+
+        /* Hide Google Translate toolbar */
+        #google_translate_element {
+            display: none;
+        }
+
+        .translate-btn {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Language Switch Button -->
+        <div class="translate-btn" style="padding: 10px; text-align: right;">
+            <button class="btn btn-primary" id="switchLanguage">
+                <?php echo ($language == 'english') ? 'Switch to Kannada' : 'Switch to English'; ?>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content" style="max-width: 100%; overflow-x: hidden;">
+                <nav class="navbar navbar-expand-md fixed-top" style="background-color: #bfc9ca;">
+                    <div class="container-fluid">
+                        <a class="navbar-brand" href="../includes/depot_verify.php" style="color: black;">
+                            <img src="../images/kkrtclogo.png" width="40" height="40" alt="KKRTC">
+                        </a>
+                    </div>
+                </nav>
+
+                <!-- Google Translate Element -->
+                <div id="google_translate_element" style="display: none;"></div>
+
+                <!-- Display content -->
+                <div class="container mt-5">
+                        <h1>Welcome to the KKRTC Portal</h1>
+                        <p>This is the English version of the page content.</p>
+                    
+                </div>
+
+                <h1>Hello</h1>
+            </div> <!-- End of Main Content -->
+        </div> <!-- End of Content Wrapper -->
+    </div> <!-- End of Page Wrapper -->
+
+    <!-- Google Translate API script -->
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script type="text/javascript">
+        $('#switchLanguage').click(function() {
+            var currentLanguage = "<?php echo $language; ?>";
+            var newLanguage = (currentLanguage === 'english') ? 'kannada' : 'english';
+
+            // Send an AJAX request to update the session language
+            $.ajax({
+                url: '../includes/set_language.php',
+                type: 'POST',
+                data: {language: newLanguage},
+                success: function(response) {
+                    var result = JSON.parse(response);
+                    if (result.status === 'success') {
+                        // Reload the page to apply the language change
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

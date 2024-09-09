@@ -1,6 +1,12 @@
 <?php
 require_once ('session.php');
 confirm_logged_in();
+// Set default language to English if session not set
+if (!isset($_SESSION['language'])) {
+  $_SESSION['language'] = 'english';
+}
+
+$language = $_SESSION['language'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -48,6 +54,60 @@ confirm_logged_in();
 
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+        }
+
+        // Automatically translate based on session language
+        $(document).ready(function() {
+            var language = "<?php echo $language; ?>";
+            if (language === 'kannada') {
+                setTimeout(function() {
+                    triggerGoogleTranslate('kn');
+                }, 1000); // delay to ensure Google Translate is ready
+            }else{
+              setTimeout(function() {
+                    triggerGoogleTranslate('en');
+                }, 1000); // delay to ensure Google Translate is ready
+            }
+        });
+
+        // Function to trigger Google Translate for a specific language
+        function triggerGoogleTranslate(languageCode) {
+            var selectField = document.querySelector('select.goog-te-combo');
+            if (selectField) {
+                selectField.value = languageCode; // set the value to Kannada
+                selectField.dispatchEvent(new Event('change')); // trigger the change event
+            }
+        }
+    </script>
+
+<style>
+        /* Hide Google Translate bar */
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+
+        /* Hide Google Translate menu frame */
+        .goog-te-menu-frame {
+            display: none !important;
+        }
+
+        /* Adjust page content to prevent shifting */
+        body {
+            top: 0px !important; 
+        }
+
+        /* Hide Google Translate toolbar */
+        #google_translate_element {
+            display: none;
+        }
+
+        .translate-btn {
+            cursor: pointer;
+        }
+    </style>
   <!-- Custom styles for this page -->
   <style>
     .dropdown:hover .dropdown-menu {
@@ -191,7 +251,6 @@ confirm_logged_in();
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     <?php if ($_SESSION['TYPE'] == 'DEPOT' &&  $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {   ?>
                       <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Update Schedule</a></li>
-                      <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
                       <?php } ?>
                       <?php if ($_SESSION['TYPE'] == 'DEPOT' &&  $_SESSION['JOB_TITLE'] == 'Mech') {   ?>
                       <li><a class="dropdown-item" href="depot_schedule_b.php">Update Schedule</a></li>
@@ -199,7 +258,6 @@ confirm_logged_in();
                       <?php if ($_SESSION['TYPE'] == 'DEPOT' &&  $_SESSION['JOB_TITLE'] == 'DM') {   ?>
                         <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Update Schedule(crew)</a></li>
                         <li><a class="dropdown-item" href="depot_schedule_b.php">Update Schedule(Bus)</a></li>
-                        <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
                         <?php } ?>
                     </ul>
                   </div>
@@ -228,6 +286,11 @@ confirm_logged_in();
                 </ul>
                 <ul class="navbar-nav ml-auto">
                 <div class="topbar-divider d-none d-sm-block"></div>
+                <div class="translate-btn" style="padding: 10px; text-align: right;">
+            <button class="btn btn-primary" id="switchLanguage">
+                <?php echo ($language == 'english') ? 'Switch to Kannada' : 'Switch to English'; ?>
+            </button>
+        </div>
 
                 <li class="nav-item dropdown no-arrow">
             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
@@ -282,6 +345,8 @@ confirm_logged_in();
             </div>
           </div>
         </nav>
+        <div id="google_translate_element" style="display: none;"></div>
+
         <br><br><br>
         <!-- End of Topbar -->
         <script>
@@ -302,5 +367,30 @@ confirm_logged_in();
             });
           });
         </script>
+         <!-- Google Translate API script -->
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<script type="text/javascript">
+    $('#switchLanguage').click(function() {
+        var currentLanguage = "<?php echo $language; ?>";
+        var newLanguage = (currentLanguage === 'english') ? 'kannada' : 'english';
+
+        // Send an AJAX request to update the session language
+        $.ajax({
+            url: '../includes/set_language.php',
+            type: 'POST',
+            data: {language: newLanguage},
+            success: function(response) {
+                var result = JSON.parse(response);
+                if (result.status === 'success') {
+                    // Reload the page to apply the language change
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            }
+        });
+    });
+</script>
         <!-- Begin Page Content -->
-        <div class="container-fluid">
+        <div class="container-fluid"></div>

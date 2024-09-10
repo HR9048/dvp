@@ -103,33 +103,57 @@ WHERE (bus_number_1 = ? OR bus_number_2 = ?)"; // Exclude current schedule
                 WHERE id = $scheduleId";
 
         if (mysqli_query($db, $sql)) {
-            // Insert query for bus_fix_data table
-            $insertSql = "INSERT INTO bus_fix_data (
-                            sch_no, division_id, depot_id, 
-                             dep_time, arr_time, 
-                            bus_number_1, bus_make_1, bus_emission_norms_1, 
-                            bus_number_2, bus_make_2, bus_emission_norms_2, 
-                            additional_bus_number, additional_bus_make, additional_bus_emission_norms
-                        ) VALUES (
-                            $sch_key_no, $divisionId, $depotId, 
-                            '$sch_dep_time', '$sch_arr_time', 
-                            '$busNumber1', '$busMake1', '$busEmissionNorms1', 
-                            " . ($busNumber2 !== NULL ? "'$busNumber2'" : "NULL") . ", 
-                            " . ($busMake2 !== NULL ? "'$busMake2'" : "NULL") . ", 
-                            " . ($busEmissionNorms2 !== NULL ? "'$busEmissionNorms2'" : "NULL") . ", 
-                            " . ($additionalBusNumber !== NULL ? "'$additionalBusNumber'" : "NULL") . ", 
-                            " . ($additionalBusMake !== NULL ? "'$additionalBusMake'" : "NULL") . ", 
-                            " . ($additionalBusEmissionNorms !== NULL ? "'$additionalBusEmissionNorms'" : "NULL") . "
-                        )";
+            // Prepare the base SQL insert statement
+            $created_by = $_SESSION['USERNAME'];
+            $insertSql = "INSERT INTO bus_fix_data (sch_key_no, division_id, depot_id, bus_number, bus_make, bus_emission_norms, additional, created_by) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-            if (mysqli_query($db, $insertSql)) {
-                echo "<script>
-                alert('Schedule updated and data inserted successfully');
-                window.location.href = 'depot_schedule_b.php';
-              </script>";
-            } else {
-                echo "<script>alert('Error inserting data: " . $db->error . "');</script>";
+            // Prepare the statement
+            $stmt = mysqli_prepare($db, $insertSql);
+
+            // Flag for tracking success
+            $insertionSuccessful = true;
+
+            // Check if busNumber1 exists and insert it as a row
+            if ($busNumber1 !== NULL) {
+                $additional = 0; // Not an additional bus
+                mysqli_stmt_bind_param($stmt, 'siisssis', $sch_key_no, $divisionId, $depotId, $busNumber1, $busMake1, $busEmissionNorms1, $additional, $created_by);
+                if (!mysqli_stmt_execute($stmt)) {
+                    $insertionSuccessful = false;
+                }
             }
+
+            // Check if busNumber2 exists and insert it as a separate row
+            if ($busNumber2 !== NULL) {
+                $additional = 0; // Not an additional bus
+                mysqli_stmt_bind_param($stmt, 'siisssis', $sch_key_no, $divisionId, $depotId, $busNumber2, $busMake2, $busEmissionNorms2, $additional, $created_by);
+                if (!mysqli_stmt_execute($stmt)) {
+                    $insertionSuccessful = false;
+                }
+            }
+
+            // Check if additional bus data exists and insert it as a row with additional = 1
+            if ($additionalBusNumber !== NULL) {
+                $additional = 1; // This is an additional bus
+                mysqli_stmt_bind_param($stmt, 'siisssis', $sch_key_no, $divisionId, $depotId, $additionalBusNumber, $additionalBusMake, $additionalBusEmissionNorms, $additional, $created_by);
+                if (!mysqli_stmt_execute($stmt)) {
+                    $insertionSuccessful = false;
+                }
+            }
+
+            // Close the prepared statement
+            mysqli_stmt_close($stmt);
+
+            // Check success and display appropriate message
+            if ($insertionSuccessful) {
+                echo "<script>
+                        alert('Schedule updated and data inserted successfully');
+                        window.location.href = 'depot_schedule_b.php';
+                        </script>";
+            } else {
+                echo "<script>alert('Error inserting data. Please try again.');</script>";
+            }
+
         } else {
             echo "<script>alert('Error updating schedule: " . $db->error . "');</script>";
         }
@@ -328,80 +352,80 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                     success: function (response) {
                         var details = JSON.parse(response);
                         var scheduleFieldsHtml = `
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label for="sch_key_no">Schedule Key Number</label>
-                                                                <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label for="sch_abbr">Schedule Abbreviation</label>
-                                                                <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label for="sch_km">Schedule KM</label>
-                                                                <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
+                                                                <div class="row">
+                                                                    <div class="col">
+                                                                        <div class="form-group">
+                                                                            <label for="sch_key_no">Schedule Key Number</label>
+                                                                            <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="form-group">
+                                                                            <label for="sch_abbr">Schedule Abbreviation</label>
+                                                                            <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="form-group">
+                                                                            <label for="sch_km">Schedule KM</label>
+                                                                            <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
                     
-                                                    <div class="row">
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label for="sch_dep_time">Departure Time</label>
-                                                                <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label for="sch_arr_time">Arrival Time</label>
-                                                                <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col">
-                                                            <div class="form-group">
-                                                                <label for="service_class_name">Service Class</label>
-                                                                <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
-                                                            </div>
-                                                        </div>
-                                                    </div>`;
+                                                                <div class="row">
+                                                                    <div class="col">
+                                                                        <div class="form-group">
+                                                                            <label for="sch_dep_time">Departure Time</label>
+                                                                            <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="form-group">
+                                                                            <label for="sch_arr_time">Arrival Time</label>
+                                                                            <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col">
+                                                                        <div class="form-group">
+                                                                            <label for="service_class_name">Service Class</label>
+                                                                            <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>`;
 
                         var busFieldsHtml = '';
                         for (var i = 1; i <= details.number_of_buses; i++) {
                             busFieldsHtml += `
-                                                        <div class="row">
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="bus_number${i}">Bus ${i} Number</label>
-                                                                    <input type="text" id="bus_number_${i}" name="bus_number_${i}" class="form-control" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(${i})">
-                                                                </div>
-                                                            </div>
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="make${i}">Bus ${i} Make</label>
-                                                                    <input type="text" id="make${i}" name="make${i}" class="form-control" readonly>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                    <label for="emission_norms${i}">Bus ${i} Emission Norms</label>
-                                                                    <input type="text" id="emission_norms${i}" name="emission_norms${i}" class="form-control" readonly>
-                                                                </div>
-                                                            </div>
-                                                        </div>`;
+                                                                    <div class="row">
+                                                                        <div class="col">
+                                                                            <div class="form-group">
+                                                                                <label for="bus_number${i}">Bus ${i} Number</label>
+                                                                                <input type="text" id="bus_number_${i}" name="bus_number_${i}" class="form-control" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(${i})">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col">
+                                                                            <div class="form-group">
+                                                                                <label for="make${i}">Bus ${i} Make</label>
+                                                                                <input type="text" id="make${i}" name="make${i}" class="form-control" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col">
+                                                                            <div class="form-group">
+                                                                                <label for="emission_norms${i}">Bus ${i} Emission Norms</label>
+                                                                                <input type="text" id="emission_norms${i}" name="emission_norms${i}" class="form-control" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>`;
                         }
 
                         // Append checkbox for additional bus
                         scheduleFieldsHtml += `
-                                                    <div class="form-group">
-                                                        <label for="agree">Have Additional Bus:</label>
-                                                        <input type="checkbox" id="agree" name="agree" value="yes">
-                                                    </div>`;
+                                                                <div class="form-group">
+                                                                    <label for="agree">Have Additional Bus:</label>
+                                                                    <input type="checkbox" id="agree" name="agree" value="yes">
+                                                                </div>`;
 
                         $('#scheduleFields').html(scheduleFieldsHtml);
                         $('#busFields').html(busFieldsHtml);
@@ -412,26 +436,26 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             if (this.checked) {
                                 // Append another set of bus fields for additional bus
                                 var additionalBusHtml = `
-                                                            <div class="row additional-bus-fields">
-                                                                <div class="col">
-                                                                    <div class="form-group">
-                                                                        <label for="bus_number_3">Additional Bus Number</label>
-                                                                        <input type="text" id="bus_number_3" name="bus_number_3" class="form-control" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(3)">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col">
-                                                                    <div class="form-group">
-                                                                        <label for="make3">Additional Bus Make</label>
-                                                                        <input type="text" id="make3" name="make3" class="form-control" readonly>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col">
-                                                                    <div class="form-group">
-                                                                        <label for="emission_norms3">Additional Bus Emission Norms</label>
-                                                                        <input type="text" id="emission_norms3" name="emission_norms3" class="form-control" readonly>
-                                                                    </div>
-                                                                </div>
-                                                            </div>`;
+                                                                        <div class="row additional-bus-fields">
+                                                                            <div class="col">
+                                                                                <div class="form-group">
+                                                                                    <label for="bus_number_3">Additional Bus Number</label>
+                                                                                    <input type="text" id="bus_number_3" name="bus_number_3" class="form-control" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(3)">
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col">
+                                                                                <div class="form-group">
+                                                                                    <label for="make3">Additional Bus Make</label>
+                                                                                    <input type="text" id="make3" name="make3" class="form-control" readonly>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col">
+                                                                                <div class="form-group">
+                                                                                    <label for="emission_norms3">Additional Bus Emission Norms</label>
+                                                                                    <input type="text" id="emission_norms3" name="emission_norms3" class="form-control" readonly>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>`;
                                 $('#busFields').append(additionalBusHtml);
                             } else {
                                 // Remove additional bus fields if checkbox is unchecked
@@ -585,7 +609,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                 </div>
                 <div class="modal-body">
                     <p id="confirmationMessage"></p>
-                    <p style="color:red">Note: If toy click Yes then the vehicle will remove from the previous alloted schedule to this schedule.</p>
+                    <p style="color:red">Note: If toy click Yes then the vehicle will remove from the previous alloted
+                        schedule to this schedule.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="confirmYes">Yes</button>

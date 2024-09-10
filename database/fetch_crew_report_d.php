@@ -62,13 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         AND svo.depot_id = ?
         AND svo.schedule_status != 6
     LEFT JOIN
-        bus_fix_data bfd ON sm.sch_key_no = bfd.sch_no
+        bus_fix_data1 bfd ON sm.sch_key_no = bfd.sch_no
         AND (DATE(bfd.from_date) = ? OR (? BETWEEN DATE(bfd.from_date) AND IFNULL(DATE(bfd.to_date), ?)))
         AND bfd.division_id = ?
         AND bfd.depot_id = ?
         AND bfd.status = 0
     LEFT JOIN
-        crew_fix_data cfd ON sm.sch_key_no = cfd.sch_no
+        crew_fix_data1 cfd ON sm.sch_key_no = cfd.sch_no
         AND (DATE(cfd.from_date) = ? OR (? BETWEEN DATE(cfd.from_date) AND IFNULL(DATE(cfd.to_date), ?)))
         AND cfd.division_id = ?
         AND cfd.depot_id = ?

@@ -192,6 +192,7 @@ confirm_logged_in();
                     <?php if ($_SESSION['TYPE'] == 'DEPOT' &&  $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {   ?>
                       <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Update Schedule</a></li>
                       <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
+                      <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Active/Inactive Schedule</a></li>
                       <?php } ?>
                       <?php if ($_SESSION['TYPE'] == 'DEPOT' &&  $_SESSION['JOB_TITLE'] == 'Mech') {   ?>
                       <li><a class="dropdown-item" href="depot_schedule_b.php">Update Schedule</a></li>
@@ -200,6 +201,7 @@ confirm_logged_in();
                         <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Update Schedule(crew)</a></li>
                         <li><a class="dropdown-item" href="depot_schedule_b.php">Update Schedule(Bus)</a></li>
                         <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
+                        <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Active/Inactive Schedule</a></li>
                         <?php } ?>
                     </ul>
                   </div>

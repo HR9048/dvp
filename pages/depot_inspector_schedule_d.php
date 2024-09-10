@@ -238,7 +238,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                         $depot1 = $_SESSION['DEPOT_ID'];
                         $user = $_SESSION['USERNAME'];
                         // Insert or update driver and conductor details in crew_fix_data table
-                        $insertCrewDataSql = "INSERT INTO crew_fix_data (sch_key_no, division_id, depot_id, crew_token, crew_pf, crew_name, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                        $insertCrewDataSql = "INSERT INTO crew_fix_data (sch_key_no, division_id, depot_id, crew_token, crew_pf, crew_name, designation, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
                         $crewStmt = $db->prepare($insertCrewDataSql);
 
@@ -247,7 +247,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                             $driverToken = $_POST['driver_token_' . $i];
                             $driverPF = $_POST['pf_no_d' . $i];
                             $driverName = $_POST['driver_' . $i . '_name'];
-                            $crewStmt->bind_param('siissss', $sch_key_no, $division1, $depot1, $driverToken, $driverPF, $driverName, $user);
+                            $designation = 'driver';
+                            $crewStmt->bind_param('siisssss', $sch_key_no, $division1, $depot1, $driverToken, $driverPF, $driverName, $designation, $user);
                             $crewStmt->execute();
                         }
 
@@ -256,7 +257,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                             $conductorToken = $_POST['conductor_token_' . $i];
                             $conductorPF = $_POST['pf_no_c' . $i];
                             $conductorName = $_POST['conductor_' . $i . '_name'];
-                            $crewStmt->bind_param('siissss', $sch_key_no, $division1, $depot1, $conductorToken, $conductorPF, $conductorName, $user);
+                            $designation = 'conductor';
+                            $crewStmt->bind_param('siisssss', $sch_key_no, $division1, $depot1, $conductorToken, $conductorPF, $conductorName, $designation, $user);
                             $crewStmt->execute();
                         }
 

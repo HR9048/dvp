@@ -78,19 +78,7 @@
 <script type="text/javascript" charset="utf8"
   src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 
-<!-- <style>
-  /* Adjust the search bar */
-  .dataTables_filter {
-    margin-bottom: 20px;
-    /* Add margin at the bottom to create space */
-  }
 
-  /* Ensure table headers have a border at the top */
-  #dataTable thead th {
-    border-top: 1px solid black;
-    /* Add border at the top */
-  }
-</style> -->
 
 <!-- DataTable initialization -->
 <script>

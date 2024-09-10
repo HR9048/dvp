@@ -396,7 +396,6 @@ function rampdefecttype()
     }
     return $defect;
 }
-
 // Check if an action is specified in the request
 if (isset($_GET['action'])) {
     $action = $_GET['action'];

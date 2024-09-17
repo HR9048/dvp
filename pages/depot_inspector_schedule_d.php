@@ -25,7 +25,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                     $maxAllowedDrivers = $singleCrewOperation === 'yes' ? 1 : 1;
                     break;
                 case '2':
-                    $maxAllowedDrivers = $singleCrewOperation === 'yes' ? 1 : 1;
+                    $maxAllowedDrivers = $singleCrewOperation === 'yes' ? 2 : 2;
                     break;
                 case '3':
                     $maxAllowedDrivers = $singleCrewOperation === 'yes' ? 2 : 2;
@@ -340,6 +340,13 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
 
     <style>
+         .modal {
+        z-index: 1050; /* Bootstrap default */
+    }
+
+    .modal-backdrop {
+        z-index: 1040; /* Bootstrap default */
+    }
         .hide {
             display: none;
         }
@@ -544,7 +551,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                                                                                                                             </div>
                                                                                                                                         </div>
                                                                                                                                     </div>`;
-
+ 
                         $('#scheduleFields').html(scheduleFieldsHtml);
                         $('#updateModal').modal('show');
 
@@ -553,7 +560,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                                                                                                                     <div class="row">
                                                                                                                                         <div class="col">
                                                                                                                                             <div class="form-group">
-                                                                                                                                                <label>Single Crew Operation:</label>
+                                                                                                                                                <label>Conductor Less Operation:</label>
                                                                                                                                                 <div>
                                                                                                                                                     <input type="radio" id="single_crew_yes" name="single_crew_operation" value="yes" required>
                                                                                                                                                     <label for="single_crew_yes">Yes</label>
@@ -729,109 +736,201 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             }
                         }
                         function fetchConductorDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
-                            var xhr = new XMLHttpRequest();
-                            xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
-                            xhr.onload = function () {
-                                if (xhr.status === 200) {
-                                    var response = JSON.parse(this.responseText);
-                                    var data = response.data;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            var response = JSON.parse(this.responseText);
+            var data = response.data;
 
-                                    if (!data || data.length === 0) {
-                                        alert('The token number employee is not registered in KKRTC.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                        return;
-                                    }
+            if (!data || data.length === 0) {
+                alert('The token number employee is not registered in KKRTC.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+                return;
+            }
 
-                                    var matchingDrivers = data.filter(driver => {
-                                        var driverDivision = driver.Division.trim();
-                                        var driverDepot = driver.Depot.trim();
-                                        return driverDivision === sessionDivision && driverDepot === sessionDepot;
-                                    });
+            // Filter the data based on division and depot
+            var matchingDrivers = data.filter(driver => {
+                var driverDivision = driver.Division.trim();
+                var driverDepot = driver.Depot.trim();
+                return driverDivision === sessionDivision && driverDepot === sessionDepot &&  driver.token_number === tokenNumber;
+            });
 
-                                    if (matchingDrivers.length > 0) {
-                                        var driver = matchingDrivers.find(driver => driver.token_number === tokenNumber);
-                                        if (driver) {
-                                            if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                                                alert('The employee is a DRIVER. Please enter the token number of a Conductor or Driver cum Conductor.');
-                                                clearFields(nameElementId, pfElementId, tokenElementId);
-                                                return;
-                                            }
-                                            document.getElementById(nameElementId).value = driver.EMP_NAME || '';
-                                            document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+            console.log('Matching drivers:', matchingDrivers);
 
-                                            // After fetching the data, check in schedule_master table
-                                            checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                                        } else {
-                                            alert(`The employee does not belong to the ${sessionDivision} division and ${sessionDepot} depot.`);
-                                            clearFields(nameElementId, pfElementId, tokenElementId);
-                                        }
-                                    } else {
-                                        alert('The employee does not belong to the session division and depot.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                    }
-                                } else {
-                                    alert('An error occurred while fetching the conductor details.');
-                                    clearFields(nameElementId, pfElementId, tokenElementId);
-                                }
-                            };
-                            xhr.onerror = function () {
-                                alert('A network error occurred while fetching the conductor details.');
-                                clearFields(nameElementId, pfElementId, tokenElementId);
-                            };
-                            xhr.send();
-                        }
-                        function fetchDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
-                            var xhr = new XMLHttpRequest();
-                            xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
-                            xhr.onload = function () {
-                                if (xhr.status === 200) {
-                                    var response = JSON.parse(this.responseText);
-                                    var data = response.data;
+            if (matchingDrivers.length === 1) {
+                // If only one match, populate the fields with driver details
+                var driver = matchingDrivers[0];
+                console.log('Single matching driver:', driver);
 
-                                    if (!data || data.length === 0) {
-                                        alert('The token number employee is not registered in KKRTC.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                        return;
-                                    }
+                if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                    alert('The employee is a DRIVER. Please enter the token number of a driver or Driver cum Conductor.');
+                    clearFields(nameElementId, pfElementId, tokenElementId);
+                    return;
+                }
 
-                                    var matchingDrivers = data.filter(driver => {
-                                        var driverDivision = driver.Division.trim();
-                                        var driverDepot = driver.Depot.trim();
-                                        return driverDivision === sessionDivision && driverDepot === sessionDepot;
-                                    });
+                document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+                document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
 
-                                    if (matchingDrivers.length > 0) {
-                                        var driver = matchingDrivers.find(driver => driver.token_number === tokenNumber);
-                                        if (driver) {
-                                            if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
-                                                alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
-                                                clearFields(nameElementId, pfElementId, tokenElementId);
-                                                return;
-                                            }
-                                            document.getElementById(nameElementId).value = driver.EMP_NAME || '';
-                                            document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+                // Call the function to check the schedule master
+                checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+            } else if (matchingDrivers.length > 1) {
+                // If more than one match, open the modal to select the correct driver
+                console.log('Multiple matching drivers found. Opening modal...');
+                openDriverSelectionModal(matchingDrivers, function(selectedDriver) {
+                    console.log('Selected driver:', selectedDriver);
 
-                                            // After fetching the data, check in schedule_master table
-                                            checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                                        } else {
-                                            alert(`The employee does not belong to the ${sessionDivision} division and ${sessionDepot} depot.`);
-                                            clearFields(nameElementId, pfElementId, tokenElementId);
-                                        }
-                                    } else {
-                                        alert('The employee does not belong to the session division and depot.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                    }
-                                } else {
-                                    alert('An error occurred while fetching the conductor details.');
-                                    clearFields(nameElementId, pfElementId, tokenElementId);
-                                }
-                            };
-                            xhr.onerror = function () {
-                                alert('A network error occurred while fetching the conductor details.');
-                                clearFields(nameElementId, pfElementId, tokenElementId);
-                            };
-                            xhr.send();
-                        }
+                    // Handle user selection
+                    if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                        alert('The selected employee is a DRIVER. Please select a driver or Driver cum driver.');
+                        $('#driverSelectionModal').modal('hide'); // Hide the modal
+                        clearFields(nameElementId, pfElementId, tokenElementId);
+                        return;
+                    }
+
+                    document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                    document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+
+                    // Call the function to check the schedule master
+                    checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                });
+            } else {
+                alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+            }
+        } else {
+            alert('An error occurred while fetching the driver details.');
+            clearFields(nameElementId, pfElementId, tokenElementId);
+        }
+    };
+    xhr.onerror = function () {
+        alert('A network error occurred while fetching the conductor details.');
+        clearFields(nameElementId, pfElementId, tokenElementId);
+    };
+    xhr.send();
+}
+
+
+var division = '<?php echo $division; ?>'; // Ensure $division is correctly populated
+var depot = '<?php echo $depot; ?>'; // Ensure $depot is correctly populated
+
+    function fetchDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
+    console.log('Fetching driver details for token:', tokenNumber);
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            var response = JSON.parse(this.responseText);
+            var data = response.data;
+
+            console.log('Data fetched:', data);
+
+            if (!data || data.length === 0) {
+                alert('The token number employee is not registered in KKRTC.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+                return;
+            }
+
+            // Filter the data based on division and depot
+            var matchingDrivers = data.filter(driver => {
+                var driverDivision = driver.Division.trim();
+                var driverDepot = driver.Depot.trim();
+                return driverDivision === sessionDivision && driverDepot === sessionDepot &&  driver.token_number === tokenNumber;
+            });
+
+            console.log('Matching drivers:', matchingDrivers);
+
+            if (matchingDrivers.length === 1) {
+                // If only one match, populate the fields with driver details
+                var driver = matchingDrivers[0];
+                console.log('Single matching driver:', driver);
+
+                if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                    alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
+                    clearFields(nameElementId, pfElementId, tokenElementId);
+                    return;
+                }
+
+                document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+                document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+
+                // Call the function to check the schedule master
+                checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+            } else if (matchingDrivers.length > 1) {
+                // If more than one match, open the modal to select the correct driver
+                console.log('Multiple matching drivers found. Opening modal...');
+                openDriverSelectionModal(matchingDrivers, function(selectedDriver) {
+                    console.log('Selected driver:', selectedDriver);
+
+                    // Handle user selection
+// Handle user selection
+if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                        alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
+                        $('#driverSelectionModalLabel').modal('hide'); // Hide the modal
+                        clearFields(nameElementId, pfElementId, tokenElementId);
+                        return;
+                    }
+                    
+                    document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                    document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+
+                    // Call the function to check the schedule master
+                    checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                });
+            } else {
+                alert('No Driver/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+            }
+        } else {
+            alert('An error occurred while fetching the conductor details.');
+            clearFields(nameElementId, pfElementId, tokenElementId);
+        }
+    };
+    xhr.onerror = function () {
+        alert('A network error occurred while fetching the conductor details.');
+        clearFields(nameElementId, pfElementId, tokenElementId);
+    };
+    xhr.send();
+}
+
+function openDriverSelectionModal(drivers, onSelect) {
+            console.log('Opening driver selection modal with drivers:', drivers);
+
+            var driverList = document.getElementById('driverList'); // List inside your modal to show drivers
+
+            // Clear previous list items
+            driverList.innerHTML = '';
+
+            // Populate the list with drivers
+            drivers.forEach(driver => {
+                var listItem = document.createElement('li');
+                listItem.classList.add('list-group-item');
+                listItem.textContent = `Token: ${driver.token_number}, Name: ${driver.EMP_NAME}, Pf no: ${driver.EMP_PF_NUMBER}`;
+                listItem.onclick = function() {
+                    console.log('Driver selected:', driver);
+                    
+                    // When a driver is selected, call the callback with the selected driver data
+                    onSelect(driver);
+
+                    // Hide the modal
+                    $('#driverSelectionModal').modal('hide');
+                };
+                driverList.appendChild(listItem);
+            });
+
+            // Show the modal
+            $('#driverSelectionModal').modal('show');
+            
+        }
+
+// Function to close the modal
+function closeModaltoken() {
+    var modal = document.getElementById('driverSelectionModal');
+    modal.style.display = 'none';
+}
+
+
 
                         // Check in the schedule_master table if the PF number is already allotted
                         function checkScheduleMaster(pfNumber, empName, tokenNumber, nameElementId, pfElementId, tokenElementId) {
@@ -928,7 +1027,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                     maxAllowedDrivers = singleCrewOperation === 'yes' ? 1 : 1;
                                     break;
                                 case '2':
-                                    maxAllowedDrivers = singleCrewOperation === 'yes' ? 1 : 1;
+                                    maxAllowedDrivers = singleCrewOperation === 'yes' ? 2 : 2;
                                     break;
                                 case '3':
                                     maxAllowedDrivers = singleCrewOperation === 'yes' ? 2 : 2;
@@ -1040,7 +1139,35 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                 }
             });
         });
+        function clearFields1(nameElementId, pfElementId, tokenElementId) {
+    document.getElementById(nameElementId).value = '';
+    document.getElementById(pfElementId).value = '';
+    document.getElementById(tokenElementId).value = ''; // Ensure the token field is also cleared
+}
+
     </script>
+<!-- Modal Structure -->
+<div class="modal fade" id="driverSelectionModal" tabindex="-1" role="dialog" aria-labelledby="driverSelectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="driverSelectionModalLabel">The Entered Token has more then one Enteries Please select any one</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul id="driverList" class="list-group">
+                        <!-- List items will be dynamically added here -->
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"  onclick="closeModaltoken()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Modal structure using Bootstrap -->
     <div class="modal fade" id="reallocationModal" tabindex="-1" role="dialog" aria-labelledby="reallocationModalLabel"

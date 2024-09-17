@@ -27,16 +27,16 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             $service_type_id = $data[8];
             $status='1';
             // Determine schedule count based on service type id
-            if ($service_type_id == 1 ) {
+            if ($service_type_id == 1 || $service_type_id == 2) {
                 $sch_count = 1;
-            } elseif ($service_type_id == 3 || $service_type_id == 4 || $service_type_id == 2) {
+            } elseif ($service_type_id == 3 || $service_type_id == 4  ) {
                 $sch_count = 2;
             } else {
                 $sch_count = 0; // Default value if service type id is not 1-5
             }
-            if ($service_type_id == 1) {
+            if ($service_type_id == 1|| $service_type_id == 2) {
                 $number_of_buses = 1;
-            } elseif ($service_type_id == 3 || $service_type_id == 4 || $service_type_id == 2) {
+            } elseif ($service_type_id == 3 || $service_type_id == 4 ) {
                 $number_of_buses = 2;
             } else {
                 $number_of_buses = 0; // Default value if service type id is not 1-5

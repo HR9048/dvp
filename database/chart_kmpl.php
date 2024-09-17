@@ -14,7 +14,7 @@ $sql = "SELECT
     GROUP_CONCAT(ROUND(subquery.avg_kmpl_depot, 2) ORDER BY l.depot_id SEPARATOR ', ') AS avg_kmpl_depots,
     ROUND(SUM(subquery.total_km_depot), 2) AS total_km_division,
     ROUND(SUM(subquery.total_hsd_depot), 2) AS total_hsd_division,
-    ROUND(AVG(subquery.avg_kmpl_depot), 2) AS avg_kmpl_division,
+    ROUND(SUM(subquery.total_km_depot) / SUM(subquery.total_hsd_depot), 2) AS avg_kmpl_division, -- Calculate division KMPL here
     kd.date
 FROM 
     kmpl_data kd
@@ -25,7 +25,7 @@ INNER JOIN (
         kd.depot,
         ROUND(SUM(kd.total_km), 2) AS total_km_depot,
         ROUND(SUM(kd.hsd), 2) AS total_hsd_depot,
-        ROUND(AVG(kd.kmpl), 2) AS avg_kmpl_depot,
+        ROUND(SUM(kd.total_km)/ SUM(kd.hsd), 2) AS avg_kmpl_depot,
         kd.date
     FROM 
         kmpl_data kd
@@ -44,7 +44,7 @@ $result = $db->query($sql);
 $data = array();
 
 if ($result->num_rows > 0) {
-    while($row = $result->fetch_assoc()) {
+    while ($row = $result->fetch_assoc()) {
         $data[] = $row;
     }
 }

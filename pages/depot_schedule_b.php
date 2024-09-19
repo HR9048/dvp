@@ -30,10 +30,21 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         $additionalBusMake = !empty($_POST['make3']) ? $_POST['make3'] : NULL;
         $additionalBusEmissionNorms = !empty($_POST['emission_norms3']) ? $_POST['emission_norms3'] : NULL;
 
+
+            // Retrieve current data from schedule_master for this schedule
+//$existingSql = "SELECT bus_number_1, bus_make_1, bus_emission_norms_1, bus_number_2, bus_make_2, bus_emission_norms_2,
+//additional_bus_number, additional_bus_make, additional_bus_emission_norms
+//FROM schedule_master WHERE id = ?";
+//$stmt = $db->prepare($existingSql);
+//$stmt->bind_param("i", $scheduleId);
+//$stmt->execute();
+//$result = $stmt->get_result();
+//$currentData = $result->fetch_assoc();
+//$stmt->close();
         // Check for duplicate bus numbers in the schedule_master table
         $checkCurrentSql = "SELECT bus_number_1, bus_number_2 
 FROM schedule_master
-WHERE (bus_number_1 = ? OR bus_number_2 = ?)"; // Exclude current schedule
+WHERE (bus_number_1 = ? OR bus_number_2 = ?) and id not in ($scheduleId)"; // Exclude current schedule
 
         $stmt = $db->prepare($checkCurrentSql);
         $stmt->bind_param("ss", $busNumber1, $busNumber2);
@@ -62,7 +73,7 @@ WHERE (bus_number_1 = ? OR bus_number_2 = ?)"; // Exclude current schedule
         // Check for duplicate bus numbers in the schedule_master table
         $checkCurrentSql = "SELECT bus_number_1, bus_number_2 
 FROM schedule_master
-WHERE (bus_number_1 = ? OR bus_number_2 = ?)"; // Exclude current schedule
+WHERE (bus_number_1 = ? OR bus_number_2 = ? ) and id not in ($scheduleId)"; // Exclude current schedule
 
         $stmt = $db->prepare($checkCurrentSql);
         $stmt->bind_param("ss", $busNumber2, $busNumber1);
@@ -89,77 +100,169 @@ WHERE (bus_number_1 = ? OR bus_number_2 = ?)"; // Exclude current schedule
 
         $stmt->close();
 
-        // Update query for schedule_master table
-        $sql = "UPDATE schedule_master SET 
-                    bus_number_1 = '$busNumber1',
-                    bus_make_1 = '$busMake1',
-                    bus_emission_norms_1 = '$busEmissionNorms1',
-                    bus_number_2 = " . ($busNumber2 !== NULL ? "'$busNumber2'" : "NULL") . ",
-                    bus_make_2 = " . ($busMake2 !== NULL ? "'$busMake2'" : "NULL") . ",
-                    bus_emission_norms_2 = " . ($busEmissionNorms2 !== NULL ? "'$busEmissionNorms2'" : "NULL") . ",
-                    additional_bus_number = " . ($additionalBusNumber !== NULL ? "'$additionalBusNumber'" : "NULL") . ",
-                    additional_bus_make = " . ($additionalBusMake !== NULL ? "'$additionalBusMake'" : "NULL") . ",
-                    additional_bus_emission_norms = " . ($additionalBusEmissionNorms !== NULL ? "'$additionalBusEmissionNorms'" : "NULL") . "
-                WHERE id = $scheduleId";
+        // Check if bus number 2 details are present, otherwise set them to NULL
+        $busNumber2 = !empty($_POST['bus_number_2']) ? $_POST['bus_number_2'] : NULL;
+        $busMake2 = !empty($_POST['make2']) ? $_POST['make2'] : NULL;
+        $busEmissionNorms2 = !empty($_POST['emission_norms2']) ? $_POST['emission_norms2'] : NULL;
 
-        if (mysqli_query($db, $sql)) {
-            // Prepare the base SQL insert statement
-            $created_by = $_SESSION['USERNAME'];
-            $insertSql = "INSERT INTO bus_fix_data (sch_key_no, division_id, depot_id, bus_number, bus_make, bus_emission_norms, additional, created_by) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        // Check if additional bus details are present, otherwise set them to NULL
+        $additionalBusNumber = !empty($_POST['bus_number_3']) ? $_POST['bus_number_3'] : NULL;
+        $additionalBusMake = !empty($_POST['make3']) ? $_POST['make3'] : NULL;
+        $additionalBusEmissionNorms = !empty($_POST['emission_norms3']) ? $_POST['emission_norms3'] : NULL;
 
-            // Prepare the statement
-            $stmt = mysqli_prepare($db, $insertSql);
+        // Retrieve current data from schedule_master for this schedule
+        $existingSql = "SELECT bus_number_1, bus_make_1, bus_emission_norms_1, bus_number_2, bus_make_2, bus_emission_norms_2,
+                        additional_bus_number, additional_bus_make, additional_bus_emission_norms
+                        FROM schedule_master WHERE id = ?";
+        $stmt = $db->prepare($existingSql);
+        $stmt->bind_param("i", $scheduleId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $currentData = $result->fetch_assoc();
+        $stmt->close();
 
-            // Flag for tracking success
-            $insertionSuccessful = true;
+        // Prepare the update query for schedule_master table
+        $updateFields = [];
 
-            // Check if busNumber1 exists and insert it as a row
-            if ($busNumber1 !== NULL) {
-                $additional = 0; // Not an additional bus
-                mysqli_stmt_bind_param($stmt, 'siisssis', $sch_key_no, $divisionId, $depotId, $busNumber1, $busMake1, $busEmissionNorms1, $additional, $created_by);
-                if (!mysqli_stmt_execute($stmt)) {
-                    $insertionSuccessful = false;
-                }
-            }
-
-            // Check if busNumber2 exists and insert it as a separate row
-            if ($busNumber2 !== NULL) {
-                $additional = 0; // Not an additional bus
-                mysqli_stmt_bind_param($stmt, 'siisssis', $sch_key_no, $divisionId, $depotId, $busNumber2, $busMake2, $busEmissionNorms2, $additional, $created_by);
-                if (!mysqli_stmt_execute($stmt)) {
-                    $insertionSuccessful = false;
-                }
-            }
-
-            // Check if additional bus data exists and insert it as a row with additional = 1
-            if ($additionalBusNumber !== NULL) {
-                $additional = 1; // This is an additional bus
-                mysqli_stmt_bind_param($stmt, 'siisssis', $sch_key_no, $divisionId, $depotId, $additionalBusNumber, $additionalBusMake, $additionalBusEmissionNorms, $additional, $created_by);
-                if (!mysqli_stmt_execute($stmt)) {
-                    $insertionSuccessful = false;
-                }
-            }
-
-            // Close the prepared statement
-            mysqli_stmt_close($stmt);
-
-            // Check success and display appropriate message
-            if ($insertionSuccessful) {
-                echo "<script>
-                        alert('Schedule updated and data inserted successfully');
-                        window.location.href = 'depot_schedule_b.php';
-                        </script>";
-            } else {
-                echo "<script>alert('Error inserting data. Please try again.');</script>";
-            }
-
-        } else {
-            echo "<script>alert('Error updating schedule: " . $db->error . "');</script>";
+        // Check if bus number 1, make, and emission norms differ
+        if ($busNumber1 !== $currentData['bus_number_1'] || $busMake1 !== $currentData['bus_make_1'] || $busEmissionNorms1 !== $currentData['bus_emission_norms_1']) {
+            $updateFields[] = "bus_number_1 = '$busNumber1', bus_make_1 = '$busMake1', bus_emission_norms_1 = '$busEmissionNorms1'";
         }
-    }
 
-    ?>
+        // Check if bus number 2, make, and emission norms differ
+        if ($busNumber2 !== $currentData['bus_number_2'] || $busMake2 !== $currentData['bus_make_2'] || $busEmissionNorms2 !== $currentData['bus_emission_norms_2']) {
+            $updateFields[] = "bus_number_2 = " . ($busNumber2 !== NULL ? "'$busNumber2'" : "NULL") . ",
+                               bus_make_2 = " . ($busMake2 !== NULL ? "'$busMake2'" : "NULL") . ",
+                               bus_emission_norms_2 = " . ($busEmissionNorms2 !== NULL ? "'$busEmissionNorms2'" : "NULL");
+        }
+
+        // Check if additional bus details differ
+        if ($additionalBusNumber !== $currentData['additional_bus_number'] || $additionalBusMake !== $currentData['additional_bus_make'] || $additionalBusEmissionNorms !== $currentData['additional_bus_emission_norms']) {
+            $updateFields[] = "additional_bus_number = " . ($additionalBusNumber !== NULL ? "'$additionalBusNumber'" : "NULL") . ",
+                               additional_bus_make = " . ($additionalBusMake !== NULL ? "'$additionalBusMake'" : "NULL") . ",
+                               additional_bus_emission_norms = " . ($additionalBusEmissionNorms !== NULL ? "'$additionalBusEmissionNorms'" : "NULL");
+        }
+
+        // Update schedule_master if any fields have changed
+        if (!empty($updateFields)) {
+            $updateSql = "UPDATE schedule_master SET " . implode(", ", $updateFields) . " WHERE id = $scheduleId";
+            if (!mysqli_query($db, $updateSql)) {
+                echo "<script>alert('Error updating schedule: " . mysqli_error($db) . "');</script>";
+                exit;
+            }
+        }
+
+
+
+
+$created_by = $_SESSION['USERNAME'];
+$current1 =  $currentData['bus_number_1'];
+$current2 =  $currentData['bus_number_2'];
+$current3 =  $currentData['additional_bus_number'];
+
+// Prepare the update and insert queries
+$updateBusFixSql = "UPDATE bus_fix_data SET to_date = NOW() WHERE sch_key_no = ? AND division_id = ? AND depot_id = ? AND bus_number = ? AND to_date IS NULL";
+$insertBusFixSql = "INSERT INTO bus_fix_data (sch_key_no, division_id, depot_id, bus_number, bus_make, bus_emission_norms, additional, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+// Function to update `to_date` for old records
+
+
+function updateBusData($db, $updateBusFixSql, $sch_key_no, $divisionId, $depotId, $current1) {
+    if (!empty($current1)) {
+        $stmt = $db->prepare($updateBusFixSql);
+        $stmt->bind_param('siis', $sch_key_no, $divisionId, $depotId, $current1);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+function updateBusData1($db, $updateBusFixSql, $sch_key_no, $divisionId, $depotId, $current2) {
+    if (!empty($current2)) {
+        $stmt = $db->prepare($updateBusFixSql);
+        $stmt->bind_param('siis', $sch_key_no, $divisionId, $depotId, $current2);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+function updateBusData2($db, $updateBusFixSql, $sch_key_no, $divisionId, $depotId, $current3) {
+    if (!empty($current3)) {
+        $stmt = $db->prepare($updateBusFixSql);
+        $stmt->bind_param('siis', $sch_key_no, $divisionId, $depotId, $current3);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+// Function to insert new bus data
+function insertBusData($db, $insertBusFixSql, $sch_key_no, $divisionId, $depotId, $busNumber1, $busMake1, $busEmissionNorms1, $additional, $created_by) {
+    if (!empty($busNumber1)) {
+        $stmt = $db->prepare($insertBusFixSql);
+        $stmt->bind_param('siisssis', $sch_key_no, $divisionId, $depotId, $busNumber1, $busMake1, $busEmissionNorms1, $additional, $created_by);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+function insertBusData1($db, $insertBusFixSql, $sch_key_no, $divisionId, $depotId, $busNumber2, $busMake2, $busEmissionNorms2, $additional, $created_by) {
+    
+    if (!empty($busNumber2)) {
+        $stmt = $db->prepare($insertBusFixSql);
+        $stmt->bind_param('siisssis', $sch_key_no, $divisionId, $depotId, $busNumber2, $busMake2, $busEmissionNorms2, $additional, $created_by);
+        $stmt->execute();
+        $stmt->close();
+    }
+    
+}
+function insertBusData2($db, $insertBusFixSql, $sch_key_no, $divisionId, $depotId, $additionalBusNumber, $additionalBusMake, $additionalBusEmissionNorms, $additional, $created_by) {
+    if (!empty($additionalBusNumber)) {
+        $stmt = $db->prepare($insertBusFixSql);
+        $stmt->bind_param('siisssis', $sch_key_no, $divisionId, $depotId, $additionalBusNumber, $additionalBusMake, $additionalBusEmissionNorms, $additional, $created_by);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+// Check and update busNumber1, then insert new busNumber1
+if ($busNumber1 != NULL) {
+    if ($busNumber1 !== $current1) {
+        updateBusData($db, $updateBusFixSql, $sch_key_no, $divisionId, $depotId, $current1);
+        insertBusData($db, $insertBusFixSql, $sch_key_no, $divisionId, $depotId, $busNumber1, $busMake1, $busEmissionNorms1, 0, $_SESSION['USERNAME']);
+        ?>
+<script>
+    console.log("Current Bus Number 1: <?php echo $current1; ?>");
+    console.log("EWntered Bus Number 1: <?php echo $busNumber1; ?>");
+
+</script>
+<?php
+    }
+    if ($current1 === $busNumber1 ) {
+    }
+}
+
+// Check and update busNumber2, then insert new busNumber2
+if ($busNumber2 != NULL) {
+    if ($current2 !== $busNumber2 ) {
+        updateBusData1($db, $updateBusFixSql, $sch_key_no, $divisionId, $depotId, $current2);
+        insertBusData1($db, $insertBusFixSql, $sch_key_no, $divisionId, $depotId, $busNumber2, $busMake2, $busEmissionNorms2, 0, $_SESSION['USERNAME']);
+    }
+    if ($current2 === $busNumber2 ) {
+    } 
+}
+
+// Check and update additionalBusNumber, then insert new additionalBusNumber
+if ($additionalBusNumber != NULL) {
+    if ($current3 !== $additionalBusNumber) {
+        updateBusData2($db, $updateBusFixSql, $sch_key_no, $divisionId, $depotId, $current3);
+        insertBusData2($db, $insertBusFixSql, $sch_key_no, $divisionId, $depotId, $additionalBusNumber, $additionalBusMake, $additionalBusEmissionNorms, 1, $_SESSION['USERNAME']);
+
+    }
+    if ( $current3 === $additionalBusNumber) {
+    }
+}
+
+echo "<script>
+alert('Schedule updated and data inserted successfully');
+window.location.href = 'depot_schedule_b.php';
+</script>";
+
+}
+
+?>
     <?php
     // Prepare and execute the query to count schedules
     $sql_count = "SELECT COUNT(*) AS schedule_count
@@ -352,113 +455,148 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                     success: function (response) {
                         var details = JSON.parse(response);
                         var scheduleFieldsHtml = `
-                                                                <div class="row">
-                                                                    <div class="col">
-                                                                        <div class="form-group">
-                                                                            <label for="sch_key_no">Schedule Key Number</label>
-                                                                            <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col">
-                                                                        <div class="form-group">
-                                                                            <label for="sch_abbr">Schedule Abbreviation</label>
-                                                                            <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col">
-                                                                        <div class="form-group">
-                                                                            <label for="sch_km">Schedule KM</label>
-                                                                            <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
-                    
-                                                                <div class="row">
-                                                                    <div class="col">
-                                                                        <div class="form-group">
-                                                                            <label for="sch_dep_time">Departure Time</label>
-                                                                            <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col">
-                                                                        <div class="form-group">
-                                                                            <label for="sch_arr_time">Arrival Time</label>
-                                                                            <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col">
-                                                                        <div class="form-group">
-                                                                            <label for="service_class_name">Service Class</label>
-                                                                            <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>`;
-
-                        var busFieldsHtml = '';
-                        for (var i = 1; i <= details.number_of_buses; i++) {
-                            busFieldsHtml += `
                                                                     <div class="row">
                                                                         <div class="col">
                                                                             <div class="form-group">
-                                                                                <label for="bus_number${i}">Bus ${i} Number</label>
-                                                                                <input type="text" id="bus_number_${i}" name="bus_number_${i}" class="form-control" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(${i})">
+                                                                                <label for="sch_key_no">Schedule Key Number</label>
+                                                                                <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
                                                                             </div>
                                                                         </div>
                                                                         <div class="col">
                                                                             <div class="form-group">
-                                                                                <label for="make${i}">Bus ${i} Make</label>
-                                                                                <input type="text" id="make${i}" name="make${i}" class="form-control" readonly>
+                                                                                <label for="sch_abbr">Schedule Abbreviation</label>
+                                                                                <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
                                                                             </div>
                                                                         </div>
                                                                         <div class="col">
                                                                             <div class="form-group">
-                                                                                <label for="emission_norms${i}">Bus ${i} Emission Norms</label>
-                                                                                <input type="text" id="emission_norms${i}" name="emission_norms${i}" class="form-control" readonly>
+                                                                                <label for="sch_km">Schedule KM</label>
+                                                                                <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
                                                                             </div>
                                                                         </div>
-                                                                    </div>`;
+                                                                    </div>
+                                                                    <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
+                    
+                                                                    <div class="row">
+                                                                        <div class="col">
+                                                                            <div class="form-group">
+                                                                                <label for="sch_dep_time">Departure Time</label>
+                                                                                <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col">
+                                                                            <div class="form-group">
+                                                                                <label for="sch_arr_time">Arrival Time</label>
+                                                                                <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col">
+                                                                            <div class="form-group">
+                                                                                <label for="service_class_name">Service Class</label>
+                                                                                <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">`;
+
+                        // Populate bus details for buses 1 and 2
+                        var busFieldsHtml = '';
+                        for (var i = 1; i <= details.number_of_buses; i++) {
+                            busFieldsHtml += `
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="bus_number${i}">Bus ${i} Number</label>
+                        <input type="text" id="bus_number_${i}" name="bus_number_${i}" class="form-control" value="${details['bus_number_' + i] || ''}" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(${i})">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="make${i}">Bus ${i} Make</label>
+                        <input type="text" id="make${i}" name="make${i}" class="form-control" value="${details['bus_make_' + i] || ''}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="emission_norms${i}">Bus ${i} Emission Norms</label>
+                        <input type="text" id="emission_norms${i}" name="emission_norms${i}" class="form-control" value="${details['bus_emission_norms_' + i] || ''}" readonly>
+                    </div>
+                </div>
+            </div>`;
                         }
 
-                        // Append checkbox for additional bus
-                        scheduleFieldsHtml += `
-                                                                <div class="form-group">
-                                                                    <label for="agree">Have Additional Bus:</label>
-                                                                    <input type="checkbox" id="agree" name="agree" value="yes">
-                                                                </div>`;
+                        // Check and populate additional bus details if available
+                        if (details.additional_bus_number) {
+                            // Automatically check the checkbox if additional bus is found
+                            scheduleFieldsHtml += `
+            <div class="form-group">
+                <label for="agree">Have Additional Bus:</label>
+                <input type="checkbox" id="agree" name="agree" value="yes" checked>
+            </div>`;
 
+                            busFieldsHtml += `
+            <div class="row additional-bus-fields">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="additional_bus_number">Additional Bus Number</label>
+                        <input type="text" id="bus_number_3" name="bus_number_3" class="form-control" value="${details.additional_bus_number}" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(3)">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="make3">Additional Bus Make</label>
+                        <input type="text" id="make3" name="make3" class="form-control" value="${details.additional_bus_make}" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="emission_norms3">Additional Bus Emission Norms</label>
+                        <input type="text" id="emission_norms3" name="emission_norms3" class="form-control" value="${details.additional_bus_emission_norms}" readonly>
+                    </div>
+                </div>
+            </div>`;
+                        } else {
+                            // Add checkbox if no additional bus
+                            scheduleFieldsHtml += `
+            <div class="form-group">
+                <label for="agree">Have Additional Bus:</label>
+                <input type="checkbox" id="agree" name="agree" value="yes">
+            </div>`;
+                        }
+
+                        // Populate the form with schedule fields
                         $('#scheduleFields').html(scheduleFieldsHtml);
                         $('#busFields').html(busFieldsHtml);
                         $('#updateModal').modal('show');
 
-                        // Listen for checkbox change event
+                        // Handle the additional bus checkbox event
                         $('#agree').change(function () {
                             if (this.checked) {
-                                // Append another set of bus fields for additional bus
+                                // Append additional bus fields
                                 var additionalBusHtml = `
-                                                                        <div class="row additional-bus-fields">
-                                                                            <div class="col">
-                                                                                <div class="form-group">
-                                                                                    <label for="bus_number_3">Additional Bus Number</label>
-                                                                                    <input type="text" id="bus_number_3" name="bus_number_3" class="form-control" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(3)">
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col">
-                                                                                <div class="form-group">
-                                                                                    <label for="make3">Additional Bus Make</label>
-                                                                                    <input type="text" id="make3" name="make3" class="form-control" readonly>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col">
-                                                                                <div class="form-group">
-                                                                                    <label for="emission_norms3">Additional Bus Emission Norms</label>
-                                                                                    <input type="text" id="emission_norms3" name="emission_norms3" class="form-control" readonly>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>`;
+                <div class="row additional-bus-fields">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="bus_number_3">Additional Bus Number</label>
+                            <input type="text" id="bus_number_3" name="bus_number_3" class="form-control" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(3)">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="make3">Additional Bus Make</label>
+                            <input type="text" id="make3" name="make3" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="emission_norms3">Additional Bus Emission Norms</label>
+                            <input type="text" id="emission_norms3" name="emission_norms3" class="form-control" readonly>
+                        </div>
+                    </div>
+                </div>`;
                                 $('#busFields').append(additionalBusHtml);
                             } else {
-                                // Remove additional bus fields if checkbox is unchecked
+                                // Remove additional bus fields if unchecked
                                 $('#busFields .additional-bus-fields').remove();
                             }
                         });
@@ -469,6 +607,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                 });
             });
         });
+
         // Function to search for bus
         function searchBus(index) {
             var busNumber = $('#bus_number_' + index).val();

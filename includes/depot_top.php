@@ -226,7 +226,24 @@ confirm_logged_in();
                     </ul>
                   </div>
                 </li>
-                <?php } ?>
+                <?php }
+                if ($_SESSION['TYPE'] == 'DEPOT' &&  $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {   ?>
+
+                  <li class="nav-item">
+                    <div class="dropdown">
+                      <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                        style="font-size: 15px;">
+                        <b>Private Employee</b>
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+  
+                        <li><a class="dropdown-item" href="depot_addp_emp.php">Add Private Employee</a></li>
+                        <li><a class="dropdown-item" href="depot_manp_emp.php">Manage Private Employee</a></li>
+                        <!-- <li><a class="dropdown-item" href="depot_relp_emp.php">Releve Private Employee</a></li> -->
+                      </ul>
+                    </div>
+                  </li>
+                  <?php } ?>
                 </ul>
                 <ul class="navbar-nav ml-auto">
                 <div class="topbar-divider d-none d-sm-block"></div>

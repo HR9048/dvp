@@ -340,13 +340,16 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
 
     <style>
-         .modal {
-        z-index: 1050; /* Bootstrap default */
-    }
+        .modal {
+            z-index: 1050;
+            /* Bootstrap default */
+        }
 
-    .modal-backdrop {
-        z-index: 1040; /* Bootstrap default */
-    }
+        .modal-backdrop {
+            z-index: 1040;
+            /* Bootstrap default */
+        }
+
         .hide {
             display: none;
         }
@@ -505,89 +508,114 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                     data: { id: scheduleId },
                     success: function (response) {
                         var details = JSON.parse(response);
+                        
                         var scheduleFieldsHtml = `
-                                                                                                                                    <div class="row">
-                                                                                                                                        <div class="col">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label for="sch_key_no">Schedule Key Number</label>
-                                                                                                                                                <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                        <div class="col">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label for="sch_abbr">Schedule Abbreviation</label>
-                                                                                                                                                <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-         <div class="col">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label for="sch_km">Schedule KM</label>
-                                                                                                                                                <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                    </div>
-                                                                                                                                    <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
-                                                                                                                                    <input type="hidden" id="id" name="id" value="${details.id}">
-                                                                                                                                    <input type="hidden" id="service_class" name="service_class" value="${details.service_type_id}">
-                                                                                                                                    <input type="hidden" id="service_type" name="service_type" value="${details.service_type_name}">
-                    
-                                                                                                                                    <div class="row">
-                                                                                                                                        <div class="col">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label for="sch_dep_time">Departure Time</label>
-                                                                                                                                                <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                        <div class="col">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label for="sch_arr_time">Arrival Time</label>
-                                                                                                                                                <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                        <div class="col">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label for="service_class_name">Service Class</label>
-                                                                                                                                                <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                    </div>`;
- 
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label for="sch_key_no">Schedule Key Number</label>
+                <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="sch_abbr">Schedule Abbreviation</label>
+                <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="sch_km">Schedule KM</label>
+                <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
+    <input type="hidden" id="id" name="id" value="${details.id}">
+    <input type="hidden" id="service_class" name="service_class" value="${details.service_type_id}">
+    <input type="hidden" id="service_type" name="service_type" value="${details.service_type_name}">
+    
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label for="sch_dep_time">Departure Time</label>
+                <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="sch_arr_time">Arrival Time</label>
+                <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="service_class_name">Service Class</label>
+                <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
+            </div>
+        </div>
+    </div>`;
+
                         $('#scheduleFields').html(scheduleFieldsHtml);
                         $('#updateModal').modal('show');
 
                         // Add the single crew operation checkboxes and number of drivers/conductors fields
                         var crewOperationFieldsHtml = `
-                                                                                                                                    <div class="row">
-                                                                                                                                        <div class="col">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label>Conductor Less Operation:</label>
-                                                                                                                                                <div>
-                                                                                                                                                    <input type="radio" id="single_crew_yes" name="single_crew_operation" value="yes" required>
-                                                                                                                                                    <label for="single_crew_yes">Yes</label>
-                                                                                                                                                    <input type="radio" id="single_crew_no" name="single_crew_operation" value="no" required>
-                                                                                                                                                    <label for="single_crew_no">No</label>
-                                                                                                                                                </div>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                        <div class="col">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label for="number_of_drivers">Enter the number of drivers:</label>
-                                                                                                                                                <input type="number" id="number_of_drivers" name="number_of_drivers" class="form-control" disabled required>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                        <div class="col" id="conductorColumn" style="display: none;">
-                                                                                                                                            <div class="form-group">
-                                                                                                                                                <label for="number_of_conductor">Enter the number of Conductors:</label>
-                                                                                                                                                <input type="number" id="number_of_conductor" name="number_of_conductor" class="form-control" required>
-                                                                                                                                            </div>
-                                                                                                                                        </div>
-                                                                                                                                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-group">
+                                <label>Conductor Less Operation:</label>
+                                <div>
+                                    <input type="radio" id="single_crew_yes" name="single_crew_operation" value="yes" required>
+                                    <label for="single_crew_yes">Yes</label>
+                                    <input type="radio" id="single_crew_no" name="single_crew_operation" value="no" required>
+                                    <label for="single_crew_no">No</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group">
+                                <label for="number_of_drivers">Enter the number of drivers:</label>
+                                <input type="number" id="number_of_drivers" name="number_of_drivers" class="form-control" disabled required>
+                            </div>
+                        </div>
+                        <div class="col" id="conductorColumn" style="display: none;">
+                            <div class="form-group">
+                                <label for="number_of_conductor">Enter the number of Conductors:</label>
+                                <input type="number" id="number_of_conductor" name="number_of_conductor" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="driverFields"></div>
+                    <div id="conductorFields"></div>
+                    <div id="driverAllocationMessage"></div>
+                `;
 
-                                                                                                                                    <div id="driverFields"></div>
-                                                                                                                                    <div id="conductorFields"></div>
-                                                                                                                                    <div id="driverAllocationMessage"></div>`;
+                $('#crewOperationFields').html(crewOperationFieldsHtml);
+                // Set radio buttons based on the fetched data
+                if (details.single_crew === 'yes') {
+    $('#single_crew_yes').prop('checked', true);
+    $('#number_of_drivers').prop('disabled', false); // Disable if single crew is yes
+    $('#number_of_drivers').val(details.driver_count);
+    $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
+    $('#driverFields').empty(); // Clear existing fields
+    addConductorInputFields(0); // Clear conductors since single crew is 'yes'
+    
+    // Generate driver fields based on fetched count
+    addDriverInputFields(details.driver_count, details); // Add the driver fields here
+} else if (details.single_crew === 'no') {
+    $('#single_crew_no').prop('checked', true);
+    $('#number_of_drivers').prop('disabled', false);
+    $('#driverFields').empty();
+    $('#conductorColumn').show();
+    $('#number_of_drivers').val(details.driver_count);
+    $('#number_of_conductor').val(details.conductor_count);
+    
+    // Generate driver and conductor fields based on fetched counts
+    addDriverInputFields(details.driver_count, details); // Add the driver fields
+    addConductorInputFields(details.conductor_count); // Add the conductor fields
+}
 
-                        $('#crewOperationFields').html(crewOperationFieldsHtml);
 
                         // Listen for change in single crew operation checkboxes
                         $('input[name="single_crew_operation"]').change(function () {
@@ -596,11 +624,11 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 $('#number_of_drivers').prop('disabled', false);
                                 $('#conductorColumn').hide();
                                 $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
-                                $('#number_of_drivers').val('');
+                                $('#number_of_drivers');
                                 $('#driverFields').empty();
                                 addConductorInputFields(0);
                             } else if (singleCrewOperation === 'no') {
-                                $('#number_of_drivers').prop('disabled', false).val('');
+                                $('#number_of_drivers').prop('disabled', false);
                                 $('#driverFields').empty();
                                 $('#conductorColumn').show();
                             }
@@ -619,7 +647,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 addDriverInputFields(0);
                                 alert(`Maximum allowed drivers for ${serviceTypeName} is ${maxAllowedDrivers}`);
                             } else {
-                                addDriverInputFields(numberOfDrivers);
+                                addDriverInputFields(numberOfDrivers, details);
                             }
                         });
                         $('#number_of_conductor').on('input', function () {
@@ -636,34 +664,43 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 addConductorInputFields(numberOfDrivers);
                             }
                         });
+                        
                         // Function to add driver input fields based on the number of drivers
-                        function addDriverInputFields(numberOfDrivers) {
-                            var driverFieldsHtml = '';
-                            for (var i = 1; i <= numberOfDrivers; i++) {
-                                driverFieldsHtml += `
-                                                                                                                                            <div class="row driver-field">
-                                                                                                                                                <div class="col">
-                                                                                                                                                    <div class="form-group">
-                                                                                                                                                        <label for="driver_token_${i}">Driver ${i} Token:</label>
-                                                                                                                                                        <input type="number" id="driver_token_${i}" name="driver_token_${i}" class="form-control" required>
-                                                                                                                                                    </div>
-                                                                                                                                                </div>
-                                                                                                                                                <div class="col">
-                                                                                                                                                    <div class="form-group">
-                                                                                                                                                        <label for="pf_no_d${i}">Driver ${i} PF:</label>
-                                                                                                                                                        <input type="text" id="pf_no_d${i}" name="pf_no_d${i}" class="form-control" readonly>
-                                                                                                                                                    </div>
-                                                                                                                                                </div>
-                                                                                                                                                <div class="col">
-                                                                                                                                                    <div class="form-group">
-                                                                                                                                                        <label for="driver_${i}_name">Driver ${i} Name:</label>
-                                                                                                                                                        <input type="text" id="driver_${i}_name" name="driver_${i}_name" class="form-control" readonly>
-                                                                                                                                                    </div>
-                                                                                                                                                </div>
-                                                                                                                                            </div>`;
-                            }
+                        function addDriverInputFields(numberOfDrivers, details) {
+    var driverFieldsHtml = '';
+    
+    for (var i = 1; i <= numberOfDrivers; i++) {
+        // Assuming details is an object where properties like details.driver_pf_1, details.driver_name_1, etc., exist.
+        var driverToken = details[`driver_token_${i}`] || ''; // Retrieve driver token or set as empty
+        var driverPf = details[`driver_pf_${i}`] || '';       // Retrieve driver PF or set as empty
+        var driverName = details[`driver_name_${i}`] || '';   // Retrieve driver name or set as empty
 
-                            $('#driverFields').html(driverFieldsHtml);
+        driverFieldsHtml += `
+            <div class="row driver-field">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="driver_token_${i}">Driver ${i} Token:</label>
+                        <input type="number" id="driver_token_${i}" name="driver_token_${i}" value="${driverToken}" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="pf_no_d${i}">Driver ${i} PF:</label>
+                        <input type="text" id="pf_no_d${i}" name="pf_no_d${i}" value="${driverPf}" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="driver_${i}_name">Driver ${i} Name:</label>
+                        <input type="text" id="driver_${i}_name" name="driver_${i}_name" value="${driverName}" class="form-control" readonly>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    $('#driverFields').html(driverFieldsHtml);
+
+
 
                             // Add event listener for each driver token input field
                             for (var j = 1; j <= numberOfDrivers; j++) {
@@ -694,26 +731,26 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             var conductorFieldsHtml = '';
                             for (var i = 1; i <= numberOfConductors; i++) {
                                 conductorFieldsHtml += `
-                                                <div class="row conductor-field">
-                                                    <div class="col">
-                                                        <div class="form-group">
-                                                                                                                                                        <label for="conductor_token_${i}">Conductor ${i} Token:</label>
-                                                                                                                                                        <input type="number" id="conductor_token_${i}" name="conductor_token_${i}" class="form-control" required>
-                                                                                                                                                    </div>
-                                                                                                                                                </div>
-                                                                                                                                                <div class="col">
-                                                                                                                                                    <div class="form-group">
-                                                                                                                                                        <label for="pf_no_c${i}">Conductor ${i} PF:</label>
-                                                                                                                                                        <input type="text" id="pf_no_c${i}" name="pf_no_c${i}" class="form-control" readonly>
-                                                                                                                                                    </div>
-                                                                                                                                                </div>
-                                                                                                                                                <div class="col">
-                                                                                                                                                    <div class="form-group">
-                                                                                                                                                        <label for="conductor_${i}_name">Conductor ${i} Name:</label>
-                                                                                                                                                        <input type="text" id="conductor_${i}_name" name="conductor_${i}_name" class="form-control" readonly>
-                                                                                                                                                    </div>
-                                                                                                                                                </div>
-                                                                                                                                            </div>`;
+                                                        <div class="row conductor-field">
+                                                            <div class="col">
+                                                                <div class="form-group">
+                                                                                                                                                                <label for="conductor_token_${i}">Conductor ${i} Token:</label>
+                                                                                                                                                                <input type="number" id="conductor_token_${i}" name="conductor_token_${i}" class="form-control" required>
+                                                                                                                                                            </div>
+                                                                                                                                                        </div>
+                                                                                                                                                        <div class="col">
+                                                                                                                                                            <div class="form-group">
+                                                                                                                                                                <label for="pf_no_c${i}">Conductor ${i} PF:</label>
+                                                                                                                                                                <input type="text" id="pf_no_c${i}" name="pf_no_c${i}" class="form-control" readonly>
+                                                                                                                                                            </div>
+                                                                                                                                                        </div>
+                                                                                                                                                        <div class="col">
+                                                                                                                                                            <div class="form-group">
+                                                                                                                                                                <label for="conductor_${i}_name">Conductor ${i} Name:</label>
+                                                                                                                                                                <input type="text" id="conductor_${i}_name" name="conductor_${i}_name" class="form-control" readonly>
+                                                                                                                                                            </div>
+                                                                                                                                                        </div>
+                                                                                                                                                    </div>`;
                             }
 
                             $('#conductorFields').html(conductorFieldsHtml);
@@ -736,199 +773,199 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             }
                         }
                         function fetchConductorDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            var response = JSON.parse(this.responseText);
-            var data = response.data;
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
+                            xhr.onload = function () {
+                                if (xhr.status === 200) {
+                                    var response = JSON.parse(this.responseText);
+                                    var data = response.data;
 
-            if (!data || data.length === 0) {
-                alert('The token number employee is not registered in KKRTC.');
-                clearFields(nameElementId, pfElementId, tokenElementId);
-                return;
-            }
+                                    if (!data || data.length === 0) {
+                                        alert('The token number employee is not registered in KKRTC.');
+                                        clearFields(nameElementId, pfElementId, tokenElementId);
+                                        return;
+                                    }
 
-            // Filter the data based on division and depot
-            var matchingDrivers = data.filter(driver => {
-                var driverDivision = driver.Division.trim();
-                var driverDepot = driver.Depot.trim();
-                return driverDivision === sessionDivision && driverDepot === sessionDepot &&  driver.token_number === tokenNumber;
-            });
+                                    // Filter the data based on division and depot
+                                    var matchingDrivers = data.filter(driver => {
+                                        var driverDivision = driver.Division.trim();
+                                        var driverDepot = driver.Depot.trim();
+                                        return driverDivision === sessionDivision && driverDepot === sessionDepot && driver.token_number === tokenNumber;
+                                    });
 
-            console.log('Matching drivers:', matchingDrivers);
+                                    console.log('Matching drivers:', matchingDrivers);
 
-            if (matchingDrivers.length === 1) {
-                // If only one match, populate the fields with driver details
-                var driver = matchingDrivers[0];
-                console.log('Single matching driver:', driver);
+                                    if (matchingDrivers.length === 1) {
+                                        // If only one match, populate the fields with driver details
+                                        var driver = matchingDrivers[0];
+                                        console.log('Single matching driver:', driver);
 
-                if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                    alert('The employee is a DRIVER. Please enter the token number of a driver or Driver cum Conductor.');
-                    clearFields(nameElementId, pfElementId, tokenElementId);
-                    return;
-                }
+                                        if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                                            alert('The employee is a DRIVER. Please enter the token number of a driver or Driver cum Conductor.');
+                                            clearFields(nameElementId, pfElementId, tokenElementId);
+                                            return;
+                                        }
 
-                document.getElementById(nameElementId).value = driver.EMP_NAME || '';
-                document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+                                        document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+                                        document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
 
-                // Call the function to check the schedule master
-                checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-            } else if (matchingDrivers.length > 1) {
-                // If more than one match, open the modal to select the correct driver
-                console.log('Multiple matching drivers found. Opening modal...');
-                openDriverSelectionModal(matchingDrivers, function(selectedDriver) {
-                    console.log('Selected driver:', selectedDriver);
+                                        // Call the function to check the schedule master
+                                        checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                    } else if (matchingDrivers.length > 1) {
+                                        // If more than one match, open the modal to select the correct driver
+                                        console.log('Multiple matching drivers found. Opening modal...');
+                                        openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
+                                            console.log('Selected driver:', selectedDriver);
 
-                    // Handle user selection
-                    if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                        alert('The selected employee is a DRIVER. Please select a driver or Driver cum driver.');
-                        $('#driverSelectionModal').modal('hide'); // Hide the modal
-                        clearFields(nameElementId, pfElementId, tokenElementId);
-                        return;
-                    }
+                                            // Handle user selection
+                                            if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                                                alert('The selected employee is a DRIVER. Please select a driver or Driver cum driver.');
+                                                $('#driverSelectionModal').modal('hide'); // Hide the modal
+                                                clearFields(nameElementId, pfElementId, tokenElementId);
+                                                return;
+                                            }
 
-                    document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
-                    document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+                                            document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                                            document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
 
-                    // Call the function to check the schedule master
-                    checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                });
-            } else {
-                alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
-                clearFields(nameElementId, pfElementId, tokenElementId);
-            }
-        } else {
-            alert('An error occurred while fetching the driver details.');
-            clearFields(nameElementId, pfElementId, tokenElementId);
-        }
-    };
-    xhr.onerror = function () {
-        alert('A network error occurred while fetching the conductor details.');
-        clearFields(nameElementId, pfElementId, tokenElementId);
-    };
-    xhr.send();
-}
+                                            // Call the function to check the schedule master
+                                            checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                        });
+                                    } else {
+                                        alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                                        clearFields(nameElementId, pfElementId, tokenElementId);
+                                    }
+                                } else {
+                                    alert('An error occurred while fetching the driver details.');
+                                    clearFields(nameElementId, pfElementId, tokenElementId);
+                                }
+                            };
+                            xhr.onerror = function () {
+                                alert('A network error occurred while fetching the conductor details.');
+                                clearFields(nameElementId, pfElementId, tokenElementId);
+                            };
+                            xhr.send();
+                        }
 
 
-var division = '<?php echo $division; ?>'; // Ensure $division is correctly populated
-var depot = '<?php echo $depot; ?>'; // Ensure $depot is correctly populated
+                        var division = '<?php echo $division; ?>'; // Ensure $division is correctly populated
+                        var depot = '<?php echo $depot; ?>'; // Ensure $depot is correctly populated
 
-    function fetchDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
-    console.log('Fetching driver details for token:', tokenNumber);
-    
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            var response = JSON.parse(this.responseText);
-            var data = response.data;
+                        function fetchDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
+                            console.log('Fetching driver details for token:', tokenNumber);
 
-            console.log('Data fetched:', data);
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
+                            xhr.onload = function () {
+                                if (xhr.status === 200) {
+                                    var response = JSON.parse(this.responseText);
+                                    var data = response.data;
 
-            if (!data || data.length === 0) {
-                alert('The token number employee is not registered in KKRTC.');
-                clearFields(nameElementId, pfElementId, tokenElementId);
-                return;
-            }
+                                    console.log('Data fetched:', data);
 
-            // Filter the data based on division and depot
-            var matchingDrivers = data.filter(driver => {
-                var driverDivision = driver.Division.trim();
-                var driverDepot = driver.Depot.trim();
-                return driverDivision === sessionDivision && driverDepot === sessionDepot &&  driver.token_number === tokenNumber;
-            });
+                                    if (!data || data.length === 0) {
+                                        alert('The token number employee is not registered in KKRTC.');
+                                        clearFields(nameElementId, pfElementId, tokenElementId);
+                                        return;
+                                    }
 
-            console.log('Matching drivers:', matchingDrivers);
+                                    // Filter the data based on division and depot
+                                    var matchingDrivers = data.filter(driver => {
+                                        var driverDivision = driver.Division.trim();
+                                        var driverDepot = driver.Depot.trim();
+                                        return driverDivision === sessionDivision && driverDepot === sessionDepot && driver.token_number === tokenNumber;
+                                    });
 
-            if (matchingDrivers.length === 1) {
-                // If only one match, populate the fields with driver details
-                var driver = matchingDrivers[0];
-                console.log('Single matching driver:', driver);
+                                    console.log('Matching drivers:', matchingDrivers);
 
-                if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
-                    alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
-                    clearFields(nameElementId, pfElementId, tokenElementId);
-                    return;
-                }
+                                    if (matchingDrivers.length === 1) {
+                                        // If only one match, populate the fields with driver details
+                                        var driver = matchingDrivers[0];
+                                        console.log('Single matching driver:', driver);
 
-                document.getElementById(nameElementId).value = driver.EMP_NAME || '';
-                document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+                                        if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                                            alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
+                                            clearFields(nameElementId, pfElementId, tokenElementId);
+                                            return;
+                                        }
 
-                // Call the function to check the schedule master
-                checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-            } else if (matchingDrivers.length > 1) {
-                // If more than one match, open the modal to select the correct driver
-                console.log('Multiple matching drivers found. Opening modal...');
-                openDriverSelectionModal(matchingDrivers, function(selectedDriver) {
-                    console.log('Selected driver:', selectedDriver);
+                                        document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+                                        document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
 
-                    // Handle user selection
-// Handle user selection
-if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
-                        alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
-                        $('#driverSelectionModalLabel').modal('hide'); // Hide the modal
-                        clearFields(nameElementId, pfElementId, tokenElementId);
-                        return;
-                    }
-                    
-                    document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
-                    document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+                                        // Call the function to check the schedule master
+                                        checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                    } else if (matchingDrivers.length > 1) {
+                                        // If more than one match, open the modal to select the correct driver
+                                        console.log('Multiple matching drivers found. Opening modal...');
+                                        openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
+                                            console.log('Selected driver:', selectedDriver);
 
-                    // Call the function to check the schedule master
-                    checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                });
-            } else {
-                alert('No Driver/DCC found for the ' + division + ' division and ' + depot + ' depot.');
-                clearFields(nameElementId, pfElementId, tokenElementId);
-            }
-        } else {
-            alert('An error occurred while fetching the conductor details.');
-            clearFields(nameElementId, pfElementId, tokenElementId);
-        }
-    };
-    xhr.onerror = function () {
-        alert('A network error occurred while fetching the conductor details.');
-        clearFields(nameElementId, pfElementId, tokenElementId);
-    };
-    xhr.send();
-}
+                                            // Handle user selection
+                                            // Handle user selection
+                                            if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                                                alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
+                                                $('#driverSelectionModalLabel').modal('hide'); // Hide the modal
+                                                clearFields(nameElementId, pfElementId, tokenElementId);
+                                                return;
+                                            }
 
-function openDriverSelectionModal(drivers, onSelect) {
-            console.log('Opening driver selection modal with drivers:', drivers);
+                                            document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                                            document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
 
-            var driverList = document.getElementById('driverList'); // List inside your modal to show drivers
+                                            // Call the function to check the schedule master
+                                            checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                        });
+                                    } else {
+                                        alert('No Driver/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                                        clearFields(nameElementId, pfElementId, tokenElementId);
+                                    }
+                                } else {
+                                    alert('An error occurred while fetching the conductor details.');
+                                    clearFields(nameElementId, pfElementId, tokenElementId);
+                                }
+                            };
+                            xhr.onerror = function () {
+                                alert('A network error occurred while fetching the conductor details.');
+                                clearFields(nameElementId, pfElementId, tokenElementId);
+                            };
+                            xhr.send();
+                        }
 
-            // Clear previous list items
-            driverList.innerHTML = '';
+                        function openDriverSelectionModal(drivers, onSelect) {
+                            console.log('Opening driver selection modal with drivers:', drivers);
 
-            // Populate the list with drivers
-            drivers.forEach(driver => {
-                var listItem = document.createElement('li');
-                listItem.classList.add('list-group-item');
-                listItem.textContent = `Token: ${driver.token_number}, Name: ${driver.EMP_NAME}, Pf no: ${driver.EMP_PF_NUMBER}`;
-                listItem.onclick = function() {
-                    console.log('Driver selected:', driver);
-                    
-                    // When a driver is selected, call the callback with the selected driver data
-                    onSelect(driver);
+                            var driverList = document.getElementById('driverList'); // List inside your modal to show drivers
 
-                    // Hide the modal
-                    $('#driverSelectionModal').modal('hide');
-                };
-                driverList.appendChild(listItem);
-            });
+                            // Clear previous list items
+                            driverList.innerHTML = '';
 
-            // Show the modal
-            $('#driverSelectionModal').modal('show');
-            
-        }
+                            // Populate the list with drivers
+                            drivers.forEach(driver => {
+                                var listItem = document.createElement('li');
+                                listItem.classList.add('list-group-item');
+                                listItem.textContent = `Token: ${driver.token_number}, Name: ${driver.EMP_NAME}, Pf no: ${driver.EMP_PF_NUMBER}`;
+                                listItem.onclick = function () {
+                                    console.log('Driver selected:', driver);
 
-// Function to close the modal
-function closeModaltoken() {
-    var modal = document.getElementById('driverSelectionModal');
-    modal.style.display = 'none';
-}
+                                    // When a driver is selected, call the callback with the selected driver data
+                                    onSelect(driver);
+
+                                    // Hide the modal
+                                    $('#driverSelectionModal').modal('hide');
+                                };
+                                driverList.appendChild(listItem);
+                            });
+
+                            // Show the modal
+                            $('#driverSelectionModal').modal('show');
+
+                        }
+
+                        // Function to close the modal
+                        function closeModaltoken() {
+                            var modal = document.getElementById('driverSelectionModal');
+                            modal.style.display = 'none';
+                        }
 
 
 
@@ -1140,18 +1177,20 @@ function closeModaltoken() {
             });
         });
         function clearFields1(nameElementId, pfElementId, tokenElementId) {
-    document.getElementById(nameElementId).value = '';
-    document.getElementById(pfElementId).value = '';
-    document.getElementById(tokenElementId).value = ''; // Ensure the token field is also cleared
-}
+            document.getElementById(nameElementId).value = '';
+            document.getElementById(pfElementId).value = '';
+            document.getElementById(tokenElementId).value = ''; // Ensure the token field is also cleared
+        }
 
     </script>
-<!-- Modal Structure -->
-<div class="modal fade" id="driverSelectionModal" tabindex="-1" role="dialog" aria-labelledby="driverSelectionModalLabel" aria-hidden="true">
+    <!-- Modal Structure -->
+    <div class="modal fade" id="driverSelectionModal" tabindex="-1" role="dialog"
+        aria-labelledby="driverSelectionModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="driverSelectionModalLabel">The Entered Token has more then one Enteries Please select any one</h5>
+                    <h5 class="modal-title" id="driverSelectionModalLabel">The Entered Token has more then one Enteries
+                        Please select any one</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -1162,7 +1201,7 @@ function closeModaltoken() {
                     </ul>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"  onclick="closeModaltoken()">Close</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModaltoken()">Close</button>
                 </div>
             </div>
         </div>

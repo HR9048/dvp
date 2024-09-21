@@ -1,4 +1,6 @@
 <?php
+error_reporting(0); // Disable all error reporting
+
 include '../includes/connection.php';
 include '../includes/depot_top.php';
 
@@ -613,7 +615,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
     
     // Generate driver and conductor fields based on fetched counts
     addDriverInputFields(details.driver_count, details); // Add the driver fields
-    addConductorInputFields(details.conductor_count); // Add the conductor fields
+    addConductorInputFields(details.conductor_count, details); // Add the conductor fields
 }
 
 
@@ -661,7 +663,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 addConductorInputFields(0);
                                 alert(`Maximum allowed conductor for ${serviceTypeName} is ${maxAllowedDrivers}`);
                             } else {
-                                addConductorInputFields(numberOfDrivers);
+                                addConductorInputFields(numberOfDrivers, details);
                             }
                         });
                         
@@ -680,7 +682,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                 <div class="col">
                     <div class="form-group">
                         <label for="driver_token_${i}">Driver ${i} Token:</label>
-                        <input type="number" id="driver_token_${i}" name="driver_token_${i}" value="${driverToken}" class="form-control" required>
+                        <input type="text" id="driver_token_${i}" name="driver_token_${i}" value="${driverToken}" class="form-control" required>
                     </div>
                 </div>
                 <div class="col">
@@ -700,239 +702,289 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
     $('#driverFields').html(driverFieldsHtml);
 
-
-
                             // Add event listener for each driver token input field
-                            for (var j = 1; j <= numberOfDrivers; j++) {
-                                (function (j) {
-                                    $('#driver_token_' + j).on('blur', function () {
+                            for (var i = 1; i <= numberOfDrivers; i++) {
+                                (function (i) {
+                                    $('#driver_token_' + i).on('blur', function () {
                                         var tokenNumber = $(this).val();
                                         if (tokenNumber) {
-                                            if (isDuplicateToken(tokenNumber, j, 'driver')) {
+                                            if (isDuplicateToken(tokenNumber, i, 'driver')) {
                                                 alert(`Duplicate entry for token ${tokenNumber}. Please update with another token number.`);
-                                                clearFields('driver_' + j + '_name', 'pf_no_d' + j, 'driver_token_' + j);
+                                                clearFields('driver_' + i + '_name', 'pf_no_d' + i, 'driver_token_' + i);
                                             } else {
-                                                fetchDriverDetails(tokenNumber, 'driver_' + j + '_name', 'pf_no_d' + j, 'driver_token_' + j);
+                                                fetchDriverDetails(tokenNumber, 'driver_' + i + '_name', 'pf_no_d' + i, 'driver_token_' + i,division, depot);
                                             }
                                         }
                                     });
-                                })(j);
+                                })(i);
                             }
                         }
 
                         // Listen for input in number of conductors field
                         $('#number_of_conductor').on('input', function () {
                             var numberOfConductors = $(this).val();
-                            addConductorInputFields(numberOfConductors);
+                            addConductorInputFields(numberOfConductors, details);
                         });
 
                         // Function to add conductor input fields based on the number of conductors
-                        function addConductorInputFields(numberOfConductors) {
-                            var conductorFieldsHtml = '';
-                            for (var i = 1; i <= numberOfConductors; i++) {
-                                conductorFieldsHtml += `
-                                                        <div class="row conductor-field">
-                                                            <div class="col">
-                                                                <div class="form-group">
-                                                                                                                                                                <label for="conductor_token_${i}">Conductor ${i} Token:</label>
-                                                                                                                                                                <input type="number" id="conductor_token_${i}" name="conductor_token_${i}" class="form-control" required>
-                                                                                                                                                            </div>
-                                                                                                                                                        </div>
-                                                                                                                                                        <div class="col">
-                                                                                                                                                            <div class="form-group">
-                                                                                                                                                                <label for="pf_no_c${i}">Conductor ${i} PF:</label>
-                                                                                                                                                                <input type="text" id="pf_no_c${i}" name="pf_no_c${i}" class="form-control" readonly>
-                                                                                                                                                            </div>
-                                                                                                                                                        </div>
-                                                                                                                                                        <div class="col">
-                                                                                                                                                            <div class="form-group">
-                                                                                                                                                                <label for="conductor_${i}_name">Conductor ${i} Name:</label>
-                                                                                                                                                                <input type="text" id="conductor_${i}_name" name="conductor_${i}_name" class="form-control" readonly>
-                                                                                                                                                            </div>
-                                                                                                                                                        </div>
-                                                                                                                                                    </div>`;
-                            }
+                        function addConductorInputFields(numberOfConductors, details) {
+    var conductorFieldsHtml = '';
+    
+    for (var i = 1; i <= numberOfConductors; i++) {
+        // Assuming details is an object where properties like details.conductor_pf_1, details.conductor_name_1, etc., exist.
+        var conductorToken = details[`conductor_token_${i}`] || '';  // Retrieve conductor token or set as empty
+        var conductorPf = details[`conductor_pf_${i}`] || '';        // Retrieve conductor PF or set as empty
+        var conductorName = details[`conductor_name_${i}`] || '';    // Retrieve conductor name or set as empty
 
-                            $('#conductorFields').html(conductorFieldsHtml);
+        conductorFieldsHtml += `
+            <div class="row conductor-field">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="conductor_token_${i}">Conductor ${i} Token:</label>
+                        <input type="text" id="conductor_token_${i}" name="conductor_token_${i}" value="${conductorToken}" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="pf_no_c${i}">Conductor ${i} PF:</label>
+                        <input type="text" id="pf_no_c${i}" name="pf_no_c${i}" value="${conductorPf}" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="conductor_${i}_name">Conductor ${i} Name:</label>
+                        <input type="text" id="conductor_${i}_name" name="conductor_${i}_name" value="${conductorName}" class="form-control" readonly>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    $('#conductorFields').html(conductorFieldsHtml); // Inject the generated HTML into the conductorFields element
+
 
                             // Add event listener for each conductor token input field
-                            for (var j = 1; j <= numberOfConductors; j++) {
-                                (function (j) {
-                                    $('#conductor_token_' + j).on('blur', function () {
+                            for (var i = 1; i <= numberOfConductors; i++) {
+                                (function (i) {
+                                    $('#conductor_token_' + i).on('blur', function () {
                                         var tokenNumber = $(this).val();
                                         if (tokenNumber) {
-                                            if (isDuplicateToken(tokenNumber, j, 'conductor')) {
+                                            if (isDuplicateToken(tokenNumber, i, 'conductor')) {
                                                 alert(`Duplicate entry for token ${tokenNumber}. Please update with another token number.`);
-                                                clearFields('conductor_' + j + '_name', 'pf_no_c' + j, 'conductor_token_' + j);
+                                                clearFields('conductor_' + i + '_name', 'pf_no_c' + i, 'conductor_token_' + i);
                                             } else {
-                                                fetchConductorDetails(tokenNumber, 'conductor_' + j + '_name', 'pf_no_c' + j, 'conductor_token_' + j);
+                                                fetchConductorDetails(tokenNumber, 'conductor_' + i + '_name', 'pf_no_c' + i, 'conductor_token_' + i, division, depot);
                                             }
                                         }
                                     });
-                                })(j);
+                                })(i);
                             }
                         }
-                        function fetchConductorDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
-                            var xhr = new XMLHttpRequest();
-                            xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
-                            xhr.onload = function () {
-                                if (xhr.status === 200) {
-                                    var response = JSON.parse(this.responseText);
-                                    var data = response.data;
+                       
+                        function fetchConductorDetails(tokenNumber, nameElementId, pfElementId, tokenElementId, division, depot) {
+    // Function to handle fetching data from both APIs
+    function fetchDataFromAPIs(tokenNumber) {
+        return new Promise((resolve, reject) => {
+            let combinedData = [];
 
-                                    if (!data || data.length === 0) {
-                                        alert('The token number employee is not registered in KKRTC.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                        return;
-                                    }
-
-                                    // Filter the data based on division and depot
-                                    var matchingDrivers = data.filter(driver => {
-                                        var driverDivision = driver.Division.trim();
-                                        var driverDepot = driver.Depot.trim();
-                                        return driverDivision === sessionDivision && driverDepot === sessionDepot && driver.token_number === tokenNumber;
-                                    });
-
-                                    console.log('Matching drivers:', matchingDrivers);
-
-                                    if (matchingDrivers.length === 1) {
-                                        // If only one match, populate the fields with driver details
-                                        var driver = matchingDrivers[0];
-                                        console.log('Single matching driver:', driver);
-
-                                        if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                                            alert('The employee is a DRIVER. Please enter the token number of a driver or Driver cum Conductor.');
-                                            clearFields(nameElementId, pfElementId, tokenElementId);
-                                            return;
-                                        }
-
-                                        document.getElementById(nameElementId).value = driver.EMP_NAME || '';
-                                        document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
-
-                                        // Call the function to check the schedule master
-                                        checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                                    } else if (matchingDrivers.length > 1) {
-                                        // If more than one match, open the modal to select the correct driver
-                                        console.log('Multiple matching drivers found. Opening modal...');
-                                        openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
-                                            console.log('Selected driver:', selectedDriver);
-
-                                            // Handle user selection
-                                            if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                                                alert('The selected employee is a DRIVER. Please select a driver or Driver cum driver.');
-                                                $('#driverSelectionModal').modal('hide'); // Hide the modal
-                                                clearFields(nameElementId, pfElementId, tokenElementId);
-                                                return;
-                                            }
-
-                                            document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
-                                            document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
-
-                                            // Call the function to check the schedule master
-                                            checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                                        });
-                                    } else {
-                                        alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                    }
-                                } else {
-                                    alert('An error occurred while fetching the driver details.');
-                                    clearFields(nameElementId, pfElementId, tokenElementId);
-                                }
-                            };
-                            xhr.onerror = function () {
-                                alert('A network error occurred while fetching the conductor details.');
-                                clearFields(nameElementId, pfElementId, tokenElementId);
-                            };
-                            xhr.send();
+            // First API call
+            var xhr1 = new XMLHttpRequest();
+            xhr1.open('GET', 'http://localhost/data.php?token=' + tokenNumber + '&division=' + division + '&depot=' + depot, true);
+            xhr1.onload = function () {
+                if (xhr1.status === 200) {
+                    var response1 = JSON.parse(this.responseText);
+                    combinedData = combinedData.concat(response1.data); // Append data from first API
+                    // Proceed to the second API call
+                    var xhr2 = new XMLHttpRequest();
+                    xhr2.open('GET', '../database/private_emp_api.php?token=' + tokenNumber + '&division=' + division + '&depot=' + depot, true);
+                    xhr2.onload = function () {
+                        if (xhr2.status === 200) {
+                            var response2 = JSON.parse(this.responseText);
+                            combinedData = combinedData.concat(response2.data); // Append data from second API
+                            resolve(combinedData); // Resolve the promise with combined data
+                        } else {
+                            reject('Error fetching data from the second API.');
                         }
+                    };
+                    xhr2.onerror = function () {
+                        reject('Network error while fetching from the second API.');
+                    };
+                    xhr2.send();
+                } else {
+                    reject('Error fetching data from the first API.');
+                }
+            };
+            xhr1.onerror = function () {
+                reject('Network error while fetching from the first API.');
+            };
+            xhr1.send();
+        });
+    }
+
+    // Call the fetchDataFromAPIs function
+    fetchDataFromAPIs(tokenNumber)
+        .then(matchingDrivers => {
+            // Process the combined data
+            if (matchingDrivers.length > 0) {
+                // Filter the data based on division and depot
+                var filteredDrivers = matchingDrivers.filter(driver => {
+                    var driverDivision = driver.Division.trim();
+                    var driverDepot = driver.Depot.trim();
+                    return driverDivision === division && driverDepot === depot && driver.token_number === tokenNumber;
+                });
+
+
+                if (filteredDrivers.length === 1) {
+                    var driver = filteredDrivers[0];
+
+                    if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                        alert('The employee is a DRIVER. Please enter the token number of a driver or Driver cum Conductor.');
+                        clearFields(nameElementId, pfElementId, tokenElementId);
+                        return;
+                    }
+
+                    document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+                    document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+
+                    // Call the function to check the schedule master
+                    checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                } else if (filteredDrivers.length > 1) {
+                    // If more than one match, open the modal to select the correct driver
+                    openDriverSelectionModal(filteredDrivers, function (selectedDriver) {
+
+                        if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                            alert('The selected employee is a DRIVER. Please select a driver or Driver cum driver.');
+                            $('#driverSelectionModal').modal('hide'); // Hide the modal
+                            clearFields(nameElementId, pfElementId, tokenElementId);
+                            return;
+                        }
+
+                        document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                        document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+
+                        // Call the function to check the schedule master
+                        checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                    });
+                } else {
+                    alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                    clearFields(nameElementId, pfElementId, tokenElementId);
+                }
+            } else {
+                alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+            }
+        })
+        .catch(error => {
+            alert(error);
+            clearFields(nameElementId, pfElementId, tokenElementId);
+        });
+}
+
+
 
 
                         var division = '<?php echo $division; ?>'; // Ensure $division is correctly populated
                         var depot = '<?php echo $depot; ?>'; // Ensure $depot is correctly populated
 
-                        function fetchDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
-                            console.log('Fetching driver details for token:', tokenNumber);
+                        function fetchDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId, division, depot) {
 
-                            var xhr = new XMLHttpRequest();
-                            xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
-                            xhr.onload = function () {
-                                if (xhr.status === 200) {
-                                    var response = JSON.parse(this.responseText);
-                                    var data = response.data;
+    var xhr1 = new XMLHttpRequest();
+    xhr1.open('GET', 'http://localhost/data.php?token=' + tokenNumber + '&division=' + sessionDivision + '&depot=' + sessionDepot, true);
+    
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', '../database/private_emp_api.php?token=' + tokenNumber + '&division=' + sessionDivision + '&depot=' + sessionDepot, true);
 
-                                    console.log('Data fetched:', data);
+    // Function to process combined data from both APIs
+    function processDriversData(driversData1, driversData2) {
+        var combinedData = [...driversData1, ...driversData2];
 
-                                    if (!data || data.length === 0) {
-                                        alert('The token number employee is not registered in KKRTC.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                        return;
-                                    }
+        if (!combinedData || combinedData.length === 0) {
+            alert('The token number employee is not registered in KKRTC.');
+            clearFields(nameElementId, pfElementId, tokenElementId);
+            return;
+        }
 
-                                    // Filter the data based on division and depot
-                                    var matchingDrivers = data.filter(driver => {
-                                        var driverDivision = driver.Division.trim();
-                                        var driverDepot = driver.Depot.trim();
-                                        return driverDivision === sessionDivision && driverDepot === sessionDepot && driver.token_number === tokenNumber;
-                                    });
+        // Filter the data based on division and depot
+        var matchingDrivers = combinedData.filter(driver => {
+            return driver.Division.trim() === sessionDivision && 
+                   driver.Depot.trim() === sessionDepot && 
+                   driver.token_number === tokenNumber;
+        });
 
-                                    console.log('Matching drivers:', matchingDrivers);
 
-                                    if (matchingDrivers.length === 1) {
-                                        // If only one match, populate the fields with driver details
-                                        var driver = matchingDrivers[0];
-                                        console.log('Single matching driver:', driver);
+        if (matchingDrivers.length === 1) {
+            var driver = matchingDrivers[0];
 
-                                        if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
-                                            alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
-                                            clearFields(nameElementId, pfElementId, tokenElementId);
-                                            return;
-                                        }
+            if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+                return;
+            }
 
-                                        document.getElementById(nameElementId).value = driver.EMP_NAME || '';
-                                        document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+            document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+            document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
 
-                                        // Call the function to check the schedule master
-                                        checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                                    } else if (matchingDrivers.length > 1) {
-                                        // If more than one match, open the modal to select the correct driver
-                                        console.log('Multiple matching drivers found. Opening modal...');
-                                        openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
-                                            console.log('Selected driver:', selectedDriver);
+            // Call the function to check the schedule master
+            checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+        } else if (matchingDrivers.length > 1) {
+            openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
 
-                                            // Handle user selection
-                                            // Handle user selection
-                                            if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
-                                                alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
-                                                $('#driverSelectionModalLabel').modal('hide'); // Hide the modal
-                                                clearFields(nameElementId, pfElementId, tokenElementId);
-                                                return;
-                                            }
+                if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                    alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
+                    $('#driverSelectionModal').modal('hide'); // Hide the modal
+                    clearFields(nameElementId, pfElementId, tokenElementId);
+                    return;
+                }
 
-                                            document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
-                                            document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+                document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
 
-                                            // Call the function to check the schedule master
-                                            checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                                        });
-                                    } else {
-                                        alert('No Driver/DCC found for the ' + division + ' division and ' + depot + ' depot.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                    }
-                                } else {
-                                    alert('An error occurred while fetching the conductor details.');
-                                    clearFields(nameElementId, pfElementId, tokenElementId);
-                                }
-                            };
-                            xhr.onerror = function () {
-                                alert('A network error occurred while fetching the conductor details.');
-                                clearFields(nameElementId, pfElementId, tokenElementId);
-                            };
-                            xhr.send();
-                        }
+                // Call the function to check the schedule master
+                checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+            });
+        } else {
+            alert('No Driver/DCC found for the ' + sessionDivision + ' division and ' + sessionDepot + ' depot.');
+            clearFields(nameElementId, pfElementId, tokenElementId);
+        }
+    }
+
+    xhr1.onload = function () {
+        if (xhr1.status === 200) {
+            var response1 = JSON.parse(this.responseText);
+            var driversData1 = response1.data || [];
+
+            xhr2.onload = function () {
+                if (xhr2.status === 200) {
+                    var response2 = JSON.parse(this.responseText);
+                    var driversData2 = response2.data || [];
+
+                    // Process combined data from both APIs
+                    processDriversData(driversData1, driversData2);
+                } else {
+                    alert('An error occurred while fetching the second driver details.');
+                    clearFields(nameElementId, pfElementId, tokenElementId);
+                }
+            };
+
+            xhr2.onerror = function () {
+                alert('A network error occurred while fetching the second driver details.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+            };
+            xhr2.send();
+        } else {
+            alert('An error occurred while fetching the first driver details.');
+            clearFields(nameElementId, pfElementId, tokenElementId);
+        }
+    };
+
+    xhr1.onerror = function () {
+        alert('A network error occurred while fetching the first driver details.');
+        clearFields(nameElementId, pfElementId, tokenElementId);
+    };
+    xhr1.send();
+}
+
 
                         function openDriverSelectionModal(drivers, onSelect) {
-                            console.log('Opening driver selection modal with drivers:', drivers);
 
                             var driverList = document.getElementById('driverList'); // List inside your modal to show drivers
 
@@ -945,7 +997,6 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 listItem.classList.add('list-group-item');
                                 listItem.textContent = `Token: ${driver.token_number}, Name: ${driver.EMP_NAME}, Pf no: ${driver.EMP_PF_NUMBER}`;
                                 listItem.onclick = function () {
-                                    console.log('Driver selected:', driver);
 
                                     // When a driver is selected, call the callback with the selected driver data
                                     onSelect(driver);
@@ -1022,10 +1073,6 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             xhr.open('POST', '../database/reallocate_driver_dcc.php', true);
                             xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                             // Log the data being sent to the console
-                            console.log('Sending data:');
-                            console.log('PF Number:', pfNumber);
-                            console.log('Token Number:', tokenNumber);
-                            console.log('Schedule No:', scheduleNo);
                             xhr.onload = function () {
                                 if (xhr.status === 200) {
                                     alert('Driver/DCC has been reallocated successfully.');
@@ -1123,35 +1170,35 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                         var sessionDepot = "<?php echo strtoupper($depot); ?>".trim();
                         // Function to check for duplicate tokens across both driver and conductor fields
                         function isDuplicateToken(token, currentIndex, type) {
-                            var isDuplicate = false;
+    var isDuplicate = false;
 
-                            // Check driver fields
-                            $('.driver-field input[type="number"]').each(function (index) {
-                                var fieldId = $(this).attr('id');
-                                var fieldIndex = parseInt(fieldId.match(/\d+/)[0]);
-                                if (type === 'driver' && currentIndex === fieldIndex) return true; // Skip current driver field
-                                if ($(this).val() == token) {
-                                    isDuplicate = true;
-                                    return false; // Break loop
-                                }
-                            });
+    // Check driver fields
+    $('.driver-field input[type="text"]').each(function () {
+        var fieldId = $(this).attr('id');
+        var fieldIndex = parseInt(fieldId.match(/\d+/)[0]);
+        if (type === 'driver' && currentIndex === fieldIndex) return; // Skip current driver field
+        if ($(this).val() == token) {
+            isDuplicate = true;
+            return false; // Break loop
+        }
+    });
 
-                            // Check conductor fields
-                            if (!isDuplicate) {
-                                $('.conductor-field input[type="number"]').each(function (index) {
-                                    var fieldId = $(this).attr('id');
-                                    var fieldIndex = parseInt(fieldId.match(/\d+/)[0]);
-                                    if (type === 'conductor' && currentIndex === fieldIndex) return true; // Skip current conductor field
-                                    if ($(this).val() == token) {
-                                        isDuplicate = true;
-                                        return false; // Break loop
-                                    }
-                                });
-                            }
+    // Check conductor fields
+    if (!isDuplicate) {
+        $('.conductor-field input[type="text"]').each(function () {
+            var fieldId = $(this).attr('id');
+            var fieldIndex = parseInt(fieldId.match(/\d+/)[0]);
+            if (type === 'conductor' && currentIndex === fieldIndex) return; // Skip current conductor field
+            if ($(this).val() == token) {
+                isDuplicate = true;
+                return false; // Break loop
+            }
+        });
+    }
 
-                            return isDuplicate;
-                        }
-
+    return isDuplicate;
+}
+ 
                         // Function to clear fields
                         function clearFields(nameFieldId, pfFieldId, tokenFieldId) {
                             $('#' + nameFieldId).val('');

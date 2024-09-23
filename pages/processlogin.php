@@ -127,7 +127,7 @@ function determineRedirect($db, $type, $jobTitle, $member_id)
                     case 'Bunk':
                         return "depot_kmpl.php";
                     case 'T_INSPECTOR':
-                        return "depot_inspector.php";
+                        return "depot_dashboard.php";
                     case 'SECURITY':
                         return "depot_schinout.php";
                 }

@@ -30,7 +30,7 @@ if ($_SESSION['TYPE'] == 'DEPOT'){
         ?>
         <script type="text/javascript">
             // Redirect to depot_clerk.php if the job title is Clerk
-            window.location = "../pages/depot_inspector.php";
+            window.location = "../pages/depot_dashboard.php";
         </script>
         <?php
     } elseif ($_SESSION['JOB_TITLE'] == 'SECURITY') {

@@ -1,6 +1,7 @@
 <?php
 include('../includes/connection.php');
 require_once('session.php');
+confirm_logged_in();
 if (empty($_POST)) {
   // If accessed directly without POST data, redirect to login.php
   header("Location: login.php");

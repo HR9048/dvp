@@ -2,7 +2,7 @@
 // Include the database connection file
 include '../includes/connection.php';
 include 'session.php';
-
+confirm_logged_in();
 // Check if the form data is received via POST method
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if any form field is empty or 0

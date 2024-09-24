@@ -1,6 +1,7 @@
 <?php
 include '../includes/connection.php';
-
+include 'session.php';
+confirm_logged_in();
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['editId'])) {
     // Retrieve the data from the form
     $id = $_POST['editId'];

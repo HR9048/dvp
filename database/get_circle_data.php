@@ -8,7 +8,7 @@ header('Content-Type: application/json');
 
 // Include the database connection file
 include '../includes/connection.php';
-
+confirm_logged_in();
 try {
     // Query to get off-road data by division and off-road location
     $sql = "SELECT

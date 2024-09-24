@@ -19,10 +19,9 @@
  th,td {
      border: 2px solid black;
      /* Apply border to table cells */
-     padding: 2%;
+     padding: 1%;
      text-align: left;
      font-size: 20px;
-     padding: 8px; /* Add padding to table cells */
  }
 
  th {

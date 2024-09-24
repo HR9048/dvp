@@ -1,7 +1,7 @@
 <?php
 include '../includes/connection.php';
 include 'session.php';
-
+confirm_logged_in();
 // Set the default timezone to Kolkata, India
 date_default_timezone_set('Asia/Kolkata');
 

@@ -3,7 +3,7 @@ header('Content-Type: application/json'); // Ensure correct content type
 
 include '../includes/connection.php';
 include '../pages/session.php';
-
+confirm_logged_in();
 if (isset($_POST['busNumber']) && isset($_POST['oldSchKeyNo'])) {
     $busNumber = $_POST['busNumber'];
     $oldSchKeyNo = $_POST['oldSchKeyNo'];

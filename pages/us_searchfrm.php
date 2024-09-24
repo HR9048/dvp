@@ -1,7 +1,8 @@
 <?php
 // Include connection file and other necessary files
 include '../includes/connection.php';
-
+include 'session.php';
+confirm_logged_in();
 // Check if 'id' parameter is set in the URL
 if(isset($_GET['id'])) {
     // Assuming $_GET['id'] is the user ID

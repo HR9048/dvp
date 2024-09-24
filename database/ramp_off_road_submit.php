@@ -4,7 +4,7 @@
 // Include database connection file
 include '../includes/connection.php'; // Adjust the path as needed
 include '../pages/session.php';
-
+confirm_logged_in();
 // Set content type to JSON
 header('Content-Type: application/json');
 

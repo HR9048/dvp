@@ -1,6 +1,7 @@
 <?php
 include '../includes/connection.php'; // Include your database configuration file
-
+include 'session.php';
+confirm_logged_in();
 if (isset($_GET['id'])) {
   $id = $_GET['id'];
 

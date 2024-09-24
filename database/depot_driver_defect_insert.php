@@ -4,7 +4,7 @@
 // Database connection
 include '../includes/connection.php';
 include '../pages/session.php';
-
+confirm_logged_in();
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Get POST data

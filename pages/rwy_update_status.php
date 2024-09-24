@@ -1,7 +1,7 @@
 <?php
 include '../includes/connection.php';
 include 'session.php';
-
+confirm_logged_in();
 // Check if USERNAME session variable is set
 if (!isset($_SESSION['USERNAME'])) {
     ?>

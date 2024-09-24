@@ -1,6 +1,7 @@
 <?php
 include '../includes/connection.php';
-
+include '../pages/session.php';
+confirm_logged_in();
 // Get the pf_number from the AJAX request
 if (isset($_GET['pf_number'])) {
     $pfNumber = $_GET['pf_number'];

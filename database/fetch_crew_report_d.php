@@ -1,7 +1,7 @@
 <?php
 include '../includes/connection.php';
 include '../pages/session.php';
-
+confirm_logged_in();
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

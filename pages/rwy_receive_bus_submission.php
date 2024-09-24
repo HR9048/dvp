@@ -1,7 +1,7 @@
 <?php
 include '../includes/connection.php';
 include 'session.php';
-
+confirm_logged_in();
 // Initialize response array
 $response = array();
 

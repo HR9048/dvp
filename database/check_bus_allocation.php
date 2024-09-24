@@ -1,6 +1,7 @@
 <?php
 include '../includes/connection.php';
-
+include '../pages/session.php';
+confirm_logged_in();
 if (isset($_POST['busNumber'])) {
     $busNumber = $_POST['busNumber'];
 

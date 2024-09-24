@@ -1,6 +1,7 @@
 <?php
 include '../includes/connection.php';
 include '../pages/session.php';
+confirm_logged_in();
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! Your session is experied please Login'); window.location = '../pages/logout.php';</script>";
     exit;

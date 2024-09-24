@@ -1,7 +1,7 @@
 <?php
 include '../includes/connection.php';
 include '../pages/session.php';
-
+confirm_logged_in();
 
 // Get POST data from the AJAX request
 $division_id = $_SESSION['DIVISION_ID'];

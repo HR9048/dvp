@@ -1,7 +1,7 @@
 <?php
 include 'session.php'; // Assuming this file sets up session variables
 include '../includes/connection.php'; // Assuming this file sets up database connection
-
+confirm_logged_in();
 if (isset($_POST['sch_no'])) {
     $sch_no = $_POST['sch_no'];
 

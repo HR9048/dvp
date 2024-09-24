@@ -2,7 +2,8 @@
 header('Content-Type: application/json');
 
 require '../includes/connection.php';  // Ensure this file has the $db object
-
+include '../pages/session.php';
+confirm_logged_in();
 $query = " SELECT 
         l.kmpl_division AS division_name,
         l.depot AS depot_name,

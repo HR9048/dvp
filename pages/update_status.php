@@ -1,7 +1,8 @@
 <?php
 // Include your database connection file
 include '../includes/connection.php';
-
+include 'session.php';
+confirm_logged_in();
 // Function to update bus status to "On Road" based on ID
 if (empty($_POST)) {
     // If accessed directly without POST data, redirect to login.php

@@ -1,6 +1,7 @@
 <?php
 include '../includes/connection.php';
 include 'session.php';
+confirm_logged_in();
 // Check if form data is present
 if (
     isset($_POST['busNumberInput']) &&

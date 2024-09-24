@@ -1,7 +1,8 @@
 <?php
 // Include connection file
 include '../includes/connection.php';
-
+include 'session.php';
+confirm_logged_in();
 // Check if form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data

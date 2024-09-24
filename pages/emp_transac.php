@@ -1,6 +1,7 @@
 <?php
 include '../includes/connection.php';
-
+include 'session.php';
+confirm_logged_in();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $PF = trim($_POST['PF_NO']);
     $fname = trim($_POST['firstname']);

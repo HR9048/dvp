@@ -9,7 +9,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     exit;
 }
 header('Content-Type: application/json');
-
+confirm_logged_in();
 try {
     // Query to get division-wise off-road data
     $sql = "SELECT 

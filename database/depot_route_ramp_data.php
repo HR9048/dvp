@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 
 include '../includes/connection.php'; // Include your database connection file
 include '../pages/session.php';
-
+confirm_logged_in();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Check for missing POST variables
     $missingFields = [];

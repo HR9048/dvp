@@ -2,7 +2,7 @@
 // Include your database connection file
 include_once '../includes/connection.php';
 include_once 'session.php';
-
+confirm_logged_in();
 // Check if the request is made via POST method
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if 'busNumber' parameter is set

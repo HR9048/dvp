@@ -2,7 +2,8 @@
 // update_entry.php
 
 include '../includes/connection.php';
-
+include 'session.php';
+confirm_logged_in();
 $response = array(); // Initialize response array
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

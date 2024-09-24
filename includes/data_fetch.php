@@ -2,6 +2,7 @@
 require ('../pages/session.php');
 require_once '../includes/connection.php'; // Include the db.php file to access the database connection
 
+confirm_logged_in();
 
 function fetchDivision()
 {

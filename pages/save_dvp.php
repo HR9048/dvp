@@ -2,7 +2,7 @@
 // Include the necessary files
 include '../includes/connection.php'; // Include the file where the database connection is established
 include 'session.php'; // Include the file for session management
-
+confirm_logged_in();
 // Create an associative array to store response data
 $response = array();
 

@@ -66,51 +66,64 @@ confirm_logged_in();
     .dropdown-menu {
       font-size: 15px;
     }
+
     nav.navbar {
-    padding: 0 !important;
-  }
-  /* Remove padding from the navbar items (links and list items) */
-  nav.navbar ul {
-    padding: 0;
-    margin: 0;
-  }
+      padding: 0 !important;
+    }
 
-  nav.navbar ul li {
-    padding: 0;
-    margin: 0;
-    list-style: none; /* optional, to remove bullets if it's a list */
-  }
+    /* Remove padding from the navbar items (links and list items) */
+    nav.navbar ul {
+      padding: 0;
+      margin: 0;
+    }
 
-  nav.navbar ul li a {
-    padding: 0;
-    margin: 0;
-    display: inline-block; /* To ensure links behave like inline elements */
-    
-  }
+    nav.navbar ul li {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      /* optional, to remove bullets if it's a list */
+    }
 
-  nav.navbar ul li .dropdown-menu li {
-    padding: 0;
-    margin: 0;
-    list-style: none; /* Optional: remove bullets */
-  }
-
-  nav.navbar ul li .dropdown-menu li a {
-    padding: 10px 20px; /* Add padding around the links for better spacing */
-    display: block; /* Ensure the anchor tags take up full width */
-    width: 100%; /* Ensure the anchor fills the width of the dropdown */
-  }
-    /* Media query for mobile view */
-    @media (max-width: 600px) {
-        .navcenter h5 {
-            font-size: 0.8em; /* Adjust font size for mobile */
-        }
-        .navcenter h6 {
-            font-size: 0.55em; /* Adjust font size for mobile */
-            word-wrap: break-word; /* Ensure long words wrap */
-        }
+    nav.navbar ul li a {
+      padding: 0;
+      margin: 0;
+      display: inline-block;
+      /* To ensure links behave like inline elements */
 
     }
-</style>
+
+    nav.navbar ul li .dropdown-menu li {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      /* Optional: remove bullets */
+    }
+
+    nav.navbar ul li .dropdown-menu li a {
+      padding: 10px 20px;
+      /* Add padding around the links for better spacing */
+      display: block;
+      /* Ensure the anchor tags take up full width */
+      width: 100%;
+      /* Ensure the anchor fills the width of the dropdown */
+    }
+
+    /* Media query for mobile view */
+    @media (max-width: 600px) {
+      .navcenter h5 {
+        font-size: 0.8em;
+        /* Adjust font size for mobile */
+      }
+
+      .navcenter h6 {
+        font-size: 0.55em;
+        /* Adjust font size for mobile */
+        word-wrap: break-word;
+        /* Ensure long words wrap */
+      }
+
+    }
+  </style>
 </head>
 
 <body id="page-top">
@@ -124,21 +137,16 @@ confirm_logged_in();
       <!-- Main Content -->
       <div id="content" style="max-width: 100%; overflow-x: hidden;">
         <div class="fixed-top">
-        <div style="display: flex; align-items: center; justify-content: center; background-color: #3c97bf; padding: 10px 15px;">
-    <div style="margin-right: 10px; margin-left: auto;">
-        <img src="../images/kkrtclogo.png" alt="alternatetext" width="50" height="50" style="padding-left: 0px;">
-    </div>
-    <div class="navcenter" style="text-align: center; flex: 1;">
-        <h5 style="color: white; margin: 0;"><b>ಕಲ್ಯಾಣ ಕರ್ನಾಟಕ ರಸ್ತೆ ಸಾರಿಗೆ ನಿಗಮ</b></h5>
-        <h6 style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ | Daily Vehicle Management System</h6>
-    </div>
-</div>
-
-
-
-
-
-
+          <div
+            style="display: flex; align-items: center; justify-content: center; background-color: #3c97bf; padding: 0px 0px;">
+            <div style="margin-right: 10px; margin-left: auto;padding-left:20px">
+              <img src="../images/kkrtclogo.png" alt="alternatetext" width="45" height="45" >
+            </div>
+            <div class="navcenter" style="text-align: center; flex: 1;">
+              <h6 style="color: white; margin: 0;"><b>ಕಲ್ಯಾಣ ಕರ್ನಾಟಕ ರಸ್ತೆ ಸಾರಿಗೆ ನಿಗಮ</b></h6>
+              <p style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ | Daily Vehicle Position</p>
+            </div>
+          </div>
           <nav class="navbar navbar-expand-md" style="background-color: #bfc9ca;">
 
             <div class="container-fluid">
@@ -310,51 +318,27 @@ confirm_logged_in();
                 </ul>
                 <ul class="navbar-nav ml-auto">
                   <div class="topbar-divider d-none d-sm-block"></div>
-
-                  <li class="nav-item dropdown no-arrow">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
-                      aria-haspopup="true" aria-expanded="false">
-                      <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                        <?php echo $_SESSION['FIRST_NAME'] . ' ' . $_SESSION['LAST_NAME']; ?>
-                      </span>
-                      <img class="img-profile rounded-circle profile-img" <?php
-                      if ($_SESSION['GENDER'] == 'Male') {
-                        echo 'src="../images/male.jpeg"';
-                      } else {
-                        echo 'src="../images/female2.jpeg"';
-                      }
-                      ?>></a>
-                    <?php
-                    $query = 'SELECT ID, FIRST_NAME,LAST_NAME,USERNAME,PASSWORD, t.TYPE
-                      FROM users u
-                      JOIN employee e ON e.PF_ID=u.PF_ID
-                      JOIN type t ON t.TYPE_ID=u.TYPE_ID';
-                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-                    while ($row = mysqli_fetch_assoc($result)) {
-                      $a = $_SESSION['MEMBER_ID'];
-                      $bbb = $_SESSION['TYPE'];
-                    }
-
-                    ?>
-
-                    <!-- Dropdown - User Information -->
-                    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                      aria-labelledby="userDropdown">
-                      <button class="dropdown-item" onclick="on()">
-                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Profile
+                  <li class="nav-item">
+                    <div class="dropdown">
+                      <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                        style="font-size: 15px;">
+                        <b
+                          class="mr-2 d-none d-lg-inline text-gray-600 small"><b><?php echo $_SESSION['FIRST_NAME'] . ' ' . $_SESSION['LAST_NAME']; ?></b></b>
+                        <img class="img-profile rounded-circle profile-img" <?php if ($_SESSION['GENDER'] == 'Male') {
+                          echo 'src="../images/male.jpeg"';
+                        } else {
+                          echo 'src="../images/female2.jpeg"';
+                        } ?>>
                       </button>
-                      <a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal"
-                        data-href="settings.php?action=edit & id='<?php echo $a; ?>'">
-                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Settings
-                      </a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Logout
-                      </a>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><button class="dropdown-item" onclick="on()"><i
+                              class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Profile</button></li>
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal"
+                            data-href="settings.php?action=edit & id='<?php echo $a; ?>'"><i
+                              class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal"><i
+                              class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a></li>
+                      </ul>
                     </div>
                   </li>
                 </ul>
@@ -362,7 +346,7 @@ confirm_logged_in();
             </div>
           </nav>
         </div>
-        <br><br><br><br><br>
+        <br><br><br><br>
         <!-- End of Topbar -->
         <script>
           $(document).ready(function () {

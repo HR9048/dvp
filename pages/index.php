@@ -303,7 +303,6 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                         console.error(data.error);
                         return;
                     }
-                    console.log(data); // Log the fetched data for debugging
 
                     const chartData = data.chartData;
                     const depotData = data.depotData;

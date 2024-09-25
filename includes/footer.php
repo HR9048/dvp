@@ -12,14 +12,12 @@
 
 <footer id="sticky-footer" class="flex-shrink-0 py-4">
   <div class="text-center">
-    <span>Copyright © 2024 KKRTC</span>
+    <span>© Copyright 2024 KKRTC | All Rights Reserved</span>
   </div>
 </footer>
 </div>
 </div>
-</div>
-<!-- End of Footer -->
-
+ <!-- End of Footer -->
 <!-- Scroll to Top Button-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
 <a class="scroll-to-top rounded" href="#page-top">
@@ -225,23 +223,30 @@
 
 
 <script>
-  // Add click event listener to the user dropdown link
-  document.getElementById('userDropdown').addEventListener('click', function (event) {
-    // Prevent the default action (redirecting to another page)
-    event.preventDefault();
-    // Toggle the visibility of the dropdown menu
-    var dropdownMenu = this.nextElementSibling;
-    dropdownMenu.classList.toggle('show');
-  });
-  // Add click event listener to the logout link
-  document.querySelector('[data-target="#logoutModal"]').addEventListener('click', function (event) {
-    // Prevent the default action (redirecting to another page)
-    event.preventDefault();
-    // Show the logout modal
-    $('#logoutModal').modal('show');
-  });
+  // Check if the user dropdown exists, then add click event listener
+  var userDropdown = document.getElementById('userDropdown');
+  if (userDropdown) {
+    userDropdown.addEventListener('click', function (event) {
+      // Prevent the default action (redirecting to another page)
+      event.preventDefault();
+      // Toggle the visibility of the dropdown menu
+      var dropdownMenu = this.nextElementSibling;
+      dropdownMenu.classList.toggle('show');
+    });
+  }
 
+  // Check if the logout link exists, then add click event listener
+  var logoutLink = document.querySelector('[data-target="#logoutModal"]');
+  if (logoutLink) {
+    logoutLink.addEventListener('click', function (event) {
+      // Prevent the default action (redirecting to another page)
+      event.preventDefault();
+      // Show the logout modal
+      $('#logoutModal').modal('show');
+    });
+  }
 
+  // Overlay toggle functions
   function on() {
     document.getElementById("overlay").style.display = "block";
   }
@@ -249,9 +254,8 @@
   function off() {
     document.getElementById("overlay").style.display = "none";
   }
-
-
 </script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 

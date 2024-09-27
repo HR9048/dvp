@@ -8,175 +8,406 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || $_SESSION['JOB_TITLE'] == 'CO_STORE') {
     ?>
     <div class="row show-grid">
-
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="col-md-12 mb-3">
                 <div class="card border-left-primary shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Off Road</div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    $query = "SELECT 
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Off Road</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                <?php
+                                $query = "SELECT 
                 COUNT(DISTINCT bus_number) AS total_off_road_count
               FROM off_road_data
               WHERE status = 'off_road'";
 
-                                    // Execute the query
-                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                // Execute the query
+                                $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
-                                    // Fetch the count
-                                    $row = mysqli_fetch_array($result);
+                                // Fetch the count
+                                $row = mysqli_fetch_array($result);
 
-                                    // Output the count
-                                    echo "$row[0]";
-                                    ?>
-                                    Record(s)
-                                </div>
+                                // Output the count
+                                echo "$row[0]";
+                                ?>
+                                Record(s)
+                            </div>
                             </div>
                             <div class="col-auto">
-                                <i class="fas fa-tools fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Vehicles on Schedule
-                                </div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    $query = "SELECT COUNT(*) FROM sch_veh_out where schedule_status='1'";
-                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                    $row = mysqli_fetch_array($result);
-                                    echo "Vehicle Count: $row[0]";
-                                    ?>
-                                    Record(s)
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-users fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        <div class="col-md-4">
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Today's DVP</div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    $current_date = date("Y-m-d");
-                                    $query = "SELECT COUNT(depot) FROM dvp_data WHERE date = '$current_date'";
-                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                    $row = mysqli_fetch_array($result);
-                                    echo "$row[0]";
-                                    ?><a href="depot_dvp_submision.php"> Depot Submitted</a>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-bus fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">yesterday's KMPL
-                                </div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    $current_date = date("Y-m-d", strtotime("-1 day"));
-                                    $query = "SELECT COUNT(depot) FROM kmpl_data WHERE date = '$current_date' ";
-                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                    $row = mysqli_fetch_array($result);
-                                    echo "$row[0]";
-                                    ?><a href="depot_dvp_submision.php"> Depot Submitted</a>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-tachometer-alt fa-2x text-gray-300"></i>
+                            <i class="fa-solid fa-tools fa-beat fa-2x text-gray-300"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="col-md-12 mb-3">
-                <div class="card border-left-info shadow h-100 py-2">
+                <div class="card border-left-primary shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
-
                             <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Buses</div>
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col-auto">
-                                        <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
-                                            <?php
-                                            $query = "SELECT COUNT(*) FROM bus_registration ";
-                                            $result = mysqli_query($db, $query);
-                                            while ($row = mysqli_fetch_array($result)) {
-                                                echo "$row[0]";
-                                            }
-                                            ?> Record(s)
-                                        </div>
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Vehicles on Schedule
+                            </div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                <?php
+                                $query = "SELECT COUNT(*) FROM sch_veh_out where schedule_status='1'";
+                                $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                $row = mysqli_fetch_array($result);
+                                echo "Vehicle Count: $row[0]";
+                                ?>
+                                Record(s)
+                            </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="col-md-12 mb-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-0">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Today's DVP</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                <?php
+                                $current_date = date("Y-m-d");
+                                $query = "SELECT COUNT(depot) FROM dvp_data WHERE date = '$current_date'";
+                                $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                $row = mysqli_fetch_array($result);
+                                echo "$row[0]";
+                                ?><a href="depot_dvp_submision.php"> Depot Submitted</a>
+                            </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa-solid fa-bus fa-beat fa-2xl"></i>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="col-md-12 mb-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-0">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">yesterday's KMPL
+                            </div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                <?php
+                                $current_date = date("Y-m-d", strtotime("-1 day"));
+                                $query = "SELECT COUNT(depot) FROM kmpl_data WHERE date = '$current_date' ";
+                                $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                $row = mysqli_fetch_array($result);
+                                echo "$row[0]";
+                                ?><a href="depot_dvp_submision.php"> Depot Submitted</a>
+                            </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa-solid fa-tachometer-alt fa-beat fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="col-md-12 mb-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-0">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Buses</div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
+                                        <?php
+                                        $query = "SELECT COUNT(*) FROM bus_registration ";
+                                        $result = mysqli_query($db, $query);
+                                        while ($row = mysqli_fetch_array($result)) {
+                                            echo "$row[0]";
+                                        }
+                                        ?> Record(s)
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="col-auto">
-                                <i class="fas fa-bus fa-2x text-gray-300"></i>
-                                <i class="fas fa-bus fa-2x text-gray-300"></i>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-danger shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Account</div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    $session_division = $_SESSION['DIVISION'];
-                                    $query = "SELECT COUNT(*) FROM users 
-                INNER JOIN employee ON users.PF_ID = employee.PF_ID 
-                INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                WHERE users.TYPE_ID IN (1,2,3,4)";
-                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                    $row = mysqli_fetch_array($result);
-                                    echo "Registered accounts: $row[0]";
-                                    ?>
-                                    Record(s)
-                                </div>
                             </div>
                             <div class="col-auto">
-                                <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                                <i class="fa-solid fa-bus fa-beat fa-2xl"></i>
+                                <i class="fa-solid fa-bus fa-beat fa-2xl"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <!--<div class="col-md-3">
+            <div class="col-md-12 mb-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-0">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Account</div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                    <?php
+                                    //$session_division = $_SESSION['DIVISION'];
+                                    //$query = "SELECT COUNT(*) FROM users 
+                //INNER JOIN employee ON users.PF_ID = employee.PF_ID 
+                //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
+                //WHERE users.TYPE_ID IN (1,2,3,4)";
+                                    //$result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                    //$row = mysqli_fetch_array($result);
+                                   // echo "Registered accounts: $row[0]";
+                                    ?>
+                                    Record(s)
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+
+
+        
+           
+        <div class="col-md-3">
+            <div class="col-md-12 mb-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-0">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Driver Employees
+                                </div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                    <?php
+                                    // Query to get all division and depot combinations
+                                    $query = "SELECT kmpl_division, kmpl_depot FROM location";
+                                    $result = mysqli_query($db, $query);
+
+                                    if (!$result) {
+                                        die("Error fetching division and depot data: " . mysqli_error($db));
+                                    }
+
+                                    // Prepare to store all the combined data
+                                    $allData = [];
+
+                                    // Array to hold cURL handles
+                                    $curlHandles = [];
+                                    $multiCurl = curl_multi_init(); // Initialize multi-cURL handle
+                                
+                                    // Loop through each division and depot, and prepare the cURL requests
+                                    while ($row = mysqli_fetch_assoc($result)) {
+                                        $division = $row['kmpl_division'];
+                                        $depot = $row['kmpl_depot'];
+
+                                        // Prepare API URL with division and depot
+                                        $apiUrl = 'http://localhost/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+
+                                        // Initialize individual cURL session
+                                        $ch = curl_init($apiUrl);
+
+                                        // Set cURL options
+                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
+                                        curl_setopt($ch, CURLOPT_HTTPGET, true);        // Use GET method
+                                
+                                        // Add the handle to the multi-cURL handle
+                                        curl_multi_add_handle($multiCurl, $ch);
+
+                                        // Store the cURL handle to reference it later
+                                        $curlHandles[] = $ch;
+                                    }
+
+                                    // Execute all cURL requests in parallel
+                                    $running = null;
+                                    do {
+                                        curl_multi_exec($multiCurl, $running);
+                                        curl_multi_select($multiCurl);
+                                    } while ($running > 0);
+
+                                    // Collect the responses and merge the data
+                                    foreach ($curlHandles as $ch) {
+                                        $response = curl_multi_getcontent($ch); // Get the content from each handle
+                                
+                                        // Decode JSON response
+                                        $data = json_decode($response, true);
+
+                                        // Check if data exists
+                                        if (isset($data['data']) && is_array($data['data'])) {
+                                            // Merge the current API response data into the $allData array
+                                            $allData = array_merge($allData, $data['data']);
+                                        }
+
+                                        // Remove the handle from the multi-cURL handler and close it
+                                        curl_multi_remove_handle($multiCurl, $ch);
+                                        curl_close($ch);
+                                    }
+
+                                    // Close the multi-cURL handle
+                                    curl_multi_close($multiCurl);
+
+                                    // Now you have all the data combined in $allData
+                                    if (empty($allData)) {
+                                        echo 'No data available.';
+                                    } else {
+                                        // Filter and count the 'DRIVER' employees
+                                        $filteredData = array_filter($allData, function ($item) {
+                                            return $item['EMP_DESGN_AT_APPOINTMENT'] === 'DRIVER';
+                                        });
+
+                                        // Count the filtered records
+                                        $totalDriverCount = count($filteredData);
+
+                                        // Filter and count the 'CONDUCTOR' employees
+                                        $filteredData1 = array_filter($allData, function ($item) {
+                                            return $item['EMP_DESGN_AT_APPOINTMENT'] === 'CONDUCTOR';
+                                        });
+
+                                        // Count the filtered records
+                                        $totalConductorCount = count($filteredData1);
+                                        $filteredData2 = array_filter($allData, function ($item) {
+                                            return $item['EMP_DESGN_AT_APPOINTMENT'] === 'DRIVER-CUM-CONDUCTOR';
+                                        });
+
+                                        // Count the filtered records
+                                        $totalDCCCount = count($filteredData2);
+
+                                        // Output the driver count
+                                        echo 'Drivers: ' . $totalDriverCount . ' Record(s)';
+                                    }
+                                    ?>
+                                    <?php
+                                    $session_division = $_SESSION['DIVISION_ID']; // Session-based division
+                                    $session_depot = $_SESSION['DEPOT_ID']; // Session-based depot
+                                
+                                    // SQL query to count only private drivers for the current division and depot
+                                    $query2 = "SELECT COUNT(*) 
+                               FROM private_employee
+                               INNER JOIN location ON private_employee.division_id = location.division_id 
+                                                   AND private_employee.depot_id = location.depot_id
+                               WHERE private_employee.status = '1' 
+                                 AND EMP_DESGN_AT_APPOINTMENT = 'DRIVER'";
+
+                                    // Execute the query
+                                    $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
+
+                                    // Fetch the count from the result
+                                    $row2 = mysqli_fetch_array($result2);
+
+                                    // Output the count of private drivers
+                                    echo "Private Drivers: $row2[0]";
+                                    ?> Record(s)
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="col-md-12 mb-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-0">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Conductor Employees
+                                </div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                    <?php
+                                    // Output the conductor count
+                                    echo 'Conductors: ' . $totalConductorCount . ' Record(s)';
+                                    ?>
+                                    <?php
+                                    $session_division = $_SESSION['DIVISION_ID']; // Session-based division
+                                    $session_depot = $_SESSION['DEPOT_ID']; // Session-based depot
+                                
+                                    // SQL query to count only private drivers for the current division and depot
+                                    $query2 = "SELECT COUNT(*) 
+                               FROM private_employee
+                               INNER JOIN location ON private_employee.division_id = location.division_id 
+                                                   AND private_employee.depot_id = location.depot_id
+                               WHERE private_employee.status = '1' 
+                                 AND EMP_DESGN_AT_APPOINTMENT = 'CONDUCTOR'";
+
+                                    // Execute the query
+                                    $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
+
+                                    // Fetch the count from the result
+                                    $row2 = mysqli_fetch_array($result2);
+
+                                    // Output the count of private drivers
+                                    echo "Private Conductor: $row2[0]";
+                                    ?> Record(s)
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="col-md-12 mb-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-0">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">DCC Employees</div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                    <?php
+                                    // Output the conductor count
+                                    echo 'DCC: ' . $totalDCCCount . ' Record(s)';
+                                    ?>
+                                    <?php
+                                    $session_division = $_SESSION['DIVISION_ID']; // Session-based division
+                                    $session_depot = $_SESSION['DEPOT_ID']; // Session-based depot
+                                
+                                    // SQL query to count only private drivers for the current division and depot
+                                    $query2 = "SELECT COUNT(*) 
+                               FROM private_employee
+                               INNER JOIN location ON private_employee.division_id = location.division_id 
+                                                   AND private_employee.depot_id = location.depot_id
+                               WHERE private_employee.status = '1' 
+                                 AND EMP_DESGN_AT_APPOINTMENT = 'DRIVER-CUM-CONDUCTOR'";
+
+                                    // Execute the query
+                                    $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
+
+                                    // Fetch the count from the result
+                                    $row2 = mysqli_fetch_array($result2);
+
+                                    // Output the count of private drivers
+                                    echo "Private DCC: $row2[0]";
+                                    ?> Record(s)
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="col-lg-4 mb-4">
             <div class="card shadow h-100">
                 <div class="card-body">

@@ -38,7 +38,7 @@ $sql = "UPDATE schedule_master
             conductor_name_1 = CASE WHEN conductor_pf_1 = ? THEN NULL ELSE conductor_name_1 END,
             conductor_name_2 = CASE WHEN conductor_pf_2 = ? THEN NULL ELSE conductor_name_2 END,
             conductor_name_3 = CASE WHEN conductor_pf_3 = ? THEN NULL ELSE conductor_name_3 END,
-             driver_pf_1 = CASE WHEN driver_pf_1 = ? THEN NULL ELSE driver_pf_1 END,
+            driver_pf_1 = CASE WHEN driver_pf_1 = ? THEN NULL ELSE driver_pf_1 END,
             driver_pf_2 = CASE WHEN driver_pf_2 = ? THEN NULL ELSE driver_pf_2 END,
             driver_pf_3 = CASE WHEN driver_pf_3 = ? THEN NULL ELSE driver_pf_3 END,
             driver_pf_4 = CASE WHEN driver_pf_4 = ? THEN NULL ELSE driver_pf_4 END,

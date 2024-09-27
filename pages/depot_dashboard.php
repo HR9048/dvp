@@ -114,8 +114,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             </div>
             <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') { ?>
 
-                <div class="col-md-3">
-                    <!-- Supplier record -->
+                <!--<div class="col-md-3">
                     <div class="col-md-12 mb-3">
                         <div class="card border-left-warning shadow h-100 py-2">
                             <div class="card-body">
@@ -126,18 +125,18 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                             <?php
 
                                             // Prepare the SQL query to count the number of employees based on division and depot names
-                                            $query = "SELECT COUNT(*) FROM employee 
-                INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                WHERE location.division = '{$_SESSION['DIVISION']}' AND location.depot = '{$_SESSION['DEPOT']}'";
+                                            //$query = "SELECT COUNT(*) FROM employee 
+                //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
+                //WHERE location.division = '{$_SESSION['DIVISION']}' AND location.depot = '{$_SESSION['DEPOT']}'";
 
                                             // Execute the query
-                                            $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                            //$result = mysqli_query($db, $query) or die(mysqli_error($db));
 
                                             // Fetch the count
-                                            $row = mysqli_fetch_array($result);
+                                            //$row = mysqli_fetch_array($result);
 
                                             // Output the count
-                                            echo "Number of employees: $row[0]";
+                                            //echo "Number of employees: $row[0]";
                                             ?>
                                             Record(s)
                                         </div>
@@ -149,7 +148,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>-->
                 <div class="col-md-3">
                     <div class="col-md-12 mb-3">
                         <div class="card border-left-success shadow h-100 py-2">
@@ -184,7 +183,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <!--<div class="col-md-3">
                     <div class="col-md-12 mb-3">
                         <div class="card border-left-danger shadow h-100 py-2">
                             <div class="card-body">
@@ -193,25 +192,25 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Account</div>
                                         <div class="h6 mb-0 font-weight-bold text-gray-800">
                                             <?php
-                                            $session_division = $_SESSION['DIVISION']; // Assuming you're getting this from a session variable
-                                            $session_depot = $_SESSION['DEPOT']; // Assuming you're getting this from a session variable
+                                            //$session_division = $_SESSION['DIVISION']; // Assuming you're getting this from a session variable
+                                            //$session_depot = $_SESSION['DEPOT']; // Assuming you're getting this from a session variable
                                 
                                             // Prepare the SQL query to count registered accounts based on division and depot names
-                                            $query = "SELECT COUNT(*) FROM users 
-                INNER JOIN employee ON users.PF_ID = employee.PF_ID 
-                INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                WHERE users.TYPE_ID = 3 
-                AND location.DIVISION = '$session_division' 
-                AND location.DEPOT = '$session_depot'";
+                                            //$query = "SELECT COUNT(*) FROM users 
+                //INNER JOIN employee ON users.PF_ID = employee.PF_ID 
+                //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
+                //WHERE users.TYPE_ID = 3 
+                //AND location.DIVISION = '$session_division' 
+                //AND location.DEPOT = '$session_depot'";
 
                                             // Execute the query
-                                            $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                            //$result = mysqli_query($db, $query) or die(mysqli_error($db));
 
                                             // Fetch the count
-                                            $row = mysqli_fetch_array($result);
+                                            //$row = mysqli_fetch_array($result);
 
                                             // Output the count
-                                            echo "Registered accounts: $row[0]";
+                                            //echo "Registered accounts: $row[0]";
                                             ?>
                                             Record(s)
                                         </div>
@@ -223,7 +222,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>-->
             <?php } ?>
         <?php }
         if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
@@ -279,8 +278,29 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
                                         // Output the count
                                         echo 'Drivers: ' . $totalOffRoadCount;
-                                        ?>
+                                        ?> Record(s)
 
+                                        <?php
+                                        $session_division = $_SESSION['DIVISION_ID']; // Assuming you're getting this from a session variable
+                                        $session_depot = $_SESSION['DEPOT_ID']; // Assuming you're getting this from a session variable
+                                
+                                        // Prepare the SQL query to count registered accounts based on division and depot names
+                                        $query2 = "SELECT COUNT(*)
+                                        FROM private_employee
+                                        INNER JOIN location ON private_employee.division_id = location.division_id and private_employee.depot_id = location.depot_id
+                                        WHERE private_employee.status = '1' and EMP_DESGN_AT_APPOINTMENT='DRIVER'
+                                        AND location.division_id = '$session_division' 
+                                        AND location.depot_id = '$session_depot'";
+
+                                        // Execute the query
+                                        $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
+
+                                        // Fetch the count
+                                        $row2 = mysqli_fetch_array($result2);
+
+                                        // Output the count
+                                        echo "Private Drivers: $row2[0]";
+                                        ?>
                                         Record(s)
                                     </div>
                                 </div>
@@ -339,7 +359,29 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
                                         // Output the count
                                         echo 'Conductors: ' . $totalOffRoadCount;
-                                        ?>Record(s)</a>
+                                        ?>Record(s)
+                                        <?php
+                                        $session_division = $_SESSION['DIVISION_ID']; // Assuming you're getting this from a session variable
+                                        $session_depot = $_SESSION['DEPOT_ID']; // Assuming you're getting this from a session variable
+                                
+                                        // Prepare the SQL query to count registered accounts based on division and depot names
+                                        $query2 = "SELECT COUNT(*)
+                                        FROM private_employee
+                                        INNER JOIN location ON private_employee.division_id = location.division_id and private_employee.depot_id = location.depot_id
+                                        WHERE private_employee.status = '1' and EMP_DESGN_AT_APPOINTMENT='CONDUCTOR'
+                                        AND location.division_id = '$session_division' 
+                                        AND location.depot_id = '$session_depot'";
+
+                                        // Execute the query
+                                        $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
+
+                                        // Fetch the count
+                                        $row2 = mysqli_fetch_array($result2);
+
+                                        // Output the count
+                                        echo "Private Conductor: $row2[0]";
+                                        ?>
+                                        Record(s)
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -400,6 +442,27 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                                 echo 'DCC: ' . $totalOffRoadCount;
                                                 ?>
                                                 Record(s)
+                                                <?php
+                                        $session_division = $_SESSION['DIVISION_ID']; // Assuming you're getting this from a session variable
+                                        $session_depot = $_SESSION['DEPOT_ID']; // Assuming you're getting this from a session variable
+                                
+                                        // Prepare the SQL query to count registered accounts based on division and depot names
+                                        $query2 = "SELECT COUNT(*)
+                                        FROM private_employee
+                                        INNER JOIN location ON private_employee.division_id = location.division_id and private_employee.depot_id = location.depot_id
+                                        WHERE private_employee.status = '1' and EMP_DESGN_AT_APPOINTMENT='DRIVER-CUM-CONDUCTOR'
+                                        AND location.division_id = '$session_division' 
+                                        AND location.depot_id = '$session_depot'";
+                                        // Execute the query
+                                        $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
+
+                                        // Fetch the count
+                                        $row2 = mysqli_fetch_array($result2);
+
+                                        // Output the count
+                                        echo "Private DCC: $row2[0]";
+                                        ?>
+                                        Record(s)
                                             </div>
                                         </div>
                                     </div>

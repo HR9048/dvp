@@ -14,23 +14,57 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['act_dep_time'])) {
         // Function to fetch data from API
         function fetchEmployeeData($pfNumber)
-        {
-            $url = 'http://localhost/data.php?EMP_PF_NUMBER=' . urlencode($pfNumber);
-            $response = file_get_contents($url);
-            if ($response === FALSE) {
-                die('Error occurred while fetching data from API');
+{
+    $division = $_SESSION['KMPL_DIVISION'];
+    $depot = $_SESSION['KMPL_DEPOT'];
+
+    // Fetch data from the first API based on division and depot
+    $url = 'http://localhost/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+    $response = file_get_contents($url);
+    if ($response === FALSE) {
+        die('Error occurred while fetching data from LMS API');
+    }
+
+    $data = json_decode($response, true);
+
+    // Check if the data array is present and contains expected keys
+    if (isset($data['data']) && is_array($data['data'])) {
+        // Loop through the employee data to find the matching PF number
+        foreach ($data['data'] as $employee) {
+            if ($employee['EMP_PF_NUMBER'] === $pfNumber) {
+                return $employee; // Return employee data if found in the first API
             }
-            $data = json_decode($response, true);
-            // Check if the data array is present and contains expected keys
-            if (isset($data['data']) && is_array($data['data'])) {
-                foreach ($data['data'] as $employee) {
-                    if ($employee['EMP_PF_NUMBER'] === $pfNumber) {
-                        return $employee;
-                    }
-                }
-            }
-            return null;
         }
+    }
+
+    // If the data is not found in the first API, call the second API
+    $urlPrivate = 'http://localhost/dvp/database/private_emp_api.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+    $responsePrivate = file_get_contents($urlPrivate);
+    echo '<script>';
+    echo 'console.log("Response from LMS API 1: ", ' . json_encode($responsePrivate) . ');';
+    echo '</script>';
+    if ($responsePrivate === FALSE) {
+        die('Error occurred while fetching data from the private API');
+    }
+
+    $dataPrivate = json_decode($responsePrivate, true);
+
+    // Check if the data array is present and contains expected keys
+    if (isset($dataPrivate['data']) && is_array($dataPrivate['data'])) {
+        // Loop through the employee data to find the matching PF number
+        foreach ($dataPrivate['data'] as $employee) {
+            if ($employee['EMP_PF_NUMBER'] === $pfNumber) {
+                return $employee; // Return employee data if found in the second API
+            }
+        }
+    }
+
+    // Return null if no employee is found in both APIs
+    return null; 
+}
+
+
+
 
         // Escape input data
         $sch_no = mysqli_real_escape_string($db, $_POST['sch_no']);
@@ -77,7 +111,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         $driver1Data = fetchEmployeeData($driver_token_no_1);
         $driver2Data = !is_null($driver_token_no_2) ? fetchEmployeeData($driver_token_no_2) : null;
         $conductorData = !is_null($conductor_token_no) ? fetchEmployeeData($conductor_token_no) : null;
-
         // Ensure the API response contains the expected keys for driver 1
         if (isset($driver1Data['EMP_PF_NUMBER'], $driver1Data['EMP_NAME'], $driver1Data['token_number'])) {
             $driver1pfno = $driver1Data['EMP_PF_NUMBER'];
@@ -566,35 +599,71 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             }
 
             function fetchAdditionalData() {
-                return new Promise(function (resolve, reject) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', 'http://localhost/data.php', true);
-                    xhr.onreadystatechange = function () {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
+    return new Promise(function (resolve, reject) {
+        var division = '<?php echo $_SESSION['KMPL_DIVISION']; ?>';
+        var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
+
+        // API URLs with division and depot as query parameters
+        var dataApiUrl = 'http://localhost/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+        var empApiUrl = 'http://localhost/dvp/database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+
+        // Function to fetch data from both APIs
+        function fetchApiData(url) {
+            return new Promise(function (resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        try {
                             var data = JSON.parse(xhr.responseText).data;
-                            var filteredData = data.filter(function (item) {
-                                return item.Division === '<?php echo $_SESSION['KMPL_DIVISION']; ?>' && item.Depot === '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
-                            });
-                            filteredData.sort(function (a, b) {
-                                return a.token_number - b.token_number;
-                            });
-                            fetchVechSchOutData().then(function (vehSchOutData) {
-                                filteredData = filteredData.filter(function (item) {
-                                    return !vehSchOutData.some(function (vehItem) {
-                                        return vehItem.driver_1_pf === item.EMP_PF_NUMBER || vehItem.driver_2_pf === item.EMP_PF_NUMBER || vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
-                                    });
-                                });
-                                resolve(filteredData);
-                            }).catch(function (error) {
-                                reject(error);
-                            });
-                        } else if (xhr.readyState === 4) {
-                            reject('Error fetching additional data');
+                            resolve(data);
+                        } catch (e) {
+                            reject('Error parsing response from ' + url + ': ' + e.message);
                         }
-                    };
-                    xhr.send();
+                    } else if (xhr.readyState === 4) {
+                        reject('Error fetching data from ' + url);
+                    }
+                };
+                xhr.send();
+            });
+        }
+
+        // Fetch data from both APIs
+        Promise.all([fetchApiData(dataApiUrl), fetchApiData(empApiUrl)])
+            .then(function (responses) {
+                var combinedData = responses[0].concat(responses[1]); // Combine data from both APIs
+
+                // Filter data by division and depot (already passed in the API call, so this may not be necessary)
+                var filteredData = combinedData.filter(function (item) {
+                    return item.Division === division && item.Depot === depot;
                 });
-            }
+
+                // Sort filtered data by token_number
+                filteredData.sort(function (a, b) {
+                    return a.token_number - b.token_number;
+                });
+
+                // Call fetchVechSchOutData and filter based on vehicle schedule data
+                fetchVechSchOutData().then(function (vehSchOutData) {
+                    filteredData = filteredData.filter(function (item) {
+                        return !vehSchOutData.some(function (vehItem) {
+                            return vehItem.driver_1_pf === item.EMP_PF_NUMBER || vehItem.driver_2_pf === item.EMP_PF_NUMBER || vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
+                        });
+                    });
+
+                    // Resolve the combined filtered data
+                    resolve(filteredData);
+                }).catch(function (error) {
+                    reject(error);
+                });
+            })
+            .catch(function (error) {
+                reject(error);
+            });
+    });
+}
+
+
             function fetchVechSchOutData() {
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();

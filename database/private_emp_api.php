@@ -5,7 +5,6 @@ header('Access-Control-Allow-Headers: Content-Type');
 header("Content-Type:application/json");
 include '../includes/connection.php';
 include '../pages/session.php';
-confirm_logged_in();
 if (isset($_GET['division']) && isset(($_GET['depot']))) {
     // Prepare the SQL statement with placeholders
     $sql = "SELECT * FROM private_employee WHERE status = '1' AND Division = ? AND Depot = ?";

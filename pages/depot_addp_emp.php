@@ -8,14 +8,13 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 }
 
 if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
-
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $tokenNumber = $_POST['tokenNumber'];
         $pfNumber = $_POST['pfNumber'];
         $name = $_POST['name'];
         $designation = $_POST['designation'];
 
-        // Check if the PF number already exists
+        // Check if the PF number already exists in the private_employee table
         $checkQuery = "SELECT COUNT(*) FROM private_employee WHERE EMP_PF_NUMBER = ?";
         $stmtCheck = $db->prepare($checkQuery);
         $stmtCheck->bind_param("s", $pfNumber);
@@ -24,45 +23,109 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
         $stmtCheck->fetch();
         $stmtCheck->close();
 
-        // If the PF number already exists, alert the user
+        // If the PF number exists in the local table, alert the user
         if ($count > 0) {
             echo "<script type='text/javascript'>
-                alert('Error: PF Number already exists. Please use a unique PF Number.');
+                alert('Error: PF Number already exists in the private employee Details. Please use a unique PF Number.');
                 window.history.back();
               </script>";
-        } else {
-            // Prepare the SQL insert statement
-            $query = "INSERT INTO private_employee (EMP_PF_NUMBER, Division, Depot, EMP_NAME, EMP_DESGN_AT_APPOINTMENT, token_number, division_id, depot_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            exit; // Stop further execution
+        }
 
-            if ($stmt = $db->prepare($query)) {
-                // Replace these values with the appropriate division and depot
-                $division = $_SESSION['KMPL_DIVISION'];
-                $depot = $_SESSION['KMPL_DEPOT'];
-                $division_id = $_SESSION['DIVISION_ID'];
-                $depot_id = $_SESSION['DEPOT_ID'];
+        // Step 1: Fetch all divisions and depots from the location table
+        $locationQuery = "SELECT kmpl_division, kmpl_depot FROM location";
+        $result = $db->query($locationQuery);
 
-                // Bind parameters
-                $stmt->bind_param("ssssssii", $pfNumber, $division, $depot, $name, $designation, $tokenNumber, $division_id, $depot_id);
+        if ($result->num_rows > 0) {
+            $divisionsDepots = [];
+            while ($row = $result->fetch_assoc()) {
+                $divisionsDepots[] = $row;
+            }
 
-                // Execute the statement
-                if ($stmt->execute()) {
-                    echo "<script type='text/javascript'>
-                    alert('Employee details submitted successfully.');
-                    window.location.href = window.location.href; // Forces a hard refresh
-                  </script>";
-                } else {
-                    echo "<script type='text/javascript'>
-                    alert('Error submitting details: " . $stmt->error . "');
-                  </script>";
+            // Step 2: Use cURL multi to check the PF number against all divisions and depots
+            $multiHandle = curl_multi_init();
+            $curlHandles = [];
+
+            foreach ($divisionsDepots as $location) {
+                $division = $location['kmpl_division'];
+                $depot = $location['kmpl_depot'];
+                $url = 'http://localhost/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+
+                $curlHandle = curl_init($url);
+                curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, true);
+                $curlHandles[] = $curlHandle;
+                curl_multi_add_handle($multiHandle, $curlHandle);
+            }
+
+            // Execute all queries simultaneously
+            $running = null;
+            do {
+                curl_multi_exec($multiHandle, $running);
+            } while ($running > 0);
+
+            // Step 3: Check responses for PF number
+            $pfFound = false;
+
+            foreach ($curlHandles as $handle) {
+                $response = curl_multi_getcontent($handle);
+                $data = json_decode($response, true);
+
+                if (isset($data['data']) && is_array($data['data'])) {
+                    foreach ($data['data'] as $employee) {
+                        if ($employee['EMP_PF_NUMBER'] === $pfNumber) {
+                            $pfFound = true; // PF number found
+                            break 2; // Break out of both loops
+                        }
+                    }
                 }
+                curl_multi_remove_handle($multiHandle, $handle);
+                curl_close($handle);
+            }
 
-                // Close the statement
-                $stmt->close();
+            // Close the multi handle
+            curl_multi_close($multiHandle);
+
+            // Alert if PF number is found in the API
+            if ($pfFound) {
+                echo "<script type='text/javascript'>
+                    alert('Error: PF Number already exists in the LMS Database. Please use a unique PF Number.');
+                    window.history.back();
+                  </script>";
+                exit; // Stop further execution
+            }
+        }
+
+        // Prepare the SQL insert statement for the new employee
+        $query = "INSERT INTO private_employee (EMP_PF_NUMBER, Division, Depot, EMP_NAME, EMP_DESGN_AT_APPOINTMENT, token_number, division_id, depot_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        if ($stmt = $db->prepare($query)) {
+            // Replace these values with the appropriate division and depot
+            $division = $_SESSION['KMPL_DIVISION'];
+            $depot = $_SESSION['KMPL_DEPOT'];
+            $division_id = $_SESSION['DIVISION_ID'];
+            $depot_id = $_SESSION['DEPOT_ID'];
+
+            // Bind parameters
+            $stmt->bind_param("ssssssii", $pfNumber, $division, $depot, $name, $designation, $tokenNumber, $division_id, $depot_id);
+
+            // Execute the statement
+            if ($stmt->execute()) {
+                echo "<script type='text/javascript'>
+                alert('Employee details submitted successfully.');
+                window.location.href = window.location.href; // Forces a hard refresh
+              </script>";
             } else {
                 echo "<script type='text/javascript'>
-                alert('Error preparing statement: " . $db->error . "');
+                alert('Error submitting details: " . $stmt->error . "');
               </script>";
             }
+
+            // Close the statement
+            $stmt->close();
+        } else {
+            echo "<script type='text/javascript'>
+            alert('Error preparing statement: " . $db->error . "');
+          </script>";
         }
     }
 

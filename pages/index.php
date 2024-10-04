@@ -14,28 +14,28 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-0">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Off Road</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                <?php
-                                $query = "SELECT 
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Off Road</div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                    <?php
+                                    $query = "SELECT 
                 COUNT(DISTINCT bus_number) AS total_off_road_count
               FROM off_road_data
               WHERE status = 'off_road'";
 
-                                // Execute the query
-                                $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                    // Execute the query
+                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
-                                // Fetch the count
-                                $row = mysqli_fetch_array($result);
+                                    // Fetch the count
+                                    $row = mysqli_fetch_array($result);
 
-                                // Output the count
-                                echo "$row[0]";
-                                ?>
-                                Record(s)
-                            </div>
+                                    // Output the count
+                                    echo "$row[0]";
+                                    ?>
+                                    Record(s)
+                                </div>
                             </div>
                             <div class="col-auto">
-                            <i class="fa-solid fa-tools fa-beat fa-2x text-gray-300"></i>
+                                <i class="fa-solid fa-tools fa-beat fa-2x text-gray-300"></i>
                             </div>
                         </div>
                     </div>
@@ -48,17 +48,17 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-0">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Vehicles on Schedule
-                            </div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                <?php
-                                $query = "SELECT COUNT(*) FROM sch_veh_out where schedule_status='1'";
-                                $result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                $row = mysqli_fetch_array($result);
-                                echo "Vehicle Count: $row[0]";
-                                ?>
-                                Record(s)
-                            </div>
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Vehicles on Schedule
+                                </div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                    <?php
+                                    $query = "SELECT COUNT(*) FROM sch_veh_out where schedule_status='1'";
+                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                    $row = mysqli_fetch_array($result);
+                                    echo "Vehicle Count: $row[0]";
+                                    ?>
+                                    Record(s)
+                                </div>
                             </div>
                             <div class="col-auto">
                                 <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
@@ -74,16 +74,16 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-0">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Today's DVP</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                <?php
-                                $current_date = date("Y-m-d");
-                                $query = "SELECT COUNT(depot) FROM dvp_data WHERE date = '$current_date'";
-                                $result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                $row = mysqli_fetch_array($result);
-                                echo "$row[0]";
-                                ?><a href="depot_dvp_submision.php"> Depot Submitted</a>
-                            </div>
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Today's DVP</div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                    <?php
+                                    $current_date = date("Y-m-d");
+                                    $query = "SELECT COUNT(depot) FROM dvp_data WHERE date = '$current_date'";
+                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                    $row = mysqli_fetch_array($result);
+                                    echo "$row[0]";
+                                    ?><a href="depot_dvp_submision.php"> Depot Submitted</a>
+                                </div>
                             </div>
                             <div class="col-auto">
                                 <i class="fa-solid fa-bus fa-beat fa-2xl"></i>
@@ -100,17 +100,17 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-0">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">yesterday's KMPL
-                            </div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                <?php
-                                $current_date = date("Y-m-d", strtotime("-1 day"));
-                                $query = "SELECT COUNT(depot) FROM kmpl_data WHERE date = '$current_date' ";
-                                $result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                $row = mysqli_fetch_array($result);
-                                echo "$row[0]";
-                                ?><a href="depot_dvp_submision.php"> Depot Submitted</a>
-                            </div>
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">yesterday's KMPL
+                                </div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                    <?php
+                                    $current_date = date("Y-m-d", strtotime("-1 day"));
+                                    $query = "SELECT COUNT(depot) FROM kmpl_data WHERE date = '$current_date' ";
+                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                    $row = mysqli_fetch_array($result);
+                                    echo "$row[0]";
+                                    ?><a href="depot_dvp_submision.php"> Depot Submitted</a>
+                                </div>
                             </div>
                             <div class="col-auto">
                                 <i class="fa-solid fa-tachometer-alt fa-beat fa-2xl"></i>
@@ -126,20 +126,20 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-0">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Buses</div>
-                            <div class="row no-gutters align-items-center">
-                                <div class="col-auto">
-                                    <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
-                                        <?php
-                                        $query = "SELECT COUNT(*) FROM bus_registration ";
-                                        $result = mysqli_query($db, $query);
-                                        while ($row = mysqli_fetch_array($result)) {
-                                            echo "$row[0]";
-                                        }
-                                        ?> Record(s)
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Buses</div>
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col-auto">
+                                        <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
+                                            <?php
+                                            $query = "SELECT COUNT(*) FROM bus_registration ";
+                                            $result = mysqli_query($db, $query);
+                                            while ($row = mysqli_fetch_array($result)) {
+                                                echo "$row[0]";
+                                            }
+                                            ?> Record(s)
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             </div>
                             <div class="col-auto">
                                 <i class="fa-solid fa-bus fa-beat fa-2xl"></i>
@@ -161,12 +161,12 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                                     <?php
                                     //$session_division = $_SESSION['DIVISION'];
                                     //$query = "SELECT COUNT(*) FROM users 
-                //INNER JOIN employee ON users.PF_ID = employee.PF_ID 
-                //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                //WHERE users.TYPE_ID IN (1,2,3,4)";
+                                    //INNER JOIN employee ON users.PF_ID = employee.PF_ID 
+                                    //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
+                                    //WHERE users.TYPE_ID IN (1,2,3,4)";
                                     //$result = mysqli_query($db, $query) or die(mysqli_error($db));
                                     //$row = mysqli_fetch_array($result);
-                                   // echo "Registered accounts: $row[0]";
+                                    // echo "Registered accounts: $row[0]";
                                     ?>
                                     Record(s)
                                 </div>
@@ -181,8 +181,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
         </div>-->
 
 
-        
-           
+
+
         <div class="col-md-3">
             <div class="col-md-12 mb-3">
                 <div class="card border-left-primary shadow h-100 py-2">
@@ -422,18 +422,18 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 <canvas id="kmplChart"></canvas>
             </div>
         </div>
-        <div class="col-lg-6 mb-4">
+        <div class="col-lg-12 mb-4">
             <div class="container">
                 <h1>Off-Road Data by Division</h1>
-                <canvas id="lineChart"></canvas>
+                <canvas id="offroadChart"></canvas>
             </div>
         </div>
-        <div class="col-lg-6 mb-4">
+        <!--<div class="col-lg-6 mb-4">
             <div class="container">
                 <h1>Schedules Vehicles on Route</h1>
                 <canvas id="scheduleChart"></canvas>
             </div>
-        </div>
+        </div>-->
 
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -480,34 +480,28 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                         },
                         options: {
                             plugins: {
-                                tooltip: {
+                                tooltips: {
                                     callbacks: {
-                                        title: function (context) {
-                                            return context[0].label;
-                                        },
-                                        label: function (context) {
-                                            const label = context.label || '';
-                                            const value = context.raw || '';
-                                            return `${label}: ${value}`;
-                                        },
-                                        footer: function (context) {
-                                            const division = context[0].label || '';
-                                            const isRWY = division === 'RWY Off-Road';
-                                            if (isRWY) {
-                                                // Show division-wise RWY counts in the footer
-                                                return rwyData.map(d => `${d.division}: ${d.off_road_count}`);
-                                            } else {
-                                                const depotData = depots.filter(d => d.division === division);
-                                                if (depotData.length) {
-                                                    // Create footer content with line breaks for depots
-                                                    return ['Depots:', ...depotData.map(d => `${d.depot}: ${d.off_road_count}`)];
-                                                }
+                                        label: function (tooltipItem, data) {
+                                            const division = data.labels[tooltipItem.index];
+                                            const divisionData = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+
+                                            // Get depot data for this division and date
+                                            const depotData = getDepotDataForDateAndDivision(selectedDate, division);
+                                            if (!depotData || depotData.length === 0) {
+                                                return `${division}: No data available`;
                                             }
-                                            return [];
+
+                                            // Construct the tooltip content
+                                            let tooltipContent = `${division} Total: ${divisionData.total_offroad_count}\n\nDepot-wise Breakdown:\n`;
+
+                                            depotData.forEach(depot => {
+                                                tooltipContent += `${depot.depot}: ${depot.total_offroad_count}\n`;  // Append each depot on a new line
+                                            });
+
+                                            return tooltipContent;
                                         }
-                                    },
-                                    // Enable HTML rendering
-                                    enabled: true
+                                    }
                                 },
                                 datalabels: {
                                     display: false // Remove data labels
@@ -527,98 +521,158 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 .catch(error => console.error('Error fetching data:', error));
         </script>
         <script>
-            fetch('../database/get_circle_data.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error(data.error);
-                        return;
-                    }
+            let divisionData = {};
 
-                    const chartData = data.chartData;
-                    const depotData = data.depotData;
-
-                    // Extract unique divisions and locations
-                    const divisions = [...new Set(chartData.map(item => item.division))];
-                    const locations = [...new Set(depotData.map(item => item.off_road_location))];
-
-                    // Prepare dataset for each location
-                    const datasets = locations.map(location => {
-                        return {
-                            label: location,
-                            data: chartData.map(item => item.locations[location] || 0),
-                            fill: false,
-                            borderColor: getRandomColor(),
-                            tension: 0.1
-                        };
-                    });
-
-                    // Prepare data for the chart
-                    const ctx = document.getElementById('lineChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: divisions,
-                            datasets: datasets
+            const ctx = document.getElementById('offroadChart').getContext('2d');
+            const offroadChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Offroad Counts'
+                            }
                         },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                tooltip: {
-                                    callbacks: {
-                                        title: function (tooltipItem) {
-                                            const division = tooltipItem[0].label;
-                                            const location = tooltipItem[0].dataset.label;
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Dates'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const division = context.dataset.label;
+                                    const date = context.label;
+                                    const depotData = getDepotDataForDateAndDivision(date, division);
 
-                                            // Calculate total for this off-road location in the current division
-                                            const totalForLocation = chartData
-                                                .find(item => item.division === division)
-                                                ?.locations[location] || 0;
+                                    let label = `${division}: Total Offroad Count: ${context.raw}\n\n`;
+                                    if (depotData && depotData.length > 0) {
+                                        label += 'Depot-wise Counts:\n';
+                                        depotData.forEach(depotInfo => {
+                                            label += ` - ${depotInfo.depot}: ${depotInfo.count || 0}\n`;
+                                        });
 
-                                            return `${division} - Off-road: ${location} (Total: ${totalForLocation})`;
-                                        },
-                                        label: function (tooltipItem) {
-                                            const division = tooltipItem.label;
-                                            const location = tooltipItem.dataset.label;
-
-                                            // Filter depot data for the current division and location
-                                            const depots = depotData
-                                                .filter(item => item.division === division && item.off_road_location === location)
-                                                .map(item => `${item.depot}: ${item.off_road_count}`);
-
-                                            // Combine depot details with new lines
-                                            return ['' + location, ...depots];
-                                        }
+                                    } else {
+                                        label += 'No depot-wise data available';
                                     }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: 'Division'
-                                    }
-                                },
-                                y: {
-                                    title: {
-                                        display: true,
-                                        text: 'Off-Road Count'
-                                    }
+
+                                    return label;
                                 }
                             }
                         }
-                    });
-                })
-                .catch(error => console.error('Error fetching data:', error));
+                    }
+                }
+            });
 
+            // Function to fetch data from the server
+            async function fetchData() {
+                try {
+                    const response = await fetch('../database/get_circle_data.php');
+                    const data = await response.json();
+
+                    const dates = new Set();
+                    divisionData = {};
+
+                    // Process the data row by row
+                    data.forEach(row => {
+                        const date = row.date;
+                        const division = row.division;
+                        const depot = row.depot;
+                        const depotCount = parseInt(row.total_offroad_count) || 0; // Ensure the count is treated as a number
+
+                        dates.add(date);
+
+                        // Initialize data structures if not already present
+                        if (!divisionData[division]) {
+                            divisionData[division] = {
+                                data: {},
+                                depotData: {}
+                            };
+                        }
+
+                        // Initialize the date-specific data for the division
+                        if (!divisionData[division].data[date]) {
+                            divisionData[division].data[date] = 0; // Initialize division total for the date
+                        }
+
+                        // Sum depot counts for the division total on this date, avoiding repetition
+                        divisionData[division].data[date] += depotCount;
+
+                        if (!divisionData[division].depotData[date]) {
+                            divisionData[division].depotData[date] = [];
+                        }
+
+                        // Store depot data for tooltips
+                        divisionData[division].depotData[date].push({
+                            depot: depot,
+                            count: depotCount
+                        });
+                    });
+
+                    // Convert the date set to a sorted array for labels
+                    const labels = Array.from(dates).sort();
+                    offroadChart.data.labels = labels;
+
+                    // Populate chart datasets with the processed division data
+                    for (const division in divisionData) {
+                        const dataPoints = labels.map(label => divisionData[division].data[label] || 0);
+                        offroadChart.data.datasets.push({
+                            label: division,
+                            data: dataPoints,
+                            borderColor: getRandomColor(),
+                            fill: false,
+                            pointRadius: 5
+                        });
+                    }
+
+                    offroadChart.update();
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+            }
+            // Function to format the date as "Mon, DD" (e.g., "Jan, 01")
+            function formatDateLabel(dateStr) {
+                const date = new Date(dateStr);
+                const options = { month: 'short', day: 'numeric' };
+                return date.toLocaleDateString('en-US', options); // "Jan, 1"
+            }
+
+            // Function to convert the formatted date label back to the original date format
+            function parseDateLabel(label) {
+                const [month, day] = label.split(', '); // Splitting the formatted label
+                const fullDate = new Date(`${month} ${day}, ${new Date().getFullYear()}`);
+                return fullDate.toISOString().split('T')[0]; // Return the date in YYYY-MM-DD format
+            }
+            // Function to get depot data for a specific date and division
+            function getDepotDataForDateAndDivision(date, division) {
+                if (divisionData[division] && divisionData[division].depotData[date]) {
+                    return divisionData[division].depotData[date];
+                }
+                return [];
+            }
+
+            // Function to generate random color for each division's line
             function getRandomColor() {
                 const letters = '0123456789ABCDEF';
                 let color = '#';
-                for (let i = 0; i < 6; i++) {
+                for (let i = 0; i < 9; i++) {
                     color += letters[Math.floor(Math.random() * 16)];
                 }
                 return color;
             }
+
+            // Fetch data when the page loads
+            fetchData();
         </script>
         <script>
             fetch('../database/chart_kmpl.php') // Replace with your actual PHP script path
@@ -715,7 +769,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.7)`;
             }
         </script>
-        <script>
+        <!--<script>
             document.addEventListener('DOMContentLoaded', function () {
                 fetch('../database/chart_schedule.php')
                     .then(response => response.json())
@@ -765,7 +819,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     })
                     .catch(error => console.error('Error fetching data:', error));
             });
-        </script>
+        </script>-->
         <?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";

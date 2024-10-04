@@ -1,84 +1,70 @@
 <?php
 include '../pages/session.php';
+
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
-    echo "<script type='text/javascript'>alert('Restricted Page! YouR session is experied please Login'); window.location = '../pages/logout.php';</script>";
+    echo "<script type='text/javascript'>alert('Restricted Page! Your session has expired, please Login'); window.location = '../pages/logout.php';</script>";
     exit;
 }
-header('Content-Type: application/json');
 
-// Include the database connection file
+header('Content-Type: application/json');
 include '../includes/connection.php';
 confirm_logged_in();
+
 try {
-    // Query to get off-road data by division and off-road location
+    // Set the start and end dates
+    $start_date = date('Y-m-d', strtotime('-30 days'));
+    $end_date = date('Y-m-d');
+
+    // Query to get depot-wise data including total off-road count
     $sql = "SELECT
-    l.kmpl_division AS division,
-    l.depot,
-    od.off_road_location,
-    COUNT(od.bus_number) AS off_road_count
-FROM (
-    SELECT
-        bus_number,
-        MAX(id) AS max_id
-    FROM off_road_data
-    WHERE status = 'off_road'
-    GROUP BY bus_number
-) AS max_ids
-INNER JOIN off_road_data od
-    ON max_ids.bus_number = od.bus_number
-    AND max_ids.max_id = od.id
-INNER JOIN location l 
-    ON od.depot = l.depot_id 
-    AND od.division = l.division_id
-GROUP BY l.kmpl_division, l.depot, od.off_road_location
-ORDER BY l.division_id, l.depot_id, od.off_road_location
-    ";
+                l.kmpl_division AS division,
+                l.depot,
+                DATE(od.date) AS date,
+                SUM(od.ORDepot) AS or_depot_count,
+                SUM(od.ORDWS) AS or_dws_count,
+                SUM(od.Police) AS police_count,
+                SUM(od.Dealer) AS dealer_count,
+                SUM(od.ORDepot + od.ORDWS + od.Police + od.Dealer) AS total_offroad_count
+            FROM dvp_data od
+            INNER JOIN location l ON od.depot = l.depot_id AND od.division = l.division_id
+            WHERE od.date BETWEEN ? AND ?
+            GROUP BY l.kmpl_division, l.depot, DATE(od.date)
+            ORDER BY DATE(od.date), l.division_id, l.depot_id";
 
-    $result = $db->query($sql);
-
-    if (!$result) {
-        throw new Exception($db->error);
+    // Prepare the statement
+    $stmt = $db->prepare($sql);
+    if (!$stmt) {
+        throw new Exception('Statement preparation failed: ' . $db->error);
     }
+
+    // Bind the date parameters
+    $stmt->bind_param('ss', $start_date, $end_date);
+
+    // Execute the statement
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     $data = [];
-    $divisionTotals = [];
 
-    // Collect data for division totals and depot details
+    // Fetch the result set and process the data
     while ($row = $result->fetch_assoc()) {
-        $division = $row['division'];
-        $depot = $row['depot'];
-        $location = $row['off_road_location'];
-        $count = $row['off_road_count'];
-
-        // Store depot-wise data for tooltips
-        $data[] = $row;
-
-        // Aggregate totals by division and location
-        if (!isset($divisionTotals[$division])) {
-            $divisionTotals[$division] = [];
-        }
-        if (!isset($divisionTotals[$division][$location])) {
-            $divisionTotals[$division][$location] = 0;
-        }
-        $divisionTotals[$division][$location] += $count;
-    }
-
-    // Prepare final data format for the chart
-    $chartData = [];
-    foreach ($divisionTotals as $division => $locations) {
-        $totalCount = array_sum($locations);
-        $chartData[] = [
-            'division' => $division,
-            'total_count' => $totalCount,
-            'locations' => $locations
+        $data[] = [
+            'division' => $row['division'],
+            'depot' => $row['depot'],
+            'date' => $row['date'],
+            'or_depot_count' => $row['or_depot_count'],
+            'or_dws_count' => $row['or_dws_count'],
+            'police_count' => $row['police_count'],
+            'dealer_count' => $row['dealer_count'],
+            'total_offroad_count' => $row['total_offroad_count']
         ];
     }
 
-    // Output the data
-    echo json_encode([
-        'chartData' => $chartData,
-        'depotData' => $data
-    ]);
+    // Output the result in JSON format
+    echo json_encode($data);
+
+    // Close the statement
+    $stmt->close();
 } catch (Exception $e) {
     echo json_encode(['error' => $e->getMessage()]);
 }

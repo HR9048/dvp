@@ -26,9 +26,18 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
         // If the PF number exists in the local table, alert the user
         if ($count > 0) {
             echo "<script type='text/javascript'>
-                alert('Error: PF Number already exists in the private employee Details. Please use a unique PF Number.');
-                window.history.back();
-              </script>";
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'PF Number already exists in the private employee Details. Please use a unique PF Number.',
+                confirmButtonText: 'Go Back'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.history.back();
+                }
+            });
+          </script>";
+
             exit; // Stop further execution
         }
 
@@ -88,9 +97,18 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
             // Alert if PF number is found in the API
             if ($pfFound) {
                 echo "<script type='text/javascript'>
-                    alert('Error: PF Number already exists in the LMS Database. Please use a unique PF Number.');
-                    window.history.back();
-                  </script>";
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'PF Number already exists in the LMS Database. Please use a unique PF Number.',
+            confirmButtonText: 'Go Back'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.history.back();
+            }
+        });
+      </script>";
+
                 exit; // Stop further execution
             }
         }
@@ -111,21 +129,34 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
             // Execute the statement
             if ($stmt->execute()) {
                 echo "<script type='text/javascript'>
-                alert('Employee details submitted successfully.');
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Private Employee details submitted successfully.'
+            }).then(() => {
                 window.location.href = window.location.href; // Forces a hard refresh
-              </script>";
+            });
+          </script>";
             } else {
                 echo "<script type='text/javascript'>
-                alert('Error submitting details: " . $stmt->error . "');
-              </script>";
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error submitting details: " . $stmt->error . "'
+            });
+          </script>";
             }
 
             // Close the statement
             $stmt->close();
         } else {
             echo "<script type='text/javascript'>
-            alert('Error preparing statement: " . $db->error . "');
-          </script>";
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error preparing statement: " . $db->error . "'
+        });
+      </script>";
         }
     }
 

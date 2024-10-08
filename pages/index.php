@@ -179,117 +179,18 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 </div>
             </div>
         </div>-->
-
-
-
-
         <div class="col-md-3">
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Driver Employees
-                                </div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    // Query to get all division and depot combinations
-                                    $query = "SELECT kmpl_division, kmpl_depot FROM location";
-                                    $result = mysqli_query($db, $query);
-
-                                    if (!$result) {
-                                        die("Error fetching division and depot data: " . mysqli_error($db));
-                                    }
-
-                                    // Prepare to store all the combined data
-                                    $allData = [];
-
-                                    // Array to hold cURL handles
-                                    $curlHandles = [];
-                                    $multiCurl = curl_multi_init(); // Initialize multi-cURL handle
-                                
-                                    // Loop through each division and depot, and prepare the cURL requests
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        $division = $row['kmpl_division'];
-                                        $depot = $row['kmpl_depot'];
-
-                                        // Prepare API URL with division and depot
-                                        $apiUrl = 'http://localhost/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
-
-                                        // Initialize individual cURL session
-                                        $ch = curl_init($apiUrl);
-
-                                        // Set cURL options
-                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
-                                        curl_setopt($ch, CURLOPT_HTTPGET, true);        // Use GET method
-                                
-                                        // Add the handle to the multi-cURL handle
-                                        curl_multi_add_handle($multiCurl, $ch);
-
-                                        // Store the cURL handle to reference it later
-                                        $curlHandles[] = $ch;
-                                    }
-
-                                    // Execute all cURL requests in parallel
-                                    $running = null;
-                                    do {
-                                        curl_multi_exec($multiCurl, $running);
-                                        curl_multi_select($multiCurl);
-                                    } while ($running > 0);
-
-                                    // Collect the responses and merge the data
-                                    foreach ($curlHandles as $ch) {
-                                        $response = curl_multi_getcontent($ch); // Get the content from each handle
-                                
-                                        // Decode JSON response
-                                        $data = json_decode($response, true);
-
-                                        // Check if data exists
-                                        if (isset($data['data']) && is_array($data['data'])) {
-                                            // Merge the current API response data into the $allData array
-                                            $allData = array_merge($allData, $data['data']);
-                                        }
-
-                                        // Remove the handle from the multi-cURL handler and close it
-                                        curl_multi_remove_handle($multiCurl, $ch);
-                                        curl_close($ch);
-                                    }
-
-                                    // Close the multi-cURL handle
-                                    curl_multi_close($multiCurl);
-
-                                    // Now you have all the data combined in $allData
-                                    if (empty($allData)) {
-                                        echo 'No data available.';
-                                    } else {
-                                        // Filter and count the 'DRIVER' employees
-                                        $filteredData = array_filter($allData, function ($item) {
-                                            return $item['EMP_DESGN_AT_APPOINTMENT'] === 'DRIVER';
-                                        });
-
-                                        // Count the filtered records
-                                        $totalDriverCount = count($filteredData);
-
-                                        // Filter and count the 'CONDUCTOR' employees
-                                        $filteredData1 = array_filter($allData, function ($item) {
-                                            return $item['EMP_DESGN_AT_APPOINTMENT'] === 'CONDUCTOR';
-                                        });
-
-                                        // Count the filtered records
-                                        $totalConductorCount = count($filteredData1);
-                                        $filteredData2 = array_filter($allData, function ($item) {
-                                            return $item['EMP_DESGN_AT_APPOINTMENT'] === 'DRIVER-CUM-CONDUCTOR';
-                                        });
-
-                                        // Count the filtered records
-                                        $totalDCCCount = count($filteredData2);
-
-                                        // Output the driver count
-                                        echo 'Drivers: ' . $totalDriverCount . ' Record(s)';
-                                    }
-                                    ?>
-                                    <?php
-                                    $session_division = $_SESSION['DIVISION_ID']; // Session-based division
+        <div class="col-md-12 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-0">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Driver Employees</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800" id="driver-count">
+                                <span class="loading">Drivers: Loading...</span>
+                            </div>
+                            <?php
+                            $session_division = $_SESSION['DIVISION_ID']; // Session-based division
                                     $session_depot = $_SESSION['DEPOT_ID']; // Session-based depot
                                 
                                     // SQL query to count only private drivers for the current division and depot
@@ -309,30 +210,30 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                                     // Output the count of private drivers
                                     echo "Private Drivers: $row2[0]";
                                     ?> Record(s)
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
-                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-3">
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Conductor Employees
-                                </div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    // Output the conductor count
-                                    echo 'Conductors: ' . $totalConductorCount . ' Record(s)';
-                                    ?>
+    </div>
+    <div class="col-md-3">
+        <div class="col-md-12 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-0">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Conductor Employees</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800" id="conductor-count">
+                                <span class="loading">Conductors: Loading...</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
+                        </div>
+                                   
                                     <?php
                                     $session_division = $_SESSION['DIVISION_ID']; // Session-based division
                                     $session_depot = $_SESSION['DEPOT_ID']; // Session-based depot
@@ -354,28 +255,21 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                                     // Output the count of private drivers
                                     echo "Private Conductor: $row2[0]";
                                     ?> Record(s)
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">DCC Employees</div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    // Output the conductor count
-                                    echo 'DCC: ' . $totalDCCCount . ' Record(s)';
-                                    ?>
+    </div>
+    <div class="col-md-3">
+        <div class="col-md-12 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-0">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">DCC Employees</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800" id="dcc-count">
+                                <span class="loading">DCC: Loading...</span>
+                            </div>
                                     <?php
                                     $session_division = $_SESSION['DIVISION_ID']; // Session-based division
                                     $session_depot = $_SESSION['DEPOT_ID']; // Session-based depot
@@ -397,16 +291,39 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                                     // Output the count of private drivers
                                     echo "Private DCC: $row2[0]";
                                     ?> Record(s)
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
-                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: '../database/fetch_employee_count.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    $('#driver-count').html('Drivers: ' + data.drivers + ' Record(s)');
+                    $('#conductor-count').html('Conductors: ' + data.conductors + ' Record(s)');
+                    $('#dcc-count').html('DCC: ' + data.dcc + ' Record(s)');
+                },
+                error: function() {
+                    $('#driver-count').html('Error loading data.');
+                    $('#conductor-count').html('Error loading data.');
+                    $('#dcc-count').html('Error loading data.');
+                }
+            });
+        });
+    </script>
+
+
+
+       
 
         <div class="col-lg-4 mb-4">
             <div class="card shadow h-100">
@@ -422,7 +339,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 <canvas id="kmplChart"></canvas>
             </div>
         </div>
-        <div class="col-lg-12 mb-4">
+        <div class="col-lg-8 mb-4">
             <div class="container">
                 <h1>Off-Road Data by Division</h1>
                 <canvas id="offroadChart"></canvas>
@@ -480,28 +397,34 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                         },
                         options: {
                             plugins: {
-                                tooltips: {
+                                tooltip: {
                                     callbacks: {
-                                        label: function (tooltipItem, data) {
-                                            const division = data.labels[tooltipItem.index];
-                                            const divisionData = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-
-                                            // Get depot data for this division and date
-                                            const depotData = getDepotDataForDateAndDivision(selectedDate, division);
-                                            if (!depotData || depotData.length === 0) {
-                                                return `${division}: No data available`;
+                                        title: function (context) {
+                                            return context[0].label;
+                                        },
+                                        label: function (context) {
+                                            const label = context.label || '';
+                                            const value = context.raw || '';
+                                            return `${label}: ${value}`;
+                                        },
+                                        footer: function (context) {
+                                            const division = context[0].label || '';
+                                            const isRWY = division === 'RWY Off-Road';
+                                            if (isRWY) {
+                                                // Show division-wise RWY counts in the footer
+                                                return rwyData.map(d => `${d.division}: ${d.off_road_count}`);
+                                            } else {
+                                                const depotData = depots.filter(d => d.division === division);
+                                                if (depotData.length) {
+                                                    // Create footer content with line breaks for depots
+                                                    return ['Depots:', ...depotData.map(d => `${d.depot}: ${d.off_road_count}`)];
+                                                }
                                             }
-
-                                            // Construct the tooltip content
-                                            let tooltipContent = `${division} Total: ${divisionData.total_offroad_count}\n\nDepot-wise Breakdown:\n`;
-
-                                            depotData.forEach(depot => {
-                                                tooltipContent += `${depot.depot}: ${depot.total_offroad_count}\n`;  // Append each depot on a new line
-                                            });
-
-                                            return tooltipContent;
+                                            return [];
                                         }
-                                    }
+                                    },
+                                    // Enable HTML rendering
+                                    enabled: true
                                 },
                                 datalabels: {
                                     display: false // Remove data labels
@@ -521,160 +444,160 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 .catch(error => console.error('Error fetching data:', error));
         </script>
         <script>
-            let divisionData = {};
+    let divisionData = {};
 
-            const ctx = document.getElementById('offroadChart').getContext('2d');
-            const offroadChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: []
+    const ctx = document.getElementById('offroadChart').getContext('2d');
+    const offroadChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Offroad Counts'
+                    }
                 },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Offroad Counts'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Dates'
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    const division = context.dataset.label;
-                                    const date = context.label;
-                                    const depotData = getDepotDataForDateAndDivision(date, division);
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Dates'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const division = context.dataset.label;
+                            const date = context.label;
+                            const depotData = getDepotDataForDateAndDivision(date, division);
 
-                                    let label = `${division}: Total Offroad Count: ${context.raw}\n\n`;
-                                    if (depotData && depotData.length > 0) {
-                                        label += 'Depot-wise Counts:\n';
-                                        depotData.forEach(depotInfo => {
-                                            label += ` - ${depotInfo.depot}: ${depotInfo.count || 0}\n`;
-                                        });
+                            let label = `${division}: Total Offroad Count: ${context.raw}\n\n`;
+                            if (depotData && depotData.length > 0) {
+                                label += 'Depot-wise Counts:\n';
+                                depotData.forEach(depotInfo => {
+                                    label += ` - ${depotInfo.depot}: ${depotInfo.count || 0}\n`;
+                                });
 
-                                    } else {
-                                        label += 'No depot-wise data available';
-                                    }
-
-                                    return label;
-                                }
+                            } else {
+                                label += 'No depot-wise data available';
                             }
+
+                            return label;
                         }
                     }
                 }
+            }
+        }
+    });
+
+    // Function to fetch data from the server
+    async function fetchData() {
+        try {
+            const response = await fetch('../database/get_circle_data.php');
+            const data = await response.json();
+
+            const dates = new Set();
+            divisionData = {};
+
+            // Process the data row by row
+            data.forEach(row => {
+                const date = row.date;
+                const division = row.division;
+                const depot = row.depot;
+                const depotCount = parseInt(row.total_offroad_count) || 0; // Ensure the count is treated as a number
+
+                // Skip Sundays
+                if (isSunday(date)) {
+                    return; // Skip this iteration if it's a Sunday
+                }
+
+                dates.add(date);
+
+                // Initialize data structures if not already present
+                if (!divisionData[division]) {
+                    divisionData[division] = {
+                        data: {},
+                        depotData: {}
+                    };
+                }
+
+                // Initialize the date-specific data for the division
+                if (!divisionData[division].data[date]) {
+                    divisionData[division].data[date] = 0; // Initialize division total for the date
+                }
+
+                // Sum depot counts for the division total on this date, avoiding repetition
+                divisionData[division].data[date] += depotCount;
+
+                if (!divisionData[division].depotData[date]) {
+                    divisionData[division].depotData[date] = [];
+                }
+
+                // Store depot data for tooltips
+                divisionData[division].depotData[date].push({
+                    depot: depot,
+                    count: depotCount
+                });
             });
 
-            // Function to fetch data from the server
-            async function fetchData() {
-                try {
-                    const response = await fetch('../database/get_circle_data.php');
-                    const data = await response.json();
+            // Convert the date set to a sorted array for labels
+            const labels = Array.from(dates).sort();
+            offroadChart.data.labels = labels;
 
-                    const dates = new Set();
-                    divisionData = {};
-
-                    // Process the data row by row
-                    data.forEach(row => {
-                        const date = row.date;
-                        const division = row.division;
-                        const depot = row.depot;
-                        const depotCount = parseInt(row.total_offroad_count) || 0; // Ensure the count is treated as a number
-
-                        dates.add(date);
-
-                        // Initialize data structures if not already present
-                        if (!divisionData[division]) {
-                            divisionData[division] = {
-                                data: {},
-                                depotData: {}
-                            };
-                        }
-
-                        // Initialize the date-specific data for the division
-                        if (!divisionData[division].data[date]) {
-                            divisionData[division].data[date] = 0; // Initialize division total for the date
-                        }
-
-                        // Sum depot counts for the division total on this date, avoiding repetition
-                        divisionData[division].data[date] += depotCount;
-
-                        if (!divisionData[division].depotData[date]) {
-                            divisionData[division].depotData[date] = [];
-                        }
-
-                        // Store depot data for tooltips
-                        divisionData[division].depotData[date].push({
-                            depot: depot,
-                            count: depotCount
-                        });
-                    });
-
-                    // Convert the date set to a sorted array for labels
-                    const labels = Array.from(dates).sort();
-                    offroadChart.data.labels = labels;
-
-                    // Populate chart datasets with the processed division data
-                    for (const division in divisionData) {
-                        const dataPoints = labels.map(label => divisionData[division].data[label] || 0);
-                        offroadChart.data.datasets.push({
-                            label: division,
-                            data: dataPoints,
-                            borderColor: getRandomColor(),
-                            fill: false,
-                            pointRadius: 5
-                        });
-                    }
-
-                    offroadChart.update();
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                }
-            }
-            // Function to format the date as "Mon, DD" (e.g., "Jan, 01")
-            function formatDateLabel(dateStr) {
-                const date = new Date(dateStr);
-                const options = { month: 'short', day: 'numeric' };
-                return date.toLocaleDateString('en-US', options); // "Jan, 1"
+            // Populate chart datasets with the processed division data
+            for (const division in divisionData) {
+                const dataPoints = labels.map(label => divisionData[division].data[label] || 0);
+                offroadChart.data.datasets.push({
+                    label: division,
+                    data: dataPoints,
+                    borderColor: getRandomColor(),
+                    fill: false,
+                    pointRadius: 5
+                });
             }
 
-            // Function to convert the formatted date label back to the original date format
-            function parseDateLabel(label) {
-                const [month, day] = label.split(', '); // Splitting the formatted label
-                const fullDate = new Date(`${month} ${day}, ${new Date().getFullYear()}`);
-                return fullDate.toISOString().split('T')[0]; // Return the date in YYYY-MM-DD format
-            }
-            // Function to get depot data for a specific date and division
-            function getDepotDataForDateAndDivision(date, division) {
-                if (divisionData[division] && divisionData[division].depotData[date]) {
-                    return divisionData[division].depotData[date];
-                }
-                return [];
-            }
+            offroadChart.update();
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
 
-            // Function to generate random color for each division's line
-            function getRandomColor() {
-                const letters = '0123456789ABCDEF';
-                let color = '#';
-                for (let i = 0; i < 9; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
-            }
+    // Function to check if a given date is a Sunday
+    function isSunday(dateStr) {
+        const date = new Date(dateStr);
+        return date.getDay() === 0; // Sunday is represented by 0
+    }
 
-            // Fetch data when the page loads
-            fetchData();
-        </script>
-        <script>
+    // Function to get depot data for a specific date and division
+    function getDepotDataForDateAndDivision(date, division) {
+        if (divisionData[division] && divisionData[division].depotData[date]) {
+            return divisionData[division].depotData[date];
+        }
+        return [];
+    }
+
+    // Function to generate random color for each division's line
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 9; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    // Fetch data when the page loads
+    fetchData();
+</script>
+
+       <script>
             fetch('../database/chart_kmpl.php') // Replace with your actual PHP script path
                 .then(response => response.json())
                 .then(data => {

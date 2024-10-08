@@ -39,7 +39,7 @@ try {
 
     // Bind the date parameters
     $stmt->bind_param('ss', $start_date, $end_date);
-
+ 
     // Execute the statement
     $stmt->execute();
     $result = $stmt->get_result();

@@ -187,7 +187,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                         <div class="col mr-0">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Driver Employees</div>
                             <div class="h6 mb-0 font-weight-bold text-gray-800" id="driver-count">
-                                <span class="loading">Drivers: Loading...</span>
+                                <span class="loading">Drivers: <i class="fa-solid fa-spinner fa-spin fa-lg"></i></span>
                             </div>
                             <?php
                             $session_division = $_SESSION['DIVISION_ID']; // Session-based division
@@ -227,7 +227,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                         <div class="col mr-0">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Conductor Employees</div>
                             <div class="h6 mb-0 font-weight-bold text-gray-800" id="conductor-count">
-                                <span class="loading">Conductors: Loading...</span>
+                                <span class="loading">Conductors: <i class="fa-solid fa-spinner fa-spin fa-lg"></i></span>
                             </div>
                         </div>
                         <div class="col-auto">
@@ -268,7 +268,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                         <div class="col mr-0">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">DCC Employees</div>
                             <div class="h6 mb-0 font-weight-bold text-gray-800" id="dcc-count">
-                                <span class="loading">DCC: Loading...</span>
+                                <span class="loading">DCC: <i class="fa-solid fa-spinner fa-spin fa-lg"></i></span>
                             </div>
                                     <?php
                                     $session_division = $_SESSION['DIVISION_ID']; // Session-based division

@@ -108,6 +108,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
                 'ORDWS' => 'Vehicles Off Road at DWS',
                 'ORRWY' => 'Vehicles Off Road at RWY',
                 'CC' => 'Vehicles Withdrawn for CC',
+                'wup1' => 'Vehicles Work Under Progress at Depot',
                 'loan' => 'Vehicles loan given to other Depot',
                 'wup' => 'Vehicles Withdrawn for Fair',
                 'Police' => 'Vehicles at Police Station',

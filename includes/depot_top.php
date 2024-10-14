@@ -148,7 +148,7 @@ confirm_logged_in();
               <p style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ | Daily Vehicle Position</p>
             </div>
           </div>
-          <nav class="navbar navbar-expand-md" style="background-color: #bfc9ca;">
+          <nav class="navbar navbar-expand-md" style="background-color: #bfc9ca;padding:0px 0px;margin: bottom 0px;">
 
             <div class="container-fluid">
               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
@@ -347,7 +347,7 @@ confirm_logged_in();
             </div>
           </nav>
         </div>
-        <br><br><br><br>
+        <br><br><br><br><br>
         <!-- End of Topbar -->
         <script>
           $(document).ready(function () {

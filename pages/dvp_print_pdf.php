@@ -11,7 +11,7 @@ if (isset($_GET['selected_date'])) {
     $division = $_SESSION['DIVISION_ID'];
     $depot = $_SESSION['DEPOT_ID'];
 
-    $sql = "SELECT  schedules, vehicles, spare, spareP, docking, wup, ORDepot, ORDWS, ORRWY, CC,loan, Police, notdepot, ORTotal, available, ES FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$selectedDate'";
+    $sql = "SELECT  schedules, vehicles, spare, spareP, docking, ORDepot, ORDWS, ORRWY, CC, wup1, loan, wup, Police, notdepot, ORTotal, available, ES FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$selectedDate'";
 
     $result = $db->query($sql);
 
@@ -21,14 +21,18 @@ if (isset($_GET['selected_date'])) {
 
         // Set document information
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('Your Name');
-        $pdf->SetTitle('DVP Report');
-        $pdf->SetSubject('DVP Report');
+        $pdf->SetAuthor('KKRTC');
+        $formattedDate = date('d-m-Y', strtotime($selectedDate));
+
+        // Set the title and subject with the formatted date
+        $pdf->SetTitle('DVP Print');
+        $pdf->SetSubject('DVP Print Date: ' . $formattedDate);
         $pdf->SetKeywords('DVP, Report, KKRTC');
 
         // Remove default header/footer
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
+        $pdf->SetCellPadding(2); // Set padding for all table cells
 
         // Add a page
         $pdf->AddPage();
@@ -59,6 +63,7 @@ if (isset($_GET['selected_date'])) {
             'CC' => 'Vehicles Withdrawn for CC',
             'loan' => 'Vehicles loan given to other Depot/Training Center',
             'wup' => 'Vehicles Withdrawn for Fair',
+            'wup1' => 'Vehicles Work Under Progress at Depot',
             'Police' => 'Vehicles at Police Station',
             'notdepot' => 'Vehicles Not Arrived to Depot',
             'Dealer' => 'Vehicles Held at Dealer Point',
@@ -69,10 +74,11 @@ if (isset($_GET['selected_date'])) {
 
         // Table header
         $html .= '<table style="width: 100%; border-collapse: collapse; border: 2px solid black;">
-            <tr style="background-color: white;">
-                <th style="padding: 18px; text-align: left; border: 2px solid black;"><b>Particulars</b></th>
-                <th style="padding: 18px; text-align: right; border: 2px solid black;"><b>DVP data</b></th>
-            </tr>';
+<tr style="background-color: white;">
+    <th style="padding: 18px 18px 30px 18px; text-align: left; border: 1px solid black; width: 70%;"><b>Particulars</b></th>
+    <th style="padding: 18px 18px 30px 18px; text-align: right; border: 1px solid black; width: 30%;"><b>DVP data</b></th>
+</tr>';
+
 
         // Fetch data and add rows
         while ($row = $result->fetch_assoc()) {
@@ -88,7 +94,7 @@ if (isset($_GET['selected_date'])) {
         $html .= '</table>';
 
         // Footer section
-        $html .= '<br><br><br><br><table style="width: 100%; margin-top: 50px;">
+        $html .= '<br><br><br><table style="width: 100%; margin-top: 50px;">
                     <tr>
                         <td style="text-align: left;"><b>CW</b></td>
                         <td style="text-align: center;"><b>CM/AWS</b></td>

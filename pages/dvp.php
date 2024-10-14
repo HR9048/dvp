@@ -95,7 +95,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         /* For large devices (desktops) */
         @media only screen and (min-width: 993px) {
             .input-group-text {
-                width: 350px;
+                width: 450px;
                 text-align: left;
                 /* Adjust alignment as needed */
             }
@@ -107,7 +107,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         }
     </style>
 
-    <div class="container" style="width: 80%;">
+    <div class="container" style="width: 90%;">
         <form id="dvpForm" action="save_dvp.php" method="post">
             <div class="form-group col-md-6">
                 <div class="input-group">
@@ -232,6 +232,15 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 <div class="form-group col-md-6">
                     <div class="input-group">
                         <div class="input-group-prepend">
+                            <span class="input-group-text">Vehicle Work Under Progress at Depot:</span>
+                        </div>
+                        <input type="number" class="form-control" id="wup1" name="wup1" oninput="calculateDifference()"
+                            required>
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
                             <span class="input-group-text">Vehicles loan given to other Depot/Training Center:</span>
                         </div>
                         <input type="number" class="form-control" id="loan" name="loan" oninput="calculateDifference()"
@@ -299,6 +308,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             var vehicles = parseInt(document.getElementById("vehicles").value);
             var docking = parseInt(document.getElementById("docking").value);
             var wup = parseInt(document.getElementById("wup").value);
+            var wup1 = parseInt(document.getElementById("wup1").value);
             var ORDepot = parseInt(document.getElementById("ORDepot").value);
             var ORDWS = parseInt(document.getElementById("ORDWS").value);
             var ORRWY = parseInt(document.getElementById("ORRWY").value);
@@ -308,6 +318,35 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             var notdepot = parseInt(document.getElementById("notdepot").value);
             var loan = parseInt(document.getElementById("loan").value);
 
+    // Create an array to store all input fields and their corresponding IDs
+    var inputs = [
+        { value: schedules, id: "schdules" },
+        { value: vehicles, id: "vehicles" },
+        { value: docking, id: "docking" },
+        { value: wup, id: "wup" },
+        { value: wup1, id: "wup1" },
+        { value: ORDepot, id: "ORDepot" },
+        { value: ORDWS, id: "ORDWS" },
+        { value: ORRWY, id: "ORRWY" },
+        { value: CC, id: "CC" },
+        { value: Police, id: "Police" },
+        { value: Dealer, id: "Dealer" },
+        { value: notdepot, id: "notdepot" },
+        { value: loan, id: "loan" }
+    ];
+
+    // Check if any input is negative
+    for (var i = 0; i < inputs.length; i++) {
+        if (inputs[i].value < 0) {
+            // Alert the user
+            alert("Please Enter a value Greater then 0");
+
+            // Set the value of the corresponding input field to null
+            document.getElementById(inputs[i].id).value = '';
+
+            return; // Stop the calculation if a negative value is detected
+        }
+    }
             // Calculate the difference to find the number of spare vehicles
             var spare = (vehicles - schedules);
 
@@ -321,7 +360,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             document.getElementById("spareP").value = sparePercentage;
 
             // Calculate the difference to find the number of Off road total vehicles
-            var ORTotal = (docking + wup + ORDepot + ORDWS + ORRWY + CC + Police + notdepot + Dealer + loan);
+            var ORTotal = (docking + wup + ORDepot + ORDWS + ORRWY + CC + Police + notdepot + Dealer + loan + wup1);
 
             // Update the Number of off road Vehicles field
             document.getElementById("ORTotal").value = ORTotal;
@@ -352,7 +391,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 // Send AJAX request
                 $.ajax({
                     type: 'POST',
-                    url: 'save_dvp.php',
+                    url: '../database/save_dvp.php',
                     data: formData,
                     dataType: 'json', // Expect JSON response
                     success: function (response) {

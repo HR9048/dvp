@@ -67,6 +67,7 @@ if ($_SESSION['TYPE'] == 'DEPOT') {
             'ORDWS' => 'Vehicles Off Road at DWS',
             'ORRWY' => 'Vehicles Off Road at RWY',
             'CC' => 'Vehicles Withdrawn for CC',
+            'wup1' => 'Vehicles Work Under progress at Depot',
             'loan' => 'Vehicles loan given to other Depot/Training Center',
             'wup' => 'Vehicles Withdrawn for Fair',
             'Police' => 'Vehicles at Police Station',
@@ -91,7 +92,7 @@ if ($_SESSION['TYPE'] == 'DEPOT') {
         $depot = $_SESSION['DEPOT_ID'];
 
         // Retrieve data from the database based on session variables and selected date
-        $sql = "SELECT  schedules, vehicles, spare, spareP, docking, wup, ORDepot, ORDWS, ORRWY, CC,loan, Police, notdepot, ORTotal, available, ES FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$selectedDate'";
+        $sql = "SELECT  schedules, vehicles, spare, spareP, docking, ORDepot, ORDWS, ORRWY, CC, wup1, loan, wup, Police, notdepot, ORTotal, available, ES FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$selectedDate'";
 
         $result = $db->query($sql);
 

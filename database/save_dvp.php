@@ -1,7 +1,7 @@
 <?php
 // Include the necessary files
 include '../includes/connection.php'; // Include the file where the database connection is established
-include 'session.php'; // Include the file for session management
+include '../pages/session.php'; // Include the file for session management
 confirm_logged_in();
 // Create an associative array to store response data
 $response = array();
@@ -16,6 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $spareP = $_POST['spareP'];
     $docking = $_POST['docking'];
     $wup = $_POST['wup'];
+    $wup1 = $_POST['wup1'];
     $ORDepot = $_POST['ORDepot'];
     $ORDWS = $_POST['ORDWS'];
     $ORRWY = $_POST['ORRWY'];
@@ -62,6 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             !isset($spareP) ||
             !isset($docking) ||
             !isset($wup) ||
+            !isset($wup1) ||
             !isset($ORDepot) ||
             !isset($ORDWS) ||
             !isset($ORRWY) ||
@@ -79,10 +81,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $response['message'] = 'Please fill all required fields.';
         } else {
             // Prepared statement to prevent SQL injection
-            $stmt = $db->prepare("INSERT INTO dvp_data (date, schedules, vehicles, spare, spareP, docking, wup, ORDepot, ORDWS, ORRWY, CC, Police, Dealer, notdepot, ORTotal, available, ES, division, depot, username, designation, submission_datetime, loan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $db->prepare("INSERT INTO dvp_data (date, schedules, vehicles, spare, spareP, docking, wup, ORDepot, ORDWS, ORRWY, CC, Police, Dealer, notdepot, ORTotal, available, ES, division, depot, username, designation, submission_datetime, loan, wup1) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             // Bind parameters
-            $stmt->bind_param("siiidiiiiiiiiiiiiiisssi", $date, $schedules, $vehicles, $spare, $spareP, $docking, $wup, $ORDepot, $ORDWS, $ORRWY, $CC, $Police, $Dealer, $notdepot, $ORTotal, $available, $ES, $division, $depot, $username, $designation, $submissionDateTime, $loan);
+            $stmt->bind_param("siiidiiiiiiiiiiiiiisssii", $date, $schedules, $vehicles, $spare, $spareP, $docking, $wup, $ORDepot, $ORDWS, $ORRWY, $CC, $Police, $Dealer, $notdepot, $ORTotal, $available, $ES, $division, $depot, $username, $designation, $submissionDateTime, $loan, $wup1);
 
             // Execute prepared statement
             if ($stmt->execute()) {

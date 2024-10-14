@@ -126,15 +126,15 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
                                             // Prepare the SQL query to count the number of employees based on division and depot names
                                             //$query = "SELECT COUNT(*) FROM employee 
-                //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                //WHERE location.division = '{$_SESSION['DIVISION']}' AND location.depot = '{$_SESSION['DEPOT']}'";
-
+                                            //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
+                                            //WHERE location.division = '{$_SESSION['DIVISION']}' AND location.depot = '{$_SESSION['DEPOT']}'";
+                                
                                             // Execute the query
                                             //$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
+                                
                                             // Fetch the count
                                             //$row = mysqli_fetch_array($result);
-
+                                
                                             // Output the count
                                             //echo "Number of employees: $row[0]";
                                             ?>
@@ -183,46 +183,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                         </div>
                     </div>
                 </div>
-                <!--<div class="col-md-3">
-                    <div class="col-md-12 mb-3">
-                        <div class="card border-left-danger shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-0">
-                                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Account</div>
-                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                            <?php
-                                            //$session_division = $_SESSION['DIVISION']; // Assuming you're getting this from a session variable
-                                            //$session_depot = $_SESSION['DEPOT']; // Assuming you're getting this from a session variable
-                                
-                                            // Prepare the SQL query to count registered accounts based on division and depot names
-                                            //$query = "SELECT COUNT(*) FROM users 
-                //INNER JOIN employee ON users.PF_ID = employee.PF_ID 
-                //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                //WHERE users.TYPE_ID = 3 
-                //AND location.DIVISION = '$session_division' 
-                //AND location.DEPOT = '$session_depot'";
-
-                                            // Execute the query
-                                            //$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-                                            // Fetch the count
-                                            //$row = mysqli_fetch_array($result);
-
-                                            // Output the count
-                                            //echo "Registered accounts: $row[0]";
-                                            ?>
-                                            Record(s)
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fa-solid fa-user-check fa-beat fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>-->
             <?php } ?>
         <?php }
         if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
@@ -242,7 +202,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                     </div>
                                     <div class="h6 mb-0 font-weight-bold text-gray-800">
                                         <?php
-                                        $apiUrl = 'http://localhost/data.php';
+                                        $apiUrl = 'http://192.168.1.32:50/data1.php';
 
                                         $apiUrl .= '?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
@@ -325,7 +285,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         <?php
 
                                         // Append division and depot as query parameters to the URL
-                                        $apiUrl = 'http://localhost/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+                                        $apiUrl = 'http://192.168.1.32:50/data1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
                                         // Initialize cURL session
                                         $ch = curl_init($apiUrl);
@@ -406,7 +366,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         <div class="col-auto">
                                             <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
                                                 <?php
-                                                $apiUrl = 'http://localhost/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+                                                $apiUrl = 'http://192.168.1.32:50/data1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
                                                 // Initialize cURL session
                                                 $ch = curl_init($apiUrl);
@@ -443,26 +403,26 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                                 ?>
                                                 Record(s)
                                                 <?php
-                                        $session_division = $_SESSION['DIVISION_ID']; // Assuming you're getting this from a session variable
-                                        $session_depot = $_SESSION['DEPOT_ID']; // Assuming you're getting this from a session variable
-                                
-                                        // Prepare the SQL query to count registered accounts based on division and depot names
-                                        $query2 = "SELECT COUNT(*)
+                                                $session_division = $_SESSION['DIVISION_ID']; // Assuming you're getting this from a session variable
+                                                $session_depot = $_SESSION['DEPOT_ID']; // Assuming you're getting this from a session variable
+                                        
+                                                // Prepare the SQL query to count registered accounts based on division and depot names
+                                                $query2 = "SELECT COUNT(*)
                                         FROM private_employee
                                         INNER JOIN location ON private_employee.division_id = location.division_id and private_employee.depot_id = location.depot_id
                                         WHERE private_employee.status = '1' and EMP_DESGN_AT_APPOINTMENT='DRIVER-CUM-CONDUCTOR'
                                         AND location.division_id = '$session_division' 
                                         AND location.depot_id = '$session_depot'";
-                                        // Execute the query
-                                        $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
+                                                // Execute the query
+                                                $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
 
-                                        // Fetch the count
-                                        $row2 = mysqli_fetch_array($result2);
+                                                // Fetch the count
+                                                $row2 = mysqli_fetch_array($result2);
 
-                                        // Output the count
-                                        echo "Private DCC: $row2[0]";
-                                        ?>
-                                        Record(s)
+                                                // Output the count
+                                                echo "Private DCC: $row2[0]";
+                                                ?>
+                                                Record(s)
                                             </div>
                                         </div>
                                     </div>
@@ -507,6 +467,100 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             </div>
         <?php } ?>
     </div>
+    <!--<div class="col-lg-8 mb-4">
+        <div class="container">
+            <h1>KMPL Data by Division</h1>
+            <canvas id="dvpChart"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        fetch('../database/depot_kmpl.php')
+            .then(response => response.json())
+            .then(data => {
+                const labels = [...new Set(data.map(item => item.date))]; // Unique dates
+                const depots = [...new Set(data.map(item => item.depot))]; // Unique depots
+
+                const datasets = depots.map(depot => {
+                    return {
+                        label: depot,
+                        data: labels.map(date => {
+                            const entry = data.find(item => item.depot === depot && item.date === date);
+                            return entry ? {
+                                x: date, // X-axis is date
+                                y: entry.ORDepot_count + entry.ORDWS_count + entry.Police_count + entry.Dealer_count, // Y-axis is total count
+                                details: entry // Store full data in each point for tooltip access
+                            } : { x: date, y: 0, details: { ORDepot_count: 0, ORDWS_count: 0, Police_count: 0, Dealer_count: 0 } };
+                        }),
+                        borderColor: getRandomColor(),
+                        fill: false,
+                        tension: 0.1,
+                    };
+                });
+
+                const ctx = document.getElementById('dvpChart').getContext('2d');
+                console.log("Datasets: ", datasets); // Check dataset values
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels, // X-axis (dates)
+                        datasets: datasets, // Y-axis data
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false,
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const data = context.raw.details;
+                                        return [
+                                            `Total Off-road: ${data.total_offroad}`,
+                                            `Depot Off-road: ${data.ORDepot_count}`,
+                                            `DWS Off-road: ${data.ORDWS_count}`,
+                                            `Held at Police: ${data.Police_count}`,
+                                            `Held at Dealer: ${data.Dealer_count}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                min: 0,
+                                max: 10000, // Set max for testing
+                                title: {
+                                    display: true,
+                                    text: 'Total Counts'
+                                }
+                            }
+                        }
+
+                    }
+                });
+
+                function getRandomColor() {
+                    const letters = '0123456789ABCDEF';
+                    let color = '#';
+                    for (let i = 0; i < 6; i++) {
+                        color += letters[Math.floor(Math.random() * 16)];
+                    }
+                    return color;
+                }
+            });
+
+    </script>-->
     <?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";

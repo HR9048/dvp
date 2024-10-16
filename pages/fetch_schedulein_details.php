@@ -84,12 +84,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Hidden field to store scheduled arrival time
         echo '<input type="hidden" id="sch_arr_time" name="sch_arr_time" value="' . htmlspecialchars($schArrTime) . '">';
         echo '<input type="hidden" id="server_current_time" name="server_current_time" value="' . htmlspecialchars($serverCurrentDateTimeFormatted) . '">';
+        echo '<input type="hidden" id="time_difference" name="time_difference">';
 
         echo '<div class="form-group" id="reason_field" style="display:none;">';
         echo '<label for="reason">Reason</label>';
         echo '<input class="form-control" type="text" id="reason" name="reason" placeholder="Enter reason">';
         echo '</div>';
-        echo '<input type="text" id="time_dff" name="time_dff" value="">';
 
         echo '<div class="form-group">';
         echo '<button type="submit" class="btn btn-primary">Submit</button>';
@@ -105,5 +105,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 $db->close();
 ?>
+<script>
+    function handleArrivalTimeChange() {
+        // Get scheduled arrival time and actual arrival time from the inputs
+        var schArrTime = document.getElementById('sch_arr_time').value;
+        var arrTime = document.getElementById('arr_time').value;
 
+        // Convert time strings to Date objects
+        var schArrDate = new Date("1970-01-01T" + schArrTime + ":00Z");
+        var arrDate = new Date("1970-01-01T" + arrTime + ":00Z");
 
+        // Calculate the difference in milliseconds
+        var diffMs = arrDate - schArrDate;
+
+        // Convert difference to minutes
+        var diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+        // Calculate the difference in hours and minutes
+        var diffHours = Math.floor(diffMinutes / 60);
+        var diffRemainingMinutes = diffMinutes % 60;
+
+        // Show the time difference
+        var timeDifferenceElement = document.getElementById('time_difference');
+        if (diffHours || diffRemainingMinutes) {
+            timeDifferenceElement.innerHTML = "Time Difference: " + 
+                (diffHours !== 0 ? diffHours + " hours " : "") +
+                (diffRemainingMinutes !== 0 ? Math.abs(diffRemainingMinutes) + " minutes" : "");
+        } else {
+            timeDifferenceElement.innerHTML = "No difference";
+        }
+
+        // Logic to show or hide reason field based on time difference
+        var reasonField = document.getElementById('reason_field');
+        var reasonInput = document.getElementById('reason');
+
+        if (diffMinutes > 30) {
+            reasonField.style.display = 'block';
+            reasonInput.setAttribute('placeholder', 'Enter reason for late arrival');
+            reasonInput.setAttribute('required', 'required');
+        } else if (diffMinutes < -30) {
+            reasonField.style.display = 'block';
+            reasonInput.setAttribute('placeholder', 'Enter reason for early arrival');
+            reasonInput.setAttribute('required', 'required');
+        } else {
+            reasonField.style.display = 'none';
+            reasonInput.removeAttribute('required');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('arr_time').addEventListener('change', handleArrivalTimeChange);
+    });
+</script>

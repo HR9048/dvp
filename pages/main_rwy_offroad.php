@@ -7,21 +7,21 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! YouR session is experied please Login'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' ||$_SESSION['JOB_TITLE'] == 'CO_STORE' ) {
-$formatted_date = date('d/m/Y');
-?>
-<div class="container1">
-    <h1 style="text-align:center;">Kalyana Karnataka Road Transport Corporation (KKRTC)</h1><br><br>
-    <h2 style="display: inline-block; width: 33%; text-align:left; padding-left: 100px;">CENTRAL OFFICE</h2>
-    <h2 style="display: inline-block; width: 33%;text-align:center;">KALABURAGI</h2>
-    <h2 style="display: inline-block; width: 33%; text-align:right;">
-        <?php echo $formatted_date; ?>
-    </h2>
-    <br><br>
-    <?php
-                    // Fetching latest details of vehicles that are off-road and belong to the user's division
-                    
-                    $sql = "SELECT r.*,
+if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || $_SESSION['JOB_TITLE'] == 'CO_STORE') {
+    $formatted_date = date('d/m/Y');
+    ?>
+    <div class="container1">
+        <h1 style="text-align:center;">Kalyana Karnataka Road Transport Corporation (KKRTC)</h1><br><br>
+        <h2 style="display: inline-block; width: 33%; text-align:left; padding-left: 100px;">CENTRAL OFFICE</h2>
+        <h2 style="display: inline-block; width: 33%;text-align:center;">KALABURAGI</h2>
+        <h2 style="display: inline-block; width: 33%; text-align:right;">
+            <?php echo $formatted_date; ?>
+        </h2>
+        <br><br>
+        <?php
+        // Fetching latest details of vehicles that are off-road and belong to the user's division
+    
+        $sql = "SELECT r.*,
                l.depot AS depot_name,
                br.emission_norms AS reg_emission_norms,
                br.wheel_base,
@@ -46,132 +46,132 @@ $formatted_date = date('d/m/Y');
 
 
 
-                    $result = mysqli_query($db, $sql) or die(mysqli_error($db));
+        $result = mysqli_query($db, $sql) or die(mysqli_error($db));
 
-                    // Initialize variables for rowspan logic
-                    $bus_numbers = [];
-                    $bus_number_rowspans_count = [];
+        // Initialize variables for rowspan logic
+        $bus_numbers = [];
+        $bus_number_rowspans_count = [];
 
-                    // Group data by bus number
+        // Group data by bus number
+        while ($row = mysqli_fetch_assoc($result)) {
+            $bus_number = $row['bus_number'];
+            if (!in_array($bus_number, $bus_numbers)) {
+                $bus_numbers[] = $bus_number;
+            }
+            if (!isset($bus_number_rowspans_count[$bus_number])) {
+                $bus_number_rowspans_count[$bus_number] = 0;
+            }
+            $bus_number_rowspans_count[$bus_number]++;
+        }
+        mysqli_data_seek($result, 0); // Reset the result pointer to the beginning
+        $formatted_date = date('d/m/Y');
+
+        ?>
+        <br><br>
+        <h2 style="text-align:center;">RWY Off-Road</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sl. No</th>
+                    <th>Division</th>
+                    <th style="width:100px">Depot</th>
+                    <th>Bus Number</th>
+                    <th>Make</th>
+                    <th>Emission Norms</th>
+                    <th>Received Date</th>
+                    <th>Number of days</th>
+                    <th>Work Reason</th>
+                    <th>Work Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                // Initialize serial number counter
+                $serial_number = 1;
+
+                // Loop through each bus number
+                foreach ($bus_numbers as $bus_number) {
+                    // Fetch all rows for the current bus number
+                    $rows = [];
+                    mysqli_data_seek($result, 0); // Reset the result pointer
                     while ($row = mysqli_fetch_assoc($result)) {
-                        $bus_number = $row['bus_number'];
-                        if (!in_array($bus_number, $bus_numbers)) {
-                            $bus_numbers[] = $bus_number;
+                        if ($row['bus_number'] == $bus_number) {
+                            $rows[] = $row;
                         }
-                        if (!isset($bus_number_rowspans_count[$bus_number])) {
-                            $bus_number_rowspans_count[$bus_number] = 0;
-                        }
-                        $bus_number_rowspans_count[$bus_number]++;
                     }
-                    mysqli_data_seek($result, 0); // Reset the result pointer to the beginning
-                    $formatted_date = date('d/m/Y');
 
-                    ?>
-                    <br><br>
-                    <h2 style="text-align:center;">RWY Off-Road</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Sl. No</th>
-                                <th>Division</th>
-                                <th>Depot</th>
-                                <th>Bus Number</th>
-                                <th>Make</th>
-                                <th>Emission Norms</th>
-                                <th>Received Date</th>
-                                <th>Number of days</th>
-                                <th>Work Reason</th>
-                                <th>Work Status</th>
-                                <th>Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            // Initialize serial number counter
-                            $serial_number = 1;
+                    // Output data for each row
+                    foreach ($rows as $key => $row) {
+                        echo "<tr>";
 
-                            // Loop through each bus number
-                            foreach ($bus_numbers as $bus_number) {
-                                // Fetch all rows for the current bus number
-                                $rows = [];
-                                mysqli_data_seek($result, 0); // Reset the result pointer
-                                while ($row = mysqli_fetch_assoc($result)) {
-                                    if ($row['bus_number'] == $bus_number) {
-                                        $rows[] = $row;
-                                    }
-                                }
-
-                                // Output data for each row
-                                foreach ($rows as $key => $row) {
-                                    echo "<tr>";
-
-                                    // Output serial number only for the first row of the current bus number
-                                    if ($key === 0) {
-                                        echo "<td rowspan='" . count($rows) . "'>$serial_number</td>";
-                                        echo "<td rowspan='" . count($rows) . "'>" . $row['division_name'] . "</td>";
-                                        echo "<td rowspan='" . count($rows) . "'>" . $row['depot_name'] . "</td>";
-                                        echo "<td rowspan='" . count($rows) . "'>" . $row['bus_number'] . "</td>";
-                                        echo "<td rowspan='" . count($rows) . "'>" . $row['make'] . "</td>";
-                                        // Check the emission norms and wheelbase to determine if it should be "BS-3 Midi"
-                    if ($row['reg_emission_norms'] == 'BS-3' && $row['wheel_base'] == '193 Midi') {
-                        $emission_norms = 'BS-3 Midi';
-                    } else {
-                        $emission_norms = $row['reg_emission_norms'];
-                    }
-                    
-                    echo "<td rowspan='" . count($rows) . "'>" . $emission_norms . "</td>";
-                }
-                                    // Extract data from the row
-                                    $offRoadFromDate = $row['received_date'];
-                                    $partsRequired = $row['work_reason'];
-                                    $workstatus = $row['work_status'];
-                                    $remarks = $row['remarks'];
-                                    $daysOffRoad = $row['no_of_days'];
-                                    if ($daysOffRoad === null) {
-                                        $offRoadDate = new DateTime($offRoadFromDate);
-                                        $today = new DateTime();
-                                        $daysOffRoad = $today->diff($offRoadDate)->days;
-                                    }
-
-                                    // Output the data in table rows
-                                    echo "<td>" . date('d/m/Y', strtotime($offRoadFromDate)) . "</td>";
-                                    echo "<td>$daysOffRoad</td>";
-                                    echo "<td>$partsRequired</td>";
-                                    echo "<td>$workstatus</td>";
-                                    echo "<td>$remarks</td>";
-                                    echo "</tr>";
-                                }
-
-                                // Increment the serial number
-                                $serial_number++;
+                        // Output serial number only for the first row of the current bus number
+                        if ($key === 0) {
+                            echo "<td rowspan='" . count($rows) . "'>$serial_number</td>";
+                            echo "<td rowspan='" . count($rows) . "'>" . $row['division_name'] . "</td>";
+                            echo "<td rowspan='" . count($rows) . "'>" . $row['depot_name'] . "</td>";
+                            echo "<td rowspan='" . count($rows) . "'>" . $row['bus_number'] . "</td>";
+                            echo "<td rowspan='" . count($rows) . "'>" . $row['make'] . "</td>";
+                            // Check the emission norms and wheelbase to determine if it should be "BS-3 Midi"
+                            if ($row['reg_emission_norms'] == 'BS-3' && $row['wheel_base'] == '193 Midi') {
+                                $emission_norms = 'BS-3 Midi';
+                            } else {
+                                $emission_norms = $row['reg_emission_norms'];
                             }
-                            ?>
-                        </tbody>
-                    </table>
 
-                    <br><br>
-                    <h2 style="text-align:center;">RWY Summary</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Division</th>
-                                <th>In Yard</th>
-                                <th>Dismantling</th>
-                                <th>Proposal for Scrap</th>
-                                <th>Structure</th>
-                                <th>Paneling</th>
-                                <th>Waiting for Spares</th>
-                                <th>Pre Final</th>
-                                <th>Final</th>
-                                <th>Sent to Firm for Repair</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
+                            echo "<td rowspan='" . count($rows) . "'>" . $emission_norms . "</td>";
+                        }
+                        // Extract data from the row
+                        $offRoadFromDate = $row['received_date'];
+                        $partsRequired = $row['work_reason'];
+                        $workstatus = $row['work_status'];
+                        $remarks = $row['remarks'];
+                        $daysOffRoad = $row['no_of_days'];
+                        if ($daysOffRoad === null) {
+                            $offRoadDate = new DateTime($offRoadFromDate);
+                            $today = new DateTime();
+                            $daysOffRoad = $today->diff($offRoadDate)->days;
+                        }
 
-                            // Fetch data from database
-                            $sql = "SELECT 
+                        // Output the data in table rows
+                        echo "<td>" . date('d/m/Y', strtotime($offRoadFromDate)) . "</td>";
+                        echo "<td>$daysOffRoad</td>";
+                        echo "<td>$partsRequired</td>";
+                        echo "<td>$workstatus</td>";
+                        echo "<td>$remarks</td>";
+                        echo "</tr>";
+                    }
+
+                    // Increment the serial number
+                    $serial_number++;
+                }
+                ?>
+            </tbody>
+        </table>
+
+        <br><br>
+        <h2 style="text-align:center;">RWY Summary</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:160px">Division</th>
+                    <th>In Yard</th>
+                    <th>Dismantling</th>
+                    <th>Proposal for Scrap</th>
+                    <th>Structure</th>
+                    <th>Paneling</th>
+                    <th>Waiting for Spares</th>
+                    <th>Pre Final</th>
+                    <th>Final</th>
+                    <th>Sent to Firm for Repair</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+
+                // Fetch data from database
+                $sql = "SELECT 
             l.division AS Division,
             SUM(CASE WHEN t1.work_status = 'In Yard' THEN 1 ELSE 0 END) AS `In Yard`,
             SUM(CASE WHEN t1.work_status = 'Dismantling' THEN 1 ELSE 0 END) AS Dismantling,
@@ -194,71 +194,71 @@ $formatted_date = date('d/m/Y');
 
 
 
-                            $result = $db->query($sql);
+                $result = $db->query($sql);
 
-                            // Display data in table
-                            $totalArray = ['In Yard' => 0, 'Dismantling' => 0, 'Proposal for Scrap' => 0, 'Structure' => 0, 'Paneling' => 0, 'Waiting for spares from Division' => 0, 'Pre Final' => 0, 'Final' => 0, 'Sent to firm for repair' => 0];
-                            if ($result->num_rows > 0) {
-                                while ($row = $result->fetch_assoc()) {
-                                    echo "<tr>";
-                                    echo "<td>" . $row['Division'] . "</td>";
-                                    echo "<td>" . $row['In Yard'] . "</td>";
-                                    echo "<td>" . $row['Dismantling'] . "</td>";
-                                    echo "<td>" . $row['Proposal for Scrap'] . "</td>";
-                                    echo "<td>" . $row['Structure'] . "</td>";
-                                    echo "<td>" . $row['Paneling'] . "</td>";
-                                    echo "<td>" . $row['Waiting for spares from Division'] . "</td>";
-                                    echo "<td>" . $row['Pre Final'] . "</td>";
-                                    echo "<td>" . $row['Final'] . "</td>";
-                                    echo "<td>" . $row['Sent to firm for repair'] . "</td>";
-                                    // Calculate total
-                                    $total = $row['In Yard'] + $row['Dismantling'] + $row['Proposal for Scrap'] + $row['Structure'] + $row['Paneling'] + $row['Waiting for spares from Division'] + $row['Pre Final'] + $row['Final'] + $row['Sent to firm for repair'];
-                                    echo "<td><b>$total</b></td>";
-                                    echo "</tr>";
-                                    // Add to total array
-                                    $totalArray['In Yard'] += $row['In Yard'];
-                                    $totalArray['Dismantling'] += $row['Dismantling'];
-                                    $totalArray['Proposal for Scrap'] += $row['Proposal for Scrap'];
-                                    $totalArray['Structure'] += $row['Structure'];
-                                    $totalArray['Paneling'] += $row['Paneling'];
-                                    $totalArray['Waiting for spares from Division'] += $row['Waiting for spares from Division'];
-                                    $totalArray['Pre Final'] += $row['Pre Final'];
-                                    $totalArray['Final'] += $row['Final'];
-                                    $totalArray['Sent to firm for repair'] += $row['Sent to firm for repair'];
-                                }
-                            } else {
-                                echo "<tr><td colspan='11'>No vehicles in RWY</td></tr>";
-                            }
+                // Display data in table
+                $totalArray = ['In Yard' => 0, 'Dismantling' => 0, 'Proposal for Scrap' => 0, 'Structure' => 0, 'Paneling' => 0, 'Waiting for spares from Division' => 0, 'Pre Final' => 0, 'Final' => 0, 'Sent to firm for repair' => 0];
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        echo "<tr>";
+                        echo "<td>" . $row['Division'] . "</td>";
+                        echo "<td>" . $row['In Yard'] . "</td>";
+                        echo "<td>" . $row['Dismantling'] . "</td>";
+                        echo "<td>" . $row['Proposal for Scrap'] . "</td>";
+                        echo "<td>" . $row['Structure'] . "</td>";
+                        echo "<td>" . $row['Paneling'] . "</td>";
+                        echo "<td>" . $row['Waiting for spares from Division'] . "</td>";
+                        echo "<td>" . $row['Pre Final'] . "</td>";
+                        echo "<td>" . $row['Final'] . "</td>";
+                        echo "<td>" . $row['Sent to firm for repair'] . "</td>";
+                        // Calculate total
+                        $total = $row['In Yard'] + $row['Dismantling'] + $row['Proposal for Scrap'] + $row['Structure'] + $row['Paneling'] + $row['Waiting for spares from Division'] + $row['Pre Final'] + $row['Final'] + $row['Sent to firm for repair'];
+                        echo "<td><b>$total</b></td>";
+                        echo "</tr>";
+                        // Add to total array
+                        $totalArray['In Yard'] += $row['In Yard'];
+                        $totalArray['Dismantling'] += $row['Dismantling'];
+                        $totalArray['Proposal for Scrap'] += $row['Proposal for Scrap'];
+                        $totalArray['Structure'] += $row['Structure'];
+                        $totalArray['Paneling'] += $row['Paneling'];
+                        $totalArray['Waiting for spares from Division'] += $row['Waiting for spares from Division'];
+                        $totalArray['Pre Final'] += $row['Pre Final'];
+                        $totalArray['Final'] += $row['Final'];
+                        $totalArray['Sent to firm for repair'] += $row['Sent to firm for repair'];
+                    }
+                } else {
+                    echo "<tr><td colspan='11'>No vehicles in RWY</td></tr>";
+                }
 
-                            // Add Corporation row
-                            echo "<tr>";
-                            echo "<td><b>Corporation</b></td>";
-                            echo "<td><b>{$totalArray['In Yard']}</b></td>";
-                            echo "<td><b>{$totalArray['Dismantling']}</b></td>";
-                            echo "<td><b>{$totalArray['Proposal for Scrap']}</b></td>";
-                            echo "<td><b>{$totalArray['Structure']}</b></td>";
-                            echo "<td><b>{$totalArray['Paneling']}</b></td>";
-                            echo "<td><b>{$totalArray['Waiting for spares from Division']}</b></td>";
-                            echo "<td><b>{$totalArray['Pre Final']}</b></td>";
-                            echo "<td><b>{$totalArray['Final']}</b></td>";
-                            echo "<td><b>{$totalArray['Sent to firm for repair']}</b></td>";
-                            // Calculate total for corporation
-                            $totalCorporation = $totalArray['In Yard'] + $totalArray['Dismantling'] + $totalArray['Proposal for Scrap'] + $totalArray['Structure'] + $totalArray['Paneling'] + $totalArray['Waiting for spares from Division'] + $totalArray['Pre Final'] + $totalArray['Final'] + $totalArray['Sent to firm for repair'];
-                            echo "<td><b>$totalCorporation</b></td>";
-                            echo "</tr>";
+                // Add Corporation row
+                echo "<tr>";
+                echo "<td><b>Corporation</b></td>";
+                echo "<td><b>{$totalArray['In Yard']}</b></td>";
+                echo "<td><b>{$totalArray['Dismantling']}</b></td>";
+                echo "<td><b>{$totalArray['Proposal for Scrap']}</b></td>";
+                echo "<td><b>{$totalArray['Structure']}</b></td>";
+                echo "<td><b>{$totalArray['Paneling']}</b></td>";
+                echo "<td><b>{$totalArray['Waiting for spares from Division']}</b></td>";
+                echo "<td><b>{$totalArray['Pre Final']}</b></td>";
+                echo "<td><b>{$totalArray['Final']}</b></td>";
+                echo "<td><b>{$totalArray['Sent to firm for repair']}</b></td>";
+                // Calculate total for corporation
+                $totalCorporation = $totalArray['In Yard'] + $totalArray['Dismantling'] + $totalArray['Proposal for Scrap'] + $totalArray['Structure'] + $totalArray['Paneling'] + $totalArray['Waiting for spares from Division'] + $totalArray['Pre Final'] + $totalArray['Final'] + $totalArray['Sent to firm for repair'];
+                echo "<td><b>$totalCorporation</b></td>";
+                echo "</tr>";
 
-                            ?>
-                        </tbody>
-                    </table>
+                ?>
+            </tbody>
+        </table>
 
-</div>
-<!-- Print button -->
-<div class="text-center mt-3">
-    <button class="btn btn-primary" onclick="window.print()">Print</button>
-</div>
+    </div>
+    <!-- Print button -->
+    <div class="text-center mt-3">
+        <button class="btn btn-primary" onclick="window.print()">Print</button>
+    </div>
 
 
-<?php $db->close();
+    <?php $db->close();
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
     exit;

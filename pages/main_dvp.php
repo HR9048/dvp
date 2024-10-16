@@ -123,6 +123,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 'ORDWS' => 'Vehicles Off Road at DWS',
                 'ORRWY' => 'Vehicles Off Road at RWY',
                 'CC' => 'Vehicles Withdrawn for CC',
+                'wup1' => 'Vehicles Work Under Progress at Depot',
                 'loan' => 'Vehicles loan given to other depot',
                 'wup' => 'Vehicles Withdrawn for Fair',
                 'Police' => 'Vehicles at Police Station',

@@ -12,6 +12,28 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' ||$
 $sql = "SELECT *, DATEDIFF(CURDATE(), off_road_date) AS days_off_road FROM off_road_data WHERE status = 'off_road' ORDER BY division,depot, off_road_location ASC";
 $result = $db->query($sql);
 ?>
+<style>
+     /* Table styles */
+ table {
+     width: 100%;
+     border-collapse: collapse;
+     margin-top: 10px;
+     /* Add some space above the table */
+ }
+
+ th,td {
+     border: 2px solid black;
+     /* Apply border to table cells */
+     text-align: left;
+     font-size: 15px;
+     padding: 2px; /* Add padding to table cells */
+ }
+
+ th {
+     background-color: #f2f2f2;
+ }
+
+</style>
 <div class="text-center mt-3">
     <button class="btn btn-primary" onclick="window.print()">Print</button>
     <button class="btn btn-success" id="downloadExcel">Download Excel</button>
@@ -97,7 +119,7 @@ $result = $db->query($sql);
                         <tr>
                             <th rowspan="2">sl.no</th>
                             <th rowspan="2">DIVISION</th>
-                            <th colspan="2" style="text-align:center;">DEPOT</th>
+                            <th colspan="1" style="text-align:center;">DEPOT</th>
                             <th colspan="7" style="text-align:center;">DWS</th>
                             <!-- Colspan set to 6 for 5 sub-columns + DWS Total -->
                             <th rowspan="2">At DEALER</th>
@@ -106,7 +128,6 @@ $result = $db->query($sql);
                         </tr>
                         <tr>
                             <th>Off-Road</th>
-                            <th>WUP</th>
                             <th>FCR</th>
                             <th>HBR</th>
                             <th>AMW</th>
@@ -124,7 +145,6 @@ $result = $db->query($sql);
                             echo "<td>{$serial_number}</td>"; // Output serial number
                             echo "<td>{$row['DIVISION']}</td>";
                             echo "<td>{$row['DEPOT_COUNT']}</td>"; // Displaying the count of off-road instances for each depot
-                            echo "<td>{$row['DEPOT_WUP_COUNT']}</td>"; // Displaying the count of off-road instances for each depot
                             echo "<td>{$row['FCR/RTO']}</td>";
                             echo "<td>{$row['FCR/HBR']}</td>";
                             echo "<td>{$row['AMW']}</td>";
@@ -159,9 +179,7 @@ $result = $db->query($sql);
                             <td>
                                 <?php echo $total_DEPOT_COUNT; ?>
                             </td>
-                            <td>
-                                <?php echo $total_DEPOT_WUP_COUNT; ?>
-                            </td>
+                           
                             <td>
                                 <?php echo $total_FCR_RTO; ?>
                             </td>
@@ -259,7 +277,7 @@ ORDER BY l.division_id, o1.off_road_location, l.depot_id ASC";
                                 <th>Sl No</th>
                                 <th>Divn (Sl No)</th>
                                 <th>Division</th>
-                                <th>Depot</th>
+                                <th style="width:70px">Depot</th>
                                 <th>Bus Number</th>
                                 <th>Make</th>
                                 <th>Emission Norms</th>
@@ -391,7 +409,7 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                             <tr>
                                 <th>Sl. No</th>
                                 <th>Division</th>
-                                <th>Depot</th>
+                                <th style="width:70px">Depot</th>
                                 <th>Bus Number</th>
                                 <th>Make</th>
                                 <th>Emission Norms</th>
@@ -618,7 +636,7 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                                 <tr>
                                     <th>Sl. No</th>
                                     <th>Division</th>
-                                    <th>Depot</th>
+                                    <th style="width:70px">Depot</th>
                                     <th>Bus Number</th>
                                     <th>Make</th>
                                     <th>Emission Norms</th>
@@ -884,7 +902,7 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                                 <th>Sl No</th>
                                 <th>Divn (Sl No)</th>
                                 <th>Division</th>
-                                <th>Depot</th>
+                                <th style="width:70px">Depot</th>
                                 <th>Bus Number</th>
                                 <th>Make</th>
                                 <th>Emission Norms</th>

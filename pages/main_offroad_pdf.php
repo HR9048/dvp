@@ -105,17 +105,16 @@ $html .= '</table><br><br>';
 $html .= '<h2 style="text-align:center;">Divisionwise Summary</h2>';
 $html .= '<table border="1" cellpadding="4">';
 $html .= '<tr>
-            <th rowspan="2" style="width:30px;"><b>sl.no</b></th>
-            <th rowspan="2" style="width:82px;"><b>DIVISION</b></th>
-            <th colspan="2" style="text-align:center;"><b>DEPOT</b></th>
+            <th rowspan="2" style="width:40px;"><b>sl.no</b></th>
+            <th rowspan="2" style="width:100px;"><b>DIVISION</b></th>
+            <th colspan="1" style="text-align:center;"><b>DEPOT</b></th>
             <th colspan="7" style="width:410px;text-align:center;"><b>DWS</b></th>
-            <th rowspan="2" style="width:40px;"><b>At DEALER</b></th>
-            <th rowspan="2" style="width:40px;"><b>At POLICE</b></th>
+            <th rowspan="2" style="width:70px;"><b>At DEALER</b></th>
+            <th rowspan="2" style="width:60px;"><b>At POLICE</b></th>
             <th rowspan="2"><b>G. TOTAL</b></th>
           </tr>';
 $html .= '<tr>
             <th><b>Off-Road</b></th>
-            <th><b>WUP</b></th>
             <th style="width:55px;"><b>FCR</b></th>
             <th style="width:55px;"><b>HBR</b></th>
             <th style="width:55px;"><b>AMW</b></th>
@@ -133,7 +132,6 @@ while ($row = mysqli_fetch_assoc($result)) {
     $html .= "<td>{$serial_number}</td>";
     $html .= "<td>{$row['DIVISION']}</td>";
     $html .= "<td>{$row['DEPOT_COUNT']}</td>";
-    $html .= "<td>{$row['DEPOT_WUP_COUNT']}</td>";
     $html .= "<td>{$row['FCR/RTO']}</td>";
     $html .= "<td>{$row['FCR/HBR']}</td>";
     $html .= "<td>{$row['AMW']}</td>";
@@ -165,7 +163,6 @@ while ($row = mysqli_fetch_assoc($result)) {
 $html .= '<tr style="font-weight:bold;">
             <td colspan="2">CORPORATION</td>
             <td>' . $total_DEPOT_COUNT . '</td>
-            <td>' . $total_DEPOT_WUP_COUNT . '</td>
             <td>' . $total_FCR_RTO . '</td>
             <td>' . $total_FCR_HBR . '</td>
             <td>' . $total_AMW . '</td>

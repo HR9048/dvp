@@ -19,7 +19,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
 
         // Set document information
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetAuthor('Your Name');
+        $pdf->SetAuthor('KKRTC');
         $pdf->SetTitle('DVP Report');
         $pdf->SetSubject('DVP Report');
         $pdf->SetKeywords('DVP, Report, KKRTC');
@@ -69,6 +69,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     'ORDWS' => 'Vehicles Off Road at DWS',
                     'ORRWY' => 'Vehicles Off Road at RWY',
                     'CC' => 'Vehicles Withdrawn for CC',
+                    'wup1' => 'Vehicles Work Under Progress at Depot',
                     'loan' => 'Vehicles loan given to other depot/training center',
                     'wup' => 'Vehicles Withdrawn for Fair',
                     'Police' => 'Vehicles at Police Station',
@@ -113,11 +114,11 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
 
                 // Start table
                 $html .= '<table border="1" cellpadding="4">';
-                $html .= '<tr><th style="width: 180px;"><b>Particulars</b></th>';
+                $html .= '<tr><th style="width: 190px;"><b>Particulars</b></th>';
 
                 // Output headers based on ordered division names
                 foreach ($divisionNamesOrdered as $divisionId => $divisionName) {
-                    $html .= '<th style="text-align: right; width:34px"><b>' . $divisionName . '</b></th>';
+                    $html .= '<th style="text-align: right; width:33px"><b>' . $divisionName . '</b></th>';
                 }
                 $html .= '<th style="text-align: center;"><b>Total</b></th>';
                 $html .= '</tr>';

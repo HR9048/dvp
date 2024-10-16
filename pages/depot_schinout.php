@@ -10,240 +10,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
     // Allow access
 
-
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['act_dep_time'])) {
-        // Function to fetch data from API
-        function fetchEmployeeData($pfNumber)
-{
-    $division = $_SESSION['KMPL_DIVISION'];
-    $depot = $_SESSION['KMPL_DEPOT'];
-
-    // Fetch data from the first API based on division and depot
-    $url = 'http://localhost/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
-    $response = file_get_contents($url);
-    if ($response === FALSE) {
-        die('Error occurred while fetching data from LMS API');
-    }
-
-    $data = json_decode($response, true);
-
-    // Check if the data array is present and contains expected keys
-    if (isset($data['data']) && is_array($data['data'])) {
-        // Loop through the employee data to find the matching PF number
-        foreach ($data['data'] as $employee) {
-            if ($employee['EMP_PF_NUMBER'] === $pfNumber) {
-                return $employee; // Return employee data if found in the first API
-            }
-        }
-    }
-
-    // If the data is not found in the first API, call the second API
-    $urlPrivate = 'http://localhost/dvp/database/private_emp_api.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
-    $responsePrivate = file_get_contents($urlPrivate);
-    echo '<script>';
-    echo 'console.log("Response from LMS API 1: ", ' . json_encode($responsePrivate) . ');';
-    echo '</script>';
-    if ($responsePrivate === FALSE) {
-        die('Error occurred while fetching data from the private API');
-    }
-
-    $dataPrivate = json_decode($responsePrivate, true);
-
-    // Check if the data array is present and contains expected keys
-    if (isset($dataPrivate['data']) && is_array($dataPrivate['data'])) {
-        // Loop through the employee data to find the matching PF number
-        foreach ($dataPrivate['data'] as $employee) {
-            if ($employee['EMP_PF_NUMBER'] === $pfNumber) {
-                return $employee; // Return employee data if found in the second API
-            }
-        }
-    }
-
-    // Return null if no employee is found in both APIs
-    return null; 
-}
-
-
-
-
-        // Escape input data
-        $sch_no = mysqli_real_escape_string($db, $_POST['sch_no']);
-        $vehicle_no = mysqli_real_escape_string($db, $_POST['vehicle_no']);
-        $driver_token_no_1 = mysqli_real_escape_string($db, $_POST['driver_token_no_1']);
-        $driver_token_no_2 = isset($_POST['driver_token_no_2']) && !empty($_POST['driver_token_no_2']) ? mysqli_real_escape_string($db, $_POST['driver_token_no_2']) : null;
-        $conductor_token_no = isset($_POST['conductor_token_no']) && !empty($_POST['conductor_token_no']) ? mysqli_real_escape_string($db, $_POST['conductor_token_no']) : null;
-        $act_dep_time = mysqli_real_escape_string($db, $_POST['act_dep_time']);
-        $time_diff = mysqli_real_escape_string($db, $_POST['time_diff']);
-        $reason_for_late_departure = isset($_POST['reason_for_late_departure']) && !empty($_POST['reason_for_late_departure']) ? mysqli_real_escape_string($db, $_POST['reason_for_late_departure']) : null;
-        $reason_early_departure = isset($_POST['reason_early_departure']) && !empty($_POST['reason_early_departure']) ? mysqli_real_escape_string($db, $_POST['reason_early_departure']) : null;
-
-        $division_id = $_SESSION['DIVISION_ID'];
-        $depot_id = $_SESSION['DEPOT_ID'];
-
-        // Check if schedule data already exists for today
-        $today = date('Y-m-d');
-        $checkQuery = "
-        SELECT COUNT(*) as count
-        FROM sch_veh_out
-        WHERE sch_no = '$sch_no'
-          AND division_id = '$division_id'
-          AND depot_id = '$depot_id'
-          AND departed_date = '$today'
-    ";
-
-        $checkResult = mysqli_query($db, $checkQuery);
-        $checkData = mysqli_fetch_assoc($checkResult);
-
-        if ($checkData['count'] > 0) {
-            echo '<script>alert("Data for this schedule already exists for today.");</script>';
-            echo '<script>window.location.href = "depot_schinout.php";</script>';
-            exit;
-        }
-
-        // Fetch schedule details using sch_no
-        $fetchScheduleDetails = "SELECT * FROM schedule_master WHERE sch_key_no = '$sch_no'  AND division_id = '$division_id' AND depot_id = '$depot_id'";
-        $scheduleDetailsResult = mysqli_query($db, $fetchScheduleDetails) or die(mysqli_error($db));
-        $scheduleDetails = mysqli_fetch_assoc($scheduleDetailsResult);
-
-        $schedule_status = 1;
-
-        // Fetch driver and conductor data from API
-        $driver1Data = fetchEmployeeData($driver_token_no_1);
-        $driver2Data = !is_null($driver_token_no_2) ? fetchEmployeeData($driver_token_no_2) : null;
-        $conductorData = !is_null($conductor_token_no) ? fetchEmployeeData($conductor_token_no) : null;
-        // Ensure the API response contains the expected keys for driver 1
-        if (isset($driver1Data['EMP_PF_NUMBER'], $driver1Data['EMP_NAME'], $driver1Data['token_number'])) {
-            $driver1pfno = $driver1Data['EMP_PF_NUMBER'];
-            $driver1name = $driver1Data['EMP_NAME'];
-            $driver1token = $driver1Data['token_number'];
-        } else {
-            die('Error: API response does not contain the expected keys for driver 1.');
-        }
-
-        // Check if the vehicle number is allotted
-        $busAllottedStatus = ($vehicle_no == $scheduleDetails['bus_number_1'] || $vehicle_no == $scheduleDetails['bus_number_2']) ? 0 : 1;
-
-        // Check if the driver tokens are allotted
-        $driver1AllottedStatus = (
-            $driver1Data['token_number'] == $scheduleDetails['driver_token_1'] ||
-            $driver1Data['token_number'] == $scheduleDetails['driver_token_2'] ||
-            $driver1Data['token_number'] == $scheduleDetails['driver_token_3'] ||
-            $driver1Data['token_number'] == $scheduleDetails['half_releiver_token_1'] ||
-            $driver1Data['token_number'] == $scheduleDetails['driver_token_4'] ||
-            $driver1Data['token_number'] == $scheduleDetails['driver_token_5'] ||
-            $driver1Data['token_number'] == $scheduleDetails['driver_token_6'] ||
-            $driver1Data['token_number'] == $scheduleDetails['half_releiver_token_2']
-        ) ? 0 : 1;
-
-        $driver2AllottedStatus = is_null($driver2Data) ? null : (
-            ($driver2Data['token_number'] == $scheduleDetails['driver_token_1'] ||
-                $driver2Data['token_number'] == $scheduleDetails['driver_token_2'] ||
-                $driver2Data['token_number'] == $scheduleDetails['driver_token_3'] ||
-                $driver2Data['token_number'] == $scheduleDetails['half_releiver_token_1'] ||
-                $driver2Data['token_number'] == $scheduleDetails['driver_token_4'] ||
-                $driver2Data['token_number'] == $scheduleDetails['driver_token_5'] ||
-                $driver2Data['token_number'] == $scheduleDetails['driver_token_6'] ||
-                $driver2Data['token_number'] == $scheduleDetails['half_releiver_token_2']) ? 0 : 1
-        );
-
-        // Initialize conductorAllottedStatus
-        $conductorAllottedStatus = null;
-        $conductorpf = null;
-        $conductorname = null;
-        $conductortoken = null;
-
-        if ($scheduleDetails['single_crew'] == 'yes') {
-            $conductorAllottedStatus = null;
-        } else {
-            $conductorAllottedStatus = is_null($conductorData) ? null : (
-                ($conductorData['token_number'] == $scheduleDetails['conductor_token_1'] ||
-                    $conductorData['token_number'] == $scheduleDetails['conductor_token_2'] ||
-                    $conductorData['token_number'] == $scheduleDetails['conductor_token_3']) ? 0 : 1
-            );
-            if ($conductorData) {
-                $conductorpf = $conductorData['EMP_PF_NUMBER'];
-                $conductorname = $conductorData['EMP_NAME'];
-                $conductortoken = $conductorData['token_number'];
-            }
-        }
-
-        // Set driver 2 details if present
-        $driver2pfno = null;
-        $driver2name = null;
-        if ($driver2Data) {
-            $driver2token = $driver2Data['token_number'];
-            $driver2pfno = $driver2Data['EMP_PF_NUMBER'];
-            $driver2name = $driver2Data['EMP_NAME'];
-        }
-
-        // Insert into schedules table
-        $insertQuery = "INSERT INTO sch_veh_out (sch_no, vehicle_no, driver_token_no_1, driver_token_no_2, dep_time, dep_time_diff, reason_for_late_departure, reason_early_departure, bus_allotted_status, driver_1_allotted_status, driver_2_allotted_status, conductor_alloted_status, schedule_status, division_id, depot_id, driver_1_pf, driver_1_name, driver_2_pf, driver_2_name, conductor_token_no, conductor_pf_no, conductor_name) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        $stmt = $db->prepare($insertQuery);
-        $stmt->bind_param("ssssssssiiiiiiisssssss", $sch_no, $vehicle_no, $driver1token, $driver2token, $act_dep_time, $time_diff, $reason_for_late_departure, $reason_early_departure, $busAllottedStatus, $driver1AllottedStatus, $driver2AllottedStatus, $conductorAllottedStatus, $schedule_status, $division_id, $depot_id, $driver1pfno, $driver1name, $driver2pfno, $driver2name, $conductortoken, $conductorpf, $conductorname);
-
-        if ($stmt->execute()) {
-            echo '<script>alert("The schedule has been successfully Departed.");</script>';
-            echo '<script>window.location.href = "depot_schinout.php";</script>';
-            exit;
-        } else {
-            echo "Error: " . $stmt->error;
-        }
-
-        $stmt->close();
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['arr_time'])) {
-        $id = $_POST['id'];
-        $arrTime = $_POST['arr_time']; // Actual arrival time from POST data
-        $schArrTime = $_POST['sch_arr_time'];
-        $reason = isset($_POST['reason']) ? $_POST['reason'] : '';
-        $scheduleNo = $_POST['sch_no_in'];
-        $division_id1 = $_SESSION['DIVISION_ID'];
-        $depot_id1 = $_SESSION['DEPOT_ID'];
-        $status = '2';
-
-        // Calculate the time difference
-        $arrTimeObj = new DateTime($arrTime);
-        $schArrTimeObj = new DateTime($schArrTime);
-        $arrTimeDiffInMinutes = ($arrTimeObj->getTimestamp() - $schArrTimeObj->getTimestamp()) / 60;
-
-        // Determine reason type
-        $reasonForLateArr = null;
-        $reasonForEarlyArr = null;
-        if ($arrTimeDiffInMinutes > 60) {
-            $reasonForEarlyArr = $reason;
-        } elseif ($arrTimeDiffInMinutes < -30) {
-            $reasonForLateArr = $reason;
-        }
-
-        date_default_timezone_set('Asia/Kolkata');
-        $currentTime = date("Y-m-d H:i:s");
-        $currentDate = date("Y-m-d");
-
-        // Update the sch_veh_out table
-        $updateQuery = "UPDATE sch_veh_out 
-                    SET arr_time = ?, arr_date=?, act_arr_time = ?, arr_time_diff = ?, reason_for_late_arr = ?, reason_for_early_arr = ?, schedule_status = ?
-                    WHERE id = ? AND sch_no = ? AND division_id = ? AND depot_id = ? AND schedule_status = '1'";
-
-        $stmt = $db->prepare($updateQuery);
-
-        if (!$stmt) {
-            die("Error preparing statement: " . $db->error);
-        }
-
-        $stmt->bind_param("sssisssssss", $arrTime, $currentDate, $currentTime, $arrTimeDiffInMinutes, $reasonForLateArr, $reasonForEarlyArr, $status, $id, $scheduleNo, $division_id1, $depot_id1);
-
-        if ($stmt->execute()) {
-            echo '<script>alert("Schedule Status Updated successfully.");</script>';
-            echo '<script>window.location.href = "depot_schinout.php";</script>';
-        } else {
-            echo "Error updating record: " . $stmt->error;
-        }
-
-        $stmt->close();
-    }
+    
     ?>
 
 
@@ -253,6 +20,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             background-color: #FFE800 !important;
         }
     </style>
+    <h6 style="text-align:right"><button class="btn btn-warning"><a href="depot_schedule_incomplete.php">Have Incomplete schedule?</a></button></h6>
+
     <h2 class="text-center">SECURITY MODULE</h2>
     <nav>
         <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
@@ -264,10 +33,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
     </nav>
     <div class="tab-content" id="nav-tabContent" style="width: 40%; min-width: 300px; margin: 0 auto; text-align: center;">
         <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-            <div class="container">
-                <h2 class="mt-5">Depot: <?php echo $_SESSION['DEPOT']; ?></h2>
+            <div class="container" style="padding:2px">
+                <h2>Depot: <?php echo $_SESSION['DEPOT']; ?></h2>
                 <p style="color: red;">Schedule Vehicle Out Entry</p>
-                <form method="POST" class="mt-4">
+                <form id="sch_out_form" method="POST" class="mt-4">
                     <div class="form-group">
                         <label for="sch_no">Schedule Key Number</label>
                         <select class="form-control select2" id="sch_no" name="sch_no" required style="width: 100%;">
@@ -281,12 +50,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             </div>
         </div>
         <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-            <div class="container">
-                <h2 class="mt-5">Depot: <?php echo $_SESSION['DEPOT']; ?></h2>
+            <div class="container" style="padding:2px">
+                <h2>Depot: <?php echo $_SESSION['DEPOT']; ?></h2>
                 <p style="color:red;">Schedule Vehicle In entry</p>
-                <form method="POST" class="mt-4">
+                <form id="sch_in_form" method="POST" class="mt-4">
                     <div class="row">
-                        <div class="col">
+                    <div class="col-md-6">
+                        <div class="col-md-12 mb-3">
                             <div class="form-group">
                                 <label for="sch_no_in">Schedule Key Number</label>
                                 <select class="form-control select2" id="sch_no_in" name="sch_no_in" required
@@ -295,14 +65,16 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                                 </select>
                             </div>
                         </div>
-                        <div class="col">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="col-md-12 mb-3">
                             <div class="form-group">
                                 <label for="out_date">Schedule out Date</label>
                                 <input class="form-control" type="date" id="out_date" name="out_date" required>
                             </div>
                         </div>
                     </div>
-
+                    </div>
                     <div id="scheduleInDetails">
                         <!-- Fields will be populated here dynamically using JavaScript -->
                     </div>
@@ -604,7 +376,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
 
         // API URLs with division and depot as query parameters
-        var dataApiUrl = 'http://localhost/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+        var dataApiUrl = 'http://192.168.1.32:50/data1.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
         var empApiUrl = 'http://localhost/dvp/database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
 
         // Function to fetch data from both APIs
@@ -613,15 +385,23 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', url, true);
                 xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        try {
-                            var data = JSON.parse(xhr.responseText).data;
-                            resolve(data);
-                        } catch (e) {
-                            reject('Error parsing response from ' + url + ': ' + e.message);
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            try {
+                                var response = JSON.parse(xhr.responseText);
+                                
+                                // Handle "No Data Found" or empty responses
+                                if (!response.data || response.data.length === 0) {
+                                    resolve([]); // Resolve with an empty array if no data is found
+                                } else {
+                                    resolve(response.data); // Resolve with the data if available
+                                }
+                            } catch (e) {
+                                reject('Error parsing response from ' + url + ': ' + e.message);
+                            }
+                        } else {
+                            reject('Error fetching data from ' + url);
                         }
-                    } else if (xhr.readyState === 4) {
-                        reject('Error fetching data from ' + url);
                     }
                 };
                 xhr.send();
@@ -631,7 +411,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         // Fetch data from both APIs
         Promise.all([fetchApiData(dataApiUrl), fetchApiData(empApiUrl)])
             .then(function (responses) {
-                var combinedData = responses[0].concat(responses[1]); // Combine data from both APIs
+                // Combine data from both APIs (ensure responses are arrays even if empty)
+                var combinedData = responses[0].concat(responses[1]);
 
                 // Filter data by division and depot (already passed in the API call, so this may not be necessary)
                 var filteredData = combinedData.filter(function (item) {
@@ -664,6 +445,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 }
 
 
+
             function fetchVechSchOutData() {
                 return new Promise(function (resolve, reject) {
                     var xhr = new XMLHttpRequest();
@@ -680,8 +462,54 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                 });
             }
         });
-    </script>
+        $(document).ready(function () {
+    $('#sch_out_form').on('submit', function (e) {
+        e.preventDefault(); // Prevent default form submission
 
+        // Serialize form data
+        var formData = $(this).serialize();
+
+        $.ajax({
+            type: 'POST',
+            url: '../database/depot_submit_schedule_out.php', // URL of the PHP script
+            data: formData,
+            dataType: 'json', // Expect a JSON response
+            success: function (response) {
+                if (response.status === 'success') {
+                    // Display SweetAlert on success
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Reload the page after the alert is closed
+                        window.location.reload();
+                    });
+                } else {
+                    // Display SweetAlert on error
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                // Handle the AJAX request error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred: ' + error,
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+});
+
+    </script>
     <!-- Schedule In script -->
     <script>
         function fetchScheduleIn() {
@@ -722,35 +550,55 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
             $('#sch_no_in, #out_date').change(fetchScheduleDetails);
         });
-        function handleArrivalTimeChange() {
-            var serverCurrentTime = new Date(document.getElementById('server_current_time').value);
-            var schArrTime = new Date('1970-01-01T' + document.getElementById('sch_arr_time').value + 'Z');
+        $(document).ready(function () {
+    $('#sch_in_form').on('submit', function (e) {
+        e.preventDefault(); // Prevent default form submission
 
-            var arrTime = new Date('1970-01-01T' + document.getElementById('arr_time').value);
-            var diff = (schArrTime - arrTime) / (1000 * 60); // difference in minutes
+        // Serialize form data
+        var formData = $(this).serialize();
 
-            var reasonField = document.getElementById('reason_field');
-            var reasonInput = document.getElementById('reason');
-
-            if (diff > 30) {
-                reasonField.style.display = 'block';
-                reasonInput.setAttribute('placeholder', 'Enter reason for early arrival');
-                reasonInput.setAttribute('required', 'required');
-            } else if (diff < -30) {
-                reasonField.style.display = 'block';
-                reasonInput.setAttribute('placeholder', 'Enter reason for late arrival');
-                reasonInput.setAttribute('required', 'required');
-            } else {
-                reasonField.style.display = 'none';
-                reasonInput.removeAttribute('required');
+        $.ajax({
+            type: 'POST',
+            url: '../database/depot_submit_schedule_in.php', // URL of the PHP script
+            data: formData,
+            dataType: 'json', // Expect a JSON response
+            success: function (response) {
+                if (response.status === 'success') {
+                    // Display SweetAlert on success
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Reload the page after the alert is closed
+                        window.location.reload();
+                    });
+                } else {
+                    // Display SweetAlert on error
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                // Handle the AJAX request error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred: ' + error,
+                    confirmButtonText: 'OK'
+                });
             }
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('arr_time').addEventListener('change', handleArrivalTimeChange);
         });
+    });
+});
 
     </script>
+
 
     <?php
 } else {

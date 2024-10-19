@@ -67,7 +67,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
                 if (scheduleNo && outDate) {
                     $.ajax({
-                        url: 'fetch_schedulein_details.php',
+                        url: '../database/fetch_incomplete_schedulein_details.php',
                         type: 'POST',
                         data: { scheduleNo: scheduleNo, outDate: outDate },
                         success: function (response) {
@@ -91,7 +91,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
         $.ajax({
             type: 'POST',
-            url: '../database/depot_submit_schedule_in.php', // URL of the PHP script
+            url: '../database/depot_submit_schedulein_incomplete.php', // URL of the PHP script
             data: formData,
             dataType: 'json', // Expect a JSON response
             success: function (response) {

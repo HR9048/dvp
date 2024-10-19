@@ -244,6 +244,7 @@ confirm_logged_in();
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="depot_kmpl.php">Add Depot KMPL</a></li>
+                          <li><a class="dropdown-item" href="depot_route_kmpl.php">Add Route KMPL</a></li>
                         </ul>
                       </div>
                     </li>

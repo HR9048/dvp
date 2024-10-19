@@ -1,7 +1,6 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
 include '../includes/connection.php'; // Include your database connection file
 include '../pages/session.php';
 confirm_logged_in();
@@ -73,11 +72,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Failed to prepare the sch_veh_in statement.']);
     }
-
     $db->close();
 }else {
     header('Location: ../pages/login.php');
     exit;
 }
-
 ?>

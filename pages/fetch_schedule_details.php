@@ -47,7 +47,7 @@ if (isset($_POST['sch_no'])) {
     if (!empty($step1Data)) {
         // Process each row from step 1 data
         foreach ($step1Data as $row) {
-            if ($row['schedule_status'] == 1 || $row['schedule_status'] == 2) {
+            if ($row['schedule_status'] == 1 || $row['schedule_status'] == 2 || $row['schedule_status'] == 6) {
                 // Nullify bus numbers if they match
                 if ($scheduleData['bus_number_1'] == $row['vehicle_no']) {
                     $finalData['bus_number_1'] = NULL;

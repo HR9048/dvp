@@ -22,7 +22,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     $depot = $row['kmpl_depot'];
 
     // Prepare API URL with division and depot
-    $apiUrl = 'http://192.168.1.32:50/data1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+    $apiUrl = 'http://192.168.1.32:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
     // Initialize individual cURL session
     $ch = curl_init($apiUrl);

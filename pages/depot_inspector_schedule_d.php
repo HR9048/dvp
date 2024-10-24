@@ -252,7 +252,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
 
                 // Update schedule_master if necessary
                 $updateScheduleSql = "UPDATE schedule_master SET single_crew = ? WHERE id = ?";
-                $stmt = $db->prepare($updateScheduleSql);
+                $stmt = $db->prepare($updateScheduleSql); 
                 $stmt->bind_param('si', $single_crew, $id);
                 $stmt->execute();
 
@@ -271,7 +271,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                     if ($i <= $numberOfDrivers) {
                         $driverToken = $_POST['driver_token_' . $i];
                         $driverPF = $_POST['pf_no_d' . $i];
-                        $driverName = $_POST['driver_' . $i . '_name'];
+                        $driverName = $_POST['driver_' . $i . '_name']; 
 
                         // Only update if there's a change
                         if (

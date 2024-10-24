@@ -227,10 +227,10 @@ confirm_logged_in();
                       <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
                           style="font-size: 15px;">
-                          <b>Fixation Data</b>
+                          <b>Schedule Master</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="main_schedule_info.php">Route Crew/vehicle Fixation</a></li>
+                          <li><a class="dropdown-item" href="main_schedule_info.php">View Schedule Master</a></li>
                         </ul>
                       </div>
                     </li>

@@ -14,11 +14,35 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
         $sch_out_id = $_POST['sch_out_id'];
+        // Prepare the SQL query
+        $sql12 = "SELECT schedule_status FROM sch_veh_out WHERE id = ?";
 
+        // Prepare the statement
+        $stmt12 = $db->prepare($sql12);
+
+        // Bind the parameter
+        $stmt12->bind_param("i", $sch_out_id);
+
+        // Execute the statement
+        $stmt12->execute();
+
+        // Bind the result to the $schedule_status variable
+        $stmt12->bind_result($schedule_status_out);
+
+        // Fetch the result
+        $stmt12->fetch();
+
+        // Close the statement
+        $stmt12->close();
+        if ($schedule_status_out == '4') {
+            $schedule_status_value = '0';
+        } elseif ($schedule_status_out == '8') {
+            $schedule_status_value = '9';
+        }
         // Run your SQL query to update the status
-        $sql = "UPDATE sch_veh_out SET schedule_status = 0 WHERE id = ?";
+        $sql = "UPDATE sch_veh_out SET schedule_status = ? WHERE id = ?";
         $stmt = $db->prepare($sql);
-        $stmt->bind_param("i", $sch_out_id);
+        $stmt->bind_param("ii",$schedule_status_value, $sch_out_id);
         if ($stmt->execute()) {
             // Redirect or reload the page after successful update
             echo "<script>
@@ -114,7 +138,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             AND 
                 svo.depot_id = '$depot_id' 
             AND 
-                svo.schedule_status = 4
+                svo.schedule_status in ('4','8')
             ORDER BY 
                 svo.arr_time ASC;";
                 $result = $db->query($sql);

@@ -113,42 +113,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                 </div>
             </div>
             <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') { ?>
-
-                <!--<div class="col-md-3">
-                    <div class="col-md-12 mb-3">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-0">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Employee</div>
-                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                            <?php
-
-                                            // Prepare the SQL query to count the number of employees based on division and depot names
-                                            //$query = "SELECT COUNT(*) FROM employee 
-                                            //INNER JOIN location ON employee.LOCATION_ID = location.LOCATION_ID 
-                                            //WHERE location.division = '{$_SESSION['DIVISION']}' AND location.depot = '{$_SESSION['DEPOT']}'";
-                                
-                                            // Execute the query
-                                            //$result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                
-                                            // Fetch the count
-                                            //$row = mysqli_fetch_array($result);
-                                
-                                            // Output the count
-                                            //echo "Number of employees: $row[0]";
-                                            ?>
-                                            Record(s)
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fa-solid fa-users fa-beat fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>-->
                 <div class="col-md-3">
                     <div class="col-md-12 mb-3">
                         <div class="card border-left-success shadow h-100 py-2">
@@ -202,7 +166,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                     </div>
                                     <div class="h6 mb-0 font-weight-bold text-gray-800">
                                         <?php
-                                        $apiUrl = 'http://192.168.1.32:50/data1.php';
+                                        $apiUrl = 'http://192.168.1.32:50/data.php';
 
                                         $apiUrl .= '?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
@@ -285,7 +249,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         <?php
 
                                         // Append division and depot as query parameters to the URL
-                                        $apiUrl = 'http://192.168.1.32:50/data1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+                                        $apiUrl = 'http://192.168.1.32:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
                                         // Initialize cURL session
                                         $ch = curl_init($apiUrl);
@@ -366,7 +330,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         <div class="col-auto">
                                             <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
                                                 <?php
-                                                $apiUrl = 'http://192.168.1.32:50/data1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+                                                $apiUrl = 'http://192.168.1.32:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
                                                 // Initialize cURL session
                                                 $ch = curl_init($apiUrl);

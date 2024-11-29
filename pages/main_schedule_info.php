@@ -1,4 +1,5 @@
 <?php
+
 include '../includes/connection.php';
 include '../includes/sidebar.php';
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
@@ -30,7 +31,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             padding: 1px !important;
             /* Override DataTables' default padding */
         }
-        .btn{
+
+        .btn {
             padding-top: 0px;
             padding-bottom: 0px;
         }
@@ -60,25 +62,28 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         <tbody>
             <?php
             $sql = "SELECT 
-        skm.*, 
-        loc.division, 
-        loc.depot, 
-        sc.name AS service_class_name, 
-        st.type AS service_type_name,
-        skm.ID as ID
-    FROM 
-        schedule_master skm 
-    JOIN 
-        location loc 
-        ON skm.division_id = loc.division_id 
-        AND skm.depot_id = loc.depot_id
-    LEFT JOIN 
-        service_class sc 
-        ON skm.service_class_id = sc.id
-    LEFT JOIN 
-        schedule_type st 
-        ON skm.service_type_id = st.id
-        order by loc.division_id,loc.depot_id,sch_dep_time";
+    skm.*, 
+    loc.division, 
+    loc.depot, 
+    sc.name AS service_class_name, 
+    st.type AS service_type_name,
+    skm.ID as ID
+FROM 
+    schedule_master skm 
+JOIN 
+    location loc 
+    ON skm.division_id = loc.division_id 
+    AND skm.depot_id = loc.depot_id
+LEFT JOIN 
+    service_class sc 
+    ON skm.service_class_id = sc.id
+LEFT JOIN 
+    schedule_type st 
+    ON skm.service_type_id = st.id
+WHERE 
+    skm.status = '1'
+ORDER BY 
+    loc.division_id, loc.depot_id, sch_dep_time";
 
             $result = $db->query($sql);
 
@@ -87,7 +92,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                     $bus_numbers = [$row['bus_number_1'], $row['bus_number_2']];
                     $driver_tokens = [$row['driver_token_1'], $row['driver_token_2'], $row['driver_token_3'], $row['driver_token_4'], $row['driver_token_5'], $row['driver_token_6']];
                     $conductor_tokens = [$row['conductor_token_1'], $row['conductor_token_2'], $row['conductor_token_3']];
-            
+
                     echo '<tr data-id="' . $row['ID'] . '">
                 <td class="hide">' . $row['ID'] . '</td>
                 <td>' . $row['division'] . '</td>
@@ -284,7 +289,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
     <?php
 } else {
-    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); location.href = 'login.php';</script>";
     exit;
 }
 include '../includes/footer.php';

@@ -1,6 +1,36 @@
 <?php
 require_once('session.php');
 confirm_logged_in();
+function getBaseUrl()
+{
+    // Define the local and public IP addresses
+    $localIpAddress = '192.168.1.32:50';
+    $publicIpAddress = '117.203.105.106:50';  // Your public IP address
+    $domainName = '117.203.105.106:50';
+
+    // Set the base path of your project
+
+    // Use HTTP protocol
+    $protocol = 'http';
+
+    // Get the server's IP address
+    $serverIp = $_SERVER['SERVER_ADDR'];
+    // Get the client's IP address (who is accessing the page)
+    $clientIp = $_SERVER['REMOTE_ADDR'];
+    $isLocalRequest = ($serverIp === '127.0.0.1' || $serverIp === ':1' || $serverIp === $localIpAddress);
+
+    // Determine the base URL based on the request origin
+    if ($isLocalRequest || $clientIp === $localIpAddress) {
+        // Use local IP if the request is coming from your network
+        $host = $localIpAddress;
+    } else {
+        // Use the domain name for other cases
+        $host = $domainName;
+    }
+
+    // Return the complete base URL
+    return $protocol . '://' . $host;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

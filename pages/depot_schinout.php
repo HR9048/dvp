@@ -10,7 +10,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
     // Allow access
 
-    
+
     ?>
 
 
@@ -20,7 +20,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             background-color: #FFE800 !important;
         }
     </style>
-    <h6 style="text-align:right"><button class="btn btn-warning"><a href="depot_schedule_incomplete.php">Have Incomplete schedule?</a></button></h6>
+    <h6 style="text-align:right"><button class="btn btn-warning"><a href="depot_schedule_incomplete.php">Have Incomplete
+                schedule?</a></button></h6>
 
     <h2 class="text-center">SECURITY MODULE</h2>
     <nav>
@@ -55,25 +56,25 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                 <p style="color:red;">Schedule Vehicle In entry</p>
                 <form id="sch_in_form" method="POST" class="mt-4">
                     <div class="row">
-                    <div class="col-md-6">
-                        <div class="col-md-12 mb-3">
-                            <div class="form-group">
-                                <label for="sch_no_in">Schedule Key Number</label>
-                                <select class="form-control select2" id="sch_no_in" name="sch_no_in" required
-                                    style="min-width: 100px;">
-                                    <option value="">Select a Schedule Number</option>
-                                </select>
+                        <div class="col-md-6">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-group">
+                                    <label for="sch_no_in">Schedule Key Number</label>
+                                    <select class="form-control select2" id="sch_no_in" name="sch_no_in" required
+                                        style="min-width: 100px;">
+                                        <option value="">Select a Schedule Number</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="col-md-12 mb-3">
-                            <div class="form-group">
-                                <label for="out_date">Schedule out Date</label>
-                                <input class="form-control" type="date" id="out_date" name="out_date" required>
+                        <div class="col-md-6">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-group">
+                                    <label for="out_date">Schedule out Date</label>
+                                    <input class="form-control" type="date" id="out_date" name="out_date" required>
+                                </div>
                             </div>
                         </div>
-                    </div>
                     </div>
                     <div id="scheduleInDetails">
                         <!-- Fields will be populated here dynamically using JavaScript -->
@@ -203,64 +204,64 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
                             var schDepTime = details.sch_dep_time || '';
                             scheduleDetailsDiv.innerHTML = `
-                                                                <div class="form-group">
-                                                                    <label for="vehicle_no">Vehicle No</label>
-                                                                    <select class="form-control select2" id="vehicle_no" name="vehicle_no" required style="width: 100%;">
-                                                                        ${vehicleNoOptions}
-                                                                    </select>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <label for="driver_token_no_1">Driver Token No 1</label>
-                                                                    <select class="form-control select2" id="driver_token_no_1" name="driver_token_no_1" required style="width: 100%;">
-                                                                        ${driverTokenOptions1}
-                                                                    </select>
-                                                                </div>
-                                                                ${driverTokenOptions2 ? `
                                                                     <div class="form-group">
-                                                                        <label for="driver_token_no_2">Driver Token No 2</label>
-                                                                        <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;">
-                                                                            ${driverTokenOptions2}
+                                                                        <label for="vehicle_no">Vehicle No</label>
+                                                                        <select class="form-control select2" id="vehicle_no" name="vehicle_no" required style="width: 100%;">
+                                                                            ${vehicleNoOptions}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label for="driver_token_no_1">Driver Token No 1</label>
+                                                                        <select class="form-control select2" id="driver_token_no_1" name="driver_token_no_1" required style="width: 100%;">
+                                                                            ${driverTokenOptions1}
+                                                                        </select>
+                                                                    </div>
+                                                                    ${driverTokenOptions2 ? `
+                                                                        <div class="form-group">
+                                                                            <label for="driver_token_no_2">Driver Token No 2</label>
+                                                                            <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;">
+                                                                                ${driverTokenOptions2}
+                                                                            </select>
+                                                                        </div>
+                                                                    ` : ''}
+                                                                    ${details.single_crew === 'no' ? `
+                                                                    <div class="form-group">
+                                                                        <label for="conductor_token_no">Conductor Token No</label>
+                                                                        <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;">
+                                                                            ${conductorTokenOptions}
                                                                         </select>
                                                                     </div>
                                                                 ` : ''}
-                                                                ${details.single_crew === 'no' ? `
-                                                                <div class="form-group">
-                                                                    <label for="conductor_token_no">Conductor Token No</label>
-                                                                    <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;">
-                                                                        ${conductorTokenOptions}
-                                                                    </select>
-                                                                </div>
-                                                            ` : ''}
-                                                                <div class="row">
-                                                                    <div class="col">
-                                                                        <div class="form-group">
-                                                                            <label for="sch_dep_time">Sch Departure time</label>
-                                                                            <input type="time" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${schDepTime}" required readonly>
+                                                                    <div class="row">
+                                                                        <div class="col">
+                                                                            <div class="form-group">
+                                                                                <label for="sch_dep_time">Sch Departure time</label>
+                                                                                <input type="time" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${schDepTime}" required readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col">
+                                                                            <div class="form-group">
+                                                                                <label for="act_dep_time">Act Departure time</label>
+                                                                                <input type="time" class="form-control" id="act_dep_time" name="act_dep_time" value="" required>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="col">
-                                                                        <div class="form-group">
-                                                                            <label for="act_dep_time">Act Departure time</label>
-                                                                            <input type="time" class="form-control" id="act_dep_time" name="act_dep_time" value="" required>
-                                                                        </div>
+                                                                    <div class="form-group" style="display: none;">
+                                                                        <label for="time_diff">Time Difference (minutes)</label>
+                                                                        <input type="text" class="form-control" id="time_diff" name="time_diff" readonly>
                                                                     </div>
-                                                                </div>
-                                                                <div class="form-group" style="display: none;">
-                                                                    <label for="time_diff">Time Difference (minutes)</label>
-                                                                    <input type="text" class="form-control" id="time_diff" name="time_diff" readonly>
-                                                                </div>
-                                                                <div class="form-group" style="display: none;">
-                                                                    <label for="reason_for_late_departure">Reason for Late Departure:</label>
-                                                                    <textarea class="form-control" id="reason_for_late_departure" name="reason_for_late_departure"></textarea>
-                                                                </div>
-                                                                <div class="form-group" style="display: none;">
-                                                                    <label for="reason_early_departure">Reason for Early Departure:</label>
-                                                                    <textarea class="form-control" id="reason_early_departure" name="reason_early_departure"></textarea>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                                                </div>
-                                                            `;
+                                                                    <div class="form-group" style="display: none;">
+                                                                        <label for="reason_for_late_departure">Reason for Late Departure:</label>
+                                                                        <textarea class="form-control" id="reason_for_late_departure" name="reason_for_late_departure"></textarea>
+                                                                    </div>
+                                                                    <div class="form-group" style="display: none;">
+                                                                        <label for="reason_early_departure">Reason for Early Departure:</label>
+                                                                        <textarea class="form-control" id="reason_early_departure" name="reason_early_departure"></textarea>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                                                    </div>
+                                                                `;
 
                             $('.select2').select2();
                             $(document).on('change', '#act_dep_time', function () {
@@ -371,78 +372,78 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             }
 
             function fetchAdditionalData() {
-    return new Promise(function (resolve, reject) {
-        var division = '<?php echo $_SESSION['KMPL_DIVISION']; ?>';
-        var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
+                return new Promise(function (resolve, reject) {
+                    var division = '<?php echo $_SESSION['KMPL_DIVISION']; ?>';
+                    var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
 
-        // API URLs with division and depot as query parameters
-        var dataApiUrl = 'http://192.168.1.32:50/data1.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
-        var empApiUrl = 'http://localhost/dvp/database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+                    // API URLs with division and depot as query parameters
+                    var dataApiUrl = '<?php echo getBaseUrl(); ?>/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+                    var empApiUrl = '../database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
 
-        // Function to fetch data from both APIs
-        function fetchApiData(url) {
-            return new Promise(function (resolve, reject) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', url, true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
-                            try {
-                                var response = JSON.parse(xhr.responseText);
-                                
-                                // Handle "No Data Found" or empty responses
-                                if (!response.data || response.data.length === 0) {
-                                    resolve([]); // Resolve with an empty array if no data is found
-                                } else {
-                                    resolve(response.data); // Resolve with the data if available
+                    // Function to fetch data from both APIs
+                    function fetchApiData(url) {
+                        return new Promise(function (resolve, reject) {
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('GET', url, true);
+                            xhr.onreadystatechange = function () {
+                                if (xhr.readyState === 4) {
+                                    if (xhr.status === 200) {
+                                        try {
+                                            var response = JSON.parse(xhr.responseText);
+
+                                            // Handle "No Data Found" or empty responses
+                                            if (!response.data || response.data.length === 0) {
+                                                resolve([]); // Resolve with an empty array if no data is found
+                                            } else {
+                                                resolve(response.data); // Resolve with the data if available
+                                            }
+                                        } catch (e) {
+                                            reject('Error parsing response from ' + url + ': ' + e.message);
+                                        }
+                                    } else {
+                                        reject('Error fetching data from ' + url);
+                                    }
                                 }
-                            } catch (e) {
-                                reject('Error parsing response from ' + url + ': ' + e.message);
-                            }
-                        } else {
-                            reject('Error fetching data from ' + url);
-                        }
-                    }
-                };
-                xhr.send();
-            });
-        }
-
-        // Fetch data from both APIs
-        Promise.all([fetchApiData(dataApiUrl), fetchApiData(empApiUrl)])
-            .then(function (responses) {
-                // Combine data from both APIs (ensure responses are arrays even if empty)
-                var combinedData = responses[0].concat(responses[1]);
-
-                // Filter data by division and depot (already passed in the API call, so this may not be necessary)
-                var filteredData = combinedData.filter(function (item) {
-                    return item.Division === division && item.Depot === depot;
-                });
-
-                // Sort filtered data by token_number
-                filteredData.sort(function (a, b) {
-                    return a.token_number - b.token_number;
-                });
-
-                // Call fetchVechSchOutData and filter based on vehicle schedule data
-                fetchVechSchOutData().then(function (vehSchOutData) {
-                    filteredData = filteredData.filter(function (item) {
-                        return !vehSchOutData.some(function (vehItem) {
-                            return vehItem.driver_1_pf === item.EMP_PF_NUMBER || vehItem.driver_2_pf === item.EMP_PF_NUMBER || vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
+                            };
+                            xhr.send();
                         });
-                    });
+                    }
 
-                    // Resolve the combined filtered data
-                    resolve(filteredData);
-                }).catch(function (error) {
-                    reject(error);
+                    // Fetch data from both APIs
+                    Promise.all([fetchApiData(dataApiUrl), fetchApiData(empApiUrl)])
+                        .then(function (responses) {
+                            // Combine data from both APIs (ensure responses are arrays even if empty)
+                            var combinedData = responses[0].concat(responses[1]);
+
+                            // Filter data by division and depot (already passed in the API call, so this may not be necessary)
+                            var filteredData = combinedData.filter(function (item) {
+                                return item.Division === division && item.Depot === depot;
+                            });
+
+                            // Sort filtered data by token_number
+                            filteredData.sort(function (a, b) {
+                                return a.token_number - b.token_number;
+                            });
+
+                            // Call fetchVechSchOutData and filter based on vehicle schedule data
+                            fetchVechSchOutData().then(function (vehSchOutData) {
+                                filteredData = filteredData.filter(function (item) {
+                                    return !vehSchOutData.some(function (vehItem) {
+                                        return vehItem.driver_1_pf === item.EMP_PF_NUMBER || vehItem.driver_2_pf === item.EMP_PF_NUMBER || vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
+                                    });
+                                });
+
+                                // Resolve the combined filtered data
+                                resolve(filteredData);
+                            }).catch(function (error) {
+                                reject(error);
+                            });
+                        })
+                        .catch(function (error) {
+                            reject(error);
+                        });
                 });
-            })
-            .catch(function (error) {
-                reject(error);
-            });
-    });
-}
+            }
 
 
 
@@ -463,51 +464,52 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             }
         });
         $(document).ready(function () {
-    $('#sch_out_form').on('submit', function (e) {
-        e.preventDefault(); // Prevent default form submission
+            $('#sch_out_form').on('submit', function (e) {
+    e.preventDefault(); // Prevent default form submission
 
-        // Serialize form data
-        var formData = $(this).serialize();
+    // Serialize form data
+    var formData = $(this).serialize();
 
-        $.ajax({
-            type: 'POST',
-            url: '../database/depot_submit_schedule_out.php', // URL of the PHP script
-            data: formData,
-            dataType: 'json', // Expect a JSON response
-            success: function (response) {
-                if (response.status === 'success') {
-                    // Display SweetAlert on success
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Reload the page after the alert is closed
-                        window.location.reload();
-                    });
-                } else {
-                    // Display SweetAlert on error
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message,
-                        confirmButtonText: 'OK'
-                    });
-                }
-            },
-            error: function (xhr, status, error) {
-                // Handle the AJAX request error
+    $.ajax({
+        type: 'POST',
+        url: '../database/depot_submit_schedule_out.php', // URL of the PHP script
+        data: formData,
+        dataType: 'json', // Expect a JSON response
+        success: function (response) {
+            if (response.status === 'success') {
+                // Display SweetAlert on success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Reload the page after the alert is closed
+                    window.location.reload();
+                });
+            } else {
+                // Display SweetAlert on error
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred: ' + error,
+                    text: response.message,
                     confirmButtonText: 'OK'
                 });
             }
-        });
+        },
+        error: function (xhr, status, error) {
+            // Display detailed error message from the server
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred: ' + (xhr.responseText || error),
+                confirmButtonText: 'OK'
+            });
+        }
     });
 });
+
+        });
 
     </script>
     <!-- Schedule In script -->
@@ -551,51 +553,51 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             $('#sch_no_in, #out_date').change(fetchScheduleDetails);
         });
         $(document).ready(function () {
-    $('#sch_in_form').on('submit', function (e) {
-        e.preventDefault(); // Prevent default form submission
+            $('#sch_in_form').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
 
-        // Serialize form data
-        var formData = $(this).serialize();
+                // Serialize form data
+                var formData = $(this).serialize();
 
-        $.ajax({
-            type: 'POST',
-            url: '../database/depot_submit_schedule_in.php', // URL of the PHP script
-            data: formData,
-            dataType: 'json', // Expect a JSON response
-            success: function (response) {
-                if (response.status === 'success') {
-                    // Display SweetAlert on success
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Reload the page after the alert is closed
-                        window.location.reload();
-                    });
-                } else {
-                    // Display SweetAlert on error
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message,
-                        confirmButtonText: 'OK'
-                    });
-                }
-            },
-            error: function (xhr, status, error) {
-                // Handle the AJAX request error
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred: ' + error,
-                    confirmButtonText: 'OK'
+                $.ajax({
+                    type: 'POST',
+                    url: '../database/depot_submit_schedule_in.php', // URL of the PHP script
+                    data: formData,
+                    dataType: 'json', // Expect a JSON response
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            // Display SweetAlert on success
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                // Reload the page after the alert is closed
+                                window.location.reload();
+                            });
+                        } else {
+                            // Display SweetAlert on error
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle the AJAX request error
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred: ' + error,
+                            confirmButtonText: 'OK'
+                        });
+                    }
                 });
-            }
+            });
         });
-    });
-});
 
     </script>
 

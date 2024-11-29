@@ -837,120 +837,102 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                         }
                         var division = '<?php echo $division; ?>'; // Ensure $division is correctly populated
-                        var depot = '<?php echo $depot; ?>'; // Ensure $depot is correctly populated
-                        function fetchConductorDetails(tokenNumber, nameElementId, pfElementId, tokenElementId, division, depot) {
-                            // Convert tokenNumber to a string for comparison
-                            const tokenString = tokenNumber.toString();
+var depot = '<?php echo $depot; ?>'; // Ensure $depot is correctly populated
 
-                            // Function to handle fetching data from both APIs
-                            function fetchDataFromAPIs() {
-                                return new Promise((resolve, reject) => {
-                                    let combinedData = [];
+function fetchConductorDetails(tokenNumber, nameElementId, pfElementId, tokenElementId, division, depot) {
+    const tokenString = tokenNumber.toString();
 
-                                    // First API call
-                                    var xhr1 = new XMLHttpRequest();
-                                    xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true);
-                                    xhr1.onload = function () {
-                                        if (xhr1.status === 200) {
-                                            var response1 = JSON.parse(this.responseText);
+    function fetchDataFromAPIs() {
+        return new Promise((resolve, reject) => {
+            let combinedData = [];
 
-                                            // Proceed to the second API call
-                                            var xhr2 = new XMLHttpRequest();
-                                            xhr2.open('GET', '../database/private_emp_api.php?division=' + division + '&depot=' + depot, true);
-                                            xhr2.onload = function () {
-                                                if (xhr2.status === 200) {
-                                                    var response2 = JSON.parse(this.responseText);
+            // First API call
+            var xhr1 = new XMLHttpRequest();
+            xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
+            xhr1.onload = function () {
+                if (xhr1.status === 200) {
+                    var response1 = JSON.parse(this.responseText);
+                    combinedData = combinedData.concat(response1.data || []);  // Append data if it exists
 
-                                                    // If second API returns 0, don't add any data from it
-                                                    if (response2.data === 0) {
-                                                    } else {
-                                                        combinedData = combinedData.concat(response2.data); // Append data from second API
-                                                    }
-
-                                                    combinedData = combinedData.concat(response1.data); // Append data from first API
-                                                    resolve(combinedData); // Resolve the promise with combined data
-                                                } else {
-                                                    reject('Error fetching data from the second API.');
-                                                }
-                                            };
-                                            xhr2.onerror = function () {
-                                                reject('Network error while fetching from the second API.');
-                                            };
-                                            xhr2.send();
-                                        } else {
-                                            reject('Error fetching data from the first API.');
-                                        }
-                                    };
-                                    xhr1.onerror = function () {
-                                        reject('Network error while fetching from the first API.');
-                                    };
-                                    xhr1.send();
-                                });
-                            }
-
-                            // Call the fetchDataFromAPIs function
-                            fetchDataFromAPIs()
-                                .then(matchingDrivers => {
-
-                                    // Filter the combined data based on division, depot, and token number
-                                    var filteredDrivers = matchingDrivers.filter(driver => {
-                                        // Convert driver token number to a string for comparison
-                                        const driverTokenString = driver.token_number.toString();
-
-                                        return driver.Division.trim() === division &&
-                                            driver.Depot.trim() === depot &&
-                                            driverTokenString === tokenString;
-                                    });
-
-
-                                    // Process the filtered data
-                                    if (filteredDrivers.length > 0) {
-                                        if (filteredDrivers.length === 1) {
-                                            var driver = filteredDrivers[0];
-
-                                            if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                                                alert('The employee is a DRIVER. Please enter the token number of a conductor or Driver cum Conductor.');
-                                                clearFields(nameElementId, pfElementId, tokenElementId);
-                                                return;
-                                            }
-
-                                            document.getElementById(nameElementId).value = driver.EMP_NAME || '';
-                                            document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
-
-                                            // Call the function to check the schedule master
-                                            checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                                        } else if (filteredDrivers.length > 1) {
-
-                                            // If more than one match, open the modal to select the correct driver
-                                            openDriverSelectionModal(filteredDrivers, function (selectedDriver) {
-
-                                                if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                                                    alert('The selected employee is a DRIVER. Please select a conductor or Driver cum Conductor.');
-                                                    $('#driverSelectionModal').modal('hide'); // Hide the modal
-                                                    clearFields(nameElementId, pfElementId, tokenElementId);
-                                                    return;
-                                                }
-
-                                                document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
-                                                document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
-
-                                                // Call the function to check the schedule master
-                                                checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-                                            });
-                                        } else {
-                                            alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
-                                            clearFields(nameElementId, pfElementId, tokenElementId);
-                                        }
-                                    } else {
-                                        alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
-                                        clearFields(nameElementId, pfElementId, tokenElementId);
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error("Error:", error);  // Log any error
-                                    clearFields(nameElementId, pfElementId, tokenElementId);
-                                });
+                    // Proceed to the second API call
+                    var xhr2 = new XMLHttpRequest();
+                    xhr2.open('GET', '../database/private_emp_api.php?division=' + division + '&depot=' + depot, true);
+                    xhr2.onload = function () {
+                        if (xhr2.status === 200) {
+                            var response2 = JSON.parse(this.responseText);
+                            combinedData = combinedData.concat(response2.data || []); // Append data if it exists
+                            resolve(combinedData);
+                        } else {
+                            reject('Error fetching data from the second API.');
                         }
+                    };
+                    xhr2.onerror = function () {
+                        reject('Network error while fetching from the second API.');
+                    };
+                    xhr2.send();
+                } else {
+                    reject('Error fetching data from the first API.');
+                }
+            };
+            xhr1.onerror = function () {
+                reject('Network error while fetching from the first API.');
+            };
+            xhr1.send();
+        });
+    }
+
+    fetchDataFromAPIs()
+        .then(matchingDrivers => {
+            var filteredDrivers = matchingDrivers.filter(driver => {
+                const driverTokenString = driver.token_number ? driver.token_number.toString() : '';
+
+                return driver.Division.trim() === division &&
+                    driver.Depot.trim() === depot &&
+                    driverTokenString === tokenString;
+            });
+
+            if (filteredDrivers.length > 0) {
+                if (filteredDrivers.length === 1) {
+                    var driver = filteredDrivers[0];
+
+                    if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                        alert('The employee is a DRIVER. Please enter the token number of a conductor or Driver cum Conductor.');
+                        clearFields(nameElementId, pfElementId, tokenElementId);
+                        return;
+                    }
+
+                    document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+                    document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+                    checkScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+
+                } else if (filteredDrivers.length > 1) {
+                    openDriverSelectionModal(filteredDrivers, function (selectedDriver) {
+                        if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                            alert('The selected employee is a DRIVER. Please select a conductor or Driver cum Conductor.');
+                            $('#driverSelectionModal').modal('hide');
+                            clearFields(nameElementId, pfElementId, tokenElementId);
+                            return;
+                        }
+
+                        document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                        document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+                        checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                    });
+                } else {
+                    alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                    clearFields(nameElementId, pfElementId, tokenElementId);
+                }
+            } else {
+                alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            clearFields(nameElementId, pfElementId, tokenElementId);
+        });
+}
+
 
 
 
@@ -1019,7 +1001,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             // First API call
                             var xhr1 = new XMLHttpRequest();
-                            xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
 
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {

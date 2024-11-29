@@ -20,10 +20,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Extract the sch_out_id from the first row
         $sch_out_id = $rowsData[0]['sch_out_id1'] ?? null;
+        // Prepare the SQL query
+        $sql12 = "SELECT schedule_status FROM sch_veh_out WHERE id = ?";
 
+        // Prepare the statement
+        $stmt12 = $db->prepare($sql12);
+
+        // Bind the parameter
+        $stmt12->bind_param("i", $sch_out_id);
+
+        // Execute the statement
+        $stmt12->execute();
+
+        // Bind the result to the $schedule_status variable
+        $stmt12->bind_result($present_status);
+
+        // Fetch the result
+        $stmt12->fetch();
+        if ($present_status == '4') {
+            $set_status = '5';
+        } elseif ($present_status == '8') {
+            $set_status = '10';
+        }
+        // Close the statement
+        $stmt12->close();
         if ($sch_out_id) {
             // Run the update query for sch_veh_out
-            $update_stmt = $db->prepare("UPDATE sch_veh_out SET schedule_status = 5 WHERE id = ? AND schedule_status = 4");
+            $update_stmt = $db->prepare("UPDATE sch_veh_out SET schedule_status = ? WHERE id = ? AND schedule_status = ?");
 
             if ($update_stmt === false) {
                 echo json_encode(['status' => 'error', 'message' => 'Error preparing update SQL statement.']);
@@ -31,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Bind parameter for update
-            $update_stmt->bind_param('i', $sch_out_id);
+            $update_stmt->bind_param('iii', $set_status, $sch_out_id, $present_status);
             $update_stmt->execute();
             $affected_rows = $update_stmt->affected_rows;
             $update_stmt->close();

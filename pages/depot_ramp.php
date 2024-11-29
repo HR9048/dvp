@@ -49,7 +49,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                     WHERE 
                     svo.division_id = '$division_id'
                     AND svo.depot_id = '$depot_id' 
-                    AND svo.schedule_status = 3
+                    AND svo.schedule_status in ('3','7')
                     ORDER BY 
                     svo.arr_time ASC;";
                 $result = $db->query($sql);
@@ -74,7 +74,16 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                                     <td>" . date('H:i', strtotime($row["arr_time"])) . "</td>
                                     <td>" . $row["defect_name"] . "</td>
                                     <td class='d-none'>" . $row["driver_remark"] . "</td>
-                                    <td><button class='btn btn-primary' onclick='openModal(this)'>Receive</button></td>
+                                    <td>";
+
+                        // Check the schedule_status and display the corresponding button
+                        if ($row["schedule_status"] == 3) {
+                            echo "<button class='btn btn-primary' onclick='openModal(this)'>Receive</button>";
+                        } elseif ($row["schedule_status"] == 7) {
+                            echo "<button class='btn btn-warning' onclick='openModal(this)'>Defect Receive</button>";
+                        }
+
+                        echo "</td>
                                   </tr>";
                     }
                 } else {

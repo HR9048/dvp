@@ -18,6 +18,7 @@ FROM sch_veh_out
 WHERE sch_no = '$scheduleNo'
 AND division_id = '$division_id1'
 AND depot_id = '$depot_id1'
+AND arr_time is null
 AND schedule_status ='1'";
     $checkResult = mysqli_query($db, $checkQuery);
     $checkData = mysqli_fetch_assoc($checkResult);
@@ -61,7 +62,7 @@ AND schedule_status ='1'";
         // Return JSON success message
         echo json_encode([
             'status' => 'success',
-            'message' => 'The schedule has been successfully Arrived.'
+            'message' => 'The schedule has been successfully Arrived with Incomplete Schedule.'
         ]);
     } else {
         // Return JSON error message

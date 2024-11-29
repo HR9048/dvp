@@ -29,11 +29,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Assign the POST variables to local variables
     $out_id = $_POST['sch_out_id'];
     $in_id = $_POST['sch_in_id'];
+
+
+    // Prepare the SQL query
+    $sql12 = "SELECT schedule_status FROM sch_veh_out WHERE id = ?";
+
+    // Prepare the statement
+    $stmt12 = $db->prepare($sql12);
+
+    // Bind the parameter
+    $stmt12->bind_param("i", $out_id);
+
+    // Execute the statement
+    $stmt12->execute();
+
+    // Bind the result to the $schedule_status variable
+    $stmt12->bind_result($schedule_status_out);
+
+    // Fetch the result
+    $stmt12->fetch();
+
+    // Close the statement
+    $stmt12->close();
+
+
     $ramp_defect = $_POST['ramp_defect'];
     $ramp_remark = $_POST['ramp_remark'];
     $depot_id = $_SESSION['DEPOT_ID'];
     $division_id = $_SESSION['DIVISION_ID'];
-    $bunk_status= '3';
+    if ($schedule_status_out == '3') {
+        $bunk_status = '3';
+    } elseif ($schedule_status_out == '7') {
+        $bunk_status = '7';
+    }
     // Prepare and execute the update query for sch_veh_in
     $sql_update_in = "UPDATE sch_veh_in 
                       SET ramp_defect = ?, 
@@ -45,14 +73,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt_in->execute()) {
             // Prepare and execute the update query for sch_veh_out
-            $schedule_status = ($ramp_defect == '1') ? 0 : 4;
-
+            if ($schedule_status_out == '3') {
+                $schedule_status = ($ramp_defect == '1') ? 0 : 4;
+            } elseif ($schedule_status_out == '7') {
+                $schedule_status = ($ramp_defect == '1') ? 9 : 8;
+            }
             $sql_update_out = "UPDATE sch_veh_out 
                                SET schedule_status = ? 
                                WHERE id = ? and schedule_status=? and depot_id=? and division_id=?";
 
             if ($stmt_out = $db->prepare($sql_update_out)) {
-                $stmt_out->bind_param('iiiii', $schedule_status, $out_id, $bunk_status, $depot_id,$division_id);
+                $stmt_out->bind_param('iiiii', $schedule_status, $out_id, $bunk_status, $depot_id, $division_id);
 
                 if ($stmt_out->execute()) {
                     echo json_encode(['status' => 'success']);
@@ -73,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo json_encode(['status' => 'error', 'message' => 'Failed to prepare the sch_veh_in statement.']);
     }
     $db->close();
-}else {
+} else {
     header('Location: ../pages/login.php');
     exit;
 }

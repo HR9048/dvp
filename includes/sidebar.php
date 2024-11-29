@@ -231,6 +231,7 @@ confirm_logged_in();
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="main_schedule_info.php">View Schedule Master</a></li>
+                          <li><a class="dropdown-item" href="main_schedule_depotwise_view.php">View Schedules depotwise fixation report</a></li>
                         </ul>
                       </div>
                     </li>

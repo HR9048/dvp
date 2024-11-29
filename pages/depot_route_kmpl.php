@@ -186,20 +186,20 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="driverDefectForm">
-                        <input type="hidden" class="form-control" id="id" name="id" readonly>
+                    <form id="earlydriverDefectForm">
+                        <input type="hidden" class="form-control" id="id1" name="id1" readonly>
 
                         <div class="row">
                             <div class="col">
                                 <div class="form-group">
                                     <label for="scheduleNo">Schedule No</label>
-                                    <input type="text" class="form-control" id="scheduleNo1" name="scheduleno" readonly>
+                                    <input type="text" class="form-control" id="scheduleNo1" name="scheduleno1" readonly>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label for="vehicleNo">Vehicle No</label>
-                                    <input type="text" class="form-control" id="vehicleNo1" name="vehicleNo" readonly>
+                                    <input type="text" class="form-control" id="vehicleNo1" name="vehicleNo1" readonly>
                                 </div>
                             </div>
                         </div>
@@ -208,13 +208,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                             <div class="col">
                                 <div class="form-group">
                                     <label for="driverToken">Driver Token</label>
-                                    <input type="text" class="form-control" id="driverToken1" name="driverToken" readonly>
+                                    <input type="text" class="form-control" id="driverToken1" name="driverToken1" readonly>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label for="conductorToken">Conductor Token</label>
-                                    <input type="text" class="form-control" id="conductorToken1" name="conductorToken"
+                                    <input type="text" class="form-control" id="conductorToken1" name="conductorToken1"
                                         readonly>
                                 </div>
                             </div>
@@ -224,55 +224,68 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                             <div class="col">
                                 <div class="form-group">
                                     <label for="arrivalTime">Arrival Time</label>
-                                    <input type="text" class="form-control" id="arrivalTime1" name="arrivalTime" readonly>
+                                    <input type="text" class="form-control" id="arrivalTime1" name="arrivalTime1" readonly>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label for="logsheetNo">Logsheet No</label>
-                                    <input type="number" class="form-control" id="logsheetNo1" name="logsheetNo" required>
+                                    <input type="number" class="form-control" id="logsheetNo1" name="logsheetNo1" required>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="RkmOperated">KM Operated</label>
-                                    <input type="number" class="form-control" id="RkmOperated1" name="RkmOperated" required>
+                        <!-- Need Fuel Checkbox -->
+                        <div class="form-group">
+                            <label>Need Fuel</label>
+                            <div>
+                                <input type="radio" id="needFuelYes" name="needFuel" value="yes" required>
+                                <label for="needFuelYes">Yes</label>
+                                <input type="radio" id="needFuelNo" name="needFuel" value="no" required>
+                                <label for="needFuelNo">No</label>
+                            </div>
+                        </div>
+
+                        <div id="fuelFields" style="display: none;">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="RkmOperated">KM Operated</label>
+                                        <input type="number" class="form-control" id="RkmOperated1" name="RkmOperated1">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="Rhsd">HSD</label>
+                                        <input type="number" class="form-control" id="Rhsd1" name="Rhsd1">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="Rhsd">HSD</label>
-                                    <input type="number" class="form-control" id="Rhsd1" name="Rhsd" required>
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="Rkmpl">KMPL</label>
+                                        <input type="text" class="form-control" id="Rkmpl1" name="Rkmpl1" readonly>
+                                    </div>
                                 </div>
+
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="Rkmpl">KMPL</label>
-                                    <input type="text" class="form-control" id="Rkmpl1" name="Rkmpl" readonly>
-                                </div>
-                            </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label for="driverDefect">Driver Defect Noticed</label>
-                                    <select class="form-control" id="driverDefect1" name="driverDefect" required>
+                                    <select class="form-control" id="driverDefect1" name="driverDefect1" required>
                                         <!-- Options will be populated by JavaScript -->
                                     </select>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="row">
-
                             <div class="col" id="remarkContainer1" style="display: none;">
                                 <div class="form-group">
                                     <label for="remark">Remark</label>
-                                    <textarea class="form-control" id="remark1" name="remark"></textarea>
+                                    <textarea class="form-control" id="remark1" name="remark1"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -285,6 +298,32 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const needFuelYes = document.getElementById("needFuelYes");
+            const needFuelNo = document.getElementById("needFuelNo");
+            const fuelFields = document.getElementById("fuelFields");
+            const RkmOperated = document.getElementById("RkmOperated1");
+            const Rhsd = document.getElementById("Rhsd1");
+
+            needFuelYes.addEventListener("change", toggleFuelFields);
+            needFuelNo.addEventListener("change", toggleFuelFields);
+
+            function toggleFuelFields() {
+                if (needFuelYes.checked) {
+                    fuelFields.style.display = "block";
+                    RkmOperated.required = true;
+                    Rhsd.required = true;
+                } else {
+                    fuelFields.style.display = "none";
+                    RkmOperated.required = false;
+                    Rhsd.required = false;
+                }
+            }
+        });
+    </script>
+
 
     <script>
         function openModal(button) {
@@ -422,7 +461,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                             if (response.status === 'success') {
                                 // Redirect to depot_kmpl.php on success
                                 alert('recored updated successfully');
-                                window.location.href = 'depot_kmpl.php';
+                                window.location.href = 'depot_route_kmpl.php';
                             } else {
                                 // Show error message if any
                                 alert('Error: ' + response.message);
@@ -439,7 +478,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
 
     </script>
 
-<script>
+    <script>
         function openDefectModal(button) {
             // Get the row data
             var row = $(button).closest('tr');
@@ -520,6 +559,79 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                 $('#Rkmpl1').val('');
             }
         });
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Handle form submission
+            $('#earlydriverDefectForm').on('submit', function (event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                // Validate the form fields
+                var isValid = true;
+                var id = $('#id1').val();
+                var logsheetNo = $('#logsheetNo').val();
+                var needFuel = $('input[name="needFuel"]:checked').val();
+                var RkmOperated = $('#RkmOperated1').val();
+                var Rhsd = $('#Rhsd1').val();
+                var driverDefect = $('#driverDefect1').val();
+                var remark = $('#remark1').val();
+
+                if (!id) {
+                    isValid = false;
+                    alert('Something went wrong. Please refresh the page and try again.');
+                }
+                if (needFuel === 'yes') {
+                    if (!logsheetNo) {
+                        isValid = false;
+                        alert('Logsheet No is required.');
+                    }
+                    if (!RkmOperated) {
+                        isValid = false;
+                        alert('KM Operated is required.');
+                    }
+                    if (!Rhsd) {
+                        isValid = false;
+                        alert('HSD is required.');
+                    }
+                }
+                if (!driverDefect) {
+                    isValid = false;
+                    alert('Driver Defect is required.');
+                }
+                if (driverDefect !== '1' && !remark) {
+                    isValid = false;
+                    alert('Remark is required when Driver Defect is not None.');
+                }
+
+                if (isValid) {
+                    // Gather form data
+                    var formData = $(this).serialize();
+
+                    // Submit the form data using AJAX
+                    $.ajax({
+                        url: '../database/depot_earlydriver_defect_insert.php',
+                        type: 'POST',
+                        data: formData,
+                        dataType: 'json', // Expecting JSON response
+                        success: function (response) {
+                            if (response.status === 'success') {
+                                // Redirect to depot_kmpl.php on success
+                                alert('recored updated successfully');
+                                window.location.href = 'depot_route_kmpl.php';
+                            } else {
+                                // Show error message if any
+                                alert('Error: ' + response.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // Handle errors
+                            alert('An error occurred: ' + error);
+                        }
+                    });
+                }
+            });
+        });
+
     </script>
     <?php
 } else {

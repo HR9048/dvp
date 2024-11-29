@@ -17,7 +17,7 @@ FROM sch_veh_out
 WHERE sch_no = '$scheduleNo'
 AND division_id = '$division_id1'
 AND depot_id = '$depot_id1'
-AND arr_date = '$today'
+AND arr_date is null
 AND schedule_status = '1'
 ";
     $checkResult = mysqli_query($db, $checkQuery);

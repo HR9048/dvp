@@ -9,7 +9,11 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 }
 if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
     ?>
- <h6 style="text-align:right;"><button class="btn btn-secondary"><a style="color:white;" href="depot_schinout.php"><i class="fa-solid fa-backward fa-beat fa-lg" style="color: #ffffff;"></i>&nbsp; Back</a></button></h6>
+<h6 style="text-align:right;">
+    <button class="btn btn-secondary" onclick="history.back();">
+        <i class="fa-solid fa-backward fa-beat fa-lg" style="color: #ffffff;"></i>&nbsp; Back
+    </button>
+</h6>
 
 <h2 class="text-center">SECURITY MODULE</h2>
         <div class="container" style="padding:2px;width: 40%; min-width: 300px; margin: 0 auto; text-align: center;">

@@ -52,9 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Fetch details from sch_veh_out based on id
-    $sqlFetch = "SELECT sch_no, driver_token_no_1, vehicle_no, driver_1_pf, driver_token_no_2, driver_2_pf, conductor_token_no, conductor_pf_no, departed_date, dep_time, arr_date, arr_time
+    $sqlFetch = "SELECT sch_no, driver_token_no_1, vehicle_no, driver_1_pf, driver_token_no_2, driver_2_pf, conductor_token_no, conductor_pf_no, departed_date, dep_time, arr_date, arr_time, schedule_status
                  FROM sch_veh_out
-                 WHERE id = ? AND schedule_status = 6 AND division_id = ? AND depot_id = ?";
+                 WHERE id = ? AND schedule_status in ('2','6') AND division_id = ? AND depot_id = ?";
 
     $stmtFetch = $db->prepare($sqlFetch);
     $stmtFetch->bind_param("iii", $id, $division_id, $depot_id);
@@ -82,10 +82,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $departedTime = $row['dep_time'];
     $arrDate = $row['arr_date'];
     $arrTime = $row['arr_time'];
-
+    $status_ofsch = $row['schedule_status'];
+    if($status_ofsch == 2){
+        $set_status = '3';
+    }elseif($status_ofsch == 6){
+        $set_status = '7';
+    }
     // Prepare and execute the SQL query to insert data into schedule_defect_data
     $sqlInsert = "INSERT INTO sch_veh_in 
-                  (schedule_no, sch_out_id, vehicle_no, logsheet_no, km_operated, hsd, kmpl, driver_defect, driver_remark, division_id, depot_id) 
+                  (schedule_no, sch_out_id, logsheet_no,need_fuel, km_operated, hsd, kmpl, driver_defect, driver_remark, division_id, depot_id) 
                   VALUES 
                   (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -94,8 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         "sssssssssss",
         $scheduleNo,
         $id,
-        $vehicleNo,
         $logsheetNo,
+        $needFuel,
         $RkmOperated,
         $Rhsd,
         $Rkmpl,
@@ -107,9 +112,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($stmtInsert->execute()) {
         // If the insert is successful, update the schedule_status in sch_veh_out
-        $sqlUpdate = "UPDATE sch_veh_out SET schedule_status = 7 WHERE id = ? AND division_id = ? AND depot_id = ?";
+        $sqlUpdate = "UPDATE sch_veh_out SET schedule_status = ? WHERE id = ? AND division_id = ? AND depot_id = ?";
         $stmtUpdate = $db->prepare($sqlUpdate);
-        $stmtUpdate->bind_param("iii", $id, $division_id, $depot_id);
+        $stmtUpdate->bind_param("iiii", $set_status, $id, $division_id, $depot_id);
         $stmtUpdate->execute();
         $stmtUpdate->close();
 

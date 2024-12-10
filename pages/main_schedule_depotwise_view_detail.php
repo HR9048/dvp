@@ -1,64 +1,66 @@
 <?php
 include '../includes/connection.php';
-include '../includes/division_sidebar.php';
+include '../includes/sidebar.php';
 
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! Your session is expired. Please login.'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
-?>
-<style>
-    .hide {
-        display: none;
-    }
+if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
-    th,
-    td {
-        border: 1px solid black;
-        text-align: left;
-        font-size: 15px;
-        padding: 1px !important;
-    }
+    ?>
+    <style>
+        .hide {
+            display: none;
+        }
 
-    th {
-        background-color: #f2f2f2;
-    }
+        th,
+        td {
+            border: 1px solid black;
+            text-align: left;
+            font-size: 15px;
+            padding: 1px !important;
+        }
 
-    .dataTable th,
-    .dataTable td {
-        padding: 1px !important;
-    }
+        th {
+            background-color: #f2f2f2;
+        }
 
-    .btn {
-        padding-top: 0px;
-        padding-bottom: 0px;
-    }
+        .dataTable th,
+        .dataTable td {
+            padding: 1px !important;
+        }
 
-    table {
-        margin: 20px auto; /* Center the table horizontally */
-        width: 95%; /* Set the maximum width to 70% */
-        border-collapse: collapse;
-    }
+        .btn {
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
 
-    tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
+        table {
+            margin: 20px auto;
+            /* Center the table horizontally */
+            width: 95%;
+            /* Set the maximum width to 70% */
+            border-collapse: collapse;
+        }
 
-    tr:nth-child(odd) {
-        background-color: #ffffff;
-    }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
 
-    tr:hover {
-        background-color: #f1f1f1;
-    }
-</style>
-<div class="container1">
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+   <div class="container1">
     <h4 class="text-center">Depot wise Schedule Master Updated Details</h4>
     <?php
-    $divi= $_SESSION['DIVISION_ID'];
     // Fetch divisions and depots
-    $locationQuery = "SELECT division, kmpl_division, division_id, depot, kmpl_depot, depot_id FROM location WHERE division_id= $divi AND depot NOT IN ('DIVISION')";
+    $locationQuery = "SELECT division, kmpl_division, division_id, depot, kmpl_depot, depot_id FROM location WHERE division_id IN('1','2','3','4','5','6','7','8','9') AND depot NOT IN ('DIVISION')";
     $locationResult = $db->query($locationQuery);
 
     // Prepare an array to hold the final data
@@ -73,9 +75,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
         $depot2 = $row['depot_id'];
 
         // Fetch Driver, Conductor, DCC from API
-        //$apiUrl = "http://117.203.105.106:50/data.php?division=$division1&depot=$depot1";
-        $apiUrl = "http://192.168.1.32:50/data.php?division=$division1&depot=$depot1";
-
+        $apiUrl = "http://localhost/data.php?division=$division1&depot=$depot1";
         $apiResponse = file_get_contents($apiUrl);
         $apiData = json_decode($apiResponse, true);
 
@@ -232,9 +232,20 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
             </tr>
         <?php endif; ?>
 
-        
+        <!-- Overall Totals -->
+        <tr style="font-weight:bold;">
+            <td colspan="3">Corporation Total</td>
+            <td><?= $overallTotals['drivers']; ?></td>
+            <td><?= $overallTotals['conductors']; ?></td>
+            <td><?= $overallTotals['dcc_vehicles']; ?></td>
+            <td><?= $overallTotals['vehicles']; ?></td>
+            <td><?= $overallTotals['total_schedules']; ?></td>
+            <td><?= $overallTotals['schedules_with_vehicles']; ?></td>
+            <td><?= $overallTotals['schedules_with_crew']; ?></td>
+        </tr>
     </table>
 </div>
+
     <?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";

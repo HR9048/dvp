@@ -1,18 +1,17 @@
 <?php
 include '../includes/connection.php';
-session_start(); // Ensure session is started
-
+include '../pages/session.php';
 $data = json_decode(file_get_contents('php://input'), true);
 $date = $data['date'];
-
+$division_id = $data['division']; // Make sure session variables are in capital letters
+$depot_id = $data['depot'];
 if (!$date) {
     echo json_encode(['html' => 'Invalid date selected.']);
     exit;
 }
 
 // Get division and depot from session
-$division_id = $_SESSION['DIVISION_ID']; // Make sure session variables are in capital letters
-$depot_id = $_SESSION['DEPOT_ID'];
+
 
 // Format the date to check against the `inact_from` and `inact_to` fields
 $selected_date = date('Y-m-d', strtotime($date)); // 'YYYY-MM-DD' format
@@ -95,6 +94,17 @@ while ($row = $bus_result->fetch_assoc()) {
     $buses[$row['sch_key_no']] = $row['buses']; // Mapping buses to schedule keys
 }
 
+$location = "SELECT division, depot FROM location WHERE division_id = ? AND depot_id = ?";
+$ssstt = $db->prepare($location);
+$ssstt->bind_param('ii', $division_id, $depot_id);
+$ssstt->execute();
+$locat = $ssstt->get_result();
+
+if ($locat->num_rows > 0) {
+    $row = $locat->fetch_assoc();
+    $division_name = $row['division'];
+    $depot_name = $row['depot'];
+} 
 $crew_query = "
     SELECT 
         sch_key_no, 
@@ -153,7 +163,7 @@ $query = "SELECT
 FROM 
     schedule_master sm
 LEFT JOIN 
-    sch_veh_out svo ON svo.sch_no = sm.sch_key_no AND svo.division_id=$division_id and svo.depot_id =$depot_id and svo.departed_date = ? 
+    sch_veh_out svo ON svo.sch_no = sm.sch_key_no AND svo.division_id=$division_id and svo.depot_id = $depot_id and svo.departed_date = ? 
 LEFT JOIN 
     service_class sc ON sm.service_class_id = sc.id  -- Joining with service_class table
 WHERE 
@@ -171,7 +181,7 @@ $result = $stmt->get_result();
 
 $html = '<table border="1" style="width: 100%; border-collapse: collapse;">';
 $html .= '<br><br>';
-$html .= '<h2 style="text-align: center;">Schedule Operation on Date: ' . date('d-m-Y', strtotime($date)) . '</h2><br>';
+$html .= '<h2 style="text-align: center;">'. $division_name .' '. $depot_name .' Schedule Operation on Date: ' . date('d-m-Y', strtotime($date)) . '</h2><br>';
 $html .= '<p style="color: red;">Note * : (SNO = Schedule not Operated), (SNA = Schedule not Arrived), (NA = Not Alloted), (N/A = Not Applicable)</p>';
 $html .= '<tr><th>Sl No</th><th>Schedule Key No</th><th>Description</th><th>Sch Dep Time</th><th>Dep Time</th><th>Sch Arr Time</th><th>Arr Time</th><th>Service Class</th><th>Buses</th><th>Drivers</th><th>Conductors</th><th>Bus Status</th><th>Driver 1 Status</th><th>Driver 2 Status</th><th>Conductor Status</th></tr>';
 

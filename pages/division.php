@@ -5,70 +5,74 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
     // Allow access
     ?>
     <div class="row show-grid">
-        <div class="col-md-3">
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Off Road</div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    $query = "SELECT 
+<?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') { ?>
+            <div class="col-md-3">
+                <div class="col-md-12 mb-3">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-0">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Off Road</div>
+                                    <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                        <?php
+                                        $query = "SELECT 
                 COUNT(DISTINCT bus_number) AS total_off_road_count
               FROM off_road_data
               WHERE status = 'off_road' AND division = '{$_SESSION['DIVISION_ID']}'";
 
-                                    // Execute the query
-                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                        // Execute the query
+                                        $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
-                                    // Fetch the count
-                                    $row = mysqli_fetch_array($result);
+                                        // Fetch the count
+                                        $row = mysqli_fetch_array($result);
 
-                                    // Output the count
-                                    echo "$row[0]";
-                                    ?>
-                                    Record(s)
+                                        // Output the count
+                                        echo "$row[0]";
+                                        ?>
+                                        Record(s)
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fa-solid fa-tools fa-beat fa-2x text-gray-300"></i>
+                                <div class="col-auto">
+                                    <i class="fa-solid fa-tools fa-beat fa-2x text-gray-300"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="col-md-12 mb-3">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-0">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Vehicles on Schedule
+            <?php } ?>
+
+            <div class="col-md-3">
+                <div class="col-md-12 mb-3">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-0">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Vehicles on Schedule
+                                    </div>
+                                    <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                        <?php
+                                        $query = "SELECT COUNT(*) FROM sch_veh_out where schedule_status='1' AND division_id = '{$_SESSION['DIVISION_ID']}'";
+                                        $result = mysqli_query($db, $query) or die(mysqli_error($db));
+                                        $row = mysqli_fetch_array($result);
+                                        echo "Vehicle Count: $row[0]";
+                                        ?>
+                                        Record(s)
+                                    </div>
                                 </div>
-                                <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                    <?php
-                                    $query = "SELECT COUNT(*) FROM sch_veh_out where schedule_status='1' AND division_id = '{$_SESSION['DIVISION_ID']}'";
-                                    $result = mysqli_query($db, $query) or die(mysqli_error($db));
-                                    $row = mysqli_fetch_array($result);
-                                    echo "Vehicle Count: $row[0]";
-                                    ?>
-                                    Record(s)
+                                <div class="col-auto">
+                                    <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
                                 </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+            <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') { ?>
         <div class="col-md-3">
             <div class="col-md-12 mb-3">
                 <div class="card border-left-primary shadow h-100 py-2">
@@ -121,6 +125,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
                 </div>
             </div>
         </div>
+        <?php } ?>
         <div class="col-md-3">
             <div class="col-md-12 mb-3">
                 <div class="card border-left-primary shadow h-100 py-2">

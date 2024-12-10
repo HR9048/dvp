@@ -250,7 +250,7 @@ include '../includes/footer.php';
                     // Assuming `data` is the HTML string containing <option> elements
                     var $data = $(data);
                     var filteredData = $data.filter(function () {
-                        return $(this).val().toUpperCase() !== 'DIVISION';
+                        return $(this).val().toUpperCase() !== 'DI';
                     });
                     $('#depot').html(filteredData);
                 }

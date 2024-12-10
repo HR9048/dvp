@@ -232,6 +232,8 @@ confirm_logged_in();
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="main_schedule_info.php">View Schedule Master</a></li>
                           <li><a class="dropdown-item" href="main_schedule_depotwise_view.php">View Schedules depotwise fixation report</a></li>
+                          <li><a class="dropdown-item" href="main_schedule_depotwise_view_detail.php">View Schedules depotwise alloted report</a></li>
+                          <li><a class="dropdown-item" href="central_office_schedule_monitor.php">Schedule Monitor</a></li>
                         </ul>
                       </div>
                     </li>
@@ -243,6 +245,8 @@ confirm_logged_in();
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="report.php">Off-Road Report</a></li>
+                          <li><a class="dropdown-item" href="main_schedule_report_dailywise.php">Daily Schedule Report</a></li>
+                          <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a></li>
                         </ul>
                       </div>
                     </li>

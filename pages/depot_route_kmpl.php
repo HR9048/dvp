@@ -20,6 +20,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                     <th>Vehicle No</th>
                     <th>Driver Token</th>
                     <th>Conductor Token</th>
+                    <th>Departure Date</th>
                     <th>Arrival Time</th>
                     <th>Action</th>
                 </tr>
@@ -45,12 +46,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                                     <td>" . $row["vehicle_no"] . "</td>
                                     <td>" . $driver_token . "</td>
                                     <td>" . $conductor_token . "</td>
+                                    <td>" . date('d-m-Y', strtotime($row["departed_date"])) . "</td>
                                     <td>" . date('H:i', strtotime($row["arr_time"])) . "</td>
                                      <td>";
 
                         // Check the schedule_status and display the corresponding button
                         if ($row["schedule_status"] == 2) {
-                            echo "<button class='btn btn-primary' onclick='openModal(this)'>Receive</button>";
+                            echo "<button class='btn btn-primary' onclick='openDefectModal(this)'>Receive</button>";
                         } elseif ($row["schedule_status"] == 6) {
                             echo "<button class='btn btn-warning' onclick='openDefectModal(this)'>Defect Receive</button>";
                         }
@@ -569,7 +571,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                 // Validate the form fields
                 var isValid = true;
                 var id = $('#id1').val();
-                var logsheetNo = $('#logsheetNo').val();
+                var logsheetNo = $('#logsheetNo1').val();
                 var needFuel = $('input[name="needFuel"]:checked').val();
                 var RkmOperated = $('#RkmOperated1').val();
                 var Rhsd = $('#Rhsd1').val();

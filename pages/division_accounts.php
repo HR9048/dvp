@@ -5,7 +5,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
     // Allow access
     ?>
 
@@ -26,12 +26,13 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
                     </thead>
                     <tbody>
                         <?php
-                        $query = "SELECT u.ID, e.FIRST_NAME, e.LAST_NAME, u.USERNAME, t.TYPE
+                        $query = "SELECT u.ID, j.JOB_TITLE, e.FIRST_NAME, e.LAST_NAME, u.USERNAME, t.TYPE
                     FROM users u
                     JOIN employee e ON e.PF_ID = u.PF_ID
                     JOIN type t ON t.TYPE_ID = u.TYPE_ID
+                    join job j on e.job_id = j.JOB_ID
                     JOIN location l ON e.LOCATION_ID = l.LOCATION_ID
-                    WHERE u.TYPE_ID = 2 AND l.DIVISION = '{$_SESSION['DIVISION']}'";
+                    WHERE u.TYPE_ID = 2 AND l.DIVISION = '{$_SESSION['DIVISION']}' and j.job_title = '{$_SESSION['JOB_TITLE']}'";
 
                         $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
@@ -78,7 +79,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') {
                     JOIN employee e ON e.PF_ID = u.PF_ID
                     JOIN type t ON t.TYPE_ID = u.TYPE_ID
                     JOIN location l ON e.LOCATION_ID = l.LOCATION_ID
-                    WHERE u.TYPE_ID = 3 AND l.DIVISION = '{$_SESSION['DIVISION']}' AND e.LAST_NAME NOT IN ('SECURITY')";
+                    WHERE u.TYPE_ID = 3 AND l.DIVISION = '{$_SESSION['DIVISION']}'";
 
                         $result = mysqli_query($db, $query) or die(mysqli_error($db));
 

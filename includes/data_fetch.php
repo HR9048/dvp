@@ -56,7 +56,7 @@ function fetchDepot()
         if ($result->num_rows > 0) {
             // Output data of each row
             while ($row = $result->fetch_assoc()) {
-                if ($row['DEPOT'] !== 'DIVISION') {
+                if ($row['DEPOT'] !== 'DIVIS') {
                     // Output each option with depot_id as value and DEPOT as the visible text
                     echo "<option value='" . $row['depot_id'] . "'>" . $row['DEPOT'] . "</option>";
                 }
@@ -396,6 +396,33 @@ function rampdefecttype()
         }
     }
     return $defect;
+}
+// Handle fetch depots action
+if (isset($_POST['action']) && $_POST['action'] === 'fetchDepots' && isset($_POST['divisionId']) && !empty($_POST['divisionId'])) {
+    $divisionId = $_POST['divisionId']; // Fetch divisionId from POST
+
+    // SQL query to fetch depots based on the division ID
+    $sql = "SELECT depot_id, depot FROM location WHERE division_id = ? AND depot != 'DIVISION'";
+
+    // Prepare and execute the query
+    if ($stmt = $db->prepare($sql)) {
+        $stmt->bind_param('i', $divisionId);  // Bind divisionId to the query
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $depots = [];
+        while ($row = $result->fetch_assoc()) {
+            $depots[] = $row;  // Collect depot data
+        }
+
+        if (empty($depots)) {
+            echo json_encode(['error' => 'No depots found']);
+        } else {
+            echo json_encode($depots);  // Return depots as JSON
+        }
+    } else {
+        echo json_encode(['error' => 'Database query failed']);
+    }
 }
 // Check if an action is specified in the request
 if (isset($_GET['action'])) {

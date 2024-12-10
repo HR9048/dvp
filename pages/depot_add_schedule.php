@@ -22,18 +22,18 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
         $status='1';
 
         // Determine schedule count based on service type id
-        if ($service_type_id == 1) {
+        if ($service_type_id == 1 || $service_type_id == 2) {
             $sch_count = 1;
-        } elseif (in_array($service_type_id, [2, 3, 4])) {
+        } elseif ($service_type_id == 3 || $service_type_id == 4) {
             $sch_count = 2;
         } else {
             $sch_count = 0;
         }
 
         // Determine number of buses based on service type id
-        if ($service_type_id == 1) {
+        if ($service_type_id == 1 || $service_type_id == 2) {
             $number_of_buses = 1;
-        } elseif (in_array($service_type_id, [2, 3, 4])) {
+        } elseif ($service_type_id == 3 || $service_type_id == 4) {
             $number_of_buses = 2;
         } else {
             $number_of_buses = 0;

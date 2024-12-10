@@ -38,7 +38,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
     table {
         margin: 20px auto; /* Center the table horizontally */
-        width: 70%; /* Set the maximum width to 70% */
+        width: 90%; /* Set the maximum width to 70% */
         border-collapse: collapse;
     }
 

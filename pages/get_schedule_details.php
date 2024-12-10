@@ -14,6 +14,18 @@ if (isset($_GET['id'])) {
     loc.depot, 
     sc.name AS service_class_name, 
     st.type AS service_type_name,
+    -- Separate columns for driver 171status
+    MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_1 THEN cfd.`171status` END) AS `Driver_1_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_2 THEN cfd.`171status` END) AS `Driver_2_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_3 THEN cfd.`171status` END) AS `Driver_3_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_4 THEN cfd.`171status` END) AS `Driver_4_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_5 THEN cfd.`171status` END) AS `Driver_5_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_6 THEN cfd.`171status` END) AS `Driver_6_171_Status`,
+
+    -- Separate columns for conductor 171status
+    MAX(CASE WHEN cfd.designation = 'Conductor' AND cfd.crew_pf = skm.conductor_pf_1 THEN cfd.`171status` END) AS `Conductor_1_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Conductor' AND cfd.crew_pf = skm.conductor_pf_2 THEN cfd.`171status` END) AS `Conductor_2_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Conductor' AND cfd.crew_pf = skm.conductor_pf_3 THEN cfd.`171status` END) AS `Conductor_3_171_Status`,
     skm.ID AS ID,
     (
         CASE 
@@ -49,6 +61,12 @@ LEFT JOIN
 LEFT JOIN 
     schedule_type st 
     ON skm.service_type_id = st.id
+LEFT JOIN 
+    crew_fix_data cfd 
+    ON cfd.division_id = skm.division_id 
+    AND cfd.depot_id = skm.depot_id 
+    AND cfd.sch_key_no = skm.sch_key_no 
+    AND cfd.to_date IS NULL
 WHERE 
     skm.ID = $id";
 

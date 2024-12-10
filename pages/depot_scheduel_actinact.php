@@ -17,7 +17,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
         $scheduleId = intval($_POST['schedule_id']);
         $scheduleNo = $_POST['sch_key_no'];
         $status = ($_POST['action'] == 'activate') ? 1 : 0;
-        $currentDateTime = date('Y-m-d H:i:s'); // Current server datetime
+date_default_timezone_set('Asia/Kolkata');
+$currentDateTime = date('Y-m-d H:i:s'); // Current server datetime in IST
         // Fetch existing data
         $selectSql = "SELECT * FROM schedule_master WHERE ID = ? AND division_id = ? AND depot_id = ?";
         $stmt = $db->prepare($selectSql);
@@ -210,6 +211,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                 <th>Allotted Driver</th>
                 <th>Allotted Conductor</th>
                 <th>Action</th>
+                <th>Modify</th>
             </tr>
         </thead>
         <tbody>
@@ -284,6 +286,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                     echo $actionButton; // Display the button based on status
                     echo '</div>';
                     echo '</td>
+                <td>';
+                    echo '<button class="btn btn-primary modify-btn" data-row-id="' . $row['ID'] . '">Modify</button>';
+                    echo '</td>
             </tr>';
                 }
             } else {
@@ -294,24 +299,24 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
     </table>
     <!-- Modal HTML -->
     <div id="confirmationModal" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Action</h5>
-                <button type="button" class="close" onclick="closeModal12()" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p id="modalMessage">Are you sure you want to perform this action?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal12()">Cancel</button>
-                <button type="button" id="confirmButton" class="btn btn-primary">Confirm</button>
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Action</h5>
+                    <button type="button" class="close" onclick="closeModal12()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalMessage">Are you sure you want to perform this action?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal12()">Cancel</button>
+                    <button type="button" id="confirmButton" class="btn btn-primary">Confirm</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
     <!-- Hidden Form for Action -->
     <form id="hiddenForm" method="POST" action="">
         <input type="hidden" name="schedule_id" id="hiddenScheduleId">
@@ -321,14 +326,14 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
         <input type="hidden" name="depot_id" value="<?php echo $depot; ?>">
     </form>
     <script>
-   function closeModal12() {
-    $('#confirmationModal').modal('hide'); // Hide the modal using jQuery
-    $('.modal-backdrop').remove(); // Remove the modal backdrop
-  }
+        function closeModal12() {
+            $('#confirmationModal').modal('hide'); // Hide the modal using jQuery
+            $('.modal-backdrop').remove(); // Remove the modal backdrop
+        }
 
-</script>
+    </script>
     <script>
-       
+
 
         $(document).ready(function () {
             var actionUrl = ''; // URL to send the AJAX request to
@@ -370,7 +375,190 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                 "order": [[4, 'asc']]
             });
         });
+        $(document).ready(function () {
+            // Open modal and fetch data when modify button is clicked
+            $('#dataTable4 tbody').on('click', '.modify-btn', function () {
+                var rowId = $(this).data('row-id');
+                $('#modifyModal').modal('show');
+
+                // Make AJAX request to fetch schedule data based on row ID
+                $.ajax({
+                    url: '../database/depot_get_schedule_data.php', // PHP file to handle data fetching
+                    method: 'GET',
+                    data: { id: rowId },
+                    success: function (response) {
+                        var data = JSON.parse(response);
+                        // Populate modal fields with data
+                        $('#row_id').val(data.id);
+                        $('#sch_key_no').val(data.sch_key_no);
+                        $('#sch_abbr').val(data.sch_abbr);
+                        $('#sch_km').val(data.sch_km);
+                        $('#sch_dep_time').val(data.sch_dep_time);
+                        $('#sch_arr_time').val(data.sch_arr_time);
+                        $('#service_class_id').val(data.service_class_id);
+                        $('#service_type_id').val(data.service_type_id);
+
+                        // Fetch Service Class and Schedule Type options
+                        ServiceClass(data.service_class_id);
+                        ScheduleType(data.service_type_id);
+                    }
+                });
+            });
+
+            // Service Class fetch function
+            function ServiceClass(selectedServiceClassId) {
+                $.ajax({
+                    url: '../includes/data_fetch.php',
+                    type: 'GET',
+                    data: { action: 'ServiceClass' },
+                    success: function (response) {
+                        try {
+                            var service = JSON.parse(response);
+
+                            // Clear existing options
+                            $('#service_class_id').empty();
+                            // Add default "Select" option
+                            $('#service_class_id').append('<option value="">Select</option>');
+
+                            // Add fetched options
+                            $.each(service, function (index, value) {
+                                // Check if the value matches the selected service class
+                                var selected = (value.id == selectedServiceClassId) ? 'selected' : '';
+                                $('#service_class_id').append('<option value="' + value.id + '" ' + selected + '>' + value.name + '</option>');
+                            });
+                        } catch (error) {
+                            console.error('Error parsing Service Class response:', error);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching Service Class:', error);
+                    }
+                });
+            }
+
+            // Schedule Type fetch function
+            function ScheduleType(selectedServiceTypeId) {
+                $.ajax({
+                    url: '../includes/data_fetch.php',
+                    type: 'GET',
+                    data: { action: 'ScheduleType' },
+                    success: function (response) {
+                        try {
+                            var service = JSON.parse(response);
+
+                            // Clear existing options
+                            $('#service_type_id').empty();
+                            // Add default "Select" option
+                            $('#service_type_id').append('<option value="">Select</option>');
+
+                            // Add fetched options
+                            $.each(service, function (index, value) {
+                                // Check if the value matches the selected service type
+                                var selected = (value.id == selectedServiceTypeId) ? 'selected' : '';
+                                $('#service_type_id').append('<option value="' + value.id + '" ' + selected + '>' + value.type + '</option>');
+                            });
+                        } catch (error) {
+                            console.error('Error parsing Schedule Type response:', error);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching Schedule Type:', error);
+                    }
+                });
+            }
+
+            // Handle form submission
+            $('#modifyForm').submit(function (e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: '../database/depot_update_schedule_basic.php',
+                    method: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        // Handle success (e.g., close modal, refresh table, show message)
+                        alert('Data updated successfully!');
+                        $('#modifyModal').modal('hide');
+                        location.reload();
+                    },
+                    error: function () {
+                        alert('Error updating data.');
+                    }
+                });
+            });
+        });
+
+
     </script>
+    <!-- Modal Structure -->
+    <div id="modifyModal" class="modal fade" tabindex="-1" aria-labelledby="modifyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modifyModalLabel">Modify Schedule Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="modifyForm">
+                        <input type="hidden" id="row_id" name="row_id" />
+                        <div class="row">
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label for="sch_key_no" class="form-label">Schedule Key Number</label>
+                                    <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" readonly />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label for="sch_abbr" class="form-label">Schedule Abbreviation</label>
+                                    <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sch_km" class="form-label">Schedule Km</label>
+                            <input type="number" class="form-control" id="sch_km" name="sch_km" required />
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label for="sch_dep_time" class="form-label">Departure Time</label>
+                                    <input type="time" class="form-control" id="sch_dep_time" name="sch_dep_time"
+                                        required />
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label for="sch_arr_time" class="form-label">Arrival Time</label>
+                                    <input type="time" class="form-control" id="sch_arr_time" name="sch_arr_time"
+                                        required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label for="service_class_id" class="form-label">Service Class</label>
+                                    <select class="form-control" id="service_class_id" name="service_class_id" required>
+                                        <!-- Options will be populated from service_class table -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="mb-3">
+                                    <label for="service_type_id" class="form-label">Service Type</label>
+                                    <select class="form-control" id="service_type_id" name="service_type_id" required>
+                                        <!-- Options will be populated from service_type table -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <?php
 } else {

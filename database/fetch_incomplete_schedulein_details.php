@@ -33,16 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $departedDateTime = new DateTime("$departedDate $departedTime", new DateTimeZone('Asia/Kolkata'));
         $interval = $departedDateTime->diff($serverCurrentDateTime);
         $hoursDifference = $interval->days * 24 + $interval->h + $interval->i / 60;
-        if ($schCount == 1 && $hoursDifference > 36) {
-            echo '<script>alert("The selected schedule is a 1-day schedule and the time difference is greater than 1 day 12 hours. Please contact higher authority to make the schedule in."); window.location.href="depot_schedule_incomplete.php";</script>';
-            exit;
-        } elseif ($schCount == 2 && $serverCurrentDateTime->format('Y-m-d') == $departedDateTime->format('Y-m-d')) {
-            echo '<script>alert("The route has 2 schedule counts. The departure and arrival should not be allowed on the same date."); window.location.href="depot_schinout.php";</script>';
-            exit;
-        } elseif ($schCount == 2 && $hoursDifference > 84) {
-            echo '<script>alert("The selected schedule is a 2-day schedule and the time difference is greater than 3 days 12 hours. Please contact higher authority to make the schedule in."); window.location.href="depot_schinout.php";</script>';
-            exit;
-        }
+
         echo '<input class="form-control" type="hidden" id="id" name="id" value="' . htmlspecialchars($id) . '" readonly>';
 
         echo '<div class="row">';

@@ -14,34 +14,86 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
     ?>
 
 
+    <style>
+        /* Tab navigation styles */
+        .nav-tabs {
+            border-bottom: 2px solid #ddd;
+            /* A subtle divider line */
+        }
+
+        .nav-tabs .nav-link {
+            background-color: #f9f9f9;
+            /* Default background for tabs */
+            border: none;
+            /* Remove default borders */
+            border-radius: 5px 5px 0 0;
+            /* Rounded top corners for tabs */
+            padding: 10px 15px;
+            /* Add padding for spacing */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            /* Smooth hover and active effect */
+            color: #555;
+            /* Default tab text color */
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #007bff;
+            /* Highlighted background for active tab */
+            color: #fff;
+            /* White text for the active tab */
+            font-weight: bold;
+            /* Bold text for emphasis */
+        }
+
+        .nav-tabs .nav-link:hover {
+            background-color: #e0e0e0;
+            /* Slight hover effect for non-active tabs */
+            color: #333;
+            /* Darker text on hover */
+        }
+
+        /* Tab content styles */
+        .tab-content {
+            background-color: #f8f9fa;
+            /* Light background for content */
+            border-radius: 0 0 5px 5px;
+            /* Rounded bottom corners for content */
+            padding: 5px;
+            /* Add padding for spacing */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow for depth */
+        }
+    </style>
+
 
     <style>
         .select2-results__option[aria-disabled="true"] {
             background-color: #FFE800 !important;
         }
     </style>
-    <h6 style="text-align:right"><button class="btn btn-warning"><a href="depot_schedule_incomplete.php">Have Incomplete
-                schedule?</a></button></h6>
+    <h6 style="text-align:right"><button class="btn btn-warning"><a href="depot_schedule_incomplete.php">ಅಪೂರ್ಣತೆಯ ಅನುಸೂಚಿ
+                ?</a></button></h6>
 
-    <h2 class="text-center">SECURITY MODULE</h2>
     <nav>
         <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
             <button class="nav-link active custom-size" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home"
-                type="button" role="tab" aria-controls="nav-home" aria-selected="true">Vehicle Out</button>
+                type="button" role="tab" aria-controls="nav-home" aria-selected="true">ಅನುಸೂಚಿ ಹೊರಗೆ</button>
             <button class="nav-link custom-size" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile"
-                type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Vehicle In</button>
+                type="button" role="tab" aria-controls="nav-profile" aria-selected="false">ಅನುಸೂಚಿ ಒಳಗೆ</button>
+            <button class="nav-link custom-size" id="nav-exchange-tab" data-bs-toggle="tab" data-bs-target="#nav-exchange"
+                type="button" role="tab" aria-controls="nav-exchange" aria-selected="false">ಬದಲಾವಣೆ</button>
         </div>
     </nav>
     <div class="tab-content" id="nav-tabContent" style="width: 40%; min-width: 300px; margin: 0 auto; text-align: center;">
         <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
             <div class="container" style="padding:2px">
-                <h2>Depot: <?php echo $_SESSION['DEPOT']; ?></h2>
-                <p style="color: red;">Schedule Vehicle Out Entry</p>
+                <h4>ಘಟಕ: <?php echo $_SESSION['DEPOT']; ?></h4>
+                <p style="color: red;">ಅನುಸೂಚಿಗಳ ನಿರ್ಗಮನ</p>
                 <form id="sch_out_form" method="POST" class="mt-4">
                     <div class="form-group">
-                        <label for="sch_no">Schedule Key Number</label>
+                        <label for="sch_no">ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆ</label>
                         <select class="form-control select2" id="sch_no" name="sch_no" required style="width: 100%;">
-                            <option value="">Select a Schedule Number</option>
+                            <option value="">ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</option>
                         </select>
                     </div>
                     <div id="scheduleDetails">
@@ -52,17 +104,17 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         </div>
         <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
             <div class="container" style="padding:2px">
-                <h2>Depot: <?php echo $_SESSION['DEPOT']; ?></h2>
-                <p style="color:red;">Schedule Vehicle In entry</p>
+                <h4>ಘಟಕ: <?php echo $_SESSION['DEPOT']; ?></h4>
+                <p style="color:red;">ಅನುಸೂಚಿಗಳ ಆಗಮನ</p>
                 <form id="sch_in_form" method="POST" class="mt-4">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="col-md-12 mb-3">
                                 <div class="form-group">
-                                    <label for="sch_no_in">Schedule Key Number</label>
+                                    <label for="sch_no_in">ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆ</label>
                                     <select class="form-control select2" id="sch_no_in" name="sch_no_in" required
                                         style="min-width: 100px;">
-                                        <option value="">Select a Schedule Number</option>
+                                        <option value="">ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</option>
                                     </select>
                                 </div>
                             </div>
@@ -70,7 +122,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                         <div class="col-md-6">
                             <div class="col-md-12 mb-3">
                                 <div class="form-group">
-                                    <label for="out_date">Schedule out Date</label>
+                                    <label for="out_date">ಅನುಸೂಚಿಗಳ ನಿರ್ಗಮನದ ದಿನಾಂಕ</label>
                                     <input class="form-control" type="date" id="out_date" name="out_date" required>
                                 </div>
                             </div>
@@ -80,6 +132,39 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                         <!-- Fields will be populated here dynamically using JavaScript -->
                     </div>
 
+                </form>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="nav-exchange" role="tabpanel" aria-labelledby="nav-exchange-tab">
+            <div class="container" style="padding:2px">
+                <h4>ಘಟಕ: <?php echo $_SESSION['DEPOT']; ?></h4>
+                <p style="color: red;">ವಾಹನ/ಸಿಬ್ಬಂದಿ ಬದಲಾವಣೆ</p>
+                <form id="sch_change_form" method="POST" class="mt-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-group">
+                                    <label for="sch_no_change">ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆ</label>
+                                    <select class="form-control select2" id="sch_no_change" name="sch_no_change" required
+                                        style="min-width: 100px;">
+                                        <option value="">ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-md-12 mb-3">
+                                <div class="form-group">
+                                    <label for="out_date_change">ಅನುಸೂಚಿಗಳ ನಿರ್ಗಮನದ ದಿನಾಂಕ</label>
+                                    <input class="form-control" type="date" id="out_date_change" name="out_date_change"
+                                        required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="scheduleChangeDetails">
+                        <!-- Fields will be populated here dynamically using JavaScript -->
+                    </div>
                 </form>
             </div>
         </div>
@@ -101,12 +186,16 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                 }
             });
         }
+        
         $(document).ready(function () {
             fetchSchedule();
+            fetchSchedulechange();
         });
+
+
         $(document).ready(function () {
             $('#sch_no').select2({
-                placeholder: 'Select a schedule Key number',
+                placeholder: 'ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
                 allowClear: true
             });
             $('#sch_no').on('change', function () {
@@ -157,7 +246,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                             if (details.half_releiver_token_1) driverTokenOptions1 += '<option value="' + details.half_releiver_token_1 + '">' + details.half_releiver_token_1 + ' - ' + details.half_releiver_name_1 + ' (allotted off releiver)</option>';
                             if (details.half_releiver_token_2) driverTokenOptions1 += '<option value="' + details.half_releiver_token_2 + '">' + details.half_releiver_token_2 + ' - ' + details.half_releiver_name_2 + ' (allotted off releiver)</option>';
 
-                            if (['2', '3', '4'].includes(details.service_type_id)) {
+                            if (['4'].includes(details.service_type_id)) {
                                 if (details.driver_token_1) driverTokenOptions2 += '<option value="' + details.driver_pf_1 + '">' + details.driver_token_1 + ' - ' + details.driver_name_1 + ' (allotted)</option>';
                                 if (details.driver_token_2) driverTokenOptions2 += '<option value="' + details.driver_pf_2 + '">' + details.driver_token_2 + ' - ' + details.driver_name_2 + ' (allotted)</option>';
                                 if (details.driver_token_3) driverTokenOptions2 += '<option value="' + details.driver_pf_3 + '">' + details.driver_token_3 + ' - ' + details.driver_name_3 + ' (allotted)</option>';
@@ -180,13 +269,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
                             // Separate filtering for drivers and conductors
                             var driverData = additionalData.filter(function (employee) {
-                                return employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER' || employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER-CUM-CONDUCTOR' &&
+                                return employee.EMP_DESGN_AT_APPOINTMENT === 'CONDUCTOR' || employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER' || employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER-CUM-CONDUCTOR' &&
                                     ![details.driver_token_1, details.driver_token_2, details.driver_token_3, details.driver_token_4, details.driver_token_5, details.driver_token_6, details.half_releiver_token_1, details.half_releiver_token_2].includes(employee.token_number);
                             });
 
                             driverData.forEach(function (driver) {
                                 driverTokenOptions1 += `<option value="${driver.EMP_PF_NUMBER}">${driver.token_number} - ${driver.EMP_NAME}</option>`;
-                                if (['2', '3', '4'].includes(details.service_type_id)) {
+                                if (['4'].includes(details.service_type_id)) {
                                     driverTokenOptions2 += `<option value="${driver.EMP_PF_NUMBER}">${driver.token_number} - ${driver.EMP_NAME}</option>`;
                                 } else {
                                     driverTokenOptions2 = ''; // If no valid tokens, clear the options
@@ -194,7 +283,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                             });
 
                             var conductorData = additionalData.filter(function (employee) {
-                                return employee.EMP_DESGN_AT_APPOINTMENT === 'CONDUCTOR' || employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER-CUM-CONDUCTOR' &&
+                                return employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER' || employee.EMP_DESGN_AT_APPOINTMENT === 'CONDUCTOR' || employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER-CUM-CONDUCTOR' &&
                                     ![details.conductor_token_1, details.conductor_token_2, details.conductor_token_3].includes(employee.token_number);
                             });
 
@@ -204,64 +293,64 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
                             var schDepTime = details.sch_dep_time || '';
                             scheduleDetailsDiv.innerHTML = `
-                                                                    <div class="form-group">
-                                                                        <label for="vehicle_no">Vehicle No</label>
-                                                                        <select class="form-control select2" id="vehicle_no" name="vehicle_no" required style="width: 100%;">
-                                                                            ${vehicleNoOptions}
-                                                                        </select>
-                                                                    </div>
-                                                                    <div class="form-group">
-                                                                        <label for="driver_token_no_1">Driver Token No 1</label>
-                                                                        <select class="form-control select2" id="driver_token_no_1" name="driver_token_no_1" required style="width: 100%;">
-                                                                            ${driverTokenOptions1}
-                                                                        </select>
-                                                                    </div>
-                                                                    ${driverTokenOptions2 ? `
-                                                                        <div class="form-group">
-                                                                            <label for="driver_token_no_2">Driver Token No 2</label>
-                                                                            <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;">
-                                                                                ${driverTokenOptions2}
-                                                                            </select>
-                                                                        </div>
-                                                                    ` : ''}
-                                                                    ${details.single_crew === 'no' ? `
-                                                                    <div class="form-group">
-                                                                        <label for="conductor_token_no">Conductor Token No</label>
-                                                                        <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;">
-                                                                            ${conductorTokenOptions}
-                                                                        </select>
-                                                                    </div>
-                                                                ` : ''}
-                                                                    <div class="row">
-                                                                        <div class="col">
                                                                             <div class="form-group">
-                                                                                <label for="sch_dep_time">Sch Departure time</label>
-                                                                                <input type="time" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${schDepTime}" required readonly>
+                                                                                <label for="vehicle_no">Vehicle No/ವಾಹನ ಸಂಖ್ಯೆ</label>
+                                                                                <select class="form-control select2" id="vehicle_no" name="vehicle_no" required style="width: 100%;">
+                                                                                    ${vehicleNoOptions}
+                                                                                </select>
                                                                             </div>
-                                                                        </div>
-                                                                        <div class="col">
                                                                             <div class="form-group">
-                                                                                <label for="act_dep_time">Act Departure time</label>
-                                                                                <input type="time" class="form-control" id="act_dep_time" name="act_dep_time" value="" required>
+                                                                                <label for="driver_token_no_1">Driver Token No 1/ಚಾಲಕ ಟೋಕನ್‌ ಸಂಖ್ಯೆ 1</label>
+                                                                                <select class="form-control select2" id="driver_token_no_1" name="driver_token_no_1" required style="width: 100%;">
+                                                                                    ${driverTokenOptions1}
+                                                                                </select>
                                                                             </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="form-group" style="display: none;">
-                                                                        <label for="time_diff">Time Difference (minutes)</label>
-                                                                        <input type="text" class="form-control" id="time_diff" name="time_diff" readonly>
-                                                                    </div>
-                                                                    <div class="form-group" style="display: none;">
-                                                                        <label for="reason_for_late_departure">Reason for Late Departure:</label>
-                                                                        <textarea class="form-control" id="reason_for_late_departure" name="reason_for_late_departure"></textarea>
-                                                                    </div>
-                                                                    <div class="form-group" style="display: none;">
-                                                                        <label for="reason_early_departure">Reason for Early Departure:</label>
-                                                                        <textarea class="form-control" id="reason_early_departure" name="reason_early_departure"></textarea>
-                                                                    </div>
-                                                                    <div class="form-group">
-                                                                        <button type="submit" class="btn btn-primary">Submit</button>
-                                                                    </div>
-                                                                `;
+                                                                            ${driverTokenOptions2 ? `
+                                                                                <div class="form-group">
+                                                                                    <label for="driver_token_no_2">Driver Token No 2/ಚಾಲಕ ಟೋಕನ್‌ ಸಂಖ್ಯೆ 2</label>
+                                                                                    <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;">
+                                                                                        ${driverTokenOptions2}
+                                                                                    </select>
+                                                                                </div>
+                                                                            ` : ''}
+                                                                            ${details.single_crew === 'no' ? `
+                                                                            <div class="form-group">
+                                                                                <label for="conductor_token_no">Conductor Token No/ನಿರ್ವಾಹಕ ಟೋಕನ್‌ ಸಂಖ್ಯೆ </label>
+                                                                                <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;">
+                                                                                    ${conductorTokenOptions}
+                                                                                </select>
+                                                                            </div>
+                                                                        ` : ''}
+                                                                            <div class="row">
+                                                                                <div class="col">
+                                                                                    <div class="form-group">
+                                                                                        <label for="sch_dep_time">Sch Departure time/ ಅನುಸೂಚಿ ನಿರ್ಗಮನ ಸಮಯ</label>
+                                                                                        <input type="time" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${schDepTime}" required readonly>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="col">
+                                                                                    <div class="form-group">
+                                                                                        <label for="act_dep_time">Act Departure time/ನಿಗದಿತ ನಿರ್ಗಮನ ಸಮಯ</label>
+                                                                                        <input type="time" class="form-control" id="act_dep_time" name="act_dep_time" value="" required>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="form-group" style="display: none;">
+                                                                                <label for="time_diff">Time Difference (minutes)</label>
+                                                                                <input type="text" class="form-control" id="time_diff" name="time_diff" readonly>
+                                                                            </div>
+                                                                            <div class="form-group" style="display: none;">
+                                                                                <label for="reason_for_late_departure">Reason for Late Departure/ತಡವಾಗಿ ನಿರ್ಗಮನಕ್ಕೆ ಕಾರಣ:</label>
+                                                                                <textarea class="form-control" id="reason_for_late_departure" name="reason_for_late_departure"></textarea>
+                                                                            </div>
+                                                                            <div class="form-group" style="display: none;">
+                                                                                <label for="reason_early_departure">Reason for Early Departure/ಮುಂಚಿತ ನಿರ್ಗಮನಕ್ಕೆ ಕಾರಣ:</label>
+                                                                                <textarea class="form-control" id="reason_early_departure" name="reason_early_departure"></textarea>
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                                                            </div>
+                                                                        `;
 
                             $('.select2').select2();
                             $(document).on('change', '#act_dep_time', function () {
@@ -377,7 +466,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                     var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
 
                     // API URLs with division and depot as query parameters
-                    var dataApiUrl = '<?php echo getBaseUrl(); ?>/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+                    var dataApiUrl = 'http://192.168.1.32:50/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); //test
+                    //var dataApiUrl = '<?php echo getBaseUrl(); ?>/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); //server
                     var empApiUrl = '../database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
 
                     // Function to fetch data from both APIs
@@ -465,49 +555,49 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         });
         $(document).ready(function () {
             $('#sch_out_form').on('submit', function (e) {
-    e.preventDefault(); // Prevent default form submission
+                e.preventDefault(); // Prevent default form submission
 
-    // Serialize form data
-    var formData = $(this).serialize();
+                // Serialize form data
+                var formData = $(this).serialize();
 
-    $.ajax({
-        type: 'POST',
-        url: '../database/depot_submit_schedule_out.php', // URL of the PHP script
-        data: formData,
-        dataType: 'json', // Expect a JSON response
-        success: function (response) {
-            if (response.status === 'success') {
-                // Display SweetAlert on success
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: response.message,
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    // Reload the page after the alert is closed
-                    window.location.reload();
+                $.ajax({
+                    type: 'POST',
+                    url: '../database/depot_submit_schedule_out.php', // URL of the PHP script
+                    data: formData,
+                    dataType: 'json', // Expect a JSON response
+                    success: function (response) {
+                        if (response.status === 'success') {
+                            // Display SweetAlert on success
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                // Reload the page after the alert is closed
+                                window.location.reload();
+                            });
+                        } else {
+                            // Display SweetAlert on error
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Display detailed error message from the server
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred: ' + (xhr.responseText || error),
+                            confirmButtonText: 'OK'
+                        });
+                    }
                 });
-            } else {
-                // Display SweetAlert on error
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: response.message,
-                    confirmButtonText: 'OK'
-                });
-            }
-        },
-        error: function (xhr, status, error) {
-            // Display detailed error message from the server
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'An error occurred: ' + (xhr.responseText || error),
-                confirmButtonText: 'OK'
             });
-        }
-    });
-});
 
         });
 
@@ -600,7 +690,107 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         });
 
     </script>
+    <script>
+        function fetchSchedulechange() {
+            $.ajax({
+                url: '../includes/data_fetch.php',
+                type: 'GET',
+                data: { action: 'fetchScheduleIn' },
+                success: function (response) {
+                    var bodyBuilders = JSON.parse(response);
+                    $.each(bodyBuilders, function (index, value) {
+                        $('#sch_no_change').append('<option value="' + value + '">' + value + '</option>');
+                    });
+                }
+            });
+        }
+        $(document).ready(function () {
+            function fetchSchedulechange() {
+                var scheduleNo = $('#sch_no_change').val();
+                var outDate = $('#out_date_change').val();
 
+                if (scheduleNo && outDate) {
+                    $.ajax({
+                        url: '../database/fetch_schedule_change_details.php',
+                        type: 'POST',
+                        data: { scheduleNo: scheduleNo, outDate: outDate },
+                        success: function (response) {
+                            $('#scheduleChangeDetails').html(response);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error fetching schedule details:', error);
+                        }
+                    });
+                }
+            }
+
+            $('#sch_no_change, #out_date_change').change(fetchSchedulechange);
+        });
+        $(document).ready(function () {
+    $('#sch_change_form').on('submit', function (e) {
+        e.preventDefault(); // Prevent default form submission
+
+        // Check if any checkbox is selected
+        const isAtLeastOneSelected = $('#change_vehicle').is(':checked') || 
+                                     $('#change_driver').is(':checked') || 
+                                     ($('#change_driver2').length && $('#change_driver2').is(':checked')) || 
+                                     ($('#change_conductor').length && $('#change_conductor').is(':checked'));
+
+        // If no checkbox is selected, show SweetAlert
+        if (!isAtLeastOneSelected) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Selection Required',
+                text: 'Please select at least one field to change before submitting.',
+                confirmButtonText: 'OK'
+            });
+            return; // Prevent form submission
+        }
+
+        // Serialize form data if at least one checkbox is selected
+        var formData = $(this).serialize();
+
+        $.ajax({
+            type: 'POST',
+            url: '../database/depot_submit_change_veh_crew.php', // URL of the PHP script
+            data: formData,
+            dataType: 'json', // Expect a JSON response
+            success: function (response) {
+                if (response.status === 'success') {
+                    // Display SweetAlert on success
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Reload the page after the alert is closed
+                        window.location.reload();
+                    });
+                } else {
+                    // Display SweetAlert on error
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                // Handle the AJAX request error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred: ' + error,
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+});
+
+    </script>
 
     <?php
 } else {

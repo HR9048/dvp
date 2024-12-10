@@ -12,7 +12,7 @@ if (isset($_POST['sch_no'])) {
         WHERE sch_no = '$sch_no'
           AND division_id = '{$_SESSION['DIVISION_ID']}'
           AND depot_id = '{$_SESSION['DEPOT_ID']}'
-          AND schedule_status IN (1, 2,3,4)
+          AND schedule_status ='1'
         ORDER BY id DESC
     ";
 
@@ -249,78 +249,4 @@ if (isset($_POST['sch_no'])) {
     header("Location: login.php");
     exit;
 }
-
-// SELECT sm.*, svo.schedule_status,svo.departed_date
-//         FROM schedule_master sm
-//         LEFT JOIN (
-//             SELECT *
-//             FROM sch_veh_out
-//             WHERE sch_no = '$sch_no'
-//             ORDER BY id DESC
-//             LIMIT 1
-//         ) svo ON sm.sch_key_no = svo.sch_no
-//         WHERE sm.sch_key_no = '$sch_no'
-//           AND sm.depot_id = '{$_SESSION['DEPOT_ID']}'
-//           AND sm.division_id = '{$_SESSION['DIVISION_ID']}'";
-
-// SELECT 
-//     sm.*,
-//     svo.schedule_status,
-//     svo.departed_date,
-//     CASE 
-//         WHEN svo1.schedule_status = 1 THEN NULL 
-//         ELSE sm.bus_number_1 
-//     END AS bus_number_1,
-//     CASE 
-//         WHEN svo2.schedule_status = 1 THEN NULL 
-//         ELSE sm.bus_number_2 
-//     END AS bus_number_2
-// FROM 
-//     schedule_master sm
-// LEFT JOIN (
-//     SELECT *
-//     FROM sch_veh_out
-//     WHERE sch_no = '$sch_no'
-//     ORDER BY id DESC
-//     LIMIT 1
-// ) svo ON sm.sch_key_no = svo.sch_no
-// LEFT JOIN sch_veh_out svo1 ON sm.bus_number_1 = svo1.vehicle_no AND svo1.schedule_status = 1
-// LEFT JOIN sch_veh_out svo2 ON sm.bus_number_2 = svo2.vehicle_no AND svo2.schedule_status = 1
-// WHERE 
-//     sm.sch_key_no = '$sch_no'
-//     AND sm.depot_id = '{$_SESSION['DEPOT_ID']}'
-//     AND sm.division_id = '{$_SESSION['DIVISION_ID']}'
-
-
-// SELECT 
-//     sm.*,  -- Get all columns from schedule_master
-//     MAX(svo.schedule_status) AS schedule_status,
-//     MAX(svo.departed_date) AS departed_date,
-//     CASE 
-//         WHEN MAX(svo1.schedule_status) = 1 OR (COUNT(CASE WHEN or1.status = 'off_road' THEN 1 END) > 0) THEN NULL 
-//         ELSE MAX(sm.bus_number_1) 
-//     END AS bus_number_1,
-//     CASE 
-//         WHEN MAX(svo2.schedule_status) = 1 OR (COUNT(CASE WHEN or2.status = 'off_road' THEN 1 END) > 0) THEN NULL 
-//         ELSE MAX(sm.bus_number_2) 
-//     END AS bus_number_2
-// FROM 
-//     schedule_master sm
-// LEFT JOIN (
-//     SELECT *
-//     FROM sch_veh_out
-//     WHERE sch_no = '$sch_no'
-//     ORDER BY id DESC
-//     LIMIT 1
-// ) svo ON sm.sch_key_no = svo.sch_no
-// LEFT JOIN sch_veh_out svo1 ON sm.bus_number_1 = svo1.vehicle_no AND svo1.schedule_status = 1
-// LEFT JOIN sch_veh_out svo2 ON sm.bus_number_2 = svo2.vehicle_no AND svo2.schedule_status = 1
-// LEFT JOIN off_road_data or1 ON sm.bus_number_1 = or1.bus_number
-// LEFT JOIN off_road_data or2 ON sm.bus_number_2 = or2.bus_number
-// WHERE 
-//     sm.sch_key_no = '$sch_no'
-//     AND sm.depot_id = '{$_SESSION['DEPOT_ID']}'
-//     AND sm.division_id = '{$_SESSION['DIVISION_ID']}'
-// GROUP BY 
-//     sm.sch_key_no
 ?>

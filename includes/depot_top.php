@@ -280,7 +280,6 @@ function getBaseUrl()
                     </li>
                   <?php } ?>
                   <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
-
                     <li class="nav-item">
                       <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -291,7 +290,7 @@ function getBaseUrl()
                           <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
                             <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Update Schedule</a></li>
                             <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
-                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Active/Inactive Schedule</a>
+                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Modify/Active/Inactive Schedule</a>
                             </li>
                           <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech') { ?>
@@ -302,13 +301,26 @@ function getBaseUrl()
                             </li>
                             <li><a class="dropdown-item" href="depot_schedule_b.php">Update Schedule(Bus)</a></li>
                             <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
-                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Active/Inactive Schedule</a>
+                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Modify/Active/Inactive Schedule</a>
                             </li>
                           <?php } ?>
                         </ul>
                       </div>
                     </li>
                   <?php }
+                   if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY' ) { ?>
+                    <li class="nav-item">
+                      <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                          style="font-size: 15px;">
+                          <b>Report</b>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
+                        </ul>
+                      </div>
+                    </li>
+                  <?php } 
                   if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
 
                     <li class="nav-item">
@@ -342,6 +354,7 @@ function getBaseUrl()
                           <?php } ?>
                           <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
                           <li><a class="dropdown-item" href="depot_crew_report_m.php">Route Monthly Crew report</a></li>
+                          <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule Monitor</a></li>
                         </ul>
                       </div>
                     </li>

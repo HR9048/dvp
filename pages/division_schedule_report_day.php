@@ -1,15 +1,14 @@
 <?php
 include '../includes/connection.php';
-include '../includes/depot_top.php';
+include '../includes/division_sidebar.php';
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'SECURITY') {
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
-    $depot_id = $_SESSION['DEPOT_ID'];
     ?>
     <style>
         .hide {
@@ -43,10 +42,31 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
     <form id="dateForm">
         <label for="date">Select Date:</label>
         <input type="date" id="date" name="date" required max="<?php echo date('Y-m-d'); ?>">
-        <button class="btn btn-primary" type="submit">Generate Report</button>
-        <button class="btn btn-success" onclick="window.print()">Print</button>
 
+        <!-- Hidden Division Field -->
+        <input type="hidden" id="division" name="division" value="<?php echo $_SESSION['DIVISION_ID']; ?>">
+
+        <!-- Depot Dropdown -->
+        <label for="depot">Select Depot:</label>
+        <select id="depot" name="depot" required>
+            <option value="">Select Depot</option>
+            <?php
+            // Fetch depots from the database based on the session division_id
+            $divisionId = $_SESSION['DIVISION_ID'];
+            $sql = "SELECT depot_id, depot FROM location WHERE division_id = '$divisionId' AND depot != 'DIVISION'";
+            $result = $db->query($sql);
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    echo '<option value="' . $row['depot_id'] . '">' . $row['depot'] . '</option>';
+                }
+            }
+            ?>
+        </select>
+
+        <button class="btn btn-primary" type="submit">Generate Report</button>
+        <button class="btn btn-success" type="button" onclick="window.print()">Print</button>
     </form>
+
 
     <div class="container1">
         <div id="reportTable"></div>
@@ -54,14 +74,21 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
     <script>
         document.getElementById('dateForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            var selectedDate = document.getElementById('date').value;
 
-            fetch('../database/fetch_crew_report_d.php', {
+            var selectedDate = document.getElementById('date').value;
+            var divisionId = document.getElementById('division').value // Division ID from session
+            var depotId = document.getElementById('depot').value;       // Depot selected from the form
+
+            fetch('../database/fetch_depotwise_crew_report_d.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ date: selectedDate })
+                body: JSON.stringify({
+                    date: selectedDate,
+                    division: divisionId,
+                    depot: depotId
+                })
             })
                 .then(response => {
                     if (!response.ok) {
@@ -80,6 +107,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                     document.getElementById('reportTable').innerHTML = 'An error occurred while fetching the report.';
                 });
         });
+
 
 
     </script>

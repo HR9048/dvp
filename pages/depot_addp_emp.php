@@ -8,12 +8,29 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 }
 
 if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['tokenNumber'])) {
         $tokenNumber = $_POST['tokenNumber'];
-        $pfNumber = $_POST['pfNumber'];
         $name = $_POST['name'];
         $designation = $_POST['designation'];
-
+        $divisionId = $_SESSION['DIVISION_ID']; // Get division ID from session
+        $depotId = $_SESSION['DEPOT_ID'];       // Get depot ID from session
+        
+        // Query to find the maximum existing PF number for the given division and depot
+        $sql = "SELECT MAX(CAST(SUBSTRING(EMP_PF_NUMBER, LENGTH(EMP_PF_NUMBER) - 3, 4) AS UNSIGNED)) AS max_pf
+                FROM private_employee
+                WHERE EMP_PF_NUMBER LIKE 'P{$divisionId}{$depotId}%'";
+        
+        $result = $db->query($sql);
+        
+        if ($result && $row = $result->fetch_assoc()) {
+            $maxPf = $row['max_pf'] ? $row['max_pf'] : 0; // Get the max number or default to 0
+            $newPfNumber = str_pad($maxPf + 1, 4, '0', STR_PAD_LEFT); // Increment and pad to 4 digits
+        } else {
+            $newPfNumber = '0001'; // Default to 0001 if no PF found
+        }
+        
+        // Generate the full PF number
+        $pfNumber = 'P' . $divisionId . $depotId . $newPfNumber;
         // Check if the PF number already exists in the private_employee table
         $checkQuery = "SELECT COUNT(*) FROM private_employee WHERE EMP_PF_NUMBER = ?";
         $stmtCheck = $db->prepare($checkQuery);
@@ -177,16 +194,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
                 </div>
                 <div class="col">
                     <div class="form-group">
-                        <label for="pfNumber">PF Number:</label>
-                        <input type="text" class="form-control" id="pfNumber" name="pfNumber" required
-                            style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase();">
-                        <div class="invalid-feedback">PF Number is required and must be numeric or charectors.</div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="form-group">
                         <label for="name">Name:</label>
                         <input type="text" class="form-control" id="name" name="name" required>
                         <div class="invalid-feedback">Name is required.</div>
@@ -198,13 +205,20 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
                         <select class="form-control" name="designation" id="designation">
                             <option value="">Select a Designation</option>
                             <option value="DRIVER">Driver</option>
-                            <option value="CONDUCTOR">Conductor</option>
-                            <option value="DRIVER-CUM-CONDUCTOR">DCC</option>
                         </select>
                         <div class="invalid-feedback">Designation is required.</div>
                     </div>
                 </div>
+                <!--<div class="col">
+                    <div class="form-group">
+                        <label for="pfNumber">PF Number:</label>
+                        <input type="text" class="form-control" id="pfNumber" name="pfNumber" required
+                            style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase();" readonly>
+                        <div class="invalid-feedback">PF Number is required and must be numeric or charectors.</div>
+                    </div>
+                </div>-->
             </div>
+            
 
 
             <button type="button" class="btn btn-primary" onclick="validateForm()">Submit</button>
@@ -215,7 +229,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
         function validateForm() {
             var form = document.getElementById('detailsForm');
             var tokenNumber = document.getElementById('tokenNumber').value;
-            var pfNumber = document.getElementById('pfNumber').value;
             var name = document.getElementById('name').value;
             var designation = document.getElementById('designation').value;
 
@@ -229,12 +242,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
                 document.getElementById('tokenNumber').classList.remove('is-invalid');
             }
 
-            if (pfNumber.trim() === "" || !/^[a-zA-Z0-9]+$/.test(pfNumber)) {
-                document.getElementById('pfNumber').classList.add('is-invalid');
-                isValid = false;
-            } else {
-                document.getElementById('pfNumber').classList.remove('is-invalid');
-            }
 
             if (name.trim() === "") {
                 document.getElementById('name').classList.add('is-invalid');
@@ -253,7 +260,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
             if (isValid) {
                 // If the form is valid, populate the modal with data
                 document.getElementById('confirmTokenNumber').textContent = tokenNumber;
-                document.getElementById('confirmPfNumber').textContent = pfNumber;
                 document.getElementById('confirmName').textContent = name;
                 document.getElementById('confirmDesignation').textContent = designation;
 
@@ -302,7 +308,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
                     <p>Please verify the entered details:</p>
                     <ul>
                         <li><strong>Token Number/DL No:</strong> <span id="confirmTokenNumber"></span></li>
-                        <li><strong>PF Number:</strong> <span id="confirmPfNumber"></span></li>
                         <li><strong>Name:</strong> <span id="confirmName"></span></li>
                         <li><strong>Designation:</strong> <span id="confirmDesignation"></span></li>
                     </ul>

@@ -40,65 +40,71 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 //$stmt->execute();
 //$result = $stmt->get_result();
 //$currentData = $result->fetch_assoc();
-//$stmt->close();
-        // Check for duplicate bus numbers in the schedule_master table
-        $checkCurrentSql = "SELECT bus_number_1, bus_number_2 
-FROM schedule_master
-WHERE (bus_number_1 = ? OR bus_number_2 = ?) and id not in ($scheduleId)"; // Exclude current schedule
-
-        $stmt = $db->prepare($checkCurrentSql);
-        $stmt->bind_param("ss", $busNumber1, $busNumber2);
-        $stmt->execute();
-        $checkCurrentResult = $stmt->get_result();
-
-        $duplicates = [];
-
-        while ($row = $checkCurrentResult->fetch_assoc()) {
-            if ($row['bus_number_1'] === $busNumber1 || $row['bus_number_2'] === $busNumber1) {
+//$stmt->close();                
+        // Check for duplicate bus numbers, excluding the current schedule (using $scheduleId)
+        $checkCurrentSql = "SELECT bus_number_1, bus_number_2, service_type_id 
+        FROM schedule_master
+        WHERE ((bus_number_1 = ? OR bus_number_2 = ?) OR (bus_number_1 = ? OR bus_number_2 = ?))
+        AND id NOT IN ($scheduleId)"; // Exclude current schedule
+    
+    $stmt = $db->prepare($checkCurrentSql);
+    $stmt->bind_param("ssss", $busNumber1, $busNumber2, $busNumber2, $busNumber1);
+    $stmt->execute();
+    $checkCurrentResult = $stmt->get_result();
+    
+    $duplicates = [];
+    
+    while ($row = $checkCurrentResult->fetch_assoc()) {
+        $serviceTypeId = $row['service_type_id'];
+    
+        // Check for duplicates based on bus_number_1 and bus_number_2
+        if (($row['bus_number_1'] === $busNumber1 || $row['bus_number_2'] === $busNumber1)) {
+            if ($serviceTypeId == 1) {
+                $duplicates[] = $busNumber1; // For service type 1, add to duplicates
+            } else if ($serviceTypeId == 2 || $serviceTypeId == 3 || $serviceTypeId == 4) {
+                // For service type 2, 3, or 4, count occurrences and add only if more than 2
                 $duplicates[] = $busNumber1;
             }
-            if ($row['bus_number_1'] === $busNumber2 || $row['bus_number_2'] === $busNumber2) {
+        }
+    
+        if (($row['bus_number_1'] === $busNumber2 || $row['bus_number_2'] === $busNumber2)) {
+            if ($serviceTypeId == 1) {
+                $duplicates[] = $busNumber2; // For service type 1, add to duplicates
+            } else if ($serviceTypeId == 2 || $serviceTypeId == 3 || $serviceTypeId == 4) {
+                // For service type 2, 3, or 4, count occurrences and add only if more than 2
                 $duplicates[] = $busNumber2;
             }
         }
-
-        if (!empty($duplicates)) {
-            $uniqueDuplicates = array_unique($duplicates);
-            $duplicateList = implode(', ', $uniqueDuplicates);
-            echo "<script>alert('Duplicate bus numbers found: $duplicateList. Please enter another bus number.'); window.history.back();</script>";
-            $stmt->close();
-        }
-
-        $stmt->close();
-        // Check for duplicate bus numbers in the schedule_master table
-        $checkCurrentSql = "SELECT bus_number_1, bus_number_2 
-FROM schedule_master
-WHERE (bus_number_1 = ? OR bus_number_2 = ? ) and id not in ($scheduleId)"; // Exclude current schedule
-
-        $stmt = $db->prepare($checkCurrentSql);
-        $stmt->bind_param("ss", $busNumber2, $busNumber1);
-        $stmt->execute();
-        $checkCurrentResult = $stmt->get_result();
-
-        $duplicates = [];
-
-        while ($row = $checkCurrentResult->fetch_assoc()) {
-            if ($row['bus_number_1'] === $busNumber1 || $row['bus_number_2'] === $busNumber1) {
-                $duplicates[] = $busNumber1;
+    }
+    // Check for duplicates based on the count of occurrences
+    if (!empty($duplicates)) {
+        // Count occurrences of each bus number
+        $duplicatesCount = array_count_values($duplicates);
+        $errorMessage = '';
+    
+        foreach ($duplicatesCount as $bus => $count) {
+            if ($serviceTypeId == 1 && $count >= 1) {
+                // For service type 1, if count > 1, show error
+                $errorMessage .= "$bus has dublicate entry";
             }
-            if ($row['bus_number_1'] === $busNumber2 || $row['bus_number_2'] === $busNumber2) {
-                $duplicates[] = $busNumber2;
+            if (($serviceTypeId == 2 || $serviceTypeId == 3 || $serviceTypeId == 4) && $count >= 2) {
+                // For service type 2,3,4, if count > 2, show error
+                $errorMessage .= "$bus has dublicate entry";
             }
         }
-
-        if (!empty($duplicates)) {
-            $uniqueDuplicates = array_unique($duplicates);
-            $duplicateList = implode(', ', $uniqueDuplicates);
-            echo "<script>alert('Duplicate bus numbers found: $duplicateList. Please enter another bus number.'); window.history.back();</script>";
+    
+        // If there are any duplicate bus numbers, show an alert message
+        if ($errorMessage != '') {
+            echo "<script>alert('$errorMessage Please enter another bus number.'); window.history.back();</script>";
             $stmt->close();
+            exit; // Stop further execution if there are duplicates
         }
-
-        $stmt->close();
+    }
+    
+    $stmt->close();
+    
+            
+                
 
         // Check if bus number 2 details are present, otherwise set them to NULL
         $busNumber2 = !empty($_POST['bus_number_2']) ? $_POST['bus_number_2'] : NULL;

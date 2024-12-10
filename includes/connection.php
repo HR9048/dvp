@@ -2,7 +2,7 @@
 $servername = "localhost"; 
 $username = "root"; 
 $password = ""; 
-$database = "dvp_database"; 
+$database = "dvp_database1"; 
 // Create connection
 $db = new mysqli($servername, $username, $password, $database);
 

@@ -49,13 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Checkbox row
         echo '<div class="row mb-3">';
-        echo '<div class="col-md-3"><input type="checkbox" id="change_vehicle" onclick="toggleSection(\'vehicle_section\')"> Change Vehicle</div>';
-        echo '<div class="col-md-3"><input type="checkbox" id="change_driver" onclick="toggleSection(\'driver_section\')"> Change Driver</div>';
+        echo '<div class="col-md-3"><input type="checkbox" id="change_vehicle" name="change_vehicle" onclick="toggleSection(\'vehicle_section\')"> Change Vehicle</div>';
+        echo '<div class="col-md-3"><input type="checkbox" id="change_driver" name="change_driver" onclick="toggleSection(\'driver_section\')"> Change Driver</div>';
         if (!empty($driverToken2)) {
-            echo '<div class="col-md-3"><input type="checkbox" id="change_driver2" onclick="toggleSection(\'driver2_section\')"> Change Driver 2</div>';
+            echo '<div class="col-md-3"><input type="checkbox" id="change_driver2" name="change_driver2" onclick="toggleSection(\'driver2_section\')"> Change Driver 2</div>';
         }
         if (!empty($conductorToken)) {
-            echo '<div class="col-md-3"><input type="checkbox" id="change_conductor" onclick="toggleSection(\'conductor_section\')"> Change Conductor</div>';
+            echo '<div class="col-md-3"><input type="checkbox" id="change_conductor" name="change_conductor" onclick="toggleSection(\'conductor_section\')"> Change Conductor</div>';
         }
         echo '</div>';
 
@@ -207,13 +207,13 @@ function handleReasonChange() {
         let allConductors = [];
 
         // Fetch driver data from API1 (drivers)
-        $.get("http://192.168.1.32:50/data.php", { division: division, depot: depot }, function (response) {
+        $.get("http://117.203.105.106:50/data.php", { division: division, depot: depot }, function (response) {
             allDrivers = response.data;  // Store drivers in a variable
             populateSelectOptions();
         });
 
         // Fetch conductor data from API2 (conductors)
-        $.get("http://192.168.1.32/transfer/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
+        $.get("http://117.203.105.106/transfer/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
             allConductors = response.data;  // Store conductors in a variable
             populateSelectOptions();
         });

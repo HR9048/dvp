@@ -8,6 +8,7 @@ date_default_timezone_set('Asia/Kolkata');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $scheduleNo = $_POST['scheduleNo'];
     $outDate = $_POST['outDate'];
+    $formType = $_POST['formType']; // Identify which form sent the request
 
     $division = $_SESSION['DIVISION_ID'];
     $depot = $_SESSION['DEPOT_ID'];
@@ -49,17 +50,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Checkbox row
         echo '<div class="row mb-3">';
-        echo '<div class="col-md-3"><input type="checkbox" id="change_vehicle" name="change_vehicle" onclick="toggleSection(\'vehicle_section\')"> Change Vehicle</div>';
-        echo '<div class="col-md-3"><input type="checkbox" id="change_driver" name="change_driver" onclick="toggleSection(\'driver_section\')"> Change Driver</div>';
-        if (!empty($driverToken2)) {
-            echo '<div class="col-md-3"><input type="checkbox" id="change_driver2" name="change_driver2" onclick="toggleSection(\'driver2_section\')"> Change Driver 2</div>';
+        if ($formType == 'bus') {
+            echo '<div style="display: none;"><div class="col-md-3"><input type="checkbox" id="change_vehicle" name="change_vehicle" checked> Change Vehicle</div></div>';
+        } else {
+            echo '<div style="display: none;"><div class="col-md-3"><input type="checkbox" id="change_vehicle" name="change_vehicle"> Change Vehicle</div></div>';
         }
-        if (!empty($conductorToken)) {
-            echo '<div class="col-md-3"><input type="checkbox" id="change_conductor" name="change_conductor" onclick="toggleSection(\'conductor_section\')"> Change Conductor</div>';
+        if ($formType == 'crew') {
+            echo '<div class="col-md-3"><input type="checkbox" id="change_driver" name="change_driver" onclick="toggleSection(\'driver_section\')"> Change Driver</div>';
+            if (!empty($driverToken2)) {
+                echo '<div class="col-md-3"><input type="checkbox" id="change_driver2" name="change_driver2" onclick="toggleSection(\'driver2_section\')"> Change Driver 2</div>';
+            }
+            if (!empty($conductorToken)) {
+                echo '<div class="col-md-3"><input type="checkbox" id="change_conductor" name="change_conductor" onclick="toggleSection(\'conductor_section\')"> Change Conductor</div>';
+            }
         }
         echo '</div>';
-
-        echo '<div id="vehicle_section" style="display: none;" >';
+        if ($formType == 'bus') {
+            echo '<div id="vehicle_section">';
+        } else {
+            echo '<div id="vehicle_section" style="display: none;" >';
+        }
         echo '<div class="col-md-6 d-flex justify-content-between align-items-center" style="max-width: 100%;">';
         echo '<div>';
         echo '<label>Present Vehicle</label>';
@@ -67,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '</div>';
         echo '<div>';
         echo '<label>Change Vehicle</label><br>';
-        echo '<select class="form-control" id="bus_select" name="bus_select" style="min-width: 500px;">';
+        echo '<select class="form-control" id="bus_select" name="bus_select" style="min-width: 50%;">';
         echo '<option value="">Select Vehicle no</option>';
         foreach ($vehicleOptions as $vehicleOption) {
             echo '<option value="' . htmlspecialchars($vehicleOption) . '">' . htmlspecialchars($vehicleOption) . '</option>';
@@ -86,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '</div>';
         echo '<div>';
         echo '<label>Change Driver 1</label><br>';
-        echo '<select class="form-control" id="driver_1_select" name="driver_1_select"><option value="">Select Driver</option></select>';
+        echo '<select class="form-control" id="driver_1_select" name="driver_1_select" style="min-width:50%"><option value="">Select Driver</option></select>';
         echo '</div>';
         echo '</div>';
         echo '</div>';
@@ -101,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo '</div>';
             echo '<div>';
             echo '<label>Change Driver 2</label><br>';
-            echo '<select class="form-control" id="driver_2_select" name="driver_2_select"><option value="">Select Driver</option></select>';
+            echo '<select class="form-control" id="driver_2_select" name="driver_2_select" style="min-width:50%"><option value="">Select Driver</option></select>';
             echo '</div>';
             echo '</div>';
             echo '</div>';
@@ -117,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo '</div>';
             echo '<div>';
             echo '<label>Change Conductor</label>';
-            echo '<select class="form-control" id="conductorselect" name="conductorselect"><option value="">Select Conductor</option></select>';
+            echo '<select class="form-control" id="conductorselect" name="conductorselect" style="min-width:50%"><option value="">Select Conductor</option></select>';
             echo '</div>';
             echo '</div>';
             echo '</div>';
@@ -134,7 +144,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '<div class="col-md-6 col-sm-12">';
         echo '<div class="form-group">';
         echo '<label for="reason">Reason/ಕಾರಣ</label>';
-        echo '<select class="form-control" id="reason" name="reason" onchange="handleReasonChange()" required><option value="">Select Reason</option><option value="Vehicle Problem">Vehicle Problem</option><option value="Vehicle Exchange">Vehicle Exchange</option><option value="Crew Problem">Crew Problem</option><option value="Crew Exchahge">Crew Exchahge</option><option value="ETM Problem">ETM Problem</option><option value="Others">Others</option></select>';
+        if ($formType == 'bus') {
+            echo '<select class="form-control" id="reason" name="reason" onchange="handleReasonChange()" required><option value="">Select Reason</option><option value="Vehicle Problem">Vehicle Problem</option><option value="Vehicle Exchange">Vehicle Exchange</option><option value="Others">Others</option></select>';
+        } else {
+            echo '<select class="form-control" id="reason" name="reason" onchange="handleReasonChange()" required><option value="">Select Reason</option><option value="Crew Health Problem">Crew Health Problem</option><option value="Crew Exchahge">Crew Exchahge</option><option value="ETM Problem">ETM Problem</option><option value="Others">Others</option></select>';
+        }
         echo '</div>';
         echo '</div>';
         echo '</div>'; // Close row
@@ -165,33 +179,33 @@ $db->close();
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 <script>
-function toggleSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    const selectField = section.querySelector('select'); // Get the select field inside the section
-    if (section.style.display === 'none') {
-        section.style.display = 'block'; // Show section
-        selectField.setAttribute('required', true); // Make the field required
-    } else {
-        section.style.display = 'none'; // Hide section
-        selectField.removeAttribute('required'); // Remove the required attribute
+    function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        const selectField = section.querySelector('select'); // Get the select field inside the section
+        if (section.style.display === 'none') {
+            section.style.display = 'block'; // Show section
+            selectField.setAttribute('required', true); // Make the field required
+        } else {
+            section.style.display = 'none'; // Hide section
+            selectField.removeAttribute('required'); // Remove the required attribute
+        }
     }
-}
 
-function handleReasonChange() {
-    const reasonSelect = document.getElementById('reason');
-    const otherReasonRow = document.getElementById('otherreason_row');
-    const otherReasonInput = document.getElementById('otherreason');
+    function handleReasonChange() {
+        const reasonSelect = document.getElementById('reason');
+        const otherReasonRow = document.getElementById('otherreason_row');
+        const otherReasonInput = document.getElementById('otherreason');
 
-    if (reasonSelect.value === 'Others') {
-        // Show the "Give Reason" input field and make it required
-        otherReasonRow.style.display = 'block';
-        otherReasonInput.setAttribute('required', 'required');
-    } else {
-        // Hide the "Give Reason" input field and remove required attribute
-        otherReasonRow.style.display = 'none';
-        otherReasonInput.removeAttribute('required');
+        if (reasonSelect.value === 'Others') {
+            // Show the "Give Reason" input field and make it required
+            otherReasonRow.style.display = 'block';
+            otherReasonInput.setAttribute('required', 'required');
+        } else {
+            // Hide the "Give Reason" input field and remove required attribute
+            otherReasonRow.style.display = 'none';
+            otherReasonInput.removeAttribute('required');
+        }
     }
-}
 
     $(document).ready(function () {
         // Initialize select2 for all the relevant select elements
@@ -207,13 +221,13 @@ function handleReasonChange() {
         let allConductors = [];
 
         // Fetch driver data from API1 (drivers)
-        $.get("http://117.203.105.106:50/data.php", { division: division, depot: depot }, function (response) {
+        $.get("http://192.168.1.32:50/data.php", { division: division, depot: depot }, function (response) {
             allDrivers = response.data;  // Store drivers in a variable
             populateSelectOptions();
         });
 
         // Fetch conductor data from API2 (conductors)
-        $.get("http://117.203.105.106/transfer/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
+        $.get("http://192.168.1.32/transfer/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
             allConductors = response.data;  // Store conductors in a variable
             populateSelectOptions();
         });

@@ -641,9 +641,23 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                             <input type="number" id="number_of_conductor" name="number_of_conductor" class="form-control" required>
                                         </div>
                                     </div>
+                                    <div class="col" id="offrelivercolumndriver" style="display: none;">
+                                        <div class="form-group">
+                                            <label for="number_of_offreliver_driver">Enter the no of off releiver Driver:</label>
+                                            <input type="number" id="number_of_offreliver_driver" name="number_of_offreliver_driver" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="col" id="offrelivercolumnconductor" style="display: none;">
+                                        <div class="form-group">
+                                            <label for="number_of_offreliver_conductor">Enter the no of off releiver conductor:</label>
+                                            <input type="number" id="number_of_offreliver_conductor" name="number_of_offreliver_conductor" class="form-control" required>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div id="driverFields"></div>
                                 <div id="conductorFields"></div>
+                                <div id="offreliverdriverFields"></div>
+                                <div id=""offreliverconductorFields"></div>
                                 <div id="driverAllocationMessage"></div>
                             `;
 
@@ -653,7 +667,11 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             $('#single_crew_yes').prop('checked', true);
                             $('#number_of_drivers').prop('disabled', false); // Disable if single crew is yes
                             $('#number_of_drivers').val(details.driver_count);
+                            $('#offrelivercolumndriver').show();
+                            $('#offrelivercolumnconductor').show();
                             $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
+                            //$('#number_of_offreliver_driver').val(details.driver_count);
+                            //$('#number_of_offreliver_conductor').val(details.driver_count);
                             $('#driverFields').empty(); // Clear existing fields
                             addConductorInputFields(0); // Clear conductors since single crew is 'yes'
 
@@ -664,8 +682,12 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             $('#number_of_drivers').prop('disabled', false);
                             $('#driverFields').empty();
                             $('#conductorColumn').show();
+                            $('#offrelivercolumndriver').show();
+                            $('#offrelivercolumnconductor').show();
                             $('#number_of_drivers').val(details.driver_count);
                             $('#number_of_conductor').val(details.conductor_count);
+                            //$('#number_of_offreliver_driver').val(details.driver_count);
+                            //$('#number_of_offreliver_conductor').val(details.driver_count);
 
                             // Generate driver and conductor fields based on fetched counts
                             addDriverInputFields(details.driver_count, details); // Add the driver fields
@@ -679,8 +701,12 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             if (singleCrewOperation === 'yes') {
                                 $('#number_of_drivers').prop('disabled', false);
                                 $('#conductorColumn').hide();
+                                $('#offrelivercolumndriver').show();
+                                $('#offrelivercolumnconductor').show();
                                 $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
                                 $('#number_of_drivers').val('');
+                                $('#number_of_offreliver_driver').val('');
+                                $('#number_of_offreliver_conductor').val('');
                                 $('#driverFields').empty();
                                 $('#conductorFields').empty();
                                 addConductorInputFields(0);
@@ -689,6 +715,10 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 $('#driverFields').empty();
                                 $('#conductorFields').empty();
                                 $('#conductorColumn').show();
+                                $('#offrelivercolumndriver').show();
+                                $('#offrelivercolumnconductor').show();
+                                $('#number_of_offreliver_driver').val('');
+                                $('#number_of_offreliver_conductor').val('');
                                 $('#number_of_drivers').val('');
                             }
                         });
@@ -724,6 +754,36 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             }
                         });
 
+                        $('#number_of_offreliver_driver').on('input', function () {
+                            var numberOfoffreliverdriver = $(this).val();
+                            var serviceClassName = $('#service_class').val();
+                            var serviceTypeName = $('#service_type').val();
+                            var singleCrewOperation = $('input[name="single_crew_operation"]:checked').val();
+                            var maxAllowedoffreliverdriver = getmaxAllowedoffreliverdriver(serviceClassName, serviceTypeName, singleCrewOperation);
+
+                            if (numberOfoffreliverdriver > maxAllowedoffreliverdriver) {
+                                $(this).val('');
+                                addoffreleiverDriverInputFields(0);
+                                alert(`Maximum allowed Off Releiver Driver for ${serviceTypeName} is ${maxAllowedoffreliverdriver}`);
+                            } else {
+                                addoffreleiverDriverInputFields(numberOfoffreliverdriver, details);
+                            }
+                        });
+                        $('#number_of_offreliver_conductor').on('input', function () {
+                            var numberOfoffreliverconductor = $(this).val();
+                            var serviceClassName = $('#service_class').val();
+                            var serviceTypeName = $('#service_type').val();
+                            var singleCrewOperation = $('input[name="single_crew_operation"]:checked').val();
+                            var maxAllowedoffreliverconductor = getmaxAllowedoffreliverconductor(serviceClassName, serviceTypeName, singleCrewOperation);
+
+                            if (numberOfoffreliverconductor > maxAllowedoffreliverconductor) {
+                                $(this).val('');
+                                //addDriverInputFields(0);
+                                alert(`Maximum allowed Off Releiver Conductor for ${serviceTypeName} is ${maxAllowedoffreliverconductor}`);
+                            } else {
+                                //addDriverInputFields(numberOfoffreliverconductor, details);
+                            }
+                        });
                         // Function to add driver input fields based on the number of drivers
                         function addDriverInputFields(numberOfDrivers, details) {
                             var driverFieldsHtml = '';
@@ -1265,7 +1325,59 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             return maxAllowedDrivers;
                         }
 
+                        function getmaxAllowedoffreliverdriver(serviceClassName, serviceTypeName, singleCrewOperation) {
+                            var maxAllowedoffreliverdriver = null;
 
+                            switch (serviceClassName) {
+                                case '1':
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 1 : 1;
+                                    break;
+                                case '2':
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 2 : 2;
+                                    break;
+                                case '3':
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 2 : 2;
+                                    break;
+                                case '4':
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 3 : 6;
+                                    break;
+                                case '5':
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 3 : 6;
+                                    break;
+
+                                default:
+                                    break;
+                            }
+
+                            return maxAllowedoffreliverdriver;
+                        }
+
+                        function getmaxAllowedoffreliverconductor(serviceClassName, serviceTypeName, singleCrewOperation) {
+                            var maxAllowedoffreliverconductor = null;
+
+                            switch (serviceClassName) {
+                                case '1':
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 1 : 1;
+                                    break;
+                                case '2':
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 2 : 2;
+                                    break;
+                                case '3':
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 2 : 2;
+                                    break;
+                                case '4':
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 3 : 6;
+                                    break;
+                                case '5':
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 3 : 6;
+                                    break;
+
+                                default:
+                                    break;
+                            }
+
+                            return maxAllowedoffreliverconductor;
+                        }
 
                         function clearFields(nameElementId, pfElementId, tokenElementId) {
                             document.getElementById(nameElementId).value = '';

@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $query = "SELECT svo.id, svo.driver_token_no_1, svo.driver_token_no_2, svo.conductor_token_no, 
                      svo.driver_1_name, svo.driver_2_name, svo.conductor_name,
-                     sm.sch_arr_time, sm.sch_count, svo.departed_date, svo.dep_time
+                     sm.sch_arr_time, sm.sch_count, svo.departed_date, svo.dep_time, vehicle_no
               FROM sch_veh_out svo
               JOIN schedule_master sm ON svo.sch_no = sm.sch_key_no AND svo.division_id = sm.division_id AND svo.depot_id = sm.depot_id
               WHERE svo.sch_no = ? AND svo.departed_date = ? AND svo.division_id = ? AND svo.depot_id = ? AND svo.schedule_status='1'";
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $db->prepare($query);
     $stmt->bind_param("ssss", $scheduleNo, $outDate, $division, $depot);
     $stmt->execute();
-    $stmt->bind_result($id, $driverToken1, $driverToken2, $conductorToken, $driverName1, $driverName2, $conductorName, $schArrTime, $schCount, $departedDate, $departedTime);
+    $stmt->bind_result($id, $driverToken1, $driverToken2, $conductorToken, $driverName1, $driverName2, $conductorName, $schArrTime, $schCount, $departedDate, $departedTime, $vehicleNo);
 
     if ($stmt->fetch()) {
         // Fetch server's current date and time in India/Kolkata timezone
@@ -44,6 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } */
         echo '<input class="form-control" type="hidden" id="id" name="id" value="' . htmlspecialchars($id) . '" readonly>';
+
+
+        echo '<div class="row">';
+        echo '<div class="col-md-6 col-sm-12">';
+        echo '<div class="form-group">';
+        echo '<label for="driver1">Bus Number</label>';
+        echo '<input class="form-control" type="text" id="driver1" name="driver1" value="' . htmlspecialchars($vehicleNo) . '" readonly>';
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
 
         echo '<div class="row">';
         echo '<div class="col-md-6 col-sm-12">';
@@ -92,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '</div>';
 
         echo '<div class="form-group">';
-        echo '<button type="submit" class="btn btn-primary">Submit</button>';
+        echo '<button type="submit" id="submitBtnvehiclein" class="btn btn-primary">Submit</button>';
         echo '</div>';
     } else {
         echo '<p>No details found for this schedule.</p>';

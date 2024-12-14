@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $depot = $_SESSION['KMPL_DEPOT'];
 
         // Fetch data from the first API based on division and depot
-        $url = 'http://117.203.105.106:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+        $url = 'http://192.168.1.32:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
         $response = file_get_contents($url);
         if ($response === FALSE) {
             die('Error occurred while fetching data from LMS API');
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // If the data is not found in the first API, call the second API
-        $urlPrivate = 'http://117.203.105.106/transfer/dvp/database/private_emp_api.php?division=' . urlencode($division) . '&depot=' .
+        $urlPrivate = 'http://192.168.1.32/transfer/dvp/database/private_emp_api.php?division=' . urlencode($division) . '&depot=' .
             urlencode($depot);
         $responsePrivate = file_get_contents($urlPrivate);
         if ($responsePrivate === FALSE) {
@@ -327,7 +327,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     // Execute the update query
                     if ($updateStmt->execute()) {
-                        echo json_encode(['status' => 'success', 'message' => 'Vehicle/Crew Changed successfully.']);
+                        echo json_encode(['status' => 'success', 'message' => 'Details Changed successfully.']);
                     } else {
                         echo json_encode(['status' => 'error', 'message' => 'Failed to update sch_veh_out: ' . $updateStmt->error]);
                     }

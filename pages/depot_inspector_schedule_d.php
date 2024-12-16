@@ -77,7 +77,59 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
 
             return $maxAllowedConductor;
         }
+        function getmaxAllowedoffreliverdriver($serviceClassName, $serviceTypeName, $singleCrewOperation) {
+            $maxAllowedoffreliverdriver = null;
 
+            switch ($serviceClassName) {
+                case '1':
+                    $maxAllowedoffreliverdriver = $singleCrewOperation === 'yes' ? 1 : 1;
+                    break;
+                case '2':
+                    $maxAllowedoffreliverdriver = $singleCrewOperation === 'yes' ? 1 : 1;
+                    break;
+                case '3':
+                    $maxAllowedoffreliverdriver = $singleCrewOperation === 'yes' ? 1 : 1;
+                    break;
+                case '4':
+                    $maxAllowedoffreliverdriver = $singleCrewOperation === 'yes' ? 1 : 2;
+                    break;
+                case '5':
+                    $maxAllowedoffreliverdriver = $singleCrewOperation === 'yes' ? 2 : 2;
+                    break;
+
+                default:
+                    break;
+            }
+
+            return $maxAllowedoffreliverdriver;
+        }
+
+        function getmaxAllowedoffreliverconductor($serviceClassName, $serviceTypeName, $singleCrewOperation) {
+            $maxAllowedoffreliverconductor = null;
+
+            switch ($serviceClassName) {
+                case '1':
+                    $maxAllowedoffreliverconductor = $singleCrewOperation === 'yes' ? 0 : 1;
+                    break;
+                case '2':
+                    $maxAllowedoffreliverconductor = $singleCrewOperation === 'yes' ? 0 : 1;
+                    break;
+                case '3':
+                    $maxAllowedoffreliverconductor = $singleCrewOperation === 'yes' ? 0 : 1;
+                    break;
+                case '4':
+                    $maxAllowedoffreliverconductor = $singleCrewOperation === 'yes' ? 0 : 1;
+                    break;
+                case '5':
+                    $maxAllowedoffreliverconductor = $singleCrewOperation === 'yes' ? 0 : 1;
+                    break;
+
+                default:
+                    break;
+            }
+
+            return $maxAllowedoffreliverconductor;
+        }
         $id = $_POST['id'];
         $sch_key_no = $_POST['sch_key_no'];
         $sch_abbr = $_POST['sch_abbr'];
@@ -90,10 +142,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
         $single_crew = $_POST['single_crew_operation'];
         $numberOfDrivers = isset($_POST['number_of_drivers']) ? intval($_POST['number_of_drivers']) : 0;
         $numberOfConductor = isset($_POST['number_of_conductor']) ? intval($_POST['number_of_conductor']) : 0;
-
+        $numberOfoffreliverDrivers = isset($_POST['number_of_offreliver_driver']) ? intval($_POST['number_of_offreliver_driver']) : 0;
+        $numberOfoffreliverConductor = isset($_POST['number_of_offreliver_conductor']) ? intval($_POST['number_of_offreliver_conductor']) : 0;
         // Validate single_crew operation
         $maxAllowedDrivers = getMaxAllowedDrivers($service_class_id, $service_type_id, $single_crew);
         $maxAllowedConductor = getMaxAllowedConductor($service_class_id, $service_type_id, $single_crew);
+        $maxAllowedoffreliverDrivers = getmaxAllowedoffreliverdriver($service_class_id, $service_type_id, $single_crew);
+        $maxAllowedoffreliverConductor = getmaxAllowedoffreliverconductor($service_class_id, $service_type_id, $single_crew);
         $driverPFs = [];
         for ($i = 1; $i <= $numberOfDrivers; $i++) {
             $driverPFs[] = $_POST['pf_no_d' . $i];
@@ -103,9 +158,17 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
         for ($i = 1; $i <= $numberOfConductor; $i++) {
             $conductorPFs[] = $_POST['pf_no_c' . $i];
         }
+        $offreliverdriverPFs = [];
+        for ($i = 1; $i <= $numberOfoffreliverDrivers; $i++) {
+            $offreliverdriverPFs[] = $_POST['offreliverpf_no_d' . $i];
+        }
 
+        $offreliverconductorPFs = [];
+        for ($i = 1; $i <= $numberOfoffreliverConductor; $i++) {
+            $offreliverdriverPFs[] = $_POST['offreliverpf_no_c' . $i];
+        }
         // Combine all PFs for duplicate checking
-        $allPFs = array_merge($driverPFs, $conductorPFs);
+        $allPFs = array_merge($driverPFs, $conductorPFs, $offreliverdriverPFs, $offreliverconductorPFs);
 
         // Check for duplicates in submitted data
         $pfCount = array_count_values($allPFs);
@@ -129,6 +192,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             echo "<script>alert('Maximum allowed drivers for this service is $maxAllowedDrivers.');</script>";
         } else if ($numberOfConductor > $maxAllowedConductor) {
             echo "<script>alert('Maximum allowed conductors for this service is $maxAllowedConductor.');</script>";
+        }else if ($numberOfoffreliverDrivers > $maxAllowedoffreliverDrivers) {
+            echo "<script>alert('Maximum allowed off reliver drivers for this service is $maxAllowedoffreliverDrivers.');</script>";
+        } else if ($numberOfoffreliverConductor > $maxAllowedoffreliverConductor) {
+            echo "<script>alert('Maximum allowed off reliver conductors for this service is $maxAllowedoffreliverConductor.');</script>";
         } else if ($numberOfDrivers > 0 && $numberOfDrivers <= $maxAllowedDrivers) {
             // Validate driver and conductor details...
 
@@ -526,31 +593,31 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
             ?>
         </tbody>
     </table>
-    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateModalLabel">Schedule Update</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="updateForm" method="post">
-                        <input type="hidden" id="scheduleId" name="id">
-                        <div id="scheduleFields"></div>
-                        <div id="crewOperationFields"></div>
-                        <div id="driverFields"></div>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="close" data-dismiss="modal">Close</button>
-                </div>
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalLabel">Schedule Update</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm" method="post">
+                    <input type="hidden" id="scheduleId" name="id">
+                    <div id="scheduleFields"></div>
+                    <div id="crewOperationFields"></div>
+                    <div id="driverFields"></div>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
+
     <script>
         $(document).ready(function () {
             // Handle Update button click
@@ -670,6 +737,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             $('#offrelivercolumndriver').show();
                             //$('#offrelivercolumnconductor').show();
                             $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
+                            $('#number_of_offreliver_conductor').val('').removeAttr('required');
                             //$('#number_of_offreliver_driver').val(details.driver_count);
                             //$('#number_of_offreliver_conductor').val(details.driver_count);
                             $('#driverFields').empty(); // Clear existing fields
@@ -703,7 +771,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 $('#conductorColumn').hide();
                                 $('#offrelivercolumndriver').show();
                                 $('#offrelivercolumnconductor').hide();
-                                $('#offrelivercolumnconductor').val('').removeAttr('required');  // Correct method to remove attribute
+                                $('#number_of_offreliver_conductor').val('').removeAttr('required');  // Correct method to remove attribute
                                 $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
                                 $('#number_of_drivers').val('');
                                 $('#number_of_offreliver_driver').val('');
@@ -1048,7 +1116,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                             var isoffreliverCCircular17Checked = $('#offrelivercircular_17_1_conductor_' + i).prop('checked');
 
                                             // Fetch conductor details first (as it populates PF number)
-                                            fetchConductorDetails(offrelivertokenNumber, 'offreliverconductor_' + i + '_name', 'offreliverpf_no_c' + i, 'offreliverconductor_token_' + i, division, depot, isoffreliverCCircular17Checked);
+                                            fetchoffreliverConductorDetails(offrelivertokenNumber, 'offreliverconductor_' + i + '_name', 'offreliverpf_no_c' + i, 'offreliverconductor_token_' + i, division, depot, isoffreliverCCircular17Checked);
 
                                             // Delay to wait for token details to be fetched
                                             setTimeout(function () {
@@ -1079,7 +1147,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
                                     //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
-                                    xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    xhr1.open('GET', 'http://117.203.105.106:50/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1167,7 +1235,103 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 });
                         }
 
+                        function fetchoffreliverConductorDetails(tokenNumber, nameElementId, pfElementId, tokenElementId, division, depot, isoffreliverCCircular17Checked) {
+                            const tokenString = tokenNumber.toString();
 
+                            function fetchoffreliverCDataFromAPIs() {
+                                return new Promise((resolve, reject) => {
+                                    let combinedData = [];
+
+                                    // First API call
+                                    var xhr1 = new XMLHttpRequest();
+                                    //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
+                                    xhr1.open('GET', 'http://117.203.105.106:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    xhr1.onload = function () {
+                                        if (xhr1.status === 200) {
+                                            var response1 = JSON.parse(this.responseText);
+                                            combinedData = combinedData.concat(response1.data || []);  // Append data if it exists
+
+                                            // Proceed to the second API call
+                                            var xhr2 = new XMLHttpRequest();
+                                            xhr2.open('GET', '../database/private_emp_api.php?division=' + division + '&depot=' + depot, true);
+                                            xhr2.onload = function () {
+                                                if (xhr2.status === 200) {
+                                                    var response2 = JSON.parse(this.responseText);
+                                                    combinedData = combinedData.concat(response2.data || []); // Append data if it exists
+                                                    resolve(combinedData);
+                                                } else {
+                                                    reject('Error fetching data from the second API.');
+                                                }
+                                            };
+                                            xhr2.onerror = function () {
+                                                reject('Network error while fetching from the second API.');
+                                            };
+                                            xhr2.send();
+                                        } else {
+                                            reject('Error fetching data from the first API.');
+                                        }
+                                    };
+                                    xhr1.onerror = function () {
+                                        reject('Network error while fetching from the first API.');
+                                    };
+                                    xhr1.send();
+                                });
+                            }
+
+                            fetchoffreliverCDataFromAPIs()
+                                .then(matchingDrivers => {
+                                    var filteredDrivers = matchingDrivers.filter(driver => {
+                                        const driverTokenString = driver.token_number ? driver.token_number.toString() : '';
+
+                                        return driver.Division.trim() === division &&
+                                            driver.Depot.trim() === depot &&
+                                            driverTokenString === tokenString;
+                                    });
+
+                                    if (filteredDrivers.length > 0) {
+                                        if (filteredDrivers.length === 1) {
+                                            var driver = filteredDrivers[0];
+                                            if (isoffreliverCCircular17Checked) {
+                                            } else {
+                                                if (driver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                                                    alert('The employee is a DRIVER. Please enter the token number of a conductor or Driver cum Conductor.');
+                                                    clearFields(nameElementId, pfElementId, tokenElementId);
+                                                    return;
+                                                }
+                                            }
+                                            document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+                                            document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+                                            checkoffreleiverScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+
+                                        } else if (filteredDrivers.length > 1) {
+                                            openDriverSelectionModal(filteredDrivers, function (selectedDriver) {
+                                                if (isoffreliverCCircular17Checked) {
+                                                } else {
+                                                if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                                                    alert('The selected employee is a DRIVER. Please select a conductor or Driver cum Conductor.');
+                                                    $('#driverSelectionModal').modal('hide');
+                                                    clearFields(nameElementId, pfElementId, tokenElementId);
+                                                    return;
+                                                }
+                                            }
+                                                document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                                                document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+                                                checkoffreleiverScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                            });
+                                        } else {
+                                            alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                                            clearFields(nameElementId, pfElementId, tokenElementId);
+                                        }
+                                    } else {
+                                        alert('No Conductor/DCC found for the ' + division + ' division and ' + depot + ' depot.');
+                                        clearFields(nameElementId, pfElementId, tokenElementId);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error("Error:", error);
+                                    clearFields(nameElementId, pfElementId, tokenElementId);
+                                });
+                        }
 
 
 
@@ -1242,7 +1406,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             // First API call
                             var xhr1 = new XMLHttpRequest();
                             //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+                            xhr1.open('GET', 'http://117.203.105.106:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);
@@ -1354,7 +1518,7 @@ function processoffreleiverDriversData(driversData1, driversData2) {
 // First API call
 var xhr1 = new XMLHttpRequest();
 //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+xhr1.open('GET', 'http://117.203.105.106:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
 xhr1.onload = function () {
     if (xhr1.status === 200) {
         var response1 = JSON.parse(this.responseText);
@@ -1518,9 +1682,9 @@ xhr1.send();
     scheduleData.forEach(function(schedule) {
         scheduleListHtml += `
             <div class="schedule-item">
-                <p>Schedule No: ${schedule.sch_key_no} | Schedule Count: ${schedule.sch_count}
+                <p>Schedule No: ${schedule.sch_key_no} | Schedule Count: ${schedule.sch_count} <br>
                 <span class="reallocate-link" data-pf="${pfNumber}" data-token="${tokenNumber}" data-schedule="${schedule.sch_key_no}">
-                    Reallocate from Schedule ${schedule.sch_key_no}
+                  Click here to Reallocate from Schedule ${schedule.sch_key_no}
                 </span></p><br>
             </div>
         `;

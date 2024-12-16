@@ -657,7 +657,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 <div id="driverFields"></div>
                                 <div id="conductorFields"></div>
                                 <div id="offreliverdriverFields"></div>
-                                <div id=""offreliverconductorFields"></div>
+                                <div id="offreliverconductorFields"></div>
                                 <div id="driverAllocationMessage"></div>
                             `;
 
@@ -668,13 +668,13 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             $('#number_of_drivers').prop('disabled', false); // Disable if single crew is yes
                             $('#number_of_drivers').val(details.driver_count);
                             $('#offrelivercolumndriver').show();
-                            $('#offrelivercolumnconductor').show();
+                            //$('#offrelivercolumnconductor').show();
                             $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
                             //$('#number_of_offreliver_driver').val(details.driver_count);
                             //$('#number_of_offreliver_conductor').val(details.driver_count);
                             $('#driverFields').empty(); // Clear existing fields
                             addConductorInputFields(0); // Clear conductors since single crew is 'yes'
-
+                            addoffreliverconductorInputFields(0);
                             // Generate driver fields based on fetched count
                             addDriverInputFields(details.driver_count, details); // Add the driver fields here
                         } else if (details.single_crew === 'no') {
@@ -702,7 +702,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 $('#number_of_drivers').prop('disabled', false);
                                 $('#conductorColumn').hide();
                                 $('#offrelivercolumndriver').show();
-                                $('#offrelivercolumnconductor').show();
+                                $('#offrelivercolumnconductor').hide();
+                                $('#offrelivercolumnconductor').val('').removeAttr('required');  // Correct method to remove attribute
                                 $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
                                 $('#number_of_drivers').val('');
                                 $('#number_of_offreliver_driver').val('');
@@ -778,10 +779,10 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             if (numberOfoffreliverconductor > maxAllowedoffreliverconductor) {
                                 $(this).val('');
-                                //addDriverInputFields(0);
+                                addoffreliverconductorInputFields(0);
                                 alert(`Maximum allowed Off Releiver Conductor for ${serviceTypeName} is ${maxAllowedoffreliverconductor}`);
                             } else {
-                                //addDriverInputFields(numberOfoffreliverconductor, details);
+                                addoffreliverconductorInputFields(numberOfoffreliverconductor, details);
                             }
                         });
                         // Function to add driver input fields based on the number of drivers
@@ -817,7 +818,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             <div class="col">
                         <div class="form-group form-check">
                             <input type="checkbox" id="circular_17_1_driver_${i}" name="circular_17_1_driver_${i}" ${d171status === 'Yes' ? 'checked' : ''} class="form-check-input">
-                            <label class="form-check-label" for="circular_17_1_driver_${i}">Crew ubder 17/1</label>
+                            <label class="form-check-label" for="circular_17_1_driver_${i}">Crew under 17/1</label>
                         </div>
                     </div>
                         </div>`;
@@ -844,7 +845,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                                     alert(`Duplicate entry for token ${tokenNumber} with the same PF number. Please update with another token or PF number.`);
                                                     clearFields('driver_' + i + '_name', 'pf_no_d' + i, 'driver_token_' + i);
                                                 }
-                                            }, 500);  // Adjust delay if necessary
+                                            },  500);  // Adjust delay if necessary
                                         }
                                     });
                                 })(i);
@@ -929,6 +930,142 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             }
 
                         }
+                        function addoffreleiverDriverInputFields(numberOfoffreliverdriver, details) {
+                            var offreliverdriverFieldsHtml = '';
+
+                            for (var i = 1; i <= numberOfoffreliverdriver; i++) {
+                                // Assuming details is an object where properties like details.driver_pf_1, details.driver_name_1, etc., exist.
+                                var offreliverdriverToken = details[`offreliverdriver_token_${i}`] || ''; // Retrieve driver token or set as empty
+                                var offreliverdriverPf = details[`offreliverdriver_pf_${i}`] || '';       // Retrieve driver PF or set as empty
+                                var offreliverdriverName = details[`offreliverdriver_name_${i}`] || '';   // Retrieve driver name or set as empty
+                                var offreliverd171status = details[`Driver_${i}_171_Status`] || ''; // Retrieve Driver 171 status or set as empty
+                                offreliverdriverFieldsHtml += `
+                        <div class="row driver-field">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="offreliverdriver_token_${i}">offreliver Driver ${i} Token:</label>
+                                    <input type="text" id="offreliverdriver_token_${i}" name="offreliverdriver_token_${i}" value="${offreliverdriverToken}" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="offreliverpf_no_d${i}">offreliver Driver ${i} PF:</label>
+                                    <input type="text" id="offreliverpf_no_d${i}" name="offreliverpf_no_d${i}" value="${offreliverdriverPf}" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="offreliverdriver_${i}_name">offreliver Driver ${i} Name:</label>
+                                    <input type="text" id="offreliverdriver_${i}_name" name="offreliverdriver_${i}_name" value="${offreliverdriverName}" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="col">
+                        <div class="form-group form-check">
+                            <input type="checkbox" id="offrelivercircular_17_1_driver_${i}" name="offrelivercircular_17_1_driver_${i}" ${offreliverd171status === 'Yes' ? 'checked' : ''} class="form-check-input">
+                            <label class="form-check-label" for="offrelivercircular_17_1_driver_${i}">Crew under 17/1</label>
+                        </div>
+                    </div>
+                        </div>`;
+                            }
+
+                            $('#offreliverdriverFields').html(offreliverdriverFieldsHtml);
+
+                            // Add event listener for each driver token input field
+                            for (var i = 1; i <= numberOfoffreliverdriver; i++) {
+                                (function (i) {
+                                    $('#offreliverdriver_token_' + i).on('blur', function () {
+                                        var offrelivertokenNumber = $(this).val();
+                                        if (offrelivertokenNumber) {
+                                            var isoffreliverDCircular17Checked = $('#offrelivercircular_17_1_driver_' + i).prop('checked');
+                                            // Fetch driver details first (as it populates PF number)
+                                            fetchoffreliverDriverDetails(offrelivertokenNumber, 'offreliverdriver_' + i + '_name', 'offreliverpf_no_d' + i, 'offreliverdriver_token_' + i, division, depot, isoffreliverDCircular17Checked);
+
+                                            // Delay to wait for token details to be fetched
+                                            setTimeout(function () {
+                                                var offreliverpfNumber = $('#offreliverpf_no_d' + i).val();  // Get PF number after fetching details
+
+                                                // Now check for duplicate token only if PF number is also the same
+                                                if (isDuplicateTokenWithPF(offrelivertokenNumber, offreliverpfNumber, i, 'driver')) {
+                                                    alert(`Duplicate entry for token ${offrelivertokenNumber} with the same PF number. Please update with another token or PF number.`);
+                                                    clearFields('offreliverdriver_' + i + '_name', 'offreliverpf_no_d' + i, 'offreliverdriver_token_' + i);
+                                                }
+                                            },  500);  // Adjust delay if necessary
+                                        }
+                                    });
+                                })(i);
+                            }
+
+
+                        }
+                        function addoffreliverconductorInputFields(numberOfoffreliverconductor, details) {
+                            var offreliverconductorFieldsHtml = '';
+
+                            for (var i = 1; i <= numberOfoffreliverconductor; i++) {
+                                // Assuming details is an object where properties like details.conductor_pf_1, details.conductor_name_1, etc., exist.
+                                var offreliverconductorToken = details[`offreliverconductor_token_${i}`] || '';  // Retrieve conductor token or set as empty
+                                var offreliverconductorPf = details[`offreliverconductor_pf_${i}`] || '';        // Retrieve conductor PF or set as empty
+                                var offreliverconductorName = details[`offreliverconductor_name_${i}`] || '';    // Retrieve conductor name or set as empty
+                                var offreliverc171status = details[`Conductor_${i}_171_Status`] || ''; // Retrieve Driver 171 status or set as empty
+
+                                offreliverconductorFieldsHtml += `
+                        <div class="row conductor-field">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="offreliverconductor_token_${i}">offreliver Conductor ${i} Token:</label>
+                                    <input type="text" id="offreliverconductor_token_${i}" name="offreliverconductor_token_${i}" value="${offreliverconductorToken}" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="offreliverpf_no_c${i}">offreliver Conductor ${i} PF:</label>
+                                    <input type="text" id="offreliverpf_no_c${i}" name="offreliverpf_no_c${i}" value="${offreliverconductorPf}" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="offreliverconductor_${i}_name">offreliver Conductor ${i} Name:</label>
+                                    <input type="text" id="offreliverconductor_${i}_name" name="offreliverconductor_${i}_name" value="${offreliverconductorName}" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="col">
+                        <div class="form-group form-check">
+                            <input type="checkbox" id="offrelivercircular_17_1_conductor_${i}" name="offrelivercircular_17_1_conductor_${i}" ${offreliverc171status === 'Yes' ? 'checked' : ''} class="form-check-input">
+                            <label class="form-check-label" for="offrelivercircular_17_1_conductor_${i}">Crew under 17/1</label>
+                        </div>
+                    </div>
+                        </div>`;
+                            }
+
+                            $('#offreliverconductorFields').html(offreliverconductorFieldsHtml); // Inject the generated HTML into the conductorFields element
+
+
+                            // Add event listener for each conductor token input field
+                            for (var i = 1; i <= numberOfoffreliverconductor; i++) {
+                                (function (i) {
+                                    $('#offreliverconductor_token_' + i).on('blur', function () {
+                                        var offrelivertokenNumber = $(this).val();
+                                        if (offrelivertokenNumber) {
+                                            var isoffreliverCCircular17Checked = $('#offrelivercircular_17_1_conductor_' + i).prop('checked');
+
+                                            // Fetch conductor details first (as it populates PF number)
+                                            fetchConductorDetails(offrelivertokenNumber, 'offreliverconductor_' + i + '_name', 'offreliverpf_no_c' + i, 'offreliverconductor_token_' + i, division, depot, isoffreliverCCircular17Checked);
+
+                                            // Delay to wait for token details to be fetched
+                                            setTimeout(function () {
+                                                var offreliverpfNumber = $('#offreliverpf_no_c' + i).val();  // Get PF number after fetching details
+
+                                                // Now check for duplicate token only if PF number is also the same
+                                                if (isDuplicateTokenWithPF(offrelivertokenNumber, offreliverpfNumber, i, 'conductor')) {
+                                                    alert(`Duplicate entry for off reliver token ${offrelivertokenNumber} with the same PF number. Please update with another token or PF number.`);
+                                                    clearFields('offreliverconductor_' + i + '_name', 'offreliverpf_no_c' + i, 'offreliverconductor_token_' + i);
+                                                }
+                                            }, 500);  // Adjust delay if necessary
+                                        }
+                                    });
+                                })(i);
+                            }
+
+                        }
                         var division = '<?php echo $division; ?>'; // Ensure $division is correctly populated
                         var depot = '<?php echo $depot; ?>'; // Ensure $depot is correctly populated
 
@@ -941,8 +1078,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
-                                    xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
-                                    //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
+                                    xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1104,8 +1241,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             // First API call
                             var xhr1 = new XMLHttpRequest();
-                            xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+                            //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);
@@ -1150,7 +1287,118 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             xhr1.send();
                         }
+                        function fetchoffreliverDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId, division, depot, isDCircular17Checked) {
 
+
+function processoffreleiverDriversData(driversData1, driversData2) {
+    var combinedData = [...driversData1]; // Start with the first API data
+
+    if (driversData2.length > 0) {
+        combinedData = [...combinedData, ...driversData2]; // Add second API data if available
+    }
+
+    if (!combinedData || combinedData.length === 0) {
+        clearFields(nameElementId, pfElementId, tokenElementId);
+        return;
+    }
+
+    // Filter the data based on division, depot, and token number (string or integer matching)
+    var matchingDrivers = combinedData.filter(driver => {
+        return driver.Division.trim() === sessionDivision &&
+            driver.Depot.trim() === sessionDepot &&
+            (driver.token_number == tokenNumber); // Ensure token number matches regardless of type
+    });
+
+
+    if (matchingDrivers.length === 1) {
+        var driver = matchingDrivers[0];
+
+        if (isDCircular17Checked) {
+        } else {
+            // Your previous logic to check if the driver is a conductor
+            if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+                return;
+            }
+        }
+
+        document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+        document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+
+        // Call the function to check the schedule master
+        checkoffreleiverScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+    } else if (matchingDrivers.length > 1) {
+        openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
+            if (isDCircular17Checked) {
+            } else {
+            if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
+                $('#driverSelectionModal').modal('hide'); // Hide the modal
+                clearFields(nameElementId, pfElementId, tokenElementId);
+                return;
+            }
+        }
+            document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+            document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+
+            // Call the function to check the schedule master
+            checkoffreleiverScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+        });
+    } else {
+        alert('No Driver/DCC found for the ' + sessionDivision + ' division and ' + sessionDepot + ' depot.');
+        clearFields(nameElementId, pfElementId, tokenElementId);
+    }
+}
+
+// First API call
+var xhr1 = new XMLHttpRequest();
+//xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+xhr1.onload = function () {
+    if (xhr1.status === 200) {
+        var response1 = JSON.parse(this.responseText);
+        var driversData1 = response1.data || [];
+
+        // Second API call
+        var xhr2 = new XMLHttpRequest();
+        xhr2.open('GET', '../database/private_emp_api.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+
+        xhr2.onload = function () {
+            if (xhr2.status === 200) {
+                var response2 = JSON.parse(this.responseText);
+                var driversData2 = response2.data || [];
+
+                if (driversData2.length === 0) {
+                }
+
+                // Process combined data from both APIs
+                processoffreleiverDriversData(driversData1, driversData2);
+            } else {
+                alert('An error occurred while fetching the second driver details.');
+                clearFields(nameElementId, pfElementId, tokenElementId);
+            }
+        };
+
+        xhr2.onerror = function () {
+            alert('A network error occurred while fetching the second driver details.');
+            clearFields(nameElementId, pfElementId, tokenElementId);
+        };
+
+        xhr2.send();
+    } else {
+        alert('An error occurred while fetching the first driver details.');
+        clearFields(nameElementId, pfElementId, tokenElementId);
+    }
+};
+
+xhr1.onerror = function () {
+    alert('A network error occurred while fetching the first driver details.');
+    clearFields(nameElementId, pfElementId, tokenElementId);
+};
+
+xhr1.send();
+}
 
                         function openDriverSelectionModal(drivers, onSelect) {
 
@@ -1209,9 +1457,31 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             };
                             xhr.send();
                         }
+                        function checkoffreleiverScheduleMaster(pfNumber, empName, tokenNumber, nameElementId, pfElementId, tokenElementId) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '../database/schedule_crew_check_offreleiver.php?pf_number=' + pfNumber, true); 
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            var response = JSON.parse(this.responseText);
+            var scheduleData = response.schedule;
 
-                        // Show modal and handle user response
-                        // Show modal and handle user response
+            if (scheduleData && scheduleData.length > 1) {
+                // Multiple schedules found, show modal for reallocation
+                showoffreleiverReallocationModal(empName, scheduleData, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId);
+            } else if (scheduleData.length === 1) {
+                // Single schedule, show reallocation for that schedule
+                var scheduleNo = scheduleData[0].sch_key_no;
+                showoffreleiverReallocationModal(empName, scheduleData, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId);
+            } else {
+                // PF number not found, return the data
+                returnFetchedData(pfNumber, empName, tokenNumber);
+            }
+        }
+    };
+    xhr.send();
+}
+
+
                         function showReallocationModal(empName, scheduleNo, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId) {
                             // Update modal message
                             document.getElementById('modal-message').innerText = empName + ' is already allotted to schedule ' + scheduleNo + '. Do you want to reallocate?';
@@ -1233,7 +1503,70 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 clearFields(nameElementId, pfElementId, tokenElementId);  // Clear the input fields
                             };
                         }
+                        function showoffreleiverReallocationModal(empName, scheduleData, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId) {
+    console.log('Opening modal for', empName);
 
+    // Clear previous content
+    document.getElementById('modal-message').innerHTML = '';
+    document.getElementById('modal-message1').innerHTML = '';
+
+    // Update modal message
+    document.getElementById('modal-message2').innerText = empName + ' is already allotted to the following schedules. Do you want to reallocate to a new schedule?';
+
+    // Add schedule details to modal
+    var scheduleListHtml = '';
+    scheduleData.forEach(function(schedule) {
+        scheduleListHtml += `
+            <div class="schedule-item">
+                <p>Schedule No: ${schedule.sch_key_no} | Schedule Count: ${schedule.sch_count}
+                <span class="reallocate-link" data-pf="${pfNumber}" data-token="${tokenNumber}" data-schedule="${schedule.sch_key_no}">
+                    Reallocate from Schedule ${schedule.sch_key_no}
+                </span></p><br>
+            </div>
+        `;
+    });
+
+    document.getElementById('modal-message3').innerHTML = scheduleListHtml;
+
+    // Add event listeners to the reallocate links
+    var reallocateLinks = document.querySelectorAll('.reallocate-link');
+    reallocateLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+            var pfNumber = this.getAttribute('data-pf');
+            var tokenNumber = this.getAttribute('data-token');
+            var scheduleNo = this.getAttribute('data-schedule');
+            reallocateoffreleiverDriverDCC(pfNumber, tokenNumber, scheduleNo);
+            $('#reallocationModal1').modal('hide');
+        });
+    });
+
+    // Show the Bootstrap modal
+    $('#reallocationModal1').modal('show');
+
+    // Handle cancel reallocation
+    document.getElementById('cancelReallocation').onclick = function () {
+        $('#reallocationModal1').modal('hide');  // Close the modal
+        clearFields(nameElementId, pfElementId, tokenElementId);  // Clear the input fields
+    };
+}
+
+
+function reallocateoffreleiverDriverDCC(pfNumber, tokenNumber, scheduleNo) {
+    var xhr = new XMLHttpRequest();
+                            xhr.open('POST', '../database/reallocate_driver_dcc.php', true);
+                            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                            // Log the data being sent to the console
+                            xhr.onload = function () {
+                                if (xhr.status === 200) {
+                                    alert('Driver/DCC has been reallocated successfully.');
+                                    // After reallocation, you can handle the data return logic here
+                                    returnFetchedData(pfNumber, '', tokenNumber);
+                                } else {
+                                    alert('An error occurred while reallocating.');
+                                }
+                            };
+                            xhr.send('pf_number=' + pfNumber + '&token_number=' + tokenNumber + '&old_schedule=' + scheduleNo);
+}
 
                         // AJAX call to update driver/DCC in schedule_master
                         function reallocateDriverDCC(pfNumber, tokenNumber, scheduleNo) {
@@ -1333,16 +1666,16 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                     maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 1 : 1;
                                     break;
                                 case '2':
-                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 2 : 2;
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 1 : 1;
                                     break;
                                 case '3':
-                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 2 : 2;
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 1 : 1;
                                     break;
                                 case '4':
-                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 3 : 6;
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 1 : 2;
                                     break;
                                 case '5':
-                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 3 : 6;
+                                    maxAllowedoffreliverdriver = singleCrewOperation === 'yes' ? 2 : 2;
                                     break;
 
                                 default:
@@ -1357,19 +1690,19 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             switch (serviceClassName) {
                                 case '1':
-                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 1 : 1;
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 0 : 1;
                                     break;
                                 case '2':
-                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 2 : 2;
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 0 : 1;
                                     break;
                                 case '3':
-                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 2 : 2;
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 0 : 1;
                                     break;
                                 case '4':
-                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 3 : 6;
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 0 : 1;
                                     break;
                                 case '5':
-                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 3 : 6;
+                                    maxAllowedoffreliverconductor = singleCrewOperation === 'yes' ? 0 : 1;
                                     break;
 
                                 default:
@@ -1539,9 +1872,28 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
             </div>
         </div>
     </div>
+    <div class="modal fade" id="reallocationModal1" tabindex="-1" role="dialog" aria-labelledby="reallocationModalLabel1"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reallocationModalLabel">Off Relever Reallocation Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="modal-message2"></p>
+                    <p style="color:red" id="modal-message3"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelReallocation">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-
-    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel"
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabe"
         aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">

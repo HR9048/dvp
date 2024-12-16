@@ -317,6 +317,7 @@ function getBaseUrl()
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                         <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
+                        <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule Monitor</a></li>
                         </ul>
                       </div>
                     </li>

@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $query = "SELECT *
               FROM sch_veh_out 
-              WHERE division_id = ? AND depot_id = ? and schedule_status in ('1','2','3','4','6','7','8','9')";
+              WHERE division_id = ? AND depot_id = ? and schedule_status in ('1')";
     
     $stmt = $db->prepare($query);
     $stmt->bind_param("ii", $division, $depot);

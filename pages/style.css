@@ -1,0 +1,266 @@
+ /* Container styles */
+ .container1 {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+ }
+ 
+
+ /* Table styles */
+ table {
+     width: 100%;
+     border-collapse: collapse;
+     margin-top: 10px;
+     /* Add some space above the table */
+ }
+
+ th,td {
+     border: 2px solid black;
+     /* Apply border to table cells */
+     padding: 2%;
+     text-align: left;
+     font-size: 20px;
+     padding: 8px; /* Add padding to table cells */
+ }
+
+ th {
+     background-color: #f2f2f2;
+ }
+
+
+
+
+ .line-container {
+     display: flex;
+     justify-content: space-between;
+     /* Align items horizontally */
+ }
+
+ .container1 h6 {
+     display: inline-block;
+     margin: 0;
+     /* Remove default margin */
+     width: 30%;
+     /* Adjust width as needed */
+     text-align: center;
+     /* Center-align the content */
+ }
+
+ #button {
+     text-align: center;
+ }
+
+ 
+
+ @media print {
+     body * {
+         visibility: hidden;
+     }
+
+     .container1,
+     .container1 * {
+         visibility: visible;
+     }
+
+     .container1 {
+         width: 95%;
+         text-align: right;
+         position: absolute;
+         top: 0;
+         left: 0;
+     }
+     
+
+ }
+
+
+ #overlay {
+     position: fixed;
+     display: none;
+     width: 100%;
+     height: 100%;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     background-color: rgba(0, 0, 0, 0.5);
+     z-index: 2;
+     cursor: pointer;
+ }
+
+ #text {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     font-size: 50px;
+     color: white;
+     transform: translate(-50%, -50%);
+     -ms-transform: translate(-50%, -50%);
+ }
+
+ .sidebar-brand-text {
+     font-size: 18px;
+     font-weight: bold;
+ }
+
+ .img-profile {
+     width: 40px;
+     height: 40px;
+     padding: 0px;
+ }
+
+ #wrapper {
+     display: flex;
+ }
+
+ #sidebar {
+     width: 23%;
+     background-color: #fff;
+     /* White background */
+     height: 100vh;
+     /* Full height */
+     border-right: 1px solid #ddd;
+     /* Light gray border on the right */
+     padding-top: 20px;
+     /* Add some padding at the top */
+ }
+
+ #sidebar .nav-item {
+     padding: 10px 15px;
+     /* Padding for the items */
+ }
+
+ #sidebar .nav-item:hover {
+     background-color: #f8f9fa;
+     /* Light gray background on hover */
+ }
+
+ #sidebar .nav-link1 {
+     color: #333;
+     /* Dark color for the links */
+ }
+
+ #sidebar .nav-link1:hover {
+     color: #555;
+     /* Darker color on hover */
+ }
+
+ #content-wrapper {
+     flex: 1;
+ }
+
+ #sidebar {
+     width: 23%;
+     background-color: #fff;
+     /* White background */
+     height: 100%;
+     /* Full height */
+     border-right: 1px solid #ddd;
+     /* Light gray border on the right */
+     padding-top: 20px;
+     /* Add some padding at the top */
+     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+     /* Add shadow effect */
+ }
+
+ .nav-item {
+     margin-bottom: 0px;
+     /* Add some space between items */
+ }
+
+ .nav-link1 {
+     display: block;
+     /* Display as block elements */
+     padding: 10px 15px;
+     /* Add padding */
+     text-decoration: none;
+     /* Remove underline */
+     color: #333;
+     /* Dark color for the links */
+     background-color: #f8f9fa;
+     /* Light gray background */
+     border: 1px solid #ccc;
+     /* Light gray border */
+     border-radius: 5px;
+     /* Rounded corners */
+ }
+
+ .nav-link1:hover {
+     background-color: #e9ecef;
+     /* Lighter gray background on hover */
+     border-color: #bbb;
+     /* Lighter gray border on hover */
+ }
+
+ .sidebar-heading {
+     text-align: center;
+     /* Center the heading */
+ }
+
+
+
+ .collapsed .nav-link1 span {
+     display: none;
+ }
+
+
+ /* Add this CSS to rotate the icon when collapsed */
+ .collapsed #sidebarCollapse .fa-angle-left {
+     transform: rotate(180deg);
+ }
+
+ /* Adjusted Textarea styles */
+ .dwsRemarkTextArea {
+     width: 100%;
+     min-width: 150px;
+     height: 150px;
+     /* Adjust the height as needed */
+     resize: vertical;
+     /* Allow vertical resizing */
+ }
+
+ 
+ #partsRequired {
+    text-align: left;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  border: 1px solid #ccc; /* Add border */
+  padding: 10px; /* Add padding */
+  border-radius: 5px; /* Add border-radius for rounded corners */
+  background-color: #fff; /* Add background color */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add box shadow for paper-like effect */
+}
+.scroll-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: block; /* Ensure the button is initially visible */
+    width: 40px;
+    height: 40px;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    font-size: 18px;
+    z-index: 999;
+    transition: background-color 0.3s ease-in-out;
+  }
+
+  .scroll-to-top:hover {
+    background-color: #0056b3;
+    cursor: pointer;
+  }
+
+  .container {
+    max-width: 100%;
+    text-align: center;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }

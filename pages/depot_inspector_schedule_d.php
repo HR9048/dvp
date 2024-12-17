@@ -77,7 +77,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
 
             return $maxAllowedConductor;
         }
-        function getmaxAllowedoffreliverdriver($serviceClassName, $serviceTypeName, $singleCrewOperation) {
+        function getmaxAllowedoffreliverdriver($serviceClassName, $serviceTypeName, $singleCrewOperation)
+        {
             $maxAllowedoffreliverdriver = null;
 
             switch ($serviceClassName) {
@@ -104,7 +105,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             return $maxAllowedoffreliverdriver;
         }
 
-        function getmaxAllowedoffreliverconductor($serviceClassName, $serviceTypeName, $singleCrewOperation) {
+        function getmaxAllowedoffreliverconductor($serviceClassName, $serviceTypeName, $singleCrewOperation)
+        {
             $maxAllowedoffreliverconductor = null;
 
             switch ($serviceClassName) {
@@ -136,6 +138,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
         $sch_km = $_POST['sch_km'];
         $sch_dep_time = $_POST['sch_dep_time'];
         $sch_arr_time = $_POST['sch_arr_time'];
+        $sch_count_present_schedule = $_POST['sch_count'];
         $service_class_id = $_POST['service_class'];
         $service_type_id = $_POST['service_type'];
         $number_of_buses = $_POST['number_of_buses'];
@@ -192,7 +195,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             echo "<script>alert('Maximum allowed drivers for this service is $maxAllowedDrivers.');</script>";
         } else if ($numberOfConductor > $maxAllowedConductor) {
             echo "<script>alert('Maximum allowed conductors for this service is $maxAllowedConductor.');</script>";
-        }else if ($numberOfoffreliverDrivers > $maxAllowedoffreliverDrivers) {
+        } else if ($numberOfoffreliverDrivers > $maxAllowedoffreliverDrivers) {
             echo "<script>alert('Maximum allowed off reliver drivers for this service is $maxAllowedoffreliverDrivers.');</script>";
         } else if ($numberOfoffreliverConductor > $maxAllowedoffreliverConductor) {
             echo "<script>alert('Maximum allowed off reliver conductors for this service is $maxAllowedoffreliverConductor.');</script>";
@@ -203,7 +206,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             $duplicateFound = false;
             $duplicateMessage = "";
             $tokenCheckSql = "SELECT 
-                driver_token_1, driver_token_2, driver_token_3, driver_pf_1, driver_pf_2, driver_pf_3, 
+                driver_token_1, driver_token_2, driver_token_3 , driver_token_4, driver_token_5, driver_token_6, driver_pf_1, driver_pf_2, driver_pf_3, driver_pf_4, driver_pf_5, driver_pf_6,
                 conductor_token_1, conductor_token_2, conductor_token_3, conductor_pf_1, conductor_pf_2, conductor_pf_3 
                 FROM schedule_master WHERE id != ?";
             $params = [$id];
@@ -216,7 +219,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             // Collect existing PFs
             $existingPFs = [];
             while ($row = $tokenCheckResult->fetch_assoc()) {
-                for ($j = 1; $j <= 3; $j++) {
+                for ($j = 1; $j <= 6; $j++) {
                     $existingPFs[] = $row['driver_pf_' . $j];
                     $existingPFs[] = $row['conductor_pf_' . $j];
                 }
@@ -258,6 +261,69 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             if ($duplicateFound) {
                 echo "<script>alert('$duplicateMessage');</script>";
             } else {
+                $sql = "SELECT SUM(sch_count) AS total_sch_count
+                FROM schedule_master 
+                WHERE driver_pf_1 = ? 
+                   OR driver_pf_2 = ? 
+                   OR driver_pf_3 = ? 
+                   OR driver_pf_4 = ? 
+                   OR driver_pf_5 = ? 
+                   OR driver_pf_6 = ? 
+                   OR conductor_pf_1 = ? 
+                   OR conductor_pf_2 = ? 
+                   OR conductor_pf_3 = ? 
+                   OR offreliverdriver_pf_1 = ? 
+                   OR offreliverdriver_pf_2 = ? 
+                   OR offreliverconductor_pf_1 = ?";
+    
+        $stmt = $db->prepare($sql);
+    
+        if (!$stmt) {
+            die("SQL Error: " . $db->error);
+        }
+    
+        // Function to check the total schedule count for a PF number
+        function checkTotalScheduleCount($db, $stmt, $pfNumber) {
+            // Bind the PF number to all placeholders in the query
+            $stmt->bind_param(
+                "ssssssssssss", 
+                $pfNumber, $pfNumber, $pfNumber, $pfNumber, $pfNumber, $pfNumber,
+                $pfNumber, $pfNumber, $pfNumber, $pfNumber, $pfNumber, $pfNumber
+            );
+    
+            $stmt->execute();
+            $result = $stmt->get_result();
+    
+            // Fetch the summed sch_count
+            $row = $result->fetch_assoc();
+            return (int)$row['total_sch_count']; // Return total sch_count
+        }
+    
+        // Loop through off-reliver driver and conductor PFs to validate
+        foreach (array_merge($offreliverdriverPFs, $offreliverconductorPFs) as $pfNumber) {
+            $totalScheduleCount = checkTotalScheduleCount($db, $stmt, $pfNumber);
+    
+            if ($totalScheduleCount > 5) {
+                // Alert message if total schedule count exceeds limit
+                echo "<script>
+                    alert('The selected PF number {$pfNumber} has exceeded the maximum of 6 schedule counts (Current Total: {$totalScheduleCount}). Please select another PF's Token number realocate the crew to this schedule.');
+                    window.history.back();
+                </script>";
+                exit; // Stop further execution
+            }
+            $combinedScheduleCount = $totalScheduleCount + $sch_count_present_schedule; // Add current schedule count
+
+        if ($combinedScheduleCount > 6) {
+            // Alert message if combined total exceeds the limit
+            echo "<script>
+                alert('The selected PF number {$pfNumber} has exceeded the maximum of 6 schedule counts. The employee current schedule count is {$totalScheduleCount} and the entered present schedule count is {$sch_count_present_schedule} it makes total schedule count as {$combinedScheduleCount}. Please select another off-reliever or other schedule.');
+                window.history.back();
+            </script>";
+            exit; // Stop further execution
+        }
+        }
+
+
                 // Fetch existing data for the current schedule
                 $currentDataSql = "SELECT * FROM schedule_master WHERE id = ?";
                 $currentDataStmt = $db->prepare($currentDataSql);
@@ -271,20 +337,20 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                 $crewUpdates = [];
 
                 // Check for drivers
-                for ($i = 1; $i <= 3; $i++) { // Assuming max 2 drivers
+                for ($i = 1; $i <= 6; $i++) { // Assuming max 2 drivers
                     $driverToken = $_POST['driver_token_' . $i];
                     $driverPF = $_POST['pf_no_d' . $i];
                     $driverName = $_POST['driver_' . $i . '_name'];
                     $existingDriverPF = $currentData['driver_pf_' . $i];
                     $driveris171 = $_POST['circular_17_1_driver_' . $i];
-                    
+
                     // Check if the value for the driver is set and equals '1'
                     if ($driveris171 == 'on') {
                         $is171driver = 'Yes';
                     } else {
                         $is171driver = 'No';
                     }
-                   
+
                     if ($driverPF !== $existingDriverPF) {
                         // Update existing driver's to_date to current datetime
                         $updateCrewSql = "UPDATE crew_fix_data SET to_date = NOW() WHERE division_id = ? AND depot_id = ? AND sch_key_no = ? AND crew_pf = ?";
@@ -298,6 +364,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                             'pf' => $driverPF,
                             'name' => $driverName,
                             'designation' => 'Driver',
+                            'offreliverstatus' => 'no',
                             '171status' => $is171driver
                         ];
                     }
@@ -315,7 +382,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                     } else {
                         $is171conductor = 'No';
                     }
-                   
+
                     if ($conductorPF !== $existingConductorPF) {
                         // Update existing conductor's to_date to current datetime
                         $updateCrewSql = "UPDATE crew_fix_data SET to_date = NOW() WHERE division_id = ? AND depot_id = ? AND sch_key_no = ? AND crew_pf = ?";
@@ -329,7 +396,72 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                             'pf' => $conductorPF,
                             'name' => $conductorName,
                             'designation' => 'Conductor',
+                            'offreliverstatus' => 'no',
                             '171status' => $is171conductor
+                        ];
+                    }
+                }
+                for ($i = 1; $i <= 2; $i++) { // Assuming max 2 drivers
+                    $offreliverdriverToken = $_POST['offreliverdriver_token_' . $i];
+                    $offreliverdriverPF = $_POST['offreliverpf_no_d' . $i];
+                    $offreliverdriverName = $_POST['offreliverdriver_' . $i . '_name'];
+                    $existingoffreliverDriverPF = $currentData['offreliverdriver_pf_' . $i];
+                    $offreliverdriveris171 = $_POST['offrelivercircular_17_1_driver_' . $i];
+
+                    // Check if the value for the driver is set and equals '1'
+                    if ($offreliverdriveris171 == 'on') {
+                        $offreliveris171driver = 'Yes';
+                    } else {
+                        $offreliveris171driver = 'No';
+                    }
+
+                    if ($offreliverdriverPF !== $existingoffreliverDriverPF) {
+                        // Update existing driver's to_date to current datetime
+                        $updateCrewSql = "UPDATE crew_fix_data SET to_date = NOW() WHERE division_id = ? AND depot_id = ? AND sch_key_no = ? AND crew_pf = ? and offreliver = 'yes'";
+                        $crewStmt = $db->prepare($updateCrewSql);
+                        $crewStmt->bind_param('siis', $division_id, $depot_id, $sch_key_no, $existingoffreliverDriverPF);
+                        $crewStmt->execute();
+
+                        // Collect new driver data for insertion
+                        $crewUpdates[] = [
+                            'token' => $offreliverdriverToken,
+                            'pf' => $offreliverdriverPF,
+                            'name' => $offreliverdriverName,
+                            'designation' => 'Driver',
+                            'offreliverstatus' => 'yes',
+                            '171status' => $offreliveris171driver
+                        ];
+                    }
+                }
+
+                // Check for conductors
+                for ($i = 1; $i <= 1; $i++) { // Assuming max 2 conductors
+                    $offreliverconductorToken = $_POST['offreliverconductor_token_' . $i];
+                    $offreliverconductorPF = $_POST['offreliverpf_no_c' . $i];
+                    $offreliverconductorName = $_POST['offreliverconductor_' . $i . '_name'];
+                    $existingoffreliverConductorPF = $currentData['offreliverconductor_pf_' . $i];
+                    $offreliverconductoris171 = $_POST['offrelivercircular_17_1_conductor_' . $i];
+                    if ($offreliverconductoris171 == 'on') {
+                        $offreliveris171conductor = 'Yes';
+                    } else {
+                        $offreliveris171conductor = 'No';
+                    }
+
+                    if ($offreliverconductorPF !== $existingoffreliverConductorPF) {
+                        // Update existing conductor's to_date to current datetime
+                        $updateCrewSql = "UPDATE crew_fix_data SET to_date = NOW() WHERE division_id = ? AND depot_id = ? AND sch_key_no = ? AND crew_pf = ? and offreliver = 'yes'";
+                        $crewStmt = $db->prepare($updateCrewSql);
+                        $crewStmt->bind_param('siis', $division_id, $depot_id, $sch_key_no, $existingoffreliverConductorPF);
+                        $crewStmt->execute();
+
+                        // Collect new conductor data for insertion
+                        $crewUpdates[] = [
+                            'token' => $offreliverconductorToken,
+                            'pf' => $offreliverconductorPF,
+                            'name' => $offreliverconductorName,
+                            'designation' => 'Conductor',
+                            'offreliverstatus' => 'yes',
+                            '171status' => $offreliveris171conductor
                         ];
                     }
                 }
@@ -341,12 +473,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                 $stmt->execute();
 
                 // Insert new crew details
-                $insertCrewDataSql = "INSERT INTO crew_fix_data (sch_key_no, division_id, depot_id, crew_token, crew_pf, crew_name, designation, 171status, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $insertCrewDataSql = "INSERT INTO crew_fix_data (sch_key_no, division_id, depot_id, crew_token, crew_pf, crew_name, designation, 171status, offreliver, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $crewStmt = $db->prepare($insertCrewDataSql);
 
                 foreach ($crewUpdates as $crew) {
                     if ($crew['token'] != null) {
-                        $crewStmt->bind_param('siissssss', $sch_key_no, $division_id, $depot_id, $crew['token'], $crew['pf'], $crew['name'], $crew['designation'], $crew['171status'], $user);
+                        $crewStmt->bind_param('siisssssss', $sch_key_no, $division_id, $depot_id, $crew['token'], $crew['pf'], $crew['name'], $crew['designation'], $crew['171status'], $crew['offreliverstatus'], $user);
                         $crewStmt->execute();
                     }
                 }
@@ -398,6 +530,58 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                     } else {
                         // Set extra conductors to null
                         $updateConductorSql = "UPDATE schedule_master SET conductor_token_" . $i . " = NULL, conductor_pf_" . $i . " = NULL, conductor_name_" . $i . " = NULL WHERE id = ?";
+                        $conductorStmt = $db->prepare($updateConductorSql);
+                        $conductorStmt->bind_param('i', $id);
+                        $conductorStmt->execute();
+                    }
+                }
+                for ($i = 1; $i <= 2; $i++) {
+                    if ($i <= $numberOfoffreliverDrivers) {
+                        $offreliverdriverToken = $_POST['offreliverdriver_token_' . $i];
+                        $offreliverdriverPF = $_POST['offreliverpf_no_d' . $i];
+                        $offreliverdriverName = $_POST['offreliverdriver_' . $i . '_name'];
+
+                        // Only update if there's a change
+                        if (
+                            $currentData['offreliverdriver_token_' . $i] !== $offreliverdriverToken ||
+                            $currentData['offreliverdriver_pf_' . $i] !== $offreliverdriverPF ||
+                            $currentData['offreliverdriver_name_' . $i] !== $offreliverdriverName
+                        ) {
+                            $updateDriverSql = "UPDATE schedule_master SET offreliverdriver_token_" . $i . " = ?, offreliverdriver_pf_" . $i . " = ?, offreliverdriver_name_" . $i . " = ? WHERE id = ?";
+                            $driverStmt = $db->prepare($updateDriverSql);
+                            $driverStmt->bind_param('sssi', $offreliverdriverToken, $offreliverdriverPF, $offreliverdriverName, $id);
+                            $driverStmt->execute();
+                        }
+                    } else {
+                        // Set extra drivers to null
+                        $updateDriverSql = "UPDATE schedule_master SET offreliverdriver_token_" . $i . " = NULL, offreliverdriver_pf_" . $i . " = NULL, offreliverdriver_name_" . $i . " = NULL WHERE id = ?";
+                        $driverStmt = $db->prepare($updateDriverSql);
+                        $driverStmt->bind_param('i', $id);
+                        $driverStmt->execute();
+                    }
+                }
+
+                // Update conductor details
+                for ($i = 1; $i <= 1; $i++) {
+                    if ($i <= $numberOfoffreliverConductor) {
+                        $offreliverconductorToken = $_POST['offreliverconductor_token_' . $i];
+                        $offreliverconductorPF = $_POST['offreliverpf_no_c' . $i];
+                        $offreliverconductorName = $_POST['offreliverconductor_' . $i . '_name'];
+
+                        // Only update if there's a change
+                        if (
+                            $currentData['offreliverconductor_token_' . $i] !== $offreliverconductorToken ||
+                            $currentData['offreliverconductor_pf_' . $i] !== $offreliverconductorPF ||
+                            $currentData['offreliverconductor_name_' . $i] !== $offreliverconductorName
+                        ) {
+                            $updateConductorSql = "UPDATE schedule_master SET offreliverconductor_token_" . $i . " = ?, offreliverconductor_pf_" . $i . " = ?, offreliverconductor_name_" . $i . " = ? WHERE id = ?";
+                            $conductorStmt = $db->prepare($updateConductorSql);
+                            $conductorStmt->bind_param('sssi', $offreliverconductorToken, $offreliverconductorPF, $offreliverconductorName, $id);
+                            $conductorStmt->execute();
+                        }
+                    } else {
+                        // Set extra conductors to null
+                        $updateConductorSql = "UPDATE schedule_master SET offreliverconductor_token_" . $i . " = NULL, offreliverconductor_pf_" . $i . " = NULL, offreliverconductor_name_" . $i . " = NULL WHERE id = ?";
                         $conductorStmt = $db->prepare($updateConductorSql);
                         $conductorStmt->bind_param('i', $id);
                         $conductorStmt->execute();
@@ -593,30 +777,31 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
             ?>
         </tbody>
     </table>
-    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header">
-                <h5 class="modal-title" id="updateModalLabel">Schedule Update</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="updateForm" method="post">
-                    <input type="hidden" id="scheduleId" name="id">
-                    <div id="scheduleFields"></div>
-                    <div id="crewOperationFields"></div>
-                    <div id="driverFields"></div>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">Schedule Update</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateForm" method="post">
+                        <input type="hidden" id="scheduleId" name="id">
+                        <div id="scheduleFields"></div>
+                        <div id="crewOperationFields"></div>
+                        <div id="driverFields"></div>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <script>
         $(document).ready(function () {
@@ -633,100 +818,101 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                         var details = JSON.parse(response);
 
                         var scheduleFieldsHtml = `
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="sch_key_no">Schedule Key Number</label>
-                            <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="sch_key_no">Schedule Key Number</label>
+                                    <input type="text" class="form-control" id="sch_key_no" name="sch_key_no" value="${details.sch_key_no}" readonly>
+                                </div>
+                            </div>
+                            <input type="hidden" class="form-control" id="sch_count" name="sch_count" value="${details.sch_count}" readonly>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="sch_abbr">Schedule Abbreviation</label>
+                                    <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="sch_km">Schedule KM</label>
+                                    <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="sch_abbr">Schedule Abbreviation</label>
-                            <input type="text" class="form-control" id="sch_abbr" name="sch_abbr" value="${details.sch_abbr}" readonly>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="sch_km">Schedule KM</label>
-                            <input type="text" class="form-control" id="sch_km" name="sch_km" value="${details.sch_km}" readonly>
-                        </div>
-                    </div>
-                </div>
-                <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
-                <input type="hidden" id="id" name="id" value="${details.id}">
-                <input type="hidden" id="service_class" name="service_class" value="${details.service_type_id}">
-                <input type="hidden" id="service_type" name="service_type" value="${details.service_type_name}">
+                        <input type="hidden" id="number_of_buses" name="number_of_buses" value="${details.number_of_buses}">
+                        <input type="hidden" id="id" name="id" value="${details.id}">
+                        <input type="hidden" id="service_class" name="service_class" value="${details.service_type_id}">
+                        <input type="hidden" id="service_type" name="service_type" value="${details.service_type_name}">
     
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="sch_dep_time">Departure Time</label>
-                            <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="sch_arr_time">Arrival Time</label>
-                            <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="service_class_name">Service Class</label>
-                            <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
-                        </div>
-                    </div>
-                </div>`;
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="sch_dep_time">Departure Time</label>
+                                    <input type="text" class="form-control" id="sch_dep_time" name="sch_dep_time" value="${details.sch_dep_time}" readonly>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="sch_arr_time">Arrival Time</label>
+                                    <input type="text" class="form-control" id="sch_arr_time" name="sch_arr_time" value="${details.sch_arr_time}" readonly>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-group">
+                                    <label for="service_class_name">Service Class</label>
+                                    <input type="text" class="form-control" id="service_class_name" name="service_class_name" value="${details.service_class_name}" readonly>
+                                </div>
+                            </div>
+                        </div>`;
 
                         $('#scheduleFields').html(scheduleFieldsHtml);
                         $('#updateModal').modal('show');
 
                         // Add the single crew operation checkboxes and number of drivers/conductors fields
                         var crewOperationFieldsHtml = `
-                                <div class="row">
-                                    <div class="col">
-                                        <div class="form-group">
-                                            <label>Conductor Less Operation:</label>
-                                            <div>
-                                                <input type="radio" id="single_crew_yes" name="single_crew_operation" value="yes" required>
-                                                <label for="single_crew_yes">Yes</label>
-                                                <input type="radio" id="single_crew_no" name="single_crew_operation" value="no" required>
-                                                <label for="single_crew_no">No</label>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <label>Conductor Less Operation:</label>
+                                                    <div>
+                                                        <input type="radio" id="single_crew_yes" name="single_crew_operation" value="yes" required>
+                                                        <label for="single_crew_yes">Yes</label>
+                                                        <input type="radio" id="single_crew_no" name="single_crew_operation" value="no" required>
+                                                        <label for="single_crew_no">No</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <label for="number_of_drivers">Enter the number of drivers:</label>
+                                                    <input type="number" id="number_of_drivers" name="number_of_drivers" class="form-control" disabled required>
+                                                </div>
+                                            </div>
+                                            <div class="col" id="conductorColumn" style="display: none;">
+                                                <div class="form-group">
+                                                    <label for="number_of_conductor">Enter the number of Conductors:</label>
+                                                    <input type="number" id="number_of_conductor" name="number_of_conductor" class="form-control" required>
+                                                </div>
+                                            </div>
+                                            <div class="col" id="offrelivercolumndriver" style="display: none;">
+                                                <div class="form-group">
+                                                    <label for="number_of_offreliver_driver">Enter the no of off releiver Driver:</label>
+                                                    <input type="number" id="number_of_offreliver_driver" name="number_of_offreliver_driver" class="form-control" required>
+                                                </div>
+                                            </div>
+                                            <div class="col" id="offrelivercolumnconductor" style="display: none;">
+                                                <div class="form-group">
+                                                    <label for="number_of_offreliver_conductor">Enter the no of off releiver conductor:</label>
+                                                    <input type="number" id="number_of_offreliver_conductor" name="number_of_offreliver_conductor" class="form-control" required>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col">
-                                        <div class="form-group">
-                                            <label for="number_of_drivers">Enter the number of drivers:</label>
-                                            <input type="number" id="number_of_drivers" name="number_of_drivers" class="form-control" disabled required>
-                                        </div>
-                                    </div>
-                                    <div class="col" id="conductorColumn" style="display: none;">
-                                        <div class="form-group">
-                                            <label for="number_of_conductor">Enter the number of Conductors:</label>
-                                            <input type="number" id="number_of_conductor" name="number_of_conductor" class="form-control" required>
-                                        </div>
-                                    </div>
-                                    <div class="col" id="offrelivercolumndriver" style="display: none;">
-                                        <div class="form-group">
-                                            <label for="number_of_offreliver_driver">Enter the no of off releiver Driver:</label>
-                                            <input type="number" id="number_of_offreliver_driver" name="number_of_offreliver_driver" class="form-control" required>
-                                        </div>
-                                    </div>
-                                    <div class="col" id="offrelivercolumnconductor" style="display: none;">
-                                        <div class="form-group">
-                                            <label for="number_of_offreliver_conductor">Enter the no of off releiver conductor:</label>
-                                            <input type="number" id="number_of_offreliver_conductor" name="number_of_offreliver_conductor" class="form-control" required>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="driverFields"></div>
-                                <div id="conductorFields"></div>
-                                <div id="offreliverdriverFields"></div>
-                                <div id="offreliverconductorFields"></div>
-                                <div id="driverAllocationMessage"></div>
-                            `;
+                                        <div id="driverFields"></div>
+                                        <div id="conductorFields"></div>
+                                        <div id="offreliverdriverFields"></div>
+                                        <div id="offreliverconductorFields"></div>
+                                        <div id="driverAllocationMessage"></div>
+                                    `;
 
                         $('#crewOperationFields').html(crewOperationFieldsHtml);
                         // Set radio buttons based on the fetched data
@@ -738,8 +924,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             //$('#offrelivercolumnconductor').show();
                             $('#number_of_conductor').val('').removeAttr('required');  // Correct method to remove attribute
                             $('#number_of_offreliver_conductor').val('').removeAttr('required');
-                            //$('#number_of_offreliver_driver').val(details.driver_count);
-                            //$('#number_of_offreliver_conductor').val(details.driver_count);
+                            
                             $('#driverFields').empty(); // Clear existing fields
                             addConductorInputFields(0); // Clear conductors since single crew is 'yes'
                             addoffreliverconductorInputFields(0);
@@ -754,12 +939,14 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             $('#offrelivercolumnconductor').show();
                             $('#number_of_drivers').val(details.driver_count);
                             $('#number_of_conductor').val(details.conductor_count);
-                            //$('#number_of_offreliver_driver').val(details.driver_count);
-                            //$('#number_of_offreliver_conductor').val(details.driver_count);
+                            $('#number_of_offreliver_driver').val(details.offreliverdriver_count);
+                            $('#number_of_offreliver_conductor').val(details.offreliverconductor_count);
 
                             // Generate driver and conductor fields based on fetched counts
                             addDriverInputFields(details.driver_count, details); // Add the driver fields
                             addConductorInputFields(details.conductor_count, details); // Add the conductor fields
+                            addoffreleiverDriverInputFields(details.offreliverdriver_count, details);
+                            addoffreliverconductorInputFields(details.offreliverconductor_count, details);
                         }
 
 
@@ -864,32 +1051,32 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 var driverName = details[`driver_name_${i}`] || '';   // Retrieve driver name or set as empty
                                 var d171status = details[`Driver_${i}_171_Status`] || ''; // Retrieve Driver 171 status or set as empty
                                 driverFieldsHtml += `
-                        <div class="row driver-field">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="driver_token_${i}">Driver ${i} Token:</label>
-                                    <input type="text" id="driver_token_${i}" name="driver_token_${i}" value="${driverToken}" class="form-control" required>
+                                <div class="row driver-field">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="driver_token_${i}">Driver ${i} Token:</label>
+                                            <input type="text" id="driver_token_${i}" name="driver_token_${i}" value="${driverToken}" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="pf_no_d${i}">Driver ${i} PF:</label>
+                                            <input type="text" id="pf_no_d${i}" name="pf_no_d${i}" value="${driverPf}" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="driver_${i}_name">Driver ${i} Name:</label>
+                                            <input type="text" id="driver_${i}_name" name="driver_${i}_name" value="${driverName}" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="circular_17_1_driver_${i}" name="circular_17_1_driver_${i}" ${d171status === 'Yes' ? 'checked' : ''} class="form-check-input">
+                                    <label class="form-check-label" for="circular_17_1_driver_${i}">Crew under 17/1</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="pf_no_d${i}">Driver ${i} PF:</label>
-                                    <input type="text" id="pf_no_d${i}" name="pf_no_d${i}" value="${driverPf}" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="driver_${i}_name">Driver ${i} Name:</label>
-                                    <input type="text" id="driver_${i}_name" name="driver_${i}_name" value="${driverName}" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                        <div class="form-group form-check">
-                            <input type="checkbox" id="circular_17_1_driver_${i}" name="circular_17_1_driver_${i}" ${d171status === 'Yes' ? 'checked' : ''} class="form-check-input">
-                            <label class="form-check-label" for="circular_17_1_driver_${i}">Crew under 17/1</label>
-                        </div>
-                    </div>
-                        </div>`;
+                                </div>`;
                             }
 
                             $('#driverFields').html(driverFieldsHtml);
@@ -913,7 +1100,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                                     alert(`Duplicate entry for token ${tokenNumber} with the same PF number. Please update with another token or PF number.`);
                                                     clearFields('driver_' + i + '_name', 'pf_no_d' + i, 'driver_token_' + i);
                                                 }
-                                            },  500);  // Adjust delay if necessary
+                                            }, 500);  // Adjust delay if necessary
                                         }
                                     });
                                 })(i);
@@ -940,32 +1127,32 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 var c171status = details[`Conductor_${i}_171_Status`] || ''; // Retrieve Driver 171 status or set as empty
 
                                 conductorFieldsHtml += `
-                        <div class="row conductor-field">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="conductor_token_${i}">Conductor ${i} Token:</label>
-                                    <input type="text" id="conductor_token_${i}" name="conductor_token_${i}" value="${conductorToken}" class="form-control" required>
+                                <div class="row conductor-field">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="conductor_token_${i}">Conductor ${i} Token:</label>
+                                            <input type="text" id="conductor_token_${i}" name="conductor_token_${i}" value="${conductorToken}" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="pf_no_c${i}">Conductor ${i} PF:</label>
+                                            <input type="text" id="pf_no_c${i}" name="pf_no_c${i}" value="${conductorPf}" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="conductor_${i}_name">Conductor ${i} Name:</label>
+                                            <input type="text" id="conductor_${i}_name" name="conductor_${i}_name" value="${conductorName}" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="circular_17_1_conductor_${i}" name="circular_17_1_conductor_${i}" ${c171status === 'Yes' ? 'checked' : ''} class="form-check-input">
+                                    <label class="form-check-label" for="circular_17_1_conductor_${i}">Crew under 17/1</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="pf_no_c${i}">Conductor ${i} PF:</label>
-                                    <input type="text" id="pf_no_c${i}" name="pf_no_c${i}" value="${conductorPf}" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="conductor_${i}_name">Conductor ${i} Name:</label>
-                                    <input type="text" id="conductor_${i}_name" name="conductor_${i}_name" value="${conductorName}" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                        <div class="form-group form-check">
-                            <input type="checkbox" id="circular_17_1_conductor_${i}" name="circular_17_1_conductor_${i}" ${c171status === 'Yes' ? 'checked' : ''} class="form-check-input">
-                            <label class="form-check-label" for="circular_17_1_conductor_${i}">Crew under 17/1</label>
-                        </div>
-                    </div>
-                        </div>`;
+                                </div>`;
                             }
 
                             $('#conductorFields').html(conductorFieldsHtml); // Inject the generated HTML into the conductorFields element
@@ -1006,34 +1193,34 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 var offreliverdriverToken = details[`offreliverdriver_token_${i}`] || ''; // Retrieve driver token or set as empty
                                 var offreliverdriverPf = details[`offreliverdriver_pf_${i}`] || '';       // Retrieve driver PF or set as empty
                                 var offreliverdriverName = details[`offreliverdriver_name_${i}`] || '';   // Retrieve driver name or set as empty
-                                var offreliverd171status = details[`Driver_${i}_171_Status`] || ''; // Retrieve Driver 171 status or set as empty
+                                var offreliverd171status = details[`offreliverDriver_${i}_171_Status`] || ''; // Retrieve Driver 171 status or set as empty
                                 offreliverdriverFieldsHtml += `
-                        <div class="row driver-field">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="offreliverdriver_token_${i}">offreliver Driver ${i} Token:</label>
-                                    <input type="text" id="offreliverdriver_token_${i}" name="offreliverdriver_token_${i}" value="${offreliverdriverToken}" class="form-control" required>
+                                <div class="row driver-field">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="offreliverdriver_token_${i}">offreliver Driver ${i} Token:</label>
+                                            <input type="text" id="offreliverdriver_token_${i}" name="offreliverdriver_token_${i}" value="${offreliverdriverToken}" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="offreliverpf_no_d${i}">offreliver Driver ${i} PF:</label>
+                                            <input type="text" id="offreliverpf_no_d${i}" name="offreliverpf_no_d${i}" value="${offreliverdriverPf}" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="offreliverdriver_${i}_name">offreliver Driver ${i} Name:</label>
+                                            <input type="text" id="offreliverdriver_${i}_name" name="offreliverdriver_${i}_name" value="${offreliverdriverName}" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="offrelivercircular_17_1_driver_${i}" name="offrelivercircular_17_1_driver_${i}" ${offreliverd171status === 'Yes' ? 'checked' : ''} class="form-check-input">
+                                    <label class="form-check-label" for="offrelivercircular_17_1_driver_${i}">Crew under 17/1</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="offreliverpf_no_d${i}">offreliver Driver ${i} PF:</label>
-                                    <input type="text" id="offreliverpf_no_d${i}" name="offreliverpf_no_d${i}" value="${offreliverdriverPf}" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="offreliverdriver_${i}_name">offreliver Driver ${i} Name:</label>
-                                    <input type="text" id="offreliverdriver_${i}_name" name="offreliverdriver_${i}_name" value="${offreliverdriverName}" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                        <div class="form-group form-check">
-                            <input type="checkbox" id="offrelivercircular_17_1_driver_${i}" name="offrelivercircular_17_1_driver_${i}" ${offreliverd171status === 'Yes' ? 'checked' : ''} class="form-check-input">
-                            <label class="form-check-label" for="offrelivercircular_17_1_driver_${i}">Crew under 17/1</label>
-                        </div>
-                    </div>
-                        </div>`;
+                                </div>`;
                             }
 
                             $('#offreliverdriverFields').html(offreliverdriverFieldsHtml);
@@ -1057,7 +1244,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                                     alert(`Duplicate entry for token ${offrelivertokenNumber} with the same PF number. Please update with another token or PF number.`);
                                                     clearFields('offreliverdriver_' + i + '_name', 'offreliverpf_no_d' + i, 'offreliverdriver_token_' + i);
                                                 }
-                                            },  500);  // Adjust delay if necessary
+                                            }, 500);  // Adjust delay if necessary
                                         }
                                     });
                                 })(i);
@@ -1073,35 +1260,35 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                 var offreliverconductorToken = details[`offreliverconductor_token_${i}`] || '';  // Retrieve conductor token or set as empty
                                 var offreliverconductorPf = details[`offreliverconductor_pf_${i}`] || '';        // Retrieve conductor PF or set as empty
                                 var offreliverconductorName = details[`offreliverconductor_name_${i}`] || '';    // Retrieve conductor name or set as empty
-                                var offreliverc171status = details[`Conductor_${i}_171_Status`] || ''; // Retrieve Driver 171 status or set as empty
+                                var offreliverc171status = details[`offreliverConductor_${i}_171_Status`] || ''; // Retrieve Driver 171 status or set as empty
 
                                 offreliverconductorFieldsHtml += `
-                        <div class="row conductor-field">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="offreliverconductor_token_${i}">offreliver Conductor ${i} Token:</label>
-                                    <input type="text" id="offreliverconductor_token_${i}" name="offreliverconductor_token_${i}" value="${offreliverconductorToken}" class="form-control" required>
+                                <div class="row conductor-field">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="offreliverconductor_token_${i}">offreliver Conductor ${i} Token:</label>
+                                            <input type="text" id="offreliverconductor_token_${i}" name="offreliverconductor_token_${i}" value="${offreliverconductorToken}" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="offreliverpf_no_c${i}">offreliver Conductor ${i} PF:</label>
+                                            <input type="text" id="offreliverpf_no_c${i}" name="offreliverpf_no_c${i}" value="${offreliverconductorPf}" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="offreliverconductor_${i}_name">offreliver Conductor ${i} Name:</label>
+                                            <input type="text" id="offreliverconductor_${i}_name" name="offreliverconductor_${i}_name" value="${offreliverconductorName}" class="form-control" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                <div class="form-group form-check">
+                                    <input type="checkbox" id="offrelivercircular_17_1_conductor_${i}" name="offrelivercircular_17_1_conductor_${i}" ${offreliverc171status === 'Yes' ? 'checked' : ''} class="form-check-input">
+                                    <label class="form-check-label" for="offrelivercircular_17_1_conductor_${i}">Crew under 17/1</label>
                                 </div>
                             </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="offreliverpf_no_c${i}">offreliver Conductor ${i} PF:</label>
-                                    <input type="text" id="offreliverpf_no_c${i}" name="offreliverpf_no_c${i}" value="${offreliverconductorPf}" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="offreliverconductor_${i}_name">offreliver Conductor ${i} Name:</label>
-                                    <input type="text" id="offreliverconductor_${i}_name" name="offreliverconductor_${i}_name" value="${offreliverconductorName}" class="form-control" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                        <div class="form-group form-check">
-                            <input type="checkbox" id="offrelivercircular_17_1_conductor_${i}" name="offrelivercircular_17_1_conductor_${i}" ${offreliverc171status === 'Yes' ? 'checked' : ''} class="form-check-input">
-                            <label class="form-check-label" for="offrelivercircular_17_1_conductor_${i}">Crew under 17/1</label>
-                        </div>
-                    </div>
-                        </div>`;
+                                </div>`;
                             }
 
                             $('#offreliverconductorFields').html(offreliverconductorFieldsHtml); // Inject the generated HTML into the conductorFields element
@@ -1147,7 +1334,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
                                     //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
-                                    xhr1.open('GET', 'http://117.203.105.106:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1209,13 +1396,13 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                             openDriverSelectionModal(filteredDrivers, function (selectedDriver) {
                                                 if (isCCircular17Checked) {
                                                 } else {
-                                                if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                                                    alert('The selected employee is a DRIVER. Please select a conductor or Driver cum Conductor.');
-                                                    $('#driverSelectionModal').modal('hide');
-                                                    clearFields(nameElementId, pfElementId, tokenElementId);
-                                                    return;
+                                                    if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                                                        alert('The selected employee is a DRIVER. Please select a conductor or Driver cum Conductor.');
+                                                        $('#driverSelectionModal').modal('hide');
+                                                        clearFields(nameElementId, pfElementId, tokenElementId);
+                                                        return;
+                                                    }
                                                 }
-                                            }
                                                 document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
                                                 document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
                                                 checkScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
@@ -1245,7 +1432,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
                                     //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
-                                    xhr1.open('GET', 'http://117.203.105.106:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1307,13 +1494,13 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                             openDriverSelectionModal(filteredDrivers, function (selectedDriver) {
                                                 if (isoffreliverCCircular17Checked) {
                                                 } else {
-                                                if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
-                                                    alert('The selected employee is a DRIVER. Please select a conductor or Driver cum Conductor.');
-                                                    $('#driverSelectionModal').modal('hide');
-                                                    clearFields(nameElementId, pfElementId, tokenElementId);
-                                                    return;
+                                                    if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "DRIVER") {
+                                                        alert('The selected employee is a DRIVER. Please select a conductor or Driver cum Conductor.');
+                                                        $('#driverSelectionModal').modal('hide');
+                                                        clearFields(nameElementId, pfElementId, tokenElementId);
+                                                        return;
+                                                    }
                                                 }
-                                            }
                                                 document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
                                                 document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
                                                 checkoffreleiverScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
@@ -1384,13 +1571,13 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                     openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
                                         if (isDCircular17Checked) {
                                         } else {
-                                        if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
-                                            alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
-                                            $('#driverSelectionModal').modal('hide'); // Hide the modal
-                                            clearFields(nameElementId, pfElementId, tokenElementId);
-                                            return;
+                                            if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                                                alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
+                                                $('#driverSelectionModal').modal('hide'); // Hide the modal
+                                                clearFields(nameElementId, pfElementId, tokenElementId);
+                                                return;
+                                            }
                                         }
-                                    }
                                         document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
                                         document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
 
@@ -1406,7 +1593,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             // First API call
                             var xhr1 = new XMLHttpRequest();
                             //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            xhr1.open('GET', 'http://117.203.105.106:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+                            xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);
@@ -1454,115 +1641,115 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                         function fetchoffreliverDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId, division, depot, isDCircular17Checked) {
 
 
-function processoffreleiverDriversData(driversData1, driversData2) {
-    var combinedData = [...driversData1]; // Start with the first API data
+                            function processoffreleiverDriversData(driversData1, driversData2) {
+                                var combinedData = [...driversData1]; // Start with the first API data
 
-    if (driversData2.length > 0) {
-        combinedData = [...combinedData, ...driversData2]; // Add second API data if available
-    }
+                                if (driversData2.length > 0) {
+                                    combinedData = [...combinedData, ...driversData2]; // Add second API data if available
+                                }
 
-    if (!combinedData || combinedData.length === 0) {
-        clearFields(nameElementId, pfElementId, tokenElementId);
-        return;
-    }
+                                if (!combinedData || combinedData.length === 0) {
+                                    clearFields(nameElementId, pfElementId, tokenElementId);
+                                    return;
+                                }
 
-    // Filter the data based on division, depot, and token number (string or integer matching)
-    var matchingDrivers = combinedData.filter(driver => {
-        return driver.Division.trim() === sessionDivision &&
-            driver.Depot.trim() === sessionDepot &&
-            (driver.token_number == tokenNumber); // Ensure token number matches regardless of type
-    });
+                                // Filter the data based on division, depot, and token number (string or integer matching)
+                                var matchingDrivers = combinedData.filter(driver => {
+                                    return driver.Division.trim() === sessionDivision &&
+                                        driver.Depot.trim() === sessionDepot &&
+                                        (driver.token_number == tokenNumber); // Ensure token number matches regardless of type
+                                });
 
 
-    if (matchingDrivers.length === 1) {
-        var driver = matchingDrivers[0];
+                                if (matchingDrivers.length === 1) {
+                                    var driver = matchingDrivers[0];
 
-        if (isDCircular17Checked) {
-        } else {
-            // Your previous logic to check if the driver is a conductor
-            if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
-                alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
-                clearFields(nameElementId, pfElementId, tokenElementId);
-                return;
-            }
-        }
+                                    if (isDCircular17Checked) {
+                                    } else {
+                                        // Your previous logic to check if the driver is a conductor
+                                        if (driver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                                            alert('The employee is a CONDUCTOR. Please enter the token number of a Driver or Driver cum Conductor.');
+                                            clearFields(nameElementId, pfElementId, tokenElementId);
+                                            return;
+                                        }
+                                    }
 
-        document.getElementById(nameElementId).value = driver.EMP_NAME || '';
-        document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
+                                    document.getElementById(nameElementId).value = driver.EMP_NAME || '';
+                                    document.getElementById(pfElementId).value = driver.EMP_PF_NUMBER || '';
 
-        // Call the function to check the schedule master
-        checkoffreleiverScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-    } else if (matchingDrivers.length > 1) {
-        openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
-            if (isDCircular17Checked) {
-            } else {
-            if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
-                alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
-                $('#driverSelectionModal').modal('hide'); // Hide the modal
-                clearFields(nameElementId, pfElementId, tokenElementId);
-                return;
-            }
-        }
-            document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
-            document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
+                                    // Call the function to check the schedule master
+                                    checkoffreleiverScheduleMaster(driver.EMP_PF_NUMBER, driver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                } else if (matchingDrivers.length > 1) {
+                                    openDriverSelectionModal(matchingDrivers, function (selectedDriver) {
+                                        if (isDCircular17Checked) {
+                                        } else {
+                                            if (selectedDriver.EMP_DESGN_AT_APPOINTMENT === "CONDUCTOR") {
+                                                alert('The selected employee is a Conductor. Please select a Driver or Driver cum Conductor.');
+                                                $('#driverSelectionModal').modal('hide'); // Hide the modal
+                                                clearFields(nameElementId, pfElementId, tokenElementId);
+                                                return;
+                                            }
+                                        }
+                                        document.getElementById(nameElementId).value = selectedDriver.EMP_NAME || '';
+                                        document.getElementById(pfElementId).value = selectedDriver.EMP_PF_NUMBER || '';
 
-            // Call the function to check the schedule master
-            checkoffreleiverScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
-        });
-    } else {
-        alert('No Driver/DCC found for the ' + sessionDivision + ' division and ' + sessionDepot + ' depot.');
-        clearFields(nameElementId, pfElementId, tokenElementId);
-    }
-}
+                                        // Call the function to check the schedule master
+                                        checkoffreleiverScheduleMaster(selectedDriver.EMP_PF_NUMBER, selectedDriver.EMP_NAME, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                    });
+                                } else {
+                                    alert('No Driver/DCC found for the ' + sessionDivision + ' division and ' + sessionDepot + ' depot.');
+                                    clearFields(nameElementId, pfElementId, tokenElementId);
+                                }
+                            }
 
-// First API call
-var xhr1 = new XMLHttpRequest();
-//xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-xhr1.open('GET', 'http://117.203.105.106:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
-xhr1.onload = function () {
-    if (xhr1.status === 200) {
-        var response1 = JSON.parse(this.responseText);
-        var driversData1 = response1.data || [];
+                            // First API call
+                            var xhr1 = new XMLHttpRequest();
+                            //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+                            xhr1.onload = function () {
+                                if (xhr1.status === 200) {
+                                    var response1 = JSON.parse(this.responseText);
+                                    var driversData1 = response1.data || [];
 
-        // Second API call
-        var xhr2 = new XMLHttpRequest();
-        xhr2.open('GET', '../database/private_emp_api.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                                    // Second API call
+                                    var xhr2 = new XMLHttpRequest();
+                                    xhr2.open('GET', '../database/private_emp_api.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
 
-        xhr2.onload = function () {
-            if (xhr2.status === 200) {
-                var response2 = JSON.parse(this.responseText);
-                var driversData2 = response2.data || [];
+                                    xhr2.onload = function () {
+                                        if (xhr2.status === 200) {
+                                            var response2 = JSON.parse(this.responseText);
+                                            var driversData2 = response2.data || [];
 
-                if (driversData2.length === 0) {
-                }
+                                            if (driversData2.length === 0) {
+                                            }
 
-                // Process combined data from both APIs
-                processoffreleiverDriversData(driversData1, driversData2);
-            } else {
-                alert('An error occurred while fetching the second driver details.');
-                clearFields(nameElementId, pfElementId, tokenElementId);
-            }
-        };
+                                            // Process combined data from both APIs
+                                            processoffreleiverDriversData(driversData1, driversData2);
+                                        } else {
+                                            alert('An error occurred while fetching the second driver details.');
+                                            clearFields(nameElementId, pfElementId, tokenElementId);
+                                        }
+                                    };
 
-        xhr2.onerror = function () {
-            alert('A network error occurred while fetching the second driver details.');
-            clearFields(nameElementId, pfElementId, tokenElementId);
-        };
+                                    xhr2.onerror = function () {
+                                        alert('A network error occurred while fetching the second driver details.');
+                                        clearFields(nameElementId, pfElementId, tokenElementId);
+                                    };
 
-        xhr2.send();
-    } else {
-        alert('An error occurred while fetching the first driver details.');
-        clearFields(nameElementId, pfElementId, tokenElementId);
-    }
-};
+                                    xhr2.send();
+                                } else {
+                                    alert('An error occurred while fetching the first driver details.');
+                                    clearFields(nameElementId, pfElementId, tokenElementId);
+                                }
+                            };
 
-xhr1.onerror = function () {
-    alert('A network error occurred while fetching the first driver details.');
-    clearFields(nameElementId, pfElementId, tokenElementId);
-};
+                            xhr1.onerror = function () {
+                                alert('A network error occurred while fetching the first driver details.');
+                                clearFields(nameElementId, pfElementId, tokenElementId);
+                            };
 
-xhr1.send();
-}
+                            xhr1.send();
+                        }
 
                         function openDriverSelectionModal(drivers, onSelect) {
 
@@ -1622,28 +1809,28 @@ xhr1.send();
                             xhr.send();
                         }
                         function checkoffreleiverScheduleMaster(pfNumber, empName, tokenNumber, nameElementId, pfElementId, tokenElementId) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '../database/schedule_crew_check_offreleiver.php?pf_number=' + pfNumber, true); 
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            var response = JSON.parse(this.responseText);
-            var scheduleData = response.schedule;
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('GET', '../database/schedule_crew_check_offreleiver.php?pf_number=' + pfNumber, true);
+                            xhr.onload = function () {
+                                if (xhr.status === 200) {
+                                    var response = JSON.parse(this.responseText);
+                                    var scheduleData = response.schedule;
 
-            if (scheduleData && scheduleData.length > 1) {
-                // Multiple schedules found, show modal for reallocation
-                showoffreleiverReallocationModal(empName, scheduleData, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId);
-            } else if (scheduleData.length === 1) {
-                // Single schedule, show reallocation for that schedule
-                var scheduleNo = scheduleData[0].sch_key_no;
-                showoffreleiverReallocationModal(empName, scheduleData, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId);
-            } else {
-                // PF number not found, return the data
-                returnFetchedData(pfNumber, empName, tokenNumber);
-            }
-        }
-    };
-    xhr.send();
-}
+                                    if (scheduleData && scheduleData.length > 1) {
+                                        // Multiple schedules found, show modal for reallocation
+                                        showoffreleiverReallocationModal(empName, scheduleData, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                    } else if (scheduleData.length === 1) {
+                                        // Single schedule, show reallocation for that schedule
+                                        var scheduleNo = scheduleData[0].sch_key_no;
+                                        showoffreleiverReallocationModal(empName, scheduleData, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId);
+                                    } else {
+                                        // PF number not found, return the data
+                                        returnFetchedData(pfNumber, empName, tokenNumber);
+                                    }
+                                }
+                            };
+                            xhr.send();
+                        }
 
 
                         function showReallocationModal(empName, scheduleNo, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId) {
@@ -1668,55 +1855,55 @@ xhr1.send();
                             };
                         }
                         function showoffreleiverReallocationModal(empName, scheduleData, pfNumber, tokenNumber, nameElementId, pfElementId, tokenElementId) {
-    console.log('Opening modal for', empName);
+                            console.log('Opening modal for', empName);
 
-    // Clear previous content
-    document.getElementById('modal-message').innerHTML = '';
-    document.getElementById('modal-message1').innerHTML = '';
+                            // Clear previous content
+                            document.getElementById('modal-message').innerHTML = '';
+                            document.getElementById('modal-message1').innerHTML = '';
 
-    // Update modal message
-    document.getElementById('modal-message2').innerText = empName + ' is already allotted to the following schedules. Do you want to reallocate to a new schedule?';
+                            // Update modal message
+                            document.getElementById('modal-message2').innerText = empName + ' is already allotted to the following schedules. Do you want to reallocate to a new schedule?';
 
-    // Add schedule details to modal
-    var scheduleListHtml = '';
-    scheduleData.forEach(function(schedule) {
-        scheduleListHtml += `
-            <div class="schedule-item">
-                <p>Schedule No: ${schedule.sch_key_no} | Schedule Count: ${schedule.sch_count} <br>
-                <span class="reallocate-link" data-pf="${pfNumber}" data-token="${tokenNumber}" data-schedule="${schedule.sch_key_no}">
-                  Click here to Reallocate from Schedule ${schedule.sch_key_no}
-                </span></p><br>
-            </div>
-        `;
-    });
+                            // Add schedule details to modal
+                            var scheduleListHtml = '';
+                            scheduleData.forEach(function (schedule) {
+                                scheduleListHtml += `
+                    <div class="schedule-item">
+                        <p>Schedule No: ${schedule.sch_key_no} | Schedule Count: ${schedule.sch_count} <br>
+                        <span class="reallocate-link" data-pf="${pfNumber}" data-token="${tokenNumber}" data-schedule="${schedule.sch_key_no}">
+                          Click here to Reallocate from Schedule ${schedule.sch_key_no}
+                        </span></p><br>
+                    </div>
+                `;
+                            });
 
-    document.getElementById('modal-message3').innerHTML = scheduleListHtml;
+                            document.getElementById('modal-message3').innerHTML = scheduleListHtml;
 
-    // Add event listeners to the reallocate links
-    var reallocateLinks = document.querySelectorAll('.reallocate-link');
-    reallocateLinks.forEach(function(link) {
-        link.addEventListener('click', function() {
-            var pfNumber = this.getAttribute('data-pf');
-            var tokenNumber = this.getAttribute('data-token');
-            var scheduleNo = this.getAttribute('data-schedule');
-            reallocateoffreleiverDriverDCC(pfNumber, tokenNumber, scheduleNo);
-            $('#reallocationModal1').modal('hide');
-        });
-    });
+                            // Add event listeners to the reallocate links
+                            var reallocateLinks = document.querySelectorAll('.reallocate-link');
+                            reallocateLinks.forEach(function (link) {
+                                link.addEventListener('click', function () {
+                                    var pfNumber = this.getAttribute('data-pf');
+                                    var tokenNumber = this.getAttribute('data-token');
+                                    var scheduleNo = this.getAttribute('data-schedule');
+                                    reallocateoffreleiverDriverDCC(pfNumber, tokenNumber, scheduleNo);
+                                    $('#reallocationModal1').modal('hide');
+                                });
+                            });
 
-    // Show the Bootstrap modal
-    $('#reallocationModal1').modal('show');
+                            // Show the Bootstrap modal
+                            $('#reallocationModal1').modal('show');
 
-    // Handle cancel reallocation
-    document.getElementById('cancelReallocation').onclick = function () {
-        $('#reallocationModal1').modal('hide');  // Close the modal
-        clearFields(nameElementId, pfElementId, tokenElementId);  // Clear the input fields
-    };
-}
+                            // Handle cancel reallocation
+                            document.getElementById('cancelReallocation').onclick = function () {
+                                $('#reallocationModal1').modal('hide');  // Close the modal
+                                clearFields(nameElementId, pfElementId, tokenElementId);  // Clear the input fields
+                            };
+                        }
 
 
-function reallocateoffreleiverDriverDCC(pfNumber, tokenNumber, scheduleNo) {
-    var xhr = new XMLHttpRequest();
+                        function reallocateoffreleiverDriverDCC(pfNumber, tokenNumber, scheduleNo) {
+                            var xhr = new XMLHttpRequest();
                             xhr.open('POST', '../database/reallocate_driver_dcc.php', true);
                             xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                             // Log the data being sent to the console
@@ -1730,7 +1917,7 @@ function reallocateoffreleiverDriverDCC(pfNumber, tokenNumber, scheduleNo) {
                                 }
                             };
                             xhr.send('pf_number=' + pfNumber + '&token_number=' + tokenNumber + '&old_schedule=' + scheduleNo);
-}
+                        }
 
                         // AJAX call to update driver/DCC in schedule_master
                         function reallocateDriverDCC(pfNumber, tokenNumber, scheduleNo) {
@@ -2051,7 +2238,8 @@ function reallocateoffreleiverDriverDCC(pfNumber, tokenNumber, scheduleNo) {
                     <p style="color:red" id="modal-message3"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelReallocation">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        id="cancelReallocation">Close</button>
                 </div>
             </div>
         </div>

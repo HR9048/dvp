@@ -21,11 +21,13 @@ if (isset($_GET['id'])) {
     MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_4 THEN cfd.`171status` END) AS `Driver_4_171_Status`,
     MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_5 THEN cfd.`171status` END) AS `Driver_5_171_Status`,
     MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.driver_pf_6 THEN cfd.`171status` END) AS `Driver_6_171_Status`,
-
+    MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.offreliverdriver_pf_1 THEN cfd.`171status` END) AS `Driver_1_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Driver' AND cfd.crew_pf = skm.offreliverdriver_pf_2 THEN cfd.`171status` END) AS `offreliverDriver_2_171_Status`,
     -- Separate columns for conductor 171status
     MAX(CASE WHEN cfd.designation = 'Conductor' AND cfd.crew_pf = skm.conductor_pf_1 THEN cfd.`171status` END) AS `Conductor_1_171_Status`,
     MAX(CASE WHEN cfd.designation = 'Conductor' AND cfd.crew_pf = skm.conductor_pf_2 THEN cfd.`171status` END) AS `Conductor_2_171_Status`,
     MAX(CASE WHEN cfd.designation = 'Conductor' AND cfd.crew_pf = skm.conductor_pf_3 THEN cfd.`171status` END) AS `Conductor_3_171_Status`,
+    MAX(CASE WHEN cfd.designation = 'Conductor' AND cfd.crew_pf = skm.offreliverconductor_pf_1 THEN cfd.`171status` END) AS `offreliverConductor_1_171_Status`,
     skm.ID AS ID,
     (
         CASE 
@@ -48,7 +50,17 @@ if (isset($_GET['id'])) {
             WHEN skm.conductor_token_2 IS NOT NULL AND skm.conductor_token_2 <> '' THEN 1 ELSE 0 END +
         CASE 
             WHEN skm.conductor_token_3 IS NOT NULL AND skm.conductor_token_3 <> '' THEN 1 ELSE 0 END 
-    ) AS conductor_count
+    ) AS conductor_count,
+    (
+        CASE 
+            WHEN skm.offreliverdriver_token_1 IS NOT NULL AND skm.offreliverdriver_token_1 <> '' THEN 1 ELSE 0 END +
+        CASE 
+            WHEN skm.offreliverdriver_token_2 IS NOT NULL AND skm.offreliverdriver_token_2 <> '' THEN 1 ELSE 0 END
+    ) AS offreliverdriver_count,
+    (
+        CASE 
+            WHEN skm.offreliverconductor_token_1 IS NOT NULL AND skm.offreliverconductor_token_1 <> '' THEN 1 ELSE 0 END
+    ) AS offreliverconductor_count
 FROM 
     schedule_master skm 
 JOIN 

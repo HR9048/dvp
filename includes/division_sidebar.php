@@ -159,8 +159,8 @@ confirm_logged_in();
                         style="color: black; font-size: 18px;">Home</a>
                     </h4>
                   </li>
-                  <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' ||$_SESSION['JOB_TITLE'] == 'ASO(Stat)' ) { ?>
-                    <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' ) { ?>
+                  <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)' ) { ?>
+                    <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
                     <li class="nav-item">
                       <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -216,14 +216,14 @@ confirm_logged_in();
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="division_buses.php">View Bus</a></li>
-                          <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') { ?>
+                          <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
                           <li><a class="dropdown-item" href="division_bus_transfer.php">Buse Transfer</a></li>
                           <li><a class="dropdown-item" href="division_bus_Scrap.php">Bus Scrap</a></li>
                           <?php } ?>
                         </ul>
                       </div>
                     </li>
-                    <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' ) { ?>
+                    <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DTO') { ?>
 
                     <li class="nav-item">
                       <div class="dropdown">
@@ -245,12 +245,12 @@ confirm_logged_in();
                           <b>Report</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') { ?>
+                        <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
 
                           <li><a class="dropdown-item" href="division_report.php">One day Off-Road Report</a></li>
                           <li><a class="dropdown-item" href="division_offroad.php">From - To days Off-Road Report</a></li>
                           <?php } ?>
-                          <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)') { ?>
+                          <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
                           <li><a class="dropdown-item" href="division_schedule_report_day.php">Schedule reports Daywise</a></li>
                           <li><a class="dropdown-item" href="division_schedule_monitor.php">Schedule Monitor</a></li>
                           <li><a class="dropdown-item" href="division_departure_report.php">Departure Report</a></li>

@@ -5,7 +5,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DTO') {
     // Allow access
     ?>
 
@@ -26,14 +26,19 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESS
                     </thead>
                     <tbody>
                         <?php
-                        $query = "SELECT u.ID, j.JOB_TITLE, e.FIRST_NAME, e.LAST_NAME, u.USERNAME, t.TYPE
-                    FROM users u
-                    JOIN employee e ON e.PF_ID = u.PF_ID
-                    JOIN type t ON t.TYPE_ID = u.TYPE_ID
-                    join job j on e.job_id = j.JOB_ID
-                    JOIN location l ON e.LOCATION_ID = l.LOCATION_ID
-                    WHERE u.TYPE_ID = 2 AND l.DIVISION = '{$_SESSION['DIVISION']}' and j.job_title = '{$_SESSION['JOB_TITLE']}'";
-
+                       $query = "SELECT u.ID, j.JOB_TITLE, e.FIRST_NAME, e.LAST_NAME, u.USERNAME, t.TYPE
+                       FROM users u
+                       JOIN employee e ON e.PF_ID = u.PF_ID
+                       JOIN type t ON t.TYPE_ID = u.TYPE_ID
+                       JOIN job j ON e.job_id = j.JOB_ID
+                       JOIN location l ON e.LOCATION_ID = l.LOCATION_ID
+                       WHERE u.TYPE_ID = 2 AND l.DIVISION = '{$_SESSION['DIVISION']}'";
+             
+             // Check the JOB_TITLE session value
+             if ($_SESSION['JOB_TITLE'] !== 'DC') {
+                 // If JOB_TITLE is not 'DC', add the condition for job title
+                 $query .= " AND j.JOB_TITLE = '{$_SESSION['JOB_TITLE']}'";
+             }
                         $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
                         while ($row = mysqli_fetch_assoc($result)) {

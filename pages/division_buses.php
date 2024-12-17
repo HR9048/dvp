@@ -5,7 +5,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
   echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
   exit;
 }
-if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DTO') {
   // Allow access
   ?>
 
@@ -16,12 +16,13 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESS
       <!-- <h4 class="m-2 font-weight-bold text-primary" style="display: inline-block;">Buses&nbsp;<a href="division_bus_allocation.php" type="button"
                 class="btn btn-primary bg-gradient-primary" style="border-radius: 0px;"><i
                     class="fas fa-fw fa-plus"></i></a></h4> -->
-      <button class="btn btn-primary ml-3"><a href="division_bus_transfer.php"
-          style="color: white; text-decoration: none;">Bus Transfer</a></button>
-      <!-- Button trigger modal -->
-      <button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal">Bus Scrap</button>
-      <!--<button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal1">Bus chassis convert</button>-->
-
+      <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
+        <button class="btn btn-primary ml-3"><a href="division_bus_transfer.php"
+            style="color: white; text-decoration: none;">Bus Transfer</a></button>
+        <!-- Button trigger modal -->
+        <button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal">Bus Scrap</button>
+        <!--<button class="btn btn-primary ml-3" data-toggle="modal" data-target="#confirmationModal1">Bus chassis convert</button>-->
+      <?php } ?>
       <!-- Modal -->
       <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel"
         aria-hidden="true">

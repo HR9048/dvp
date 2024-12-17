@@ -5,7 +5,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)') {
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DTO') {
     // Allow access
     ?>
 
@@ -44,14 +44,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESS
                             echo '<td align="right">
                             <div class="btn-group">
                             <a type="button" class="btn btn-primary bg-gradient-primary" data-toggle="modal" data-target="#detailsModal' . $row['PF_ID'] . '"><i class="fas fa-fw fa-list-alt"></i> Details</a>                                <div class="btn-group">
-                                    <a type="button" class="btn btn-primary bg-gradient-primary dropdown no-arrow" data-toggle="dropdown" style="color:white;">... <span class="caret"></span></a>
-                                    <ul class="dropdown-menu text-center" role="menu">
-                                        <li>
-                                            <a type="button" class="btn btn-warning bg-gradient-warning btn-block" style="border-radius: 0px;" href="">
-                                                <i class="fas fa-fw fa-edit"></i> Edit
-                                            </a>
-                                        </li>
-                                    </ul>
+                        
                                 </div>
                             </div>
                         </td>';
@@ -124,9 +117,15 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESS
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-4 col-form-label">Address:</label>
+                            <label class="col-sm-4 col-form-label">Unit:</label>
                             <div class="col-sm-8">
-                                <?= $g . ', ' . $f ?>
+                                <?= $f ?>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Workplace:</label>
+                            <div class="col-sm-8">
+                                <?= $g ?>
                             </div>
                         </div>
                     </div>

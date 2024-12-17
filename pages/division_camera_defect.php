@@ -3,38 +3,7 @@ include '../includes/connection.php';
 include '../includes/division_sidebar.php';
 $division_id = $_SESSION['DIVISION_ID'];
 
-$query = 'SELECT ID, t.TYPE
-            FROM users u
-            JOIN type t ON t.TYPE_ID=u.TYPE_ID WHERE ID = ' . $_SESSION['MEMBER_ID'] . '';
-$result = mysqli_query($db, $query) or die(mysqli_error($db));
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $Aa = $row['TYPE'];
-
-    if ($Aa == 'DEPOT') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to Depot Page");
-            window.location = "../includes/depot_verify.php";
-        </script>
-    <?php } elseif ($Aa == 'RWY') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "rwy.php";
-        </script>
-    <?php } elseif ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
-        ?>
-        <script type="text/javascript">
-            //then it will be redirected
-            alert("Restricted Page! You will be redirected to RWY Page");
-            window.location = "index.php";
-        </script>
-        <?php
-    }
-}
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { 
 ?>
 <div class="container1">
     <h2 style="text-align: center;">Defective Buses Report</h2>
@@ -103,7 +72,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                     $data[$division][$depot] = [];
                 }
 
-                $columnHeading = getMatchingColumnHeading($defectName);
+                $columnHeading =  $row['defect_name'];
                 $data[$division][$depot][$columnHeading] = $count;
 
                 // Safely update the corporation total
@@ -114,19 +83,20 @@ while ($row = mysqli_fetch_assoc($result)) {
             }
 
             // Function to match defect names with column headings
-            function getMatchingColumnHeading($defectName)
-            {
-                switch ($defectName) {
-                    case "Camera/DVR system not working":
-                        return "Camera Defect";
-                    case "Public Information System not working":
-                        return "PIS Defect";
-                    case "Both Camera and PIS not working":
-                        return "Both Defect";
-                    case "VLTS Status Showing as Disconnected":
-                        return "VLTS Disconnected";
-                    default:
-                        return $defectName;
+            function getMatchingColumnHeading($defectName) {
+                // Example column headings
+                $columnHeadings = [
+                    'camera_defect' => 'Camera Defect Details',
+                    'status' => 'Defect Status',
+                    'division' => 'Division Name',
+                    'date_reported' => 'Reported Date'
+                ];
+            
+                // Check if the parameter exists in the columnHeadings array
+                if (array_key_exists($defectName, $columnHeadings)) {
+                    return $columnHeadings[$defectName];
+                } else {
+                    return 'Unknown Column'; // Default fallback
                 }
             }
 
@@ -144,10 +114,10 @@ while ($row = mysqli_fetch_assoc($result)) {
                     echo "<td>" . htmlspecialchars($depot) . "</td>";
 
                     $BS6 = isset($counts['BS-6 Vehicles Held']) ? $counts['BS-6 Vehicles Held'] : 0;
-                    $Camera = isset($counts['Camera Defect']) ? $counts['Camera Defect'] : 0;
-                    $PIS = isset($counts['PIS Defect']) ? $counts['PIS Defect'] : 0;
-                    $Both = isset($counts['Both Defect']) ? $counts['Both Defect'] : 0;
-                    $vlts = isset($counts['VLTS Disconnected']) ? $counts['VLTS Disconnected'] : 0;
+                    $Camera = isset($counts['Camera/DVR system not working']) ? $counts['Camera/DVR system not working'] : 0;
+                    $PIS = isset($counts['Public Information System not working']) ? $counts['Public Information System not working'] : 0;
+                    $Both = isset($counts['Both Camera and PIS not working']) ? $counts['Both Camera and PIS not working'] : 0;
+                    $vlts = isset($counts['VLTS Status Showing as Disconnected']) ? $counts['VLTS Status Showing as Disconnected'] : 0;
 
                     echo "<td>" . htmlspecialchars($BS6) . "</td>";
                     echo "<td>" . htmlspecialchars($Camera) . "</td>";
@@ -173,15 +143,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 echo "</tr>";
             }
 
-            // Output Corporation Total row
-            echo "<tr style='font-weight: bold;'>";
-            echo "<td colspan='2'>Corporation Total</td>";
-            echo "<td>" . htmlspecialchars($corporationTotal['BS-6 Vehicles Held']) . "</td>";
-            echo "<td>" . htmlspecialchars($corporationTotal['Camera Defect']) . "</td>";
-            echo "<td>" . htmlspecialchars($corporationTotal['PIS Defect']) . "</td>";
-            echo "<td>" . htmlspecialchars($corporationTotal['Both Defect']) . "</td>";
-            echo "<td>" . htmlspecialchars($corporationTotal['VLTS Disconnected']) . "</td>";
-            echo "</tr>";
+           
 
             ?>
         </tbody>
@@ -253,52 +215,71 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 <script>
     document.getElementById('downloadExcel').addEventListener('click', function () {
-        // Get today's date
+        // Generate a workbook from the first table in the container
+        var table1 = document.querySelector('.container1 table:nth-of-type(1)');
+        var table2 = document.querySelector('.container1 table:nth-of-type(2)');
+
+        // Convert HTML tables to sheets
+        var wb = XLSX.utils.book_new();
+        var ws1 = XLSX.utils.table_to_sheet(table1);
+        var ws2 = XLSX.utils.table_to_sheet(table2);
+
+        // Append sheets to workbook
+        XLSX.utils.book_append_sheet(wb, ws1, "Defective Buses Report");
+        XLSX.utils.book_append_sheet(wb, ws2, "Defect Records");
+
+        // Generate file name with today's date
         var today = new Date();
         var dd = String(today.getDate()).padStart(2, '0');
-        var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); // Month is 0-based
         var yyyy = today.getFullYear();
+        var fileName = `Defective_Buses_Report_${dd}-${mm}-${yyyy}.xlsx`;
 
-        today = dd + '-' + mm + '-' + yyyy;
-
-        // Get container1 HTML content
-        var htmlContent = document.querySelector('.container1').outerHTML;
-
-        // Convert HTML to workbook
-        var workbook = XLSX.utils.table_to_book(document.querySelector('.container1'));
-
-        // Save workbook as Excel file with today's date and "DVP" appended to the file name
-        XLSX.writeFile(workbook, today + '_camera-PIS.xlsx');
+        // Save workbook as Excel
+        XLSX.writeFile(wb, fileName);
     });
 
     document.getElementById('downloadText').addEventListener('click', function () {
-        // Get today's date
-        var today = new Date();
-        var dd = String(today.getDate()).padStart(2, '0');
-        var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
-        var yyyy = today.getFullYear();
+        var textContent = "";
 
-        today = dd + '-' + mm + '-' + yyyy;
+        // Select both tables
+        var tables = document.querySelectorAll('.container1 table');
 
-        // Get container1 text content
-        var textContent = document.querySelector('.container1').innerText;
+        // Process tables and rows into plain text
+        tables.forEach(function (table, index) {
+            textContent += `Table ${index + 1}:\n`;
 
-        // Create a Blob with the text content
-        var blob = new Blob([textContent], {
-            type: 'text/plain'
+            table.querySelectorAll('tr').forEach(function (row) {
+                var rowData = [];
+                row.querySelectorAll('th, td').forEach(function (cell) {
+                    rowData.push(cell.innerText.trim());
+                });
+                textContent += rowData.join('\t') + '\n';
+            });
+
+            textContent += '\n';
         });
 
-        // Create a link element to trigger the download
+        // Generate file name
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        var fileName = `Defective_Buses_Report_${dd}-${mm}-${yyyy}.txt`;
+
+        // Create and download the text file
+        var blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
         var link = document.createElement('a');
-        link.download = today + '_camera-PIS.txt'; // Set the file name
-        link.href = window.URL.createObjectURL(blob);
-
-        // Append the link to the body and trigger the download
-        document.body.appendChild(link);
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
         link.click();
-
-        // Cleanup
-        document.body.removeChild(link);
     });
 </script>
-<?php include '../includes/footer.php'; ?>
+
+<?php
+} else {
+  echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
+  exit;
+}
+include '../includes/footer.php';
+?>

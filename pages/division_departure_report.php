@@ -11,67 +11,67 @@ date_default_timezone_set('Asia/Kolkata');
 if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DTO') {
     $division_id= $_SESSION['DIVISION_ID'];
     ?>
-    <style>
-        .hide {
-            display: none;
-        }
+<style>
+.hide {
+    display: none;
+}
 
-        th,
-        td {
-            border: 1px solid black;
-            text-align: left;
-            font-size: 15px;
-            padding: 1px !important;
-        }
+th,
+td {
+    border: 1px solid black;
+    text-align: left;
+    font-size: 15px;
+    padding: 1px !important;
+}
 
-        th {
-            background-color: #f2f2f2;
-        }
+th {
+    background-color: #f2f2f2;
+}
 
-        .dataTable th,
-        .dataTable td {
-            padding: 1px !important;
-        }
+.dataTable th,
+.dataTable td {
+    padding: 1px !important;
+}
 
-        .btn {
-            padding-top: 0px;
-            padding-bottom: 0px;
-        }
+.btn {
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
 
-        table {
-            margin: 20px auto;
-            width: 90%;
-            border-collapse: collapse;
-        }
+table {
+    margin: 20px auto;
+    width: 90%;
+    border-collapse: collapse;
+}
 
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
 
-        tr:nth-child(odd) {
-            background-color: #ffffff;
-        }
+tr:nth-child(odd) {
+    background-color: #ffffff;
+}
 
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-    </style>
+tr:hover {
+    background-color: #f1f1f1;
+}
+</style>
 
-    <form method="POST">
-        <label for="selected_date">Select Date:</label>
-        <input type="date" name="selected_date" id="selected_date" required>
-        <button class="btn btn-primary" type="submit">Fetch Departure Report</button>
-    </form>
+<form method="POST">
+    <label for="selected_date">Select Date:</label>
+    <input type="date" name="selected_date" id="selected_date" required>
+    <button class="btn btn-primary" type="submit">Fetch Departure Report</button>
+</form>
 
-    <div class="container1">
-        <?php
+<div class="container1">
+    <?php
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['selected_date'])) {
             $selected_date = date('Y-m-d', strtotime($_POST['selected_date'])); // 'YYYY-MM-DD' format
             $is_today = ($selected_date === date('Y-m-d')); // Check if the selected date is today
             $current_time = date('H:i'); // Get the current time in HH:MM format for the header
 
             // Query to fetch all divisions and depots
-            $location_query = "SELECT division_id, depot_id, division, depot FROM location WHERE division_id=$division_id AND DEPOT != 'DIVISION'";
+            $location_query = "SELECT division_id, depot_id, division, depot FROM location WHERE division_id= $division_id AND DEPOT != 'DIVISION'";
             $location_result = $db->query($location_query);
 
             // Initialize totals
@@ -79,7 +79,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
             $overall_total_departures = 0;
             $overall_total_arrival = 0;
             $overall_present_time_departures = 0; // Track overall present time departures
-
+            $overall_present_time_arrivals = 0;
             echo "<h3 class='text-center'>Departures and Arrival Report Date: " . date('d-m-Y', strtotime($selected_date)) . "</h3>";
 
             echo "<table border='1'>
@@ -89,10 +89,13 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
                     <th>Active Schedules</th>";
             // Conditionally display Present Time Departure Count column only if selected date is today
             if ($is_today) {
-                echo "<th>Present Time ($current_time) Departure Report</th>"; // Header with the current time
+                echo "<th>Present Time ($current_time) Departure</th>"; // Header with the current time
             }
-            echo "<th>Total Departures</th>
-                  <th>Total Arrivals</th>
+            echo "<th>Total Departures</th>";
+            if ($is_today) {
+                echo "<th>Present Time ($current_time) Arrival</th>"; // Header with the current time
+            }
+                  echo"<th>Total Arrivals</th>
                 </tr>";
 
             // Process each division and depot
@@ -102,7 +105,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
             $division_total_departures = 0;
             $division_total_arrival = 0;
             $division_present_time_departures = 0; // Track division's present time departures
-
+            $division_present_time_arrivals = 0;
             while ($location_row = $location_result->fetch_assoc()) {
                 $division_id = $location_row['division_id'];
                 $depot_id = $location_row['depot_id'];
@@ -118,8 +121,11 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
                     if ($is_today) {
                         echo "<td>$division_present_time_departures</td>";
                     }
-                    echo "<td>$division_total_departures</td>
-                        <td>$division_total_arrival</td>
+                    echo "<td>$division_total_departures</td>";
+                    if ($is_today) {
+                        echo "<td>$division_present_time_arrivals</td>";
+                    }
+                     echo"<td>$division_total_arrival</td>
                     </tr>";
 
                     // Reset division totals
@@ -127,12 +133,13 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
                     $division_total_departures = 0;
                     $division_total_arrival = 0;
                     $division_present_time_departures = 0;
+                    $division_present_time_arrivals = 0;
                 }
                 $current_division_id = $division_id;
                 $current_division_name = $division_name;
 
                 // Query schedules from schedule_master
-                $schedule_query = "SELECT sm.sch_key_no, sm.division_id, sm.depot_id, sm.sch_dep_time
+                $schedule_query = "SELECT sm.sch_key_no, sm.division_id, sm.depot_id, sm.sch_dep_time, sm.sch_arr_time
                 FROM schedule_master sm
                 LEFT JOIN sch_actinact sai 
                   ON sm.sch_key_no = sai.sch_key_no 
@@ -161,14 +168,14 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
 
                 $total_active_schedules = 0; // Initialize counter for active schedules
                 $present_time_departure_count = 0; // Initialize counter for present time departures
-
+                $present_time_arrival_count = 0;
                 // Process each schedule
                 foreach ($schedules as $schedule) {
                     $sch_key_no = $schedule['sch_key_no'];
                     $division_id = $schedule['division_id'];
                     $depot_id = $schedule['depot_id'];
                     $sch_dep_time = $schedule['sch_dep_time'];
-
+                    $sch_arr_time = $schedule['sch_arr_time'];
                     // Query sch_actinact for this schedule
                     $inact_query = "SELECT inact_from, inact_to FROM sch_actinact 
                     WHERE sch_key_no = ? AND division_id = ? AND depot_id = ?";
@@ -217,10 +224,15 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
                             $present_time_departure_count++;
                         }
                     }
+                    if ($is_today) {
+                        $current_time = date('H:i:s'); // Get the current time in HH:MM:SS format
+                        if ($sch_arr_time <= $current_time) {
+                            $present_time_arrival_count++;
+                        }
+                    }
                 }
 
-                // Departure data query (remains the same)
-                // Departure data query (remains the same)
+              // Departure data query (remains the same)
 $departure_query = "SELECT COUNT(svo.sch_no) AS total_departures
                     FROM sch_veh_out svo
                     WHERE svo.division_id = ? 
@@ -248,19 +260,18 @@ $result3 = $stmt3->get_result();
 $row3 = $result3->fetch_assoc();
 $total_arrival = $row3['total_arrival'];
 
-
                 // Update division totals
                 $division_active_schedules += $total_active_schedules;
                 $division_total_departures += $total_departures;
                 $division_total_arrival += $total_arrival;
                 $division_present_time_departures += $present_time_departure_count;
-
+                $division_present_time_arrivals += $present_time_arrival_count;
                 // Update overall totals
                 $overall_active_schedules += $total_active_schedules;
                 $overall_total_departures += $total_departures;
                 $overall_total_arrival += $total_arrival;
                 $overall_present_time_departures += $present_time_departure_count;
-
+                $overall_present_time_arrivals += $present_time_arrival_count;
                 // Output data for each depot
                 echo "<tr>
                     <td>$division_name</td>
@@ -269,9 +280,11 @@ $total_arrival = $row3['total_arrival'];
                 if ($is_today) {
                     echo "<td>$present_time_departure_count</td>"; // Show present time departure count
                 }
-                echo "<td>$total_departures</td>
-                    <td>$total_arrival</td>
-                </tr>";
+                echo "<td>$total_departures</td>";
+                if ($is_today) {
+                    echo "<td>$present_time_arrival_count</td>";
+                }
+                    echo"<td>$total_arrival</td></tr>";
             }
 
             // Display final division totals
@@ -282,19 +295,22 @@ $total_arrival = $row3['total_arrival'];
                 if ($is_today) {
                     echo "<td>$division_present_time_departures</td>";
                 }
-                echo "<td>$division_total_departures</td>
-                    <td>$division_total_arrival</td>
+                echo "<td>$division_total_departures</td>";
+                if ($is_today) {
+                    echo "<td>$division_present_time_arrivals</td>";
+                }
+                echo "<td>$division_total_arrival</td>
                 </tr>";
             }
 
-            
+           
 
             echo "</table>";
         }
         ?>
-    </div>
+</div>
 
-    <?php
+<?php
     include '../includes/footer.php';
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";

@@ -162,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'arr_time_diff' => 'NO'
                 ];
 
-                $symbol = $data['bus_allotted_status'] == 0 ? '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>' : ($data['bus_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                $symbol = $data['bus_allotted_status'] == 'NO' ? 'N/A' : ($data['bus_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>');
                 $scheduleReport .= '<td>' . $symbol . '</td>';
             }
             $scheduleReport .= '</tr>';
@@ -184,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $symbol1 = $data['driver_1_allotted_status'] == 'NO' ? 'N/A' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>');
                     $scheduleReport .= '<td>' . $symbol1 . '</td>';
                 }
                 $scheduleReport .= '</tr>';
@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol2 = $data['driver_2_allotted_status'] == 0 ? '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>' : ($data['driver_2_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $symbol2 = $data['driver_2_allotted_status'] == 'NO' ? 'N/A' : ($data['driver_2_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>');
                     $scheduleReport .= '<td>' . $symbol2 . '</td>';
                 }
                 $scheduleReport .= '</tr>';
@@ -221,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'arr_time_diff' => 'NO'
                     ];
 
-                    $symbol1 = $data['driver_1_allotted_status'] == 0 ? '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : 'N/A');
+                    $symbol1 = $data['driver_1_allotted_status'] == 'NO' ? 'N/A' : ($data['driver_1_allotted_status'] == 1 ? '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>' : '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>');
                     $scheduleReport .= '<td>' . $symbol1 . '</td>';
                 }
                 $scheduleReport .= '</tr>';
@@ -247,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Check if the value is numeric and perform the following checks
                     if ($data['arr_time_diff'] > 30) {
                         $symbol = '<i class="fa-solid fa-square-xmark fa-xl" style="color: #3aad08f5;"></i>'; // Green Cross for time > 30
-                    } elseif ($data['arr_time_diff'] > 0 && $data['arr_time_diff'] <= 30) {
+                    } elseif ($data['arr_time_diff'] >= 0 && $data['arr_time_diff'] <= 30) {
                         $symbol = '<i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i>'; // Green Check for time between 0 and 30
                     } elseif ($data['arr_time_diff'] < 0) {
                         $symbol = '<i class="fa-solid fa-square-xmark fa-xl" style="color: #e40c0c;"></i>'; // Red Cross for time < 0
@@ -369,7 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     // Arrival Time
-                    if ($data['arr_time_diff'] <= '30' && $data['arr_time_diff'] > '0') {
+                    if ($data['arr_time_diff'] <= '30' && $data['arr_time_diff'] >= '0') {
                         $scheduleReport .= '<td><i class="fa-solid fa-square-check fa-xl" style="color: #3aad08f5;"></i></td>';
                     } elseif ($data['arr_time_diff'] === 'N/A') {
                         $scheduleReport .= '<td>SNO</td>';

@@ -301,8 +301,8 @@ function getBaseUrl()
                             </li>
                             <li><a class="dropdown-item" href="depot_schedule_b.php">Update Schedule(Bus)</a></li>
                             <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
-                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Modify/Active/Inactive Schedule</a>
-                            </li>
+                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Modify/Active/Inactive Schedule</a></li>
+                            <li><a class="dropdown-item" href="depot_schedule_cancel.php">Schedule Cancelation</a></li>
                           <?php } ?>
                         </ul>
                       </div>

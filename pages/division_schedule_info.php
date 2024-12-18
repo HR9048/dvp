@@ -57,8 +57,9 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
                 <th>Service Class</th>
                 <th>Service Type</th>
                 <th style="max-width:60px">Allotted Bus</th>
-                <th style="max-width:90px">Allotted Driver</th>
-                <th style="max-width:90px">Allotted Conductor</th>
+                <th style="max-width:60px">Allotted Driver</th>
+                <th style="max-width:60px">Allotted Conductor</th>
+                <th style="max-width:60px">Allotted off-reliver</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -96,6 +97,7 @@ ORDER BY
                     $bus_numbers = [$row['bus_number_1'], $row['bus_number_2']];
                     $driver_tokens = [$row['driver_token_1'], $row['driver_token_2'], $row['driver_token_3'], $row['driver_token_4'], $row['driver_token_5'], $row['driver_token_6']];
                     $conductor_tokens = [$row['conductor_token_1'], $row['conductor_token_2'], $row['conductor_token_3']];
+                    $offreliver_tokens = [$row['offreliverdriver_token_1'], $row['offreliverdriver_token_2'], $row['offreliverconductor_token_1']];
 
                     echo '<tr data-id="' . $row['ID'] . '">
                 <td class="hide">' . $row['ID'] . '</td>
@@ -130,6 +132,13 @@ ORDER BY
                     foreach ($conductor_tokens as $conductor_token) {
                         if (!empty($conductor_token)) {
                             echo htmlspecialchars($conductor_token) . ','; // Use <br> for a new line
+                        }
+                    }
+                    echo '</td><td>';
+                    // Loop through conductor tokens and display each on a new line
+                    foreach ($offreliver_tokens as $offreliver_token) {
+                        if (!empty($offreliver_token)) {
+                            echo htmlspecialchars($offreliver_token) . ','; // Use <br> for a new line
                         }
                     }
                     echo '</td><td>';
@@ -212,9 +221,12 @@ ORDER BY
                             'driver_token_4', 'driver_pf_4', 'driver_name_4',
                             'driver_token_5', 'driver_pf_5', 'driver_name_5',
                             'driver_token_6', 'driver_pf_6', 'driver_name_6',
+                            'offreliverdriver_token_1', 'offreliverdriver_pf_1', 'offreliverdriver_name_1',
+                            'offreliverdriver_token_2', 'offreliverdriver_pf_2', 'offreliverdriver_name_2',
                             'conductor_token_1', 'conductor_pf_1', 'conductor_name_1',
                             'conductor_token_2', 'conductor_pf_2', 'conductor_name_2',
                             'conductor_token_3', 'conductor_pf_3', 'conductor_name_3',
+                            'offreliverconductor_token_1', 'offreliverconductor_pf_1', 'offreliverconductor_name_1',
                         ];
                         const fieldNames = {
                             'sch_key_no': 'Schedule Key Number',
@@ -254,6 +266,12 @@ ORDER BY
                             'driver_token_6': 'Driver 6 Token',
                             'driver_pf_6': 'Driver 6 PF',
                             'driver_name_6': 'Driver 6 Name',
+                            'offreliverdriver_token_1': 'Off Reliver Driver 1 Token',
+                            'offreliverdriver_pf_1': 'Off Reliver Driver 1 PF',
+                            'offreliverdriver_name_1': 'Off Reliver Driver 1 Name',
+                            'offreliverdriver_token_2': 'Off Reliver Driver 2 Token',
+                            'offreliverdriver_pf_2': 'Off Reliver Driver 2 PF',
+                            'offreliverdriver_name_2': 'Off Reliver Driver 2 Name',
                             'conductor_token_1': 'Conductor 1 Token',
                             'conductor_pf_1': 'Conductor 1 PF',
                             'conductor_name_1': 'Conductor 1 Name',
@@ -263,6 +281,9 @@ ORDER BY
                             'conductor_token_3': 'Conductor 3 Token',
                             'conductor_pf_3': 'Conductor 3 PF',
                             'conductor_name_3': 'Conductor 3 Name',
+                            'offreliverconductor_token_1': 'Off Reliver Conductor 1 Token',
+                            'offreliverconductor_pf_1': 'Off Reliver Conductor 1 PF',
+                            'offreliverconductor_name_1': 'Off Reliver Conductor 1 Name',
                         };
 
                         let count = 0;

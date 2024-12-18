@@ -675,6 +675,23 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
             text-align: center;
             flex-grow: 1;
         }
+    @media (max-width: 768px) {
+        #detailsModal .modal-dialog {
+            width: 90%; /* Adjust width to fit smaller screens */
+            margin: auto;
+        }
+    }
+
+    #detailsModal .modal-body {
+        overflow-x: auto; /* Enable horizontal scrolling if content overflows */
+        word-wrap: break-word; /* Break long words */
+        max-width: 100%; /* Prevent content from exceeding modal width */
+    }
+
+    #detailsModal table {
+        width: 100%; /* Ensure the table fits within the modal body */
+    }
+
     </style>
     <div class="header-container">
         <h4>Depot: <?php echo $_SESSION['DEPOT']; ?></h4>
@@ -1333,8 +1350,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
-                                    //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
-                                    xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
+                                    //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1431,8 +1448,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
-                                    //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
-                                    xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
+                                    //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1592,8 +1609,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             // First API call
                             var xhr1 = new XMLHttpRequest();
-                            //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+                            xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);
@@ -1704,8 +1721,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             // First API call
                             var xhr1 = new XMLHttpRequest();
-                            //xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+                            xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);
@@ -2309,11 +2326,12 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             'driver_token_4', 'driver_pf_4', 'driver_name_4',
                             'driver_token_5', 'driver_pf_5', 'driver_name_5',
                             'driver_token_6', 'driver_pf_6', 'driver_name_6',
+                            'offreliverdriver_token_1', 'offreliverdriver_pf_1', 'offreliverdriver_name_1',
+                            'offreliverdriver_token_2', 'offreliverdriver_pf_2', 'offreliverdriver_name_2',
                             'conductor_token_1', 'conductor_pf_1', 'conductor_name_1',
                             'conductor_token_2', 'conductor_pf_2', 'conductor_name_2',
                             'conductor_token_3', 'conductor_pf_3', 'conductor_name_3',
-
-
+                            'offreliverconductor_token_1', 'offreliverconductor_pf_1', 'offreliverconductor_name_1',
                         ];
                         const fieldNames = {
                             'sch_key_no': 'Schedule Key Number',
@@ -2343,6 +2361,12 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             'driver_token_6': 'Driver 6 Token',
                             'driver_pf_6': 'Driver 6 PF',
                             'driver_name_6': 'Driver 6 Name',
+                            'offreliverdriver_token_1': 'Off Reliver Driver 1 Token',
+                            'offreliverdriver_pf_1': 'Off Reliver Driver 1 PF',
+                            'offreliverdriver_name_1': 'Off Reliver Driver 1 Name',
+                            'offreliverdriver_token_2': 'Off Reliver Driver 2 Token',
+                            'offreliverdriver_pf_2': 'Off Reliver Driver 2 PF',
+                            'offreliverdriver_name_2': 'Off Reliver Driver 2 Name',
                             'conductor_token_1': 'Conductor 1 Token',
                             'conductor_pf_1': 'Conductor 1 PF',
                             'conductor_name_1': 'Conductor 1 Name',
@@ -2352,6 +2376,9 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             'conductor_token_3': 'Conductor 3 Token',
                             'conductor_pf_3': 'Conductor 3 PF',
                             'conductor_name_3': 'Conductor 3 Name',
+                            'offreliverconductor_token_1': 'Off Reliver Conductor 1 Token',
+                            'offreliverconductor_pf_1': 'Off Reliver Conductor 1 PF',
+                            'offreliverconductor_name_1': 'Off Reliver Conductor 1 Name',
                         };
 
                         let count = 0;

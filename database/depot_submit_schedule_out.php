@@ -117,25 +117,25 @@ depot_id = '$depot_id'";
 
     // Check if the driver tokens are allotted
     $driver1AllottedStatus = (
-        $driver1Data['token_number'] == $scheduleDetails['driver_token_1'] ||
-        $driver1Data['token_number'] == $scheduleDetails['driver_token_2'] ||
-        $driver1Data['token_number'] == $scheduleDetails['driver_token_3'] ||
-        $driver1Data['token_number'] == $scheduleDetails['half_releiver_token_1'] ||
-        $driver1Data['token_number'] == $scheduleDetails['driver_token_4'] ||
-        $driver1Data['token_number'] == $scheduleDetails['driver_token_5'] ||
-        $driver1Data['token_number'] == $scheduleDetails['driver_token_6'] ||
-        $driver1Data['token_number'] == $scheduleDetails['half_releiver_token_2']
+        $driver1Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_1'] ||
+        $driver1Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_2'] ||
+        $driver1Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_3'] ||
+        $driver1Data['EMP_PF_NUMBER'] == $scheduleDetails['offreliverdriver_pf_1'] ||
+        $driver1Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_4'] ||
+        $driver1Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_5'] ||
+        $driver1Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_6'] ||
+        $driver1Data['EMP_PF_NUMBER'] == $scheduleDetails['offreliverdriver_pf_2']
     ) ? 0 : 1;
 
     $driver2AllottedStatus = is_null($driver2Data) ? null : (
-        ($driver2Data['token_number'] == $scheduleDetails['driver_token_1'] ||
-            $driver2Data['token_number'] == $scheduleDetails['driver_token_2'] ||
-            $driver2Data['token_number'] == $scheduleDetails['driver_token_3'] ||
-            $driver2Data['token_number'] == $scheduleDetails['half_releiver_token_1'] ||
-            $driver2Data['token_number'] == $scheduleDetails['driver_token_4'] ||
-            $driver2Data['token_number'] == $scheduleDetails['driver_token_5'] ||
-            $driver2Data['token_number'] == $scheduleDetails['driver_token_6'] ||
-            $driver2Data['token_number'] == $scheduleDetails['half_releiver_token_2']) ? 0 : 1
+        ($driver2Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_1'] ||
+            $driver2Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_2'] ||
+            $driver2Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_3'] ||
+            $driver2Data['EMP_PF_NUMBER'] == $scheduleDetails['offreliverdriver_pf_1'] ||
+            $driver2Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_4'] ||
+            $driver2Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_5'] ||
+            $driver2Data['EMP_PF_NUMBER'] == $scheduleDetails['driver_pf_6'] ||
+            $driver2Data['EMP_PF_NUMBER'] == $scheduleDetails['offreliverdriver_pf_2']) ? 0 : 1
     );
 
     // Initialize conductorAllottedStatus
@@ -148,9 +148,10 @@ depot_id = '$depot_id'";
         $conductorAllottedStatus = null;
     } else {
         $conductorAllottedStatus = is_null($conductorData) ? null : (
-            ($conductorData['token_number'] == $scheduleDetails['conductor_token_1'] ||
-                $conductorData['token_number'] == $scheduleDetails['conductor_token_2'] ||
-                $conductorData['token_number'] == $scheduleDetails['conductor_token_3']) ? 0 : 1
+            ($conductorData['EMP_PF_NUMBER'] == $scheduleDetails['conductor_pf_1'] ||
+                $conductorData['EMP_PF_NUMBER'] == $scheduleDetails['conductor_pf_2'] ||
+                $conductorData['EMP_PF_NUMBER'] == $scheduleDetails['conductor_pf_3']||
+                $conductorData['EMP_PF_NUMBER'] == $scheduleDetails['offreliverconductor_pf_1']) ? 0 : 1
         );
         if ($conductorData) {
             $conductorpf = $conductorData['EMP_PF_NUMBER'];

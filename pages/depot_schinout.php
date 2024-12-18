@@ -331,13 +331,13 @@ $(document).ready(function() {
                     if (details.driver_token_6) driverTokenOptions1 += '<option value="' +
                         details.driver_pf_6 + '">' + details.driver_token_6 + ' - ' + details
                         .driver_name_6 + ' (allotted)</option>';
-                    if (details.half_releiver_token_1) driverTokenOptions1 +=
-                        '<option value="' + details.half_releiver_token_1 + '">' + details
-                        .half_releiver_token_1 + ' - ' + details.half_releiver_name_1 +
+                    if (details.offreliverdriver_token_1) driverTokenOptions1 +=
+                        '<option value="' + details.offreliverdriver_pf_1 + '">' + details
+                        .offreliverdriver_token_1 + ' - ' + details.offreliverdriver_name_1 +
                         ' (allotted off releiver)</option>';
-                    if (details.half_releiver_token_2) driverTokenOptions1 +=
-                        '<option value="' + details.half_releiver_token_2 + '">' + details
-                        .half_releiver_token_2 + ' - ' + details.half_releiver_name_2 +
+                    if (details.offreliverdriver_token_2) driverTokenOptions1 +=
+                        '<option value="' + details.offreliverdriver_pf_2 + '">' + details
+                        .offreliverdriver_token_2 + ' - ' + details.offreliverdriver_name_2 +
                         ' (allotted off releiver)</option>';
 
                     if (['4'].includes(details.service_type_id)) {
@@ -359,13 +359,13 @@ $(document).ready(function() {
                         if (details.driver_token_6) driverTokenOptions2 += '<option value="' +
                             details.driver_pf_6 + '">' + details.driver_token_6 + ' - ' +
                             details.driver_name_6 + ' (allotted)</option>';
-                        if (details.half_releiver_token_1) driverTokenOptions2 +=
-                            '<option value="' + details.half_releiver_token_1 + '">' + details
-                            .half_releiver_token_1 + ' - ' + details.half_releiver_name_1 +
+                        if (details.offreliverdriver_token_1) driverTokenOptions2 +=
+                            '<option value="' + details.offreliverdriver_pf_1 + '">' + details
+                            .offreliverdriver_token_1 + ' - ' + details.offreliverdriver_name_1 +
                             ' (allotted off releiver)</option>';
-                        if (details.half_releiver_token_2) driverTokenOptions2 +=
-                            '<option value="' + details.half_releiver_token_2 + '">' + details
-                            .half_releiver_token_2 + ' - ' + details.half_releiver_name_2 +
+                        if (details.offreliverdriver_token_2) driverTokenOptions2 +=
+                            '<option value="' + details.offreliverdriver_pf_2 + '">' + details
+                            .offreliverdriver_token_2 + ' - ' + details.offreliverdriver_name_2 +
                             ' (allotted off releiver)</option>';
                     } else {
                         driverTokenOptions2 = ''; // If no valid tokens, clear the options
@@ -384,20 +384,21 @@ $(document).ready(function() {
                             '<option value="' + details.conductor_pf_3 + '">' + details
                             .conductor_token_3 + ' - ' + details.conductor_name_3 +
                             ' (allotted)</option>';
+                        if (details.offreliverconductor_token_1) conductorTokenOptions +=
+                            '<option value="' + details.offreliverconductor_pf_1 + '">' + details
+                            .offreliverconductor_token_1 + ' - ' + details.offreliverconductor_name_1 +
+                            ' (allotted off releiver)</option>';
                     } else {
                         conductorTokenOptions = '';
                     }
 
                     // Separate filtering for drivers and conductors
                     var driverData = additionalData.filter(function(employee) {
-                        return employee.EMP_DESGN_AT_APPOINTMENT === 'CONDUCTOR' ||
-                            employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER' || employee
-                            .EMP_DESGN_AT_APPOINTMENT === 'DRIVER-CUM-CONDUCTOR' &&
-                            ![details.driver_token_1, details.driver_token_2, details
-                                .driver_token_3, details.driver_token_4, details
-                                .driver_token_5, details.driver_token_6, details
-                                .half_releiver_token_1, details.half_releiver_token_2
-                            ].includes(employee.token_number);
+                        return ![details.driver_pf_1, details.driver_pf_2, details
+                                .driver_pf_3, details.driver_pf_4, details
+                                .driver_pf_5, details.driver_pf_6, details
+                                .offreliverdriver_pf_1, details.offreliverdriver_pf_2
+                            ].includes(employee.EMP_PF_NUMBER);
                     });
 
                     driverData.forEach(function(driver) {
@@ -413,13 +414,9 @@ $(document).ready(function() {
                     });
 
                     var conductorData = additionalData.filter(function(employee) {
-                        return employee.EMP_DESGN_AT_APPOINTMENT === 'DRIVER' ||
-                            employee.EMP_DESGN_AT_APPOINTMENT === 'CONDUCTOR' ||
-                            employee.EMP_DESGN_AT_APPOINTMENT ===
-                            'DRIVER-CUM-CONDUCTOR' &&
-                            ![details.conductor_token_1, details.conductor_token_2,
-                                details.conductor_token_3
-                            ].includes(employee.token_number);
+                        return ![details.conductor_pf_1, details.conductor_pf_2,
+                                details.conductor_pf_3,details.offreliverconductor_pf_1
+                            ].includes(employee.EMP_PF_NUMBER);
                     });
 
                     conductorData.forEach(function(conductor) {
@@ -444,7 +441,7 @@ $(document).ready(function() {
                                                                                     ${driverTokenOptions2 ? `
                                                                                         <div class="form-group">
                                                                                             <label for="driver_token_no_2">Driver Token No 2/ಚಾಲಕ ಟೋಕನ್‌ ಸಂಖ್ಯೆ 2</label>
-                                                                                            <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;">
+                                                                                            <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;" required>
                                                                                                 ${driverTokenOptions2}
                                                                                             </select>
                                                                                         </div>
@@ -452,7 +449,7 @@ $(document).ready(function() {
                                                                                     ${details.single_crew === 'no' ? `
                                                                                     <div class="form-group">
                                                                                         <label for="conductor_token_no">Conductor Token No/ನಿರ್ವಾಹಕ ಟೋಕನ್‌ ಸಂಖ್ಯೆ </label>
-                                                                                        <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;">
+                                                                                        <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;" required>
                                                                                             ${conductorTokenOptions}
                                                                                         </select>
                                                                                     </div>

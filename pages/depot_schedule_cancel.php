@@ -10,47 +10,10 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 $division_id = $_SESSION['DIVISION_ID'];
 $depot_id = $_SESSION['DEPOT_ID'];
 $username = $_SESSION['USERNAME'];
+date_default_timezone_set('Asia/Kolkata');
+$today = date('d-m-Y');
+$tomorrow = date('d-m-Y', strtotime('+1 day'));
 // Process form submission
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['schedule_number'])) {
-    // Validate and sanitize input
-    $schedule_number = isset($_POST['schedule_number']) ? htmlspecialchars(trim($_POST['schedule_number'])) : null;
-    $cancel_date = isset($_POST['cancel_date']) ? htmlspecialchars(trim($_POST['cancel_date'])) : null;
-
-    // Convert the date format from dd-mm-yyyy to yyyy-mm-dd
-    if ($cancel_date) {
-        $date = DateTime::createFromFormat('d-m-Y', $cancel_date);
-        if ($date) {
-            $cancel_date = $date->format('Y-m-d');
-        } else {
-            echo "<script>alert('Invalid date format. Please use dd-mm-yyyy.');</script>";
-            $cancel_date = null; // Set to null if the format is invalid
-        }
-    }
-        $reason = isset($_POST['reason']) ? htmlspecialchars(trim($_POST['reason'])) : null;
-
-    if (!empty($schedule_number) && !empty($cancel_date) && !empty($reason)) {
-        // Insert data into the database
-        $query = "INSERT INTO schedule_cancel (sch_key_no, cancel_date, reason, division_id, depot_id, created_by) VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = $db->prepare($query);
-        $stmt->bind_param('sssiis', $schedule_number, $cancel_date, $reason, $division_id, $depot_id, $username);
-
-        if ($stmt->execute()) {
-            // Success message and unset POST variables
-            echo "<script>alert('Schedule successfully cancelled!');</script>";
-
-            // Unset POST variables to avoid re-submission
-            unset($_POST['schedule_number']);
-        } else {
-            echo "<script>alert('Failed to record the cancellation. Please try again.');</script>";
-        }
-        $stmt->close();
-    } else {
-        echo "<script>alert('All fields are required. Please fill in the form completely.');</script>";
-    }
-}
-
-
 // Fetch schedule numbers from the database
 if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $_SESSION['JOB_TITLE'] == 'DM')) {
 
@@ -66,14 +29,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
     $stmt->close();
 
     // Get today's and tomorrow's date in 'dd-mm-yyyy' format and Asia/Kolkata timezone
-    date_default_timezone_set('Asia/Kolkata');
-    $today = date('d-m-Y');
-    $tomorrow = date('d-m-Y', strtotime('+1 day'));
+
     ?>
 
     <div class="container">
         <h2>Cancel Schedule</h2>
-        <form action="" method="POST" onsubmit="return validateForm();">
+        <form action="" id="cancelScheduleForm">
             <div class="form-group row">
                 <div class="col">
                     <label for="schedule_number">Schedule Number:</label>
@@ -112,19 +73,100 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
     </div>
 
     <script>
-        // JavaScript validation
-        function validateForm() {
-            const schedule = document.getElementById('schedule_number').value.trim();
-            const date = document.getElementById('cancel_date').value.trim();
+        document.getElementById('cancelScheduleForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Fetch form data
+            const scheduleNumber = document.getElementById('schedule_number').value.trim();
+            const cancelDate = document.getElementById('cancel_date').value.trim();
             const reason = document.getElementById('reason').value.trim();
 
-            if (!schedule || !date || !reason) {
-                alert('All fields are required. Please complete the form.');
-                return false;
+            // Form validation
+            if (!scheduleNumber) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validation Error',
+                    text: 'Please select a schedule number.',
+                    confirmButtonText: 'OK',
+                });
+                return;
             }
-            return true;
-        }
+
+            if (!cancelDate) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validation Error',
+                    text: 'Please select a cancel date.',
+                    confirmButtonText: 'OK',
+                });
+                return;
+            }
+
+            if (!reason) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validation Error',
+                    text: 'Please enter a reason for cancellation.',
+                    confirmButtonText: 'OK',
+                });
+                return;
+            }
+
+            // Prepare form data
+            const formData = new FormData(this);
+            formData.append('action', 'cancel_schedule'); // Add an action identifier
+
+            // Perform AJAX request
+            fetch('../includes/data_fetch.php', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => {
+                    return response.text(); // Read the response as text to catch HTML or JSON
+                })
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text); // Attempt to parse JSON
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'Schedule canceled successfully!',
+                                confirmButtonText: 'OK',
+                            }).then(() => {
+                                document.getElementById('cancelScheduleForm').reset();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to cancel the schedule: ' + data.message,
+                                confirmButtonText: 'OK',
+                            });
+                        }
+                    } catch (error) {
+                        // Show the raw response in case of an error
+                        console.error('Error parsing JSON:', error);
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Unexpected Response',
+                            html: `<pre>${text}</pre>`, // Show the raw response
+                            confirmButtonText: 'OK',
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while canceling the schedule.',
+                        confirmButtonText: 'OK',
+                    });
+                });
+        });
     </script>
+
 
     <?php
 } else {

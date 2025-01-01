@@ -78,8 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '<div>';
         echo '<label>Change Vehicle</label><br>';
         if ($formType == 'bus') {
-        echo '<select class="form-control" id="bus_select" name="bus_select" required style="min-width: 50%;">';
-        }else{
+            echo '<select class="form-control" id="bus_select" name="bus_select" required style="min-width: 50%;">';
+        } else {
             echo '<select class="form-control" id="bus_select" name="bus_select" style="min-width: 50%;">';
         }
         echo '<option value="">Select Vehicle no</option>';
@@ -224,38 +224,38 @@ $db->close();
         let allDrivers = [];
         let allConductors = [];
 
-// Fetch driver data from API1 (drivers)
-    $.get("http://117.203.105.106:50/data.php", { division: division, depot: depot }, function (response) {
-        allDrivers = response.data || [];  // Store drivers in a variable, default to empty array if no data
-        populateSelectOptions();
-    });
+        // Fetch driver data from API1 (drivers)
+        $.get("http://117.203.105.106:50/data.php", { division: division, depot: depot }, function (response) {
+            allDrivers = response.data || [];  // Store drivers in a variable, default to empty array if no data
+            populateSelectOptions();
+        });
 
-    // Fetch conductor data from API2 (conductors)
-    $.get("http://117.203.105.106/transfer/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
-        allConductors = response.data || [];  // Store conductors in a variable, default to empty array if no data
-        conductorDataFetched = true;
-        populateSelectOptions();
-    }).fail(function () {
-        // Handle case where conductor API fails or returns no data
-        conductorDataFetched = true;
-        populateSelectOptions();
-    });
+        // Fetch conductor data from API2 (conductors)
+        $.get("http://117.203.105.106/transfer/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
+            allConductors = response.data || [];  // Store conductors in a variable, default to empty array if no data
+            conductorDataFetched = true;
+            populateSelectOptions();
+        }).fail(function () {
+            // Handle case where conductor API fails or returns no data
+            conductorDataFetched = true;
+            populateSelectOptions();
+        });
 
-    // Function to populate all selects with combined data once both responses are received
-    function populateSelectOptions() {
-        if (allDrivers.length === 0 || !conductorDataFetched) return; // Wait until drivers are fetched and conductor fetch is attempted
+        // Function to populate all selects with combined data once both responses are received
+        function populateSelectOptions() {
+            if (allDrivers.length === 0 || !conductorDataFetched) return; // Wait until drivers are fetched and conductor fetch is attempted
 
-        // Combine drivers and conductors into one array
-        const combinedOptions = allConductors.length > 0
-            ? [...allDrivers, ...allConductors]
-            : allDrivers; // Use only drivers if no conductors are available
+            // Combine drivers and conductors into one array
+            const combinedOptions = allConductors.length > 0
+                ? [...allDrivers, ...allConductors]
+                : allDrivers; // Use only drivers if no conductors are available
 
-       
-           
+
+
 
             // Populate driver_1_select, driver_2_select, and conductorselect
             combinedOptions.forEach(option => {
-                const text = ${option.token_number} (${option.EMP_NAME});  // Display PF Number and Employee Name
+                const text = `${option.token_number} (${option.EMP_NAME})`; // Use backticks for template literals
                 const id = option.EMP_PF_NUMBER;  // Use PF number as the value (id)
 
                 // Populate both driver_1_select and driver_2_select

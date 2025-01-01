@@ -81,10 +81,18 @@ $currentDateTime = date('Y-m-d H:i:s'); // Current server datetime in IST
                     $crewStmt->close();
                 }
             }
-
+            for ($i = 1; $i <= 2; $i++) {
+                $driverPfKey = "offreliverdriver_pf_$i";
+                if (isset($scheduleData[$driverPfKey]) && $scheduleData[$driverPfKey] !== NULL) {
+                    $crewStmt = $db->prepare($updateCrewFixSql);
+                    $crewStmt->bind_param('ssiis', $currentDateTime, $scheduleData[$driverPfKey], $depot, $division, $scheduleNo);
+                    $crewStmt->execute();
+                    $crewStmt->close();
+                }
+            }
             // Conductor updates
             for ($i = 1; $i <= 3; $i++) {
-                $conductorPfKey = "conductor_pf_$i";
+                $conductorPfKey = "offreliverconductor_pf_$i";
                 if (isset($scheduleData[$conductorPfKey]) && $scheduleData[$conductorPfKey] !== NULL) {
                     $crewStmt = $db->prepare($updateCrewFixSql);
                     $crewStmt->bind_param('ssiis', $currentDateTime, $scheduleData[$conductorPfKey], $depot, $division, $scheduleNo);
@@ -124,12 +132,12 @@ $currentDateTime = date('Y-m-d H:i:s'); // Current server datetime in IST
                                           driver_token_6 = NULL,
                                           driver_pf_6 = NULL,
                                           driver_name_6 = NULL,
-                                          half_releiver_token_1 = NULL,
-                                          half_releiver_pf_1 = NULL,
-                                          half_releiver_name_1 = NULL,
-                                          half_releiver_token_2 = NULL,
-                                          half_releiver_pf_2 = NULL,
-                                          half_releiver_name_2 = NULL,
+                                          offreliverdriver_token_1 = NULL,
+                                          offreliverdriver_pf_1 = NULL,
+                                          offreliverdriver_name_1 = NULL,
+                                          offreliverdriver_token_2 = NULL,
+                                          offreliverdriver_pf_2 = NULL,
+                                          offreliverdriver_name_2 = NULL,
                                           conductor_token_1 = NULL,
                                           conductor_pf_1 = NULL,
                                           conductor_name_1 = NULL,
@@ -138,7 +146,10 @@ $currentDateTime = date('Y-m-d H:i:s'); // Current server datetime in IST
                                           conductor_name_2 = NULL,
                                           conductor_token_3 = NULL,
                                           conductor_pf_3 = NULL,
-                                          conductor_name_3 = NULL
+                                          conductor_name_3 = NULL,
+                                          offreliverconductor_token_1 = NULL,
+                                          offreliverconductor_pf_1 = NULL,
+                                          offreliverconductor_name_1 = NULL
                                       WHERE ID = ? 
                                       AND division_id = ? 
                                       AND depot_id = ?";

@@ -145,6 +145,11 @@ tr:hover {
                   ON sm.sch_key_no = sai.sch_key_no 
                   AND sm.division_id = sai.division_id 
                   AND sm.depot_id = sai.depot_id
+                LEFT JOIN schedule_cancel sc
+                  ON sm.sch_key_no = sc.sch_key_no
+                  AND sm.division_id = sc.division_id
+                  AND sm.depot_id = sc.depot_id
+                  AND sc.cancel_date = ?
                 WHERE sm.division_id = ? 
                   AND sm.depot_id = ? 
                   AND NOT EXISTS (
@@ -155,9 +160,11 @@ tr:hover {
                         AND sai_sub.depot_id = sm.depot_id
                         AND sai_sub.inact_to IS NULL
                   )
-                  AND (sai.inact_to IS NOT NULL OR sai.sch_key_no IS NULL);";
+                  AND (sai.inact_to IS NOT NULL OR sai.sch_key_no IS NULL)
+                  AND sc.sch_key_no IS NULL";  // Exclude schedules that have been canceled for the selected date
+    
                 $stmt = $db->prepare($schedule_query);
-                $stmt->bind_param('ii', $division_id, $depot_id);
+                $stmt->bind_param('sii', $selected_date, $division_id, $depot_id);  // Bind the cancel_date, division_id, and depot_id parameters
                 $stmt->execute();
                 $schedule_result = $stmt->get_result();
 

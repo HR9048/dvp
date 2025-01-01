@@ -317,14 +317,22 @@ function fetchSchedule()
     $query = "SELECT sm.sch_key_no 
     FROM schedule_master sm
     LEFT JOIN sch_veh_out svo
-    ON sm.sch_key_no = svo.sch_no 
-    AND svo.division_id = '$division_id' 
-    AND svo.depot_id = '$depot_id' 
-    AND svo.departed_date = '$todays_date'
+        ON sm.sch_key_no = svo.sch_no 
+        AND svo.division_id = '$division_id' 
+        AND svo.depot_id = '$depot_id' 
+        AND svo.departed_date = '$todays_date'
+    LEFT JOIN schedule_cancel sc
+        ON sm.sch_key_no = sc.sch_key_no
+        AND sm.division_id = sc.division_id
+        AND sm.depot_id = sc.depot_id 
+        AND sc.cancel_date = '$todays_date'
     WHERE sm.division_id = '$division_id' 
-    AND sm.depot_id = '$depot_id'
-    AND sm.status='1'
-    AND svo.sch_no IS NULL order by sm.sch_dep_time ASC";
+        AND sm.depot_id = '$depot_id'
+        AND sm.status = '1'
+        AND svo.sch_no IS NULL
+        AND sc.sch_key_no IS NULL
+    ORDER BY sm.sch_dep_time ASC";
+
     $result = $db->query($query);
     $schno = array();
 
@@ -424,6 +432,68 @@ if (isset($_POST['action']) && $_POST['action'] === 'fetchDepots' && isset($_POS
         echo json_encode(['error' => 'Database query failed']);
     }
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'cancel_schedule') {
+    $schedule_number = $_POST['schedule_number'] ?? null;
+    $cancel_date = $_POST['cancel_date'] ?? null;
+
+    if ($cancel_date) {
+        // Convert the date to yyyy-mm-dd format
+        try {
+            $cancel_date = (new DateTime($cancel_date))->format('Y-m-d');
+        } catch (Exception $e) {
+            // Handle invalid date format
+            echo json_encode(['success' => false, 'message' => 'Invalid cancel date.']);
+            exit;
+        }
+    }
+
+    $reason = $_POST['reason'] ?? null;
+    $division_id = $_SESSION['DIVISION_ID'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $username = $_SESSION['USERNAME'];
+
+    if ($schedule_number && $cancel_date && $reason) {
+        // Check if the schedule is already canceled on the same date
+        $check_query = "SELECT * FROM schedule_cancel WHERE sch_key_no = ? AND cancel_date = ?";
+        $check_stmt = $db->prepare($check_query);
+        $check_stmt->bind_param('ss', $schedule_number, $cancel_date);
+        $check_stmt->execute();
+        $check_result = $check_stmt->get_result();
+
+        if ($check_result->num_rows > 0) {
+            // Fetch existing data for message
+            $existing_entry = $check_result->fetch_assoc();
+            $formatted_date = (new DateTime($existing_entry['cancel_date']))->format('d-m-Y');
+            echo json_encode([
+                'success' => false,
+                'message' => "Schedule number ($schedule_number) is already canceled on date ($formatted_date)."
+            ]);
+            exit;
+        }
+
+        $check_stmt->close();
+
+        // Insert the new cancellation record
+        $query = "INSERT INTO schedule_cancel (sch_key_no, cancel_date, reason, division_id, depot_id, created_by) 
+                  VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $db->prepare($query);
+        $stmt->bind_param('sssiis', $schedule_number, $cancel_date, $reason, $division_id, $depot_id, $username);
+
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $db->error]);
+        }
+
+        $stmt->close();
+    } else {
+        echo json_encode(['success' => false, 'message' => 'All fields are required.']);
+    }
+
+    $db->close();
+}
+
 // Check if an action is specified in the request
 if (isset($_GET['action'])) {
     $action = $_GET['action'];

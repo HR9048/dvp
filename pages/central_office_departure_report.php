@@ -10,65 +10,65 @@ date_default_timezone_set('Asia/Kolkata');
 
 if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
     ?>
-<style>
-.hide {
-    display: none;
-}
+    <style>
+        .hide {
+            display: none;
+        }
 
-th,
-td {
-    border: 1px solid black;
-    text-align: left;
-    font-size: 15px;
-    padding: 1px !important;
-}
+        th,
+        td {
+            border: 1px solid black;
+            text-align: left;
+            font-size: 15px;
+            padding: 1px !important;
+        }
 
-th {
-    background-color: #f2f2f2;
-}
+        th {
+            background-color: #f2f2f2;
+        }
 
-.dataTable th,
-.dataTable td {
-    padding: 1px !important;
-}
+        .dataTable th,
+        .dataTable td {
+            padding: 1px !important;
+        }
 
-.btn {
-    padding-top: 0px;
-    padding-bottom: 0px;
-}
+        .btn {
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
 
-table {
-    margin: 20px auto;
-    width: 90%;
-    border-collapse: collapse;
-}
+        table {
+            margin: 20px auto;
+            width: 90%;
+            border-collapse: collapse;
+        }
 
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
 
-tr:nth-child(odd) {
-    background-color: #ffffff;
-}
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
 
-tr:hover {
-    background-color: #f1f1f1;
-}
-</style>
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
 
-<form method="POST">
-    <label for="selected_date">Select Date:</label>
-    <input type="date" name="selected_date" id="selected_date" required>
-    <button class="btn btn-primary" type="submit">Fetch Departure Report</button>
-</form>
+    <form method="POST">
+        <label for="selected_date">Select Date:</label>
+        <input type="date" name="selected_date" id="selected_date" required>
+        <button class="btn btn-primary" type="submit">Fetch Departure Report</button>
+    </form>
 
-<div class="container1">
-    <?php
+    <div class="container1">
+        <?php
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['selected_date'])) {
             $selected_date = date('Y-m-d', strtotime($_POST['selected_date'])); // 'YYYY-MM-DD' format
             $is_today = ($selected_date === date('Y-m-d')); // Check if the selected date is today
             $current_time = date('H:i'); // Get the current time in HH:MM format for the header
-
+    
             // Query to fetch all divisions and depots
             $location_query = "SELECT division_id, depot_id, division, depot FROM location WHERE division_id NOT IN ('0', '10') AND DEPOT != 'DIVISION'";
             $location_result = $db->query($location_query);
@@ -94,7 +94,7 @@ tr:hover {
             if ($is_today) {
                 echo "<th>Present Time ($current_time) Arrival</th>"; // Header with the current time
             }
-                  echo"<th>Total Arrivals</th>
+            echo "<th>Total Arrivals</th>
                 </tr>";
 
             // Process each division and depot
@@ -124,7 +124,7 @@ tr:hover {
                     if ($is_today) {
                         echo "<td>$division_present_time_arrivals</td>";
                     }
-                     echo"<td>$division_total_arrival</td>
+                    echo "<td>$division_total_arrival</td>
                     </tr>";
 
                     // Reset division totals
@@ -137,13 +137,17 @@ tr:hover {
                 $current_division_id = $division_id;
                 $current_division_name = $division_name;
 
-                // Query schedules from schedule_master
                 $schedule_query = "SELECT sm.sch_key_no, sm.division_id, sm.depot_id, sm.sch_dep_time, sm.sch_arr_time
                 FROM schedule_master sm
                 LEFT JOIN sch_actinact sai 
                   ON sm.sch_key_no = sai.sch_key_no 
                   AND sm.division_id = sai.division_id 
                   AND sm.depot_id = sai.depot_id
+                LEFT JOIN schedule_cancel sc
+                  ON sm.sch_key_no = sc.sch_key_no
+                  AND sm.division_id = sc.division_id
+                  AND sm.depot_id = sc.depot_id
+                  AND sc.cancel_date = ?
                 WHERE sm.division_id = ? 
                   AND sm.depot_id = ? 
                   AND NOT EXISTS (
@@ -154,11 +158,14 @@ tr:hover {
                         AND sai_sub.depot_id = sm.depot_id
                         AND sai_sub.inact_to IS NULL
                   )
-                  AND (sai.inact_to IS NOT NULL OR sai.sch_key_no IS NULL);";
+                  AND (sai.inact_to IS NOT NULL OR sai.sch_key_no IS NULL)
+                  AND sc.sch_key_no IS NULL";  // Exclude schedules that have been canceled for the selected date
+    
                 $stmt = $db->prepare($schedule_query);
-                $stmt->bind_param('ii', $division_id, $depot_id);
+                $stmt->bind_param('sii', $selected_date, $division_id, $depot_id);  // Bind the cancel_date, division_id, and depot_id parameters
                 $stmt->execute();
                 $schedule_result = $stmt->get_result();
+
 
                 $schedules = [];
                 while ($row = $schedule_result->fetch_assoc()) {
@@ -231,33 +238,33 @@ tr:hover {
                     }
                 }
 
-              // Departure data query (remains the same)
-$departure_query = "SELECT COUNT(svo.sch_no) AS total_departures
+                // Departure data query (remains the same)
+                $departure_query = "SELECT COUNT(svo.sch_no) AS total_departures
                     FROM sch_veh_out svo
                     WHERE svo.division_id = ? 
                       AND svo.depot_id = ? 
                       AND svo.departed_date = ?";
 
-$stmt2 = $db->prepare($departure_query);
-$stmt2->bind_param('iis', $division_id, $depot_id, $selected_date); // Corrected the bind_param type
-$stmt2->execute();
-$result2 = $stmt2->get_result();
-$row2 = $result2->fetch_assoc();
-$total_departures = $row2['total_departures'];
+                $stmt2 = $db->prepare($departure_query);
+                $stmt2->bind_param('iis', $division_id, $depot_id, $selected_date); // Corrected the bind_param type
+                $stmt2->execute();
+                $result2 = $stmt2->get_result();
+                $row2 = $result2->fetch_assoc();
+                $total_departures = $row2['total_departures'];
 
-// Arrival data query
-$arrival_query = "SELECT COUNT(svo.sch_no) AS total_arrival
+                // Arrival data query
+                $arrival_query = "SELECT COUNT(svo.sch_no) AS total_arrival
                   FROM sch_veh_out svo
                   WHERE svo.division_id = ? 
                     AND svo.depot_id = ? 
                     AND svo.arr_date = ?";
 
-$stmt3 = $db->prepare($arrival_query);
-$stmt3->bind_param('iis', $division_id, $depot_id, $selected_date); // Corrected the bind_param type
-$stmt3->execute();
-$result3 = $stmt3->get_result();
-$row3 = $result3->fetch_assoc();
-$total_arrival = $row3['total_arrival'];
+                $stmt3 = $db->prepare($arrival_query);
+                $stmt3->bind_param('iis', $division_id, $depot_id, $selected_date); // Corrected the bind_param type
+                $stmt3->execute();
+                $result3 = $stmt3->get_result();
+                $row3 = $result3->fetch_assoc();
+                $total_arrival = $row3['total_arrival'];
 
                 // Update division totals
                 $division_active_schedules += $total_active_schedules;
@@ -283,7 +290,7 @@ $total_arrival = $row3['total_arrival'];
                 if ($is_today) {
                     echo "<td>$present_time_arrival_count</td>";
                 }
-                    echo"<td>$total_arrival</td></tr>";
+                echo "<td>$total_arrival</td></tr>";
             }
 
             // Display final division totals
@@ -319,9 +326,9 @@ $total_arrival = $row3['total_arrival'];
             echo "</table>";
         }
         ?>
-</div>
+    </div>
 
-<?php
+    <?php
     include '../includes/footer.php';
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";

@@ -65,47 +65,34 @@ if (empty($schedule_keys)) {
 }
 
 
-// Query to fetch bus details and check for cancellations
-$bus_query = "SELECT 
-        bfd.sch_key_no, 
-        IF(sc.sch_key_no IS NOT NULL, 'Canceled', GROUP_CONCAT(bfd.bus_number)) AS buses
+// Improved query to use placeholders for schedule keys and avoid direct string injection
+$bus_query = "
+    SELECT 
+        sch_key_no, 
+        GROUP_CONCAT(bus_number) AS buses
     FROM 
-        bus_fix_data bfd
-    LEFT JOIN 
-        schedule_cancel sc
-        ON bfd.sch_key_no = sc.sch_key_no 
-        AND bfd.division_id = sc.division_id 
-        AND bfd.depot_id = sc.depot_id 
-        AND sc.cancel_date = ?
+        bus_fix_data 
     WHERE 
-        bfd.sch_key_no IN (" . implode(',', array_fill(0, count($schedule_keys), '?')) . ") 
-        AND bfd.division_id = ? 
-        AND bfd.depot_id = ? 
-        AND ('$selected_date' BETWEEN DATE(bfd.from_date) AND IFNULL(DATE(bfd.to_date), '$selected_date'))
-    GROUP BY bfd.sch_key_no";
+        sch_key_no IN (" . implode(',', array_fill(0, count($schedule_keys), '?')) . ") 
+        AND division_id = ? 
+        AND depot_id = ? 
+        AND ('$selected_date' BETWEEN DATE(from_date) AND IFNULL(DATE(to_date), '$selected_date'))
+    GROUP BY sch_key_no";
 
-// Prepare the query
+// Prepare and bind parameters dynamically
 $stmt = $db->prepare($bus_query);
 
-// Bind parameters (selected_date + schedule_keys + division_id + depot_id)
-$params = array_merge([$selected_date], $schedule_keys, [$division_id, $depot_id]);
-$stmt->bind_param(
-    str_repeat('s', 1) . str_repeat('i', count($schedule_keys)) . 'ii',
-    ...$params
-);
+// Bind schedule keys
+$params = array_merge($schedule_keys, [$division_id, $depot_id]);
+$stmt->bind_param(str_repeat('i', count($schedule_keys)) . 'ii', ...$params);
 
-// Execute the query and fetch results
+// Execute the query and fetch the bus details
 $stmt->execute();
 $bus_result = $stmt->get_result();
 $buses = [];
-
-// Map the results
 while ($row = $bus_result->fetch_assoc()) {
-    $buses[$row['sch_key_no']] = $row['buses']; // "Canceled" or bus numbers
+    $buses[$row['sch_key_no']] = $row['buses']; // Mapping buses to schedule keys
 }
-
-
-
 
 $location = "SELECT division, depot FROM location WHERE division_id = ? AND depot_id = ?";
 $ssstt = $db->prepare($location);
@@ -120,69 +107,67 @@ if ($locat->num_rows > 0) {
 } 
 $crew_query = "
     SELECT 
-        cfd.sch_key_no,
-        CASE 
-            WHEN sc.sch_key_no IS NOT NULL THEN 'Canceled'
-            ELSE GROUP_CONCAT(CASE 
-                WHEN cfd.designation IN ('driver', 'Driver-cum-Conductor') THEN cfd.crew_token 
-                ELSE NULL 
-            END)
-        END AS driver_tokens,
-        CASE 
-            WHEN sc.sch_key_no IS NOT NULL THEN 'Canceled'
-            ELSE GROUP_CONCAT(CASE 
-                WHEN cfd.designation = 'conductor' THEN cfd.crew_token 
-                ELSE NULL 
-            END)
-        END AS conductor_tokens
+        sch_key_no, 
+        GROUP_CONCAT(CASE 
+            WHEN designation IN ('driver', 'Driver-cum-Conductor') THEN crew_token 
+            ELSE NULL 
+        END) AS driver_tokens,
+        GROUP_CONCAT(CASE 
+            WHEN designation = 'conductor' THEN crew_token 
+            ELSE NULL 
+        END) AS conductor_tokens
     FROM 
-        crew_fix_data cfd
-    LEFT JOIN 
-        schedule_cancel sc
-        ON cfd.sch_key_no = sc.sch_key_no
-        AND cfd.division_id = sc.division_id
-        AND cfd.depot_id = sc.depot_id
-        AND sc.cancel_date = ?
+        crew_fix_data 
     WHERE 
-        cfd.sch_key_no IN ('$schedule_keys_str') 
-        AND cfd.division_id = ? 
-        AND cfd.depot_id = ? 
-        AND ('$selected_date' BETWEEN DATE(cfd.from_date) AND IFNULL(DATE(cfd.to_date), '$selected_date'))
-    GROUP BY cfd.sch_key_no";
+        sch_key_no IN ('$schedule_keys_str') 
+        AND division_id = ? 
+        AND depot_id = ? 
+        AND ('$selected_date' BETWEEN DATE(from_date) AND IFNULL(DATE(to_date), '$selected_date'))
+    GROUP BY sch_key_no";
+
+
 
 // Execute the query to fetch the crew token data
 $stmt = $db->prepare($crew_query);
-
-// Bind parameters (cancel_date, division_id, depot_id)
-$stmt->bind_param('sii', $selected_date, $division_id, $depot_id);
+$stmt->bind_param('ii', $division_id, $depot_id);
 $stmt->execute();
-
 $crew_result = $stmt->get_result();
 $crews = [];
 while ($row = $crew_result->fetch_assoc()) {
     $crews[$row['sch_key_no']] = [
-        'driver_tokens' => $row['driver_tokens'], // Contains driver token numbers or "Canceled"
-        'conductor_tokens' => $row['conductor_tokens'] // Contains conductor token numbers or "Canceled"
+        'driver_tokens' => $row['driver_tokens'], // Contains driver token numbers
+        'conductor_tokens' => $row['conductor_tokens'] // Contains conductor token numbers
     ];
 }
 
+
+$canceled_query = "
+    SELECT sch_key_no 
+    FROM schedule_cancel
+    WHERE division_id = ? 
+        AND depot_id = ? 
+        AND cancel_date = ?
+";
+$stmt = $db->prepare($canceled_query);
+$stmt->bind_param('iis', $division_id, $depot_id, $selected_date);
+$stmt->execute();
+$canceled_result = $stmt->get_result();
+
+$canceled_schedules = [];
+while ($row = $canceled_result->fetch_assoc()) {
+    $canceled_schedules[$row['sch_key_no']] = ['cancel_schedule' => $row['sch_key_no']];
+}
 
 // Query to filter schedules and get vehicle/crew details from `schedule_master` and `sch_veh_out`
 $query = "SELECT 
     sm.sch_key_no AS schedule_key_no,
     sm.sch_abbr AS description,
     sm.sch_dep_time,
-    CASE 
-        WHEN scc.sch_key_no IS NOT NULL THEN 'Canceled'
-        ELSE svo.dep_time 
-    END AS dep_time,  -- Show 'Canceled' if cancellation found
+    svo.dep_time AS dep_time,
     sm.sch_arr_time,
-    CASE 
-        WHEN scc.sch_key_no IS NOT NULL THEN 'Canceled'
-        ELSE svo.arr_time 
-    END AS arr_time,  -- Show 'Canceled' if cancellation found
     svo.dep_time_diff,
     svo.arr_time_diff,
+    svo.arr_time AS arr_time,
     sc.name AS service_class,  -- Fetching service class name
     IFNULL(svo.vehicle_no, 'NA') AS buses,
     IFNULL(svo.driver_token_no_1, 'NA') AS driver_1,
@@ -195,33 +180,21 @@ $query = "SELECT
 FROM 
     schedule_master sm
 LEFT JOIN 
-    sch_veh_out svo 
-    ON svo.sch_no = sm.sch_key_no 
-    AND svo.division_id = ? 
-    AND svo.depot_id = ? 
-    AND svo.departed_date = ?
+    sch_veh_out svo ON svo.sch_no = sm.sch_key_no AND svo.division_id=$division_id and svo.depot_id = $depot_id and svo.departed_date = ? 
 LEFT JOIN 
-    service_class sc 
-    ON sm.service_class_id = sc.id  -- Joining with service_class table
-LEFT JOIN 
-    schedule_cancel scc 
-    ON sm.sch_key_no = scc.sch_key_no 
-    AND scc.division_id = sm.division_id 
-    AND scc.depot_id = sm.depot_id
-    AND scc.cancel_date = ? -- Joining with schedule_cancel for cancellations
+    service_class sc ON sm.service_class_id = sc.id  -- Joining with service_class table
 WHERE 
     sm.division_id = ? 
     AND sm.depot_id = ? 
     AND sm.sch_key_no IN ('$schedule_keys_str')
 ORDER BY 
-    sm.sch_dep_time";
+    sm.sch_dep_time;
+";
 
-// Prepare and bind parameters
 $stmt = $db->prepare($query);
-$stmt->bind_param('ssssss', $division_id, $depot_id, $selected_date, $selected_date, $division_id, $depot_id);
+$stmt->bind_param('sss', $selected_date, $division_id, $depot_id);
 $stmt->execute();
 $result = $stmt->get_result();
-
 
 $html = '<table border="1" style="width: 100%; border-collapse: collapse;">';
 $html .= '<br><br>';
@@ -232,6 +205,8 @@ $html .= '<tr><th>Sl No</th><th>Schedule Key No</th><th>Description</th><th>Sch 
 $sl_no = 1;
 while ($row = $result->fetch_assoc()) {
     // Handle Arrive Time and Depature Time coloring based on diff
+    $is_canceled = in_array($row['schedule_key_no'], $canceled_schedules) ? 'Yes' : 'No';
+
     $arr_time = $row['arr_time'];
     $arr_time_diff = $row['arr_time_diff'];
     $dep_time = $row['dep_time'];
@@ -268,7 +243,7 @@ while ($row = $result->fetch_assoc()) {
     $driver_1_status_display = ($row['driver_1_status'] == 0) ? '<i class="fa-solid fa-square-check fa-xl" style="color: #198104;"></i>' : ($row['driver_1_status'] == 1 ? $row['driver_1'] : 'N/A');
     $driver_2_status_display = ($row['driver_2_status'] == 0) ? '<i class="fa-solid fa-square-check fa-xl" style="color: #198104;"></i>' : ($row['driver_2_status'] == 1 ? $row['driver_2'] : 'N/A');
     $conductor_status_display = ($row['conductor_status'] == 0) ? '<i class="fa-solid fa-square-check fa-xl" style="color: #198104;"></i>' : ($row['conductor_status'] == 1 ? $row['conductor'] : 'N/A');
-
+    $cancelSchedule_no = $canceled_schedules[$row['sch_key_no']]['sch_key_no'];
     // Start row display
     $html .= '<tr>';
     $html .= '<td>' . $sl_no++ . '</td>';
@@ -280,11 +255,14 @@ while ($row = $result->fetch_assoc()) {
     $html .= '<td>' . $arr_time_display . '</td>';
     $html .= '<td>' . $row['service_class'] . '</td>';
     // Handle Bus details (show in same column with line breaks)
+    if($row['schedule_key_no'] == $cancelSchedule_no){
+        $buses_details = 'Canceled';
+    }else{
     $buses_details = isset($buses[$row['schedule_key_no']]) ? $buses[$row['schedule_key_no']] : 'NA';
+    }
     $bus_array = explode(',', $buses_details);
     $buses_display = implode('<br>', $bus_array);  // Join with line breaks
     $html .= '<td>' . $buses_display . '</td>';
-
     // Handle Driver details (show in same column with line breaks)
     $driver_tokens = isset($crews[$row['schedule_key_no']]['driver_tokens']) ? $crews[$row['schedule_key_no']]['driver_tokens'] : 'NA';
     $driver_array = explode(',', $driver_tokens);

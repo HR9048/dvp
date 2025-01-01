@@ -243,7 +243,9 @@ while ($row = $result->fetch_assoc()) {
     } elseif ($dep_time != null && $arr_time === null) {
         $arr_time_display = 'SNA';
     } else {
-        if ($arr_time_diff > 30) {
+        if ($arr_time == 'Canceled'){
+            $arr_time_display ='<span style="color: rgb(0, 0, 0);">' . $arr_time . '</span>';
+        } elseif($arr_time_diff > 30) {
             $arr_time_display = '<span style="color: green;">' . $arr_time . '</span>';
         } elseif ($arr_time_diff < -30) {
             $arr_time_display = '<span style="color: red;">' . $arr_time . '</span>';
@@ -255,6 +257,8 @@ while ($row = $result->fetch_assoc()) {
     // Format Dep Time based on dep_time_diff
     if ($dep_time == null) {
         $dep_time_display = 'SNO';
+    } elseif($dep_time == 'Canceled'){
+        $dep_time_display = '<span style="color:rgb(0, 0, 0);">' . $dep_time . '</span>';
     } elseif ($dep_time_diff > 60) {
         $dep_time_display = '<span style="color: red;">' . $dep_time . '</span>';
     } elseif ($dep_time_diff < -30) {

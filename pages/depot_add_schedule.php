@@ -118,7 +118,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Addb Schedule Form</h4>
+                        <h4 class="mb-0">Add Schedule Form</h4>
                     </div>
                     <div class="card-body">
                         <form id="add_schedule" method="POST">

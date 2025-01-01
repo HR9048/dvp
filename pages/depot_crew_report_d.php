@@ -43,6 +43,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
     <form id="dateForm">
         <label for="date">Select Date:</label>
         <input type="date" id="date" name="date" required max="<?php echo date('Y-m-d'); ?>">
+        <input type="hidden" id="division" name="division" value="<?php echo $_SESSION['DIVISION_ID']; ?>">
+        <input type="hidden" id="depot" name="depot" value="<?php echo $_SESSION['DEPOT_ID']; ?>">
         <button class="btn btn-primary" type="submit">Generate Report</button>
         <button class="btn btn-success" onclick="window.print()">Print</button>
 
@@ -55,13 +57,17 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
         document.getElementById('dateForm').addEventListener('submit', function (e) {
             e.preventDefault();
             var selectedDate = document.getElementById('date').value;
+            var divisionId = document.getElementById('division').value // Division ID from session
+            var depotId = document.getElementById('depot').value;       // Depot selected from the form
 
-            fetch('../database/fetch_crew_report_d.php', {
+            fetch('../database/fetch_depotwise_crew_report_d.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ date: selectedDate })
+                body: JSON.stringify({ date: selectedDate,
+                    division: divisionId,
+                    depot: depotId })
             })
                 .then(response => {
                     if (!response.ok) {

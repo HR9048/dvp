@@ -441,7 +441,7 @@ $(document).ready(function() {
                                                                                     ${driverTokenOptions2 ? `
                                                                                         <div class="form-group">
                                                                                             <label for="driver_token_no_2">Driver Token No 2/ಚಾಲಕ ಟೋಕನ್‌ ಸಂಖ್ಯೆ 2</label>
-                                                                                            <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;" required>
+                                                                                            <select class="form-control select2" id="driver_token_no_2" name="driver_token_no_2" style="width: 100%;">
                                                                                                 ${driverTokenOptions2}
                                                                                             </select>
                                                                                         </div>
@@ -449,7 +449,7 @@ $(document).ready(function() {
                                                                                     ${details.single_crew === 'no' ? `
                                                                                     <div class="form-group">
                                                                                         <label for="conductor_token_no">Conductor Token No/ನಿರ್ವಾಹಕ ಟೋಕನ್‌ ಸಂಖ್ಯೆ </label>
-                                                                                        <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;" required>
+                                                                                        <select class="form-control select2" id="conductor_token_no" name="conductor_token_no" style="width: 100%;">
                                                                                             ${conductorTokenOptions}
                                                                                         </select>
                                                                                     </div>

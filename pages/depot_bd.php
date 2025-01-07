@@ -12,7 +12,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
     ?>
 
     <div class="container-fluid custom-container">
-        <h2>Bus Data</h2>
+    <div class="text-center">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addBusModal">Add BD</button>
+        </div>
+        <h2>Break Down Data </h2>
         <table>
             <thead>
                 <tr>
@@ -53,9 +56,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                 ?>
             </tbody>
         </table>
-        <div class="text-center">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addBusModal">Add BD</button>
-        </div>
+        
     </div>
 
     <!-- Modal -->

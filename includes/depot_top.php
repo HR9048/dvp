@@ -3,33 +3,33 @@ require_once('session.php');
 confirm_logged_in();
 function getBaseUrl()
 {
-    // Define the local and public IP addresses
-    $localIpAddress = '192.168.1.32:50';
-    $publicIpAddress = '117.203.105.106:50';  // Your public IP address
-    $domainName = '117.203.105.106:50';
+  // Define the local and public IP addresses
+  $localIpAddress = '192.168.1.32:50';
+  $publicIpAddress = '117.203.105.106:50';  // Your public IP address
+  $domainName = '117.203.105.106:50';
 
-    // Set the base path of your project
+  // Set the base path of your project
 
-    // Use HTTP protocol
-    $protocol = 'http';
+  // Use HTTP protocol
+  $protocol = 'http';
 
-    // Get the server's IP address
-    $serverIp = $_SERVER['SERVER_ADDR'];
-    // Get the client's IP address (who is accessing the page)
-    $clientIp = $_SERVER['REMOTE_ADDR'];
-    $isLocalRequest = ($serverIp === '127.0.0.1' || $serverIp === ':1' || $serverIp === $localIpAddress);
+  // Get the server's IP address
+  $serverIp = $_SERVER['SERVER_ADDR'];
+  // Get the client's IP address (who is accessing the page)
+  $clientIp = $_SERVER['REMOTE_ADDR'];
+  $isLocalRequest = ($serverIp === '127.0.0.1' || $serverIp === ':1' || $serverIp === $localIpAddress);
 
-    // Determine the base URL based on the request origin
-    if ($isLocalRequest || $clientIp === $localIpAddress) {
-        // Use local IP if the request is coming from your network
-        $host = $localIpAddress;
-    } else {
-        // Use the domain name for other cases
-        $host = $domainName;
-    }
+  // Determine the base URL based on the request origin
+  if ($isLocalRequest || $clientIp === $localIpAddress) {
+    // Use local IP if the request is coming from your network
+    $host = $localIpAddress;
+  } else {
+    // Use the domain name for other cases
+    $host = $domainName;
+  }
 
-    // Return the complete base URL
-    return $protocol . '://' . $host;
+  // Return the complete base URL
+  return $protocol . '://' . $host;
 }
 ?>
 <!DOCTYPE html>
@@ -171,7 +171,7 @@ function getBaseUrl()
           <div
             style="display: flex; align-items: center; justify-content: center; background-color: #3c97bf; padding: 0px 0px;">
             <div style="margin-right: 10px; margin-left: auto;padding-left:20px">
-              <img src="../images/kkrtclogo.png" alt="alternatetext" width="45" height="45" >
+              <img src="../images/kkrtclogo.png" alt="alternatetext" width="45" height="45">
             </div>
             <div class="navcenter" style="text-align: center; flex: 1;">
               <h6 style="color: white; margin: 0;"><b>ಕಲ್ಯಾಣ ಕರ್ನಾಟಕ ರಸ್ತೆ ಸಾರಿಗೆ ನಿಗಮ</b></h6>
@@ -290,7 +290,8 @@ function getBaseUrl()
                           <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
                             <li><a class="dropdown-item" href="depot_inspector_schedule_d.php">Update Schedule</a></li>
                             <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
-                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Modify/Active/Inactive Schedule</a>
+                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Modify/Active/Inactive
+                                Schedule</a>
                             </li>
                           <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech') { ?>
@@ -301,14 +302,15 @@ function getBaseUrl()
                             </li>
                             <li><a class="dropdown-item" href="depot_schedule_b.php">Update Schedule(Bus)</a></li>
                             <li><a class="dropdown-item" href="depot_add_schedule.php">Add Schedule</a></li>
-                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Modify/Active/Inactive Schedule</a></li>
+                            <li><a class="dropdown-item" href="depot_scheduel_actinact.php">Modify/Active/Inactive
+                                Schedule</a></li>
                             <li><a class="dropdown-item" href="depot_schedule_cancel.php">Schedule Cancelation</a></li>
                           <?php } ?>
                         </ul>
                       </div>
                     </li>
                   <?php }
-                   if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY' ) { ?>
+                  if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') { ?>
                     <li class="nav-item">
                       <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -316,12 +318,12 @@ function getBaseUrl()
                           <b>Report</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
-                        <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule Monitor</a></li>
+                          <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
+                          <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule Monitor</a></li>
                         </ul>
                       </div>
                     </li>
-                  <?php } 
+                  <?php }
                   if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
 
                     <li class="nav-item">
@@ -335,6 +337,27 @@ function getBaseUrl()
                           <li><a class="dropdown-item" href="depot_addp_emp.php">Add Private Employee</a></li>
                           <li><a class="dropdown-item" href="depot_manp_emp.php">Manage Private Employee</a></li>
                           <!-- <li><a class="dropdown-item" href="depot_relp_emp.php">Releve Private Employee</a></li> -->
+                        </ul>
+                      </div>
+                    </li>
+                  <?php } ?>
+                  <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
+
+                    <li class="nav-item">
+                      <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                          style="font-size: 15px;">
+                          <b>Deputation</b>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                          <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech') { ?>
+
+                            <li><a class="dropdown-item" href="depot_vehicle_deputation.php">Add Vehicel Deputation</a></li>
+                            <li><a class="dropdown-item" href="depot_veh_dep_monitor.php">Deputation Monitor</a></li>
+                          <?php } if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
+                          <li><a class="dropdown-item" href="depot_crew_deputation.php">Add Crew Deputation</a></li>
+                          <li><a class="dropdown-item" href="depot_crew_dep_monitor.php">Deputation Monitor</a></li>
+                          <?php } ?>
                         </ul>
                       </div>
                     </li>
@@ -359,8 +382,7 @@ function getBaseUrl()
                         </ul>
                       </div>
                     </li>
-                  <?php }
-                  ?>
+                  <?php } ?>
                 </ul>
                 <ul class="navbar-nav ml-auto">
                   <div class="topbar-divider d-none d-sm-block"></div>

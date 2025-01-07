@@ -14,53 +14,91 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
 
     <h6>Select Month and Year for Schedule Report</h6>
     <form id="scheduleForm">
+    <?php
+    $currentDate = new DateTime();
+    $currentYear = $currentDate->format("Y");
+    $currentMonth = $currentDate->format("n");
+    $startYear = 2024;
+    $startMonth = 12;
+
+    // Generate year range
+    $year_range = range($startYear, $currentYear);
+    ?>
+
+    <label for="year">Year:</label>
+    <select id="year" name="year" onchange="updateMonths()" required>
+        <option value="">Select</option>
         <?php
-        $currentDate = new DateTime();
-        $currentYear = $currentDate->format("Y");
-        $currentMonth = $currentDate->format("m");
-        $startYear = 2024;
-        $startMonth = 8;
-
-        // Generate year range
-        $year_range = range($startYear, $currentYear);
+        foreach ($year_range as $year_val) {
+            $selected = ($year_val == $currentYear) ? '' : '';
+            echo '<option ' . $selected . ' value ="' . $year_val . '">' . $year_val . '</option>';
+        }
         ?>
+    </select>
 
-        <label for="month">Month:</label>
-        <select id="month" name="month">
-            <?php
-            $month_range = array();
-            $selected_year = isset($_GET['year']) ? $_GET['year'] : date('Y');
-            $selected_month = isset($_GET['month']) ? $_GET['month'] : date('n');
+    <label for="month">Month:</label>
+    <select id="month" name="month" required>
+        <option value="">Select</option>
+        <?php
+        for ($i = $startMonth; $i <= $currentMonth; $i++) {
+            $month_name = date("F", mktime(0, 0, 0, $i, 1));
+            $selected = ($i == $currentMonth) ? 'selected' : '';
+            echo '<option ' . $selected . ' value="' . $i . '">' . $month_name . '</option>';
+        }
+        ?>
+    </select>
 
-            // Calculate start and end month based on selected year
-            $start = ($selected_year == $startYear) ? $startMonth : 1;
-            $end = ($selected_year == $currentYear) ? $currentMonth : 12;
+    <button class="btn btn-primary" type="submit">Submit</button>
+</form>
 
-            for ($i = $start; $i <= $end; $i++) {
-                $month_range[$i] = date("F", mktime(0, 0, 0, $i, 1));
-            }
+<script>
+function updateMonths() {
+    // Get the selected year
+    const yearSelect = document.getElementById("year");
+    const monthSelect = document.getElementById("month");
+    const selectedYear = parseInt(yearSelect.value);
 
-            foreach ($month_range as $month_number => $month_name) {
-                $selected = ($selected_month == $month_number) ? 'selected' : '';
-                echo '<option ' . $selected . ' value ="' . $month_number . '">' . $month_name . '</option>';
-            }
-            ?>
-        </select>
+    // Clear existing options in the month dropdown
+    monthSelect.innerHTML = "";
 
-        <label for="year">Year:</label>
-        <select id="year" name="year">
-            <?php
-            foreach ($year_range as $year_val) {
-                $selected_year = (isset($_GET['year']) && $year_val == $_GET['year']) ? 'selected' : '';
-                echo '<option ' . $selected_year . ' value ="' . $year_val . '">' . $year_val . '</option>';
-            }
-            ?>
-        </select>
+    // Add a default "Select" option
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Select Month";
+    defaultOption.selected = true;
+    defaultOption.disabled = true;
+    monthSelect.appendChild(defaultOption);
 
-        <button class="btn btn-primary" type="submit">Submit</button>
-        <button class="btn btn-success" onclick="window.print()">Print</button>
+    // Define start year, start month, and current year/month
+    const startYear = 2024;
+    const startMonth = 12;
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1; // Month is zero-based
 
-    </form>
+    let start = 1; // Default start month
+    let end = 12; // Default end month
+
+    // Adjust start and end months based on the selected year
+    if (selectedYear === startYear) {
+        start = startMonth; // Start from December 2023
+    }
+    if (selectedYear === currentYear) {
+        end = currentMonth; // End at the current month
+    }
+
+    // Populate the month dropdown
+    for (let i = start; i <= end; i++) {
+        const monthName = new Date(2000, i - 1, 1).toLocaleString("default", { month: "long" });
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = monthName;
+        monthSelect.appendChild(option);
+    }
+}
+
+</script>
+
+
     <div class="container1">
         <div id="reportContainer"></div>
     </div>

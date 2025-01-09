@@ -23,12 +23,31 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                     <th>Departure Date</th>
                     <th>Arrival Time</th>
                     <th>Action</th>
+                    <th>make</th>
+                    <th>norms</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
 
-                $sql = "SELECT * FROM sch_veh_out WHERE division_id='$division_id' and depot_id='$depot_id' and schedule_status in('2','6') order by arr_time ASC";
+                $sql = "SELECT 
+    svo.*, 
+    br.make, 
+    br.emission_norms 
+FROM 
+    sch_veh_out svo
+JOIN 
+    bus_registration br 
+ON 
+    svo.vehicle_no = br.bus_number 
+WHERE 
+    svo.division_id = '$division_id' 
+AND 
+    svo.depot_id = '$depot_id' 
+AND 
+    svo.schedule_status IN ('2', '6')
+ORDER BY 
+    svo.arr_time ASC";
                 $result = $db->query($sql);
 
                 if ($result->num_rows > 0) {
@@ -57,7 +76,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                             echo "<button class='btn btn-warning' onclick='openDefectModal(this)'>Defect Receive</button>";
                         }
 
-                        echo "</td></tr>";
+                        echo "</td><td class='d-none1'>" . $row["make"] . "</td><td class='d-none1'>" . $row["emission_norms"] . "</td></tr>";
                     }
                 } else {
                     echo "<tr><td colspan='7'>No results found</td></tr>";
@@ -238,16 +257,27 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                         </div>
 
                         <!-- Need Fuel Checkbox -->
-                        <div class="form-group">
-                            <label>Need Fuel</label>
-                            <div>
-                                <input type="radio" id="needFuelYes" name="needFuel" value="yes" required>
-                                <label for="needFuelYes">Yes</label>
-                                <input type="radio" id="needFuelNo" name="needFuel" value="no" required>
-                                <label for="needFuelNo">No</label>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label>Need Fuel</label>
+                                    <div>
+                                        <input type="radio" id="needFuelYes" name="needFuel" value="yes" required>
+                                        <label for="needFuelYes">Yes</label>
+                                        <input type="radio" id="needFuelNo" name="needFuel" value="no" required>
+                                        <label for="needFuelNo">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                            <div class="form-group">
+                                    <label for="feedback">Thumbs Up Status</label>
+                                    <select class="form-control" id="feedback" name="feedback" required>
+                                        <!-- Options will be populated by JavaScript -->
+                                    </select>
+                                </div>
                             </div>
                         </div>
-
                         <div id="fuelFields" style="display: none;">
                             <div class="row">
                                 <div class="col">
@@ -489,7 +519,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
             var vehicleNo = row.find('td:eq(2)').text();
             var driverToken = row.find('td:eq(3)').text();
             var conductorToken = row.find('td:eq(4)').text();
-            var arrivalTime = row.find('td:eq(5)').text();
+            var arrivalTime = row.find('td:eq(6)').text();
+            var make = row.find('td:eq(8)').text();
+            var norms = row.find('td:eq(9)').text();
+
 
             // Set the modal input values
             $('#id1').val(id);

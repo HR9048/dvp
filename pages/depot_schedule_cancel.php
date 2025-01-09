@@ -117,7 +117,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
             formData.append('action', 'cancel_schedule'); // Add an action identifier
 
             // Perform AJAX request
-            fetch('../includes/data_fetch.php', {
+            fetch('../includes/backend_data.php', {
                 method: 'POST',
                 body: formData,
             })

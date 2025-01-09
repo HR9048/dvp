@@ -303,7 +303,7 @@ $(document).ready(function() {
                             .bus_number_2 && bus !== details.additional_bus_number;
                     });
                     buses.forEach(function(bus) {
-                        vehicleNoOptions += `<option value="${bus}">${bus}</option>`;
+                        vehicleNoOptions += `<option value="${bus.id}">${bus.text}</option>`;
                     });
 
                     var driverTokenOptions1 =
@@ -578,105 +578,124 @@ $(document).ready(function() {
     }
 
 
-
     function fetchBuses() {
-        return new Promise(function(resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'fetch_buses.php', true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
+    return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'fetch_buses.php', true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
                     var busesData = JSON.parse(xhr.responseText);
-                    resolve(busesData);
-                } else if (xhr.readyState === 4) {
-                    reject('Error fetching buses data');
+                    resolve(busesData);  // Resolve the promise with the buses data
+                } catch (e) {
+                    reject('Error parsing response: ' + e.message);  // Reject if there's a parsing error
                 }
-            };
-            xhr.send();
-        });
-    }
-
-    function fetchAdditionalData() {
-        return new Promise(function(resolve, reject) {
-            var division = '<?php echo $_SESSION['KMPL_DIVISION']; ?>';
-            var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
-
-            // API URLs with division and depot as query parameters
-            //var dataApiUrl = 'http://192.168.1.32:50/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); //test
-            var dataApiUrl = '<?php echo getBaseUrl(); ?>/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); //server
-            var empApiUrl = '../database/private_emp_api.php?division=' + encodeURIComponent(division) +'&depot=' + encodeURIComponent(depot);
-
-            // Function to fetch data from both APIs
-            function fetchApiData(url) {
-                return new Promise(function(resolve, reject) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', url, true);
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4) {
-                            if (xhr.status === 200) {
-                                try {
-                                    var response = JSON.parse(xhr.responseText);
-
-                                    // Handle "No Data Found" or empty responses
-                                    if (!response.data || response.data.length === 0) {
-                                        resolve(
-                                            []
-                                            ); // Resolve with an empty array if no data is found
-                                    } else {
-                                        resolve(response
-                                            .data); // Resolve with the data if available
-                                    }
-                                } catch (e) {
-                                    reject('Error parsing response from ' + url + ': ' + e
-                                        .message);
-                                }
-                            } else {
-                                reject('Error fetching data from ' + url);
-                            }
-                        }
-                    };
-                    xhr.send();
-                });
+            } else if (xhr.readyState === 4) {
+                reject('Error fetching buses data');  // Reject if there's an issue with the request
             }
+        };
+        xhr.send();
+    });
+}
 
-            // Fetch data from both APIs
-            Promise.all([fetchApiData(dataApiUrl), fetchApiData(empApiUrl)])
-                .then(function(responses) {
-                    // Combine data from both APIs (ensure responses are arrays even if empty)
-                    var combinedData = responses[0].concat(responses[1]);
+function fetchAdditionalData() {
+    return new Promise(function(resolve, reject) {
+        var division = '<?php echo $_SESSION['KMPL_DIVISION']; ?>';
+        var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
 
-                    // Filter data by division and depot (already passed in the API call, so this may not be necessary)
-                    var filteredData = combinedData.filter(function(item) {
-                        return item.Division === division && item.Depot === depot;
+        // API URLs with division and depot as query parameters
+        var dataApiUrl = 'http://192.168.1.32:50/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); // test
+        //var dataApiUrl = '<?php echo getBaseUrl(); ?>/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); // server
+        var empApiUrl = '../database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+        var depApiUrl = '../database/deputation_crew_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+
+        // Function to fetch data from an API
+        function fetchApiData(url) {
+            return new Promise(function(resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            try {
+                                var response = JSON.parse(xhr.responseText);
+
+                                // Handle "No Data Found" or empty responses
+                                if (!response.data || response.data.length === 0) {
+                                    resolve([]); // Resolve with an empty array if no data is found
+                                } else {
+                                    resolve(response.data); // Resolve with the data if available
+                                }
+                            } catch (e) {
+                                reject('Error parsing response from ' + url + ': ' + e.message);
+                            }
+                        } else {
+                            reject('Error fetching data from ' + url);
+                        }
+                    }
+                };
+                xhr.send();
+            });
+        }
+
+        // Fetch data from all three APIs
+        Promise.all([fetchApiData(dataApiUrl), fetchApiData(empApiUrl), fetchApiData(depApiUrl)])
+            .then(function(responses) {
+                // Combine data from all three APIs (ensure responses are arrays even if empty)
+                var combinedData = [].concat(responses[0], responses[1], responses[2]);
+
+                // Filter data by division and depot (already passed in the API call, so this may not be necessary)
+                var filteredData = combinedData.filter(function(item) {
+                    return item.Division === division && item.Depot === depot;
+                });
+
+                // Sort filtered data by token_number
+                filteredData.sort(function(a, b) {
+                    return a.token_number - b.token_number;
+                });
+
+                // Fetch and filter VEH_SCH_OUT data
+                fetchVechSchOutData().then(function (vehSchOutData) {
+                    combinedData = combinedData.filter(function (item) {
+                        return !vehSchOutData.some(function (vehItem) {
+                            return vehItem.driver_1_pf === item.EMP_PF_NUMBER ||
+                                vehItem.driver_2_pf === item.EMP_PF_NUMBER ||
+                                vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
+                        });
                     });
 
-                    // Sort filtered data by token_number
-                    filteredData.sort(function(a, b) {
-                        return a.token_number - b.token_number;
-                    });
-
-                    // Call fetchVechSchOutData and filter based on vehicle schedule data
-                    fetchVechSchOutData().then(function(vehSchOutData) {
-                        filteredData = filteredData.filter(function(item) {
-                            return !vehSchOutData.some(function(vehItem) {
-                                return vehItem.driver_1_pf === item
-                                    .EMP_PF_NUMBER || vehItem
-                                    .driver_2_pf === item.EMP_PF_NUMBER ||
-                                    vehItem.conductor_pf_no === item
-                                    .EMP_PF_NUMBER;
+                    // Fetch and filter DEPUTATION_CREW data
+                    fetchdepCrewData().then(function (depCrewData) {
+                        combinedData = combinedData.filter(function (item) {
+                            return !depCrewData.some(function (depItem) {
+                                return depItem.DEP_EMP_PF_NUMBER === item.EMP_PF_NUMBER;
                             });
+                        });
+
+                        // Filter data by division and depot (already passed in the API call, so this may not be necessary)
+                        var filteredData = combinedData.filter(function (item) {
+                            return item.Division === division && item.Depot === depot;
+                        });
+
+                        // Sort filtered data by token_number
+                        filteredData.sort(function (a, b) {
+                            return a.token_number - b.token_number;
                         });
 
                         // Resolve the combined filtered data
                         resolve(filteredData);
-                    }).catch(function(error) {
-                        reject(error);
+                    }).catch(function (error) {
+                        reject('Error filtering DEPUTATION_CREW data: ' + error);
                     });
-                })
-                .catch(function(error) {
-                    reject(error);
+                }).catch(function (error) {
+                    reject('Error filtering VEH_SCH_OUT data: ' + error);
                 });
-        });
-    }
+            })
+            .catch(function (error) {
+                reject(error);
+            });
+    });
+}
 
 
 
@@ -690,6 +709,21 @@ $(document).ready(function() {
                     resolve(data);
                 } else if (xhr.readyState === 4) {
                     reject('Error fetching VEH_SCH_OUT data');
+                }
+            };
+            xhr.send();
+        });
+    }
+    function fetchdepCrewData() {
+        return new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'fetch_deputation_data.php', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    resolve(data);
+                } else if (xhr.readyState === 4) {
+                    reject('Error fetching deptation data');
                 }
             };
             xhr.send();

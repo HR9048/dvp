@@ -387,7 +387,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR')) {
             }
 
             $.ajax({
-                url: "../includes/data_fetch.php", // Replace with the URL of your server-side script
+                url: "../includes/backend_data.php", // Replace with the URL of your server-side script
                 type: "POST",
                 data: {
                     action: "depotcrewdeputationsubmit", // Action to be handled on the server-side

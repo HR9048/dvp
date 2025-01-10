@@ -16,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $RkmOperated = $_POST['RkmOperated1'];
     $Rhsd = $_POST['Rhsd1'];
     $Rkmpl = $_POST['Rkmpl1'];
+    $make = $_POST['make'];
+    $norms = $_POST['norms'];
+    $feedback = $_POST['feedback'] ?? '';
     // Validate the input fields
     $errors = [];
 
@@ -33,6 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (empty($Rhsd))
             $errors[] = 'HSD is required.';
     } 
+    if ($make == 'Leyland' && $norms == 'BS-6') {
+        if (empty($feedback))
+            $errors[] = 'feed back is required.';
+    }
     if (empty($driverDefect))
         $errors[] = 'Driver Defect is required.';
 
@@ -50,7 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($driverDefect === '1') {
         $remark = null;
     }
-
+    if ($make != 'Leyland' && $norms != 'BS-6') {
+        $feedback = 0;
+    }
     // Fetch details from sch_veh_out based on id
     $sqlFetch = "SELECT sch_no, driver_token_no_1, vehicle_no, driver_1_pf, driver_token_no_2, driver_2_pf, conductor_token_no, conductor_pf_no, departed_date, dep_time, arr_date, arr_time, schedule_status
                  FROM sch_veh_out
@@ -90,13 +99,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     // Prepare and execute the SQL query to insert data into schedule_defect_data
     $sqlInsert = "INSERT INTO sch_veh_in 
-                  (schedule_no, sch_out_id, logsheet_no,need_fuel, km_operated, hsd, kmpl, driver_defect, driver_remark, division_id, depot_id) 
+                  (schedule_no, sch_out_id, logsheet_no,need_fuel, km_operated, hsd, kmpl, driver_defect, driver_remark, division_id, depot_id, feedback_id) 
                   VALUES 
-                  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmtInsert = $db->prepare($sqlInsert);
     $stmtInsert->bind_param(
-        "sssssssssss",
+        "ssssssssssss",
         $scheduleNo,
         $id,
         $logsheetNo,
@@ -107,7 +116,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $driverDefect,
         $remark,
         $division_id,
-        $depot_id
+        $depot_id,
+        $feedback
     );
 
     if ($stmtInsert->execute()) {

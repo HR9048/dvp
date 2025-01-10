@@ -596,6 +596,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'vehicledeputa
         echo "Missing required parameters!";
     }
 }
+if ($_GET['action'] === 'fetchThumbsUpStatus') {
+    $query = "SELECT id, thumbs, name, percentage FROM feedback";
+    $result = mysqli_query($db, $query);
+
+    if (!$result) {
+        echo json_encode(['error' => 'Query failed: ' . mysqli_error($db)]);
+        exit;
+    }
+
+    $data = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $data[] = $row;
+    }
+
+    echo json_encode($data);
+    exit;
+}
 
 
 ?>

@@ -246,6 +246,7 @@ confirm_logged_in();
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="report.php">Off-Road Report</a></li>
                           <li><a class="dropdown-item" href="main_schedule_report_dailywise.php">Daily Schedule Report</a></li>
+                          <li><a class="dropdown-item" href="central_office_schedule_report_month.php">Monthly Schedule Report</a></li>
                           <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a></li>
                         </ul>
                       </div>

@@ -10,10 +10,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $year = $data['year'];
 
     // Get session variables
-    $depot_id = $_SESSION['DEPOT_ID'];
-    $division_id = $_SESSION['DIVISION_ID'];
-    $depotname = $_SESSION['KMPL_DEPOT'];
+    $depot_id = $data['depot_id'];
+    $division_id =$data['division_id'];
+    $query = "SELECT depot, division FROM LOCATION WHERE depot_id = ? AND division_id = ?";
 
+    // Prepare the query
+    $stmt = $db->prepare($query);
+    
+    // Bind the parameters to the query
+    $stmt->bind_param('ii', $depot_id, $division_id); // 'ii' means both are integers
+    
+    // Execute the query
+    $stmt->execute();
+    
+    // Get the result
+    $result = $stmt->get_result();
+    
+    // Fetch the depot name and division name
+    $depotname = '';
+    if ($row = $result->fetch_assoc()) {
+        // Store the depot and division names in the variable
+        $depotname = $row['depot']; // Storing the depot name in the variable
+        $division_name = $row['division']; // You can store division name if needed
+    }
     $start_date = date("$year-$month-01");
     $end_date = date("Y-m-t", strtotime($start_date));
 
@@ -108,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Generate HTML for Schedule Report
-        $scheduleReport = '<h2>Depot: ' . htmlspecialchars($depotname) . '<h2 style="text-align:center;"> Monthly Report for ' . htmlspecialchars(date('F', mktime(0, 0, 0, $month, 10))) . ' ' . htmlspecialchars($year) . '</h2>';
+        $scheduleReport = '<h2 style="text-align:center;">Division: ' . htmlspecialchars($division_name) . ' Depot: ' . htmlspecialchars($depotname) . ' Monthly Report for ' . htmlspecialchars(date('F', mktime(0, 0, 0, $month, 10))) . ' ' . htmlspecialchars($year) . '</h2>';
         $scheduleReport .= '<p style="color: red;">Note * : (SNO = Schedule not Operated),(SNA = Schedule not Arrived), (NA = Not Alloted), (N/A = Not Applicable)</p>';
 
         foreach ($schedules as $schedule_no => $schedule) {
@@ -440,17 +459,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     for ($day = 1; $day <= $daysInMonth; $day++) {
         $date = sprintf('%04d-%02d-%02d', $year, $month, $day);
 
-        $scheduleQuery = "SELECT COUNT(*) as total_departures
-                          FROM schedule_master sm
-                          LEFT JOIN sch_veh_out svo ON sm.sch_key_no = svo.sch_no AND DATE(svo.departed_date) = '$date'
-                          WHERE sm.depot_id = ? AND sm.division_id = ?";
+        // Calculate total departures for each day
+$scheduleQuery = "SELECT COUNT(DISTINCT sm.sch_key_no) as total_departures
+FROM schedule_master sm
+LEFT JOIN sch_veh_out svo ON sm.sch_key_no = svo.sch_no AND DATE(svo.departed_date) = '$date'
+WHERE sm.depot_id = ? AND sm.division_id = ?";
 
-        $stmt = $db->prepare($scheduleQuery);
-        $stmt->bind_param('ss', $depot_id, $division_id);
-        $stmt->execute();
-        $scheduleResult = $stmt->get_result();
-        $scheduleData = $scheduleResult->fetch_assoc();
-        $total_departures = $scheduleData['total_departures'];
+$stmt = $db->prepare($scheduleQuery);
+$stmt->bind_param('ss', $depot_id, $division_id);
+$stmt->execute();
+$scheduleResult = $stmt->get_result();
+$scheduleData = $scheduleResult->fetch_assoc();
+$total_departures = $scheduleData['total_departures'];
 
         $query = "SELECT COUNT(*) as departure_held,
         COUNT(CASE WHEN dep_time_diff <= 30 THEN 1 END) as departures_on_time,

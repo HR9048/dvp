@@ -251,7 +251,8 @@ confirm_logged_in();
                           <li><a class="dropdown-item" href="division_offroad.php">From - To days Off-Road Report</a></li>
                           <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
-                          <li><a class="dropdown-item" href="division_schedule_report_day.php">Schedule reports Daywise</a></li>
+                          <li><a class="dropdown-item" href="division_schedule_report_day.php">Daily Schedule reports</a></li>
+                          <li><a class="dropdown-item" href="division_schedule_report_month.php">Monthly Schedule reports</a></li>
                           <li><a class="dropdown-item" href="division_schedule_monitor.php">Schedule Monitor</a></li>
                           <li><a class="dropdown-item" href="division_departure_report.php">Departure Report</a></li>
                           <?php } ?>

@@ -1,12 +1,12 @@
 <?php
 include '../includes/connection.php';
-include '../includes/depot_top.php';
+include '../includes/sidebar.php';
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $_SESSION['JOB_TITLE'] == 'DM')) {
+if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO' )) {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
@@ -47,39 +47,15 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
         }
         ?>
     </select>
+    <label for="division">Select Division:</label>
+        <select id="division" name="division" required>
+            <option value="">Select Division</option>
+        </select>
 
-    <input type="hidden" id="division_id" name="division_id" value="<?php echo $_SESSION['DIVISION_ID']; ?>">
-    <input type="hidden" id="depot_id" name="depot_id" value="<?php echo $_SESSION['DEPOT_ID']; ?>">
-
-    <?php
-// Assuming you're using a MySQLi connection
-$division_id = $_SESSION['DIVISION_ID']; // Get session division ID
-
-// Create a MySQLi connection (assuming $db is your MySQLi connection object)
-$query = "SELECT depot_id, DEPOT FROM LOCATION WHERE DIVISION_ID = ?";
-$stmt = $db->prepare($query);
-
-// Bind the session division_id parameter
-$stmt->bind_param('i', $division_id); // 'i' means integer type
-
-// Execute the query
-$stmt->execute();
-
-// Fetch the results
-$result = $stmt->get_result();
-
-// Fetch all depot_id and DEPOT results
-$depot_ids = [];
-while ($row = $result->fetch_assoc()) {
-    $depot_ids[] = [
-        'depot_id' => $row['depot_id'],
-        'depot'    => $row['DEPOT']
-    ];
-}
-
-// Close the statement
-$stmt->close();
-?>
+        <label for="depot">Select Depot:</label>
+        <select id="depot" name="depot" required>
+            <option value="">Select Depot</option>
+        </select>
 
     <button class="btn btn-primary" type="submit">Submit</button>
     <button class="btn btn-success" onclick="window.print()">Print</button>
@@ -89,6 +65,49 @@ $stmt->close();
     <div id="reportContainer"></div>
 </div>
 <script>
+function fetchBusCategory() {
+    $.ajax({
+        url: '../includes/data_fetch.php',
+        type: 'GET',
+        data: {
+            action: 'fetchDivision'
+        },
+        success: function(response) {
+            var divisions = JSON.parse(response);
+            $.each(divisions, function(index, division) {
+                if (division.DIVISION !== 'HEAD-OFFICE' && division.DIVISION !== 'RWY') {
+                    $('#division').append('<option value="' + division.division_id + '">' + division
+                        .DIVISION + '</option>');
+                }
+            });
+        }
+    });
+
+    $('#division').change(function() {
+        var Division = $(this).val();
+        $.ajax({
+            url: '../includes/data_fetch.php?action=fetchDepot',
+            method: 'POST',
+            data: {
+                division: Division
+            },
+            success: function(data) {
+                // Update the depot dropdown with fetched data
+                $('#depot').html(data);
+
+                // Hide the option with text 'DIVISION'
+                $('#depot option').each(function() {
+                    if ($(this).text().trim() === 'DIVISION') {
+                        $(this).hide();
+                    }
+                });
+            }
+        });
+    });
+}
+$(document).ready(function () {
+            fetchBusCategory();
+        });
 function updateMonths() {
     // Get the selected year
     const yearSelect = document.getElementById("year");
@@ -141,8 +160,8 @@ $(document).ready(function() {
         e.preventDefault();
         const month = $('#month').val();
         const year = $('#year').val();
-        const division_id = $('#division_id').val();
-        const depot_id = $('#depot_id').val();
+        const division_id = $('#division').val();
+        const depot_id = $('#depot').val();
 
         $.ajax({
             type: 'POST',

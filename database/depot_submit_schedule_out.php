@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // If the data is not found in the first two APIs, call the third API
-    $urlDeputation = 'http://localhost/dvp/database/deputation_crew_api1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+    $urlDeputation = 'http://192.168.1.32/transfer/dvp/database/deputation_crew_api1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
     $responseDeputation = file_get_contents($urlDeputation);
     if ($responseDeputation === FALSE) {
         die('Error occurred while fetching data from the deputation crew API');

@@ -23,8 +23,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                     <th>Departure Date</th>
                     <th>Arrival Time</th>
                     <th>Action</th>
-                    <th>make</th>
-                    <th>norms</th>
+                    <th class="d-none">make</th>
+                    <th class="d-none">norms</th>
                 </tr>
             </thead>
             <tbody>
@@ -76,7 +76,7 @@ ORDER BY
                             echo "<button class='btn btn-warning' onclick='openDefectModal(this)'>Defect Receive</button>";
                         }
 
-                        echo "</td><td class='d-none1'>" . $row["make"] . "</td><td class='d-none1'>" . $row["emission_norms"] . "</td></tr>";
+                        echo "</td><td class='d-none'>" . $row["make"] . "</td><td class='d-none'>" . $row["emission_norms"] . "</td></tr>";
                     }
                 } else {
                     echo "<tr><td colspan='7'>No results found</td></tr>";
@@ -270,7 +270,7 @@ ORDER BY
                                 </div>
                             </div>
                             <div class="col">
-                            <div class="form-group">
+                                <div class="form-group">
                                     <label for="feedback">Thumbs Up Status</label>
                                     <select class="form-control" id="feedback" name="feedback" required>
                                         <!-- Options will be populated by JavaScript -->
@@ -278,6 +278,8 @@ ORDER BY
                                 </div>
                             </div>
                         </div>
+                        <input type="hidden" id="make" name="make" >
+                        <input type="hidden" id="norms" name="norms" >
                         <div id="fuelFields" style="display: none;">
                             <div class="row">
                                 <div class="col">
@@ -531,6 +533,20 @@ ORDER BY
             $('#driverToken1').val(driverToken);
             $('#conductorToken1').val(conductorToken);
             $('#arrivalTime1').val(arrivalTime);
+            $('#make').val(make);
+            $('#norms').val(norms);
+
+            if (make === "Leyland" && norms === "BS-6") {
+                $('#feedback').prop('required', true); // Make it mandatory
+                $('#feedback').closest('.form-group').show(); // Show the field
+
+                // Populate the Thumbs Up Status dropdown
+                fetchThumbsUpStatus();
+            } else {
+                $('#feedback').prop('required', false); // Remove mandatory requirement
+                $('#feedback').closest('.form-group').hide(); // Hide the field
+                $('#feedback').empty(); // Clear the options
+            }
 
             // Open the modal
             $('#defectReceiveModal').modal('show');
@@ -562,6 +578,38 @@ ORDER BY
             }
             driverdefecttype();
         }
+        function fetchThumbsUpStatus() {
+    $.ajax({
+        url: '../includes/test.php',
+        type: 'GET',
+        data: { action: 'fetchThumbsUpStatus' },
+        success: function (data) {
+            // Clear existing options
+            $('#feedback').empty();
+
+            // Add a default "Select" option
+            $('#feedback').append('<option value="">Select</option>');
+
+            // Populate options from the database
+            $.each(data, function (index, item) {
+                var optionText = `${item.thumbs}, ${item.name} (${item.percentage})`;
+                $('#feedback').append(
+                    $('<option>', {
+                        value: item.id,
+                        text: optionText
+                    })
+                );
+            });
+
+            // Trigger change event to set initial state
+            $('#feedback').trigger('change');
+        },
+        error: function () {
+            alert("Error fetching Thumbs Up Status options.");
+        }
+    });
+}
+
 
         // Handle the change event for driver defect select field
         $('#driverDefect1').on('change', function () {
@@ -610,7 +658,9 @@ ORDER BY
                 var Rhsd = $('#Rhsd1').val();
                 var driverDefect = $('#driverDefect1').val();
                 var remark = $('#remark1').val();
-
+                var make = $('#make').val();
+                var norms = $('#norms').val();
+                var feedback = $('#feedback').val();
                 if (!id) {
                     isValid = false;
                     alert('Something went wrong. Please refresh the page and try again.');
@@ -627,6 +677,12 @@ ORDER BY
                     if (!Rhsd) {
                         isValid = false;
                         alert('HSD is required.');
+                    }
+                }
+                if(make === 'Leyland' && norms === 'BS-6'){
+                    if (!feedback){
+                        isValid = false;
+                        alert('Thumbs Up Status is required.');
                     }
                 }
                 if (!driverDefect) {

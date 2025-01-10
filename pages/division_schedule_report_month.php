@@ -1,12 +1,12 @@
 <?php
 include '../includes/connection.php';
-include '../includes/depot_top.php';
+include '../includes/division_sidebar.php';
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $_SESSION['JOB_TITLE'] == 'DM')) {
+if ($_SESSION['TYPE'] == 'DIVISION' && ($_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO')) {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
@@ -49,8 +49,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || 
     </select>
 
     <input type="hidden" id="division_id" name="division_id" value="<?php echo $_SESSION['DIVISION_ID']; ?>">
-    <input type="hidden" id="depot_id" name="depot_id" value="<?php echo $_SESSION['DEPOT_ID']; ?>">
-
     <?php
 // Assuming you're using a MySQLi connection
 $division_id = $_SESSION['DIVISION_ID']; // Get session division ID
@@ -81,6 +79,14 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 ?>
 
+
+    <label for="year">Depot:</label>
+    <select name="depot_id" id="depot_id">
+        <option value="">Select Depot</option>
+        <?php foreach ($depot_ids as $row): ?>
+        <option value="<?= htmlspecialchars($row['depot_id']) ?>"><?= htmlspecialchars($row['depot']) ?></option>
+        <?php endforeach; ?>
+    </select>
     <button class="btn btn-primary" type="submit">Submit</button>
     <button class="btn btn-success" onclick="window.print()">Print</button>
 

@@ -47,6 +47,7 @@ AND
 AND 
     svo.schedule_status IN ('2', '6')
 ORDER BY 
+    svo.departed_date DESC,
     svo.arr_time ASC";
                 $result = $db->query($sql);
 
@@ -201,7 +202,7 @@ ORDER BY
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="dataModalLabel">Incomplete Route Return Form</h5>
+                    <h5 class="modal-title" id="dataModalLabel">Route Return Form</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

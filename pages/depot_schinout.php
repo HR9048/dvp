@@ -605,7 +605,7 @@ function fetchAdditionalData() {
 
         // API URLs with division and depot as query parameters
        // var dataApiUrl = 'http://192.168.1.32:50/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); // test
-        var dataApiUrl = '<?php echo getBaseUrl(); ?>/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); // server
+        var dataApiUrl = '../includes/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); // server
         var empApiUrl = '../database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
         var depApiUrl = '../database/deputation_crew_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
 

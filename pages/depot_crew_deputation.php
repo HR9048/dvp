@@ -119,13 +119,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'T_INSPECTOR')) {
         let conductorDataFetched = false;
 
         // Fetch driver data
-        $.get("http://192.168.1.32:50/data.php", { division: division, depot: depot }, function (response) {
+        $.get("http://localhost:8880/dvp/includes/data.php", { division: division, depot: depot }, function (response) {
             allDrivers = response.data || [];
             fetchCrewTokens();
         });
 
         // Fetch conductor data
-        $.get("http://192.168.1.32/transfer/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
+        $.get("http://localhost:8880/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
             allConductors = response.data || [];
             conductorDataFetched = true;
             fetchCrewTokens();

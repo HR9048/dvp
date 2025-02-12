@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $depot = $_SESSION['KMPL_DEPOT'];
 
         // Fetch data from the first API based on division and depot
-        $url = 'http://192.168.1.32:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+        $url = 'http://localhost:8880/dvp/includes/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
         $response = file_get_contents($url);
         if ($response === FALSE) {
             $errors[] = "Error occurred while fetching data from LMS API";
@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         // If the data is not found in the first API, call the second API
-        $urlPrivate = 'http://192.168.1.32/transfer/dvp/database/private_emp_api.php?division=' . urlencode($division) . '&depot=' .
+        $urlPrivate = 'http://localhost:8880/dvp/database/private_emp_api.php?division=' . urlencode($division) . '&depot=' .
             urlencode($depot);
         $responsePrivate = file_get_contents($urlPrivate);
         if ($responsePrivate === FALSE) {
@@ -374,7 +374,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
     $errors = [];
     $successCount = 0;
-    
+
 
     foreach ($tableData as $row) {
         $lmsdivision = $_SESSION['KMPL_DIVISION'];
@@ -401,9 +401,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
         $fromDate = $row['fromDate'];
         $toDate = $row['toDate'];
-        
+
         // Validate the data (optional but recommended)
-        if (empty($vehicleNo) ||  empty($toDivision) || empty($toDepot) || empty($fromDate) || empty($toDate) || empty($lmsdivision) || empty($lmsdepot) || empty($division_id) || empty($depot_id)) {
+        if (empty($vehicleNo) || empty($toDivision) || empty($toDepot) || empty($fromDate) || empty($toDate) || empty($lmsdivision) || empty($lmsdepot) || empty($division_id) || empty($depot_id)) {
             $errors[] = "Missing fields in one or more rows.";
             continue; // Skip this row if it's invalid
         }
@@ -596,23 +596,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'vehicledeputa
         echo "Missing required parameters!";
     }
 }
-if ($_GET['action'] === 'fetchThumbsUpStatus') {
-    $query = "SELECT id, thumbs, name, percentage FROM feedback";
-    $result = mysqli_query($db, $query);
 
-    if (!$result) {
-        echo json_encode(['error' => 'Query failed: ' . mysqli_error($db)]);
-        exit;
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetchScheduleNos') {
+    $depot_id = $_POST['depot_id'];
+    $query = "SELECT sch_key_no FROM schedule_master WHERE depot_id = ? ORDER BY sch_key_no ASC";
+    $stmt = $db->prepare($query);
+    $stmt->bind_param("s", $depot_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    echo '<option value="">Select Schedule</option>';
+    while ($row = $result->fetch_assoc()) {
+        echo "<option value='{$row['sch_key_no']}'>{$row['sch_key_no']}</option>";
     }
-
-    $data = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $data[] = $row;
-    }
-
-    echo json_encode($data);
     exit;
 }
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetchBusNumbers') {
+    $depot_id = $_POST['depot_id'];
+    $query = "SELECT bus_number FROM bus_registration WHERE depot_name = ? ORDER BY bus_number ASC";
+    $stmt = $db->prepare($query);
+    $stmt->bind_param("s", $depot_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    echo '<option value="">Select Bus</option>';
+    while ($row = $result->fetch_assoc()) {
+        echo "<option value='{$row['bus_number']}'>{$row['bus_number']}</option>";
+    }
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] === 'getDepotDetails') {
+    $depot_id = $_POST['depot_id'];
+    $query = "SELECT kmpl_division, kmpl_depot FROM location WHERE depot_id = ?";
+    $stmt = $db->prepare($query);
+    $stmt->bind_param("s", $depot_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    echo json_encode($result->fetch_assoc());
+    exit;
+}
+
 
 
 ?>

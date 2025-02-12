@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['arr_time'])) {
     $scheduleNo = $_POST['sch_no_in'];
     $division_id1 = $_SESSION['DIVISION_ID'];
     $depot_id1 = $_SESSION['DEPOT_ID'];
-    $status = '2';
+    $status = '3';
     $today = date('Y-m-d');
     $checkQuery = "
 SELECT COUNT(*) as count

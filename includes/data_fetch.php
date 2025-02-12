@@ -1,6 +1,8 @@
 <?php
 require('../pages/session.php');
 require_once '../includes/connection.php'; // Include the db.php file to access the database connection
+error_reporting(0);
+ini_set('display_errors', 0);
 
 confirm_logged_in();
 

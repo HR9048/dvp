@@ -11,9 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($_POST['sch_out_id'])) {
         $missingFields[] = 'please refresh the page and try again';
     }
-    if (empty($_POST['sch_in_id'])) {
-        $missingFields[] = 'please refresh the page and try again';
-    }
     if (empty($_POST['ramp_defect'])) {
         $missingFields[] = 'ramp defect';
     }
@@ -28,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Assign the POST variables to local variables
     $out_id = $_POST['sch_out_id'];
-    $in_id = $_POST['sch_in_id'];
 
 
     // Prepare the SQL query
@@ -62,50 +58,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif ($schedule_status_out == '7') {
         $bunk_status = '7';
     }
-    // Prepare and execute the update query for sch_veh_in
-    $sql_update_in = "UPDATE sch_veh_in 
-                      SET ramp_defect = ?, 
-                          ramp_remark = ? 
-                      WHERE id = ? AND depot_id = ? AND division_id = ?";
-
-    if ($stmt_in = $db->prepare($sql_update_in)) {
-        $stmt_in->bind_param('ssiii', $ramp_defect, $ramp_remark, $in_id, $depot_id, $division_id);
-
-        if ($stmt_in->execute()) {
-            // Prepare and execute the update query for sch_veh_out
-            if ($schedule_status_out == '3') {
-                $schedule_status = ($ramp_defect == '1') ? 0 : 4;
-            } elseif ($schedule_status_out == '7') {
-                $schedule_status = ($ramp_defect == '1') ? 9 : 8;
-            }
-            $sql_update_out = "UPDATE sch_veh_out 
-                               SET schedule_status = ? 
+    // Prepare and execute the update query for sch_veh_out
+    if ($schedule_status_out == '3') {
+        $schedule_status = ($ramp_defect == '1') ? 0 : 4;
+    } elseif ($schedule_status_out == '7') {
+        $schedule_status = ($ramp_defect == '1') ? 9 : 8;
+    }
+    $sql_update_out = "UPDATE sch_veh_out 
+                               SET schedule_status = ? , ramp_defect = ?, ramp_remark = ?
                                WHERE id = ? and schedule_status=? and depot_id=? and division_id=?";
 
-            if ($stmt_out = $db->prepare($sql_update_out)) {
-                $stmt_out->bind_param('iiiii', $schedule_status, $out_id, $bunk_status, $depot_id, $division_id);
+    if ($stmt_out = $db->prepare($sql_update_out)) {
+        $stmt_out->bind_param('issiiii', $schedule_status, $ramp_defect, $ramp_remark, $out_id, $bunk_status, $depot_id, $division_id);
 
-                if ($stmt_out->execute()) {
-                    echo json_encode(['status' => 'success']);
-                } else {
-                    echo json_encode(['status' => 'error', 'message' => 'Route data already updated please refresh the page']);
-                }
-
-                $stmt_out->close();
-            } else {
-                echo json_encode(['status' => 'error', 'message' => 'Failed to prepare the sch_veh_out statement.']);
-            }
+        if ($stmt_out->execute()) {
+            echo json_encode(['status' => 'success']);
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Failed to update the sch_veh_in record.']);
+            echo json_encode(['status' => 'error', 'message' => 'Route data already updated please refresh the page']);
         }
 
-        $stmt_in->close();
+        $stmt_out->close();
     } else {
-        echo json_encode(['status' => 'error', 'message' => 'Failed to prepare the sch_veh_in statement.']);
+        echo json_encode(['status' => 'error', 'message' => 'Failed to prepare the sch_veh_out statement.']);
     }
+
+
     $db->close();
 } else {
     header('Location: ../pages/login.php');
     exit;
 }
-?>

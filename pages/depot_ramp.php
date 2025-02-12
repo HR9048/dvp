@@ -17,41 +17,23 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             <thead>
                 <tr>
                     <th class="d-none">sch out ID</th>
-                    <th class="d-none">sch in ID</th>
-                    <th class="d-none">defect ID</th>
                     <th>Sch No</th>
                     <th>Vehicle No</th>
                     <th>Driver Token</th>
                     <th>Conductor Token</th>
                     <th>Arrival Time</th>
-                    <th>Driver Defect noticed</th>
                     <th>Action</th>
-                    <th class="d-none">remark</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
-                $sql = "SELECT 
-                    svi.id AS sch_in_id,
-                    svi.*,
-                    svo.*,
-                    dd.defect_name
-                    FROM 
-                    sch_veh_in svi
-                    JOIN 
-                    sch_veh_out svo
-                    ON 
-                    svo.id = svi.sch_out_id
-                    LEFT JOIN 
-                    driver_defect dd
-                    ON 
-                    svi.driver_defect = dd.id
+                $sql = "SELECT * FROM sch_veh_out        
                     WHERE 
-                    svo.division_id = '$division_id'
-                    AND svo.depot_id = '$depot_id' 
-                    AND svo.schedule_status in ('3','7')
+                    division_id = '$division_id'
+                    AND depot_id = '$depot_id' 
+                    AND schedule_status in ('3','7')
                     ORDER BY 
-                    svo.arr_time ASC;";
+                    arr_time ASC;";
                 $result = $db->query($sql);
 
                 if ($result->num_rows > 0) {
@@ -64,16 +46,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         $conductor_token = !empty($row["conductor_token_no"]) ? $row["conductor_token_no"] : "Single Crew";
 
                         echo "<tr>
-                                    <td class='d-none'>" . $row["sch_out_id"] . "</td>
-                                    <td class='d-none'>" . $row["sch_in_id"] . "</td>
-                                    <td class='d-none'>" . $row["driver_defect"] . "</td>
+                                    <td class='d-none'>" . $row["id"] . "</td>
                                     <td>" . $row["sch_no"] . "</td>
                                     <td>" . $row["vehicle_no"] . "</td>
                                     <td>" . $driver_token . "</td>
                                     <td>" . $conductor_token . "</td>
                                     <td>" . date('H:i', strtotime($row["arr_time"])) . "</td>
-                                    <td>" . $row["defect_name"] . "</td>
-                                    <td class='d-none'>" . $row["driver_remark"] . "</td>
                                     <td>";
 
                         // Check the schedule_status and display the corresponding button
@@ -152,27 +130,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                             </div>
                             <div class="col">
                                 <div class="form-group">
-                                    <label for="defectname">Driver Defect Noticed</label>
-                                    <input type="text" class="form-control" id="defectname" name="defectname" readonly>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" class="form-control" id="driverDefect" name="driverDefect" readonly>
-                        <div class="row">
-                            <div class="col" id="remarkContainer" style="display: none;">
-                                <div class="form-group">
-                                    <label for="remark">Remark</label>
-                                    <input type="text" class="form-control" id="remark" name="remark" readonly>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
                                     <label for="ramp_defect">Ramp Defect Noticed</label>
                                     <select name="ramp_defect" class="form-control" id="ramp_defect"></select>
                                 </div>
                             </div>
+                        </div>
+                        <div class="row">
+                            
                             <div class="col">
                                 <div class="col" id="remarkContainer1" style="display: none;">
                                     <div class="form-group">
@@ -196,15 +160,11 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             // Get the row data
             var row = $(button).closest('tr');
             var id = row.find('td:eq(0)').text();
-            var scheduleNo = row.find('td:eq(3)').text();
-            var vehicleNo = row.find('td:eq(4)').text();
-            var driverToken = row.find('td:eq(5)').text();
-            var conductorToken = row.find('td:eq(6)').text();
-            var arrivalTime = row.find('td:eq(7)').text();
-            var defectname = row.find('td:eq(8)').text();
-            var defecttype = row.find('td:eq(2)').text();
-            var remark = row.find('td:eq(9)').text();
-            var sch_in_id = row.find('td:eq(1)').text();
+            var scheduleNo = row.find('td:eq(1)').text();
+            var vehicleNo = row.find('td:eq(2)').text();
+            var driverToken = row.find('td:eq(3)').text();
+            var conductorToken = row.find('td:eq(4)').text();
+            var arrivalTime = row.find('td:eq(5)').text();
 
             // Set the modal input values
             $('#sch_out_id').val(id);
@@ -213,19 +173,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             $('#driverToken').val(driverToken);
             $('#conductorToken').val(conductorToken);
             $('#arrivalTime').val(arrivalTime);
-            $('#defectname').val(defectname);
-            $('#driverDefect').val(defecttype);
-            $('#remark').val(remark);
-            $('#sch_in_id').val(sch_in_id);
 
-            // Show the remark container if defect type is not 1
-            if (defecttype != '1') {
-                $('#remarkContainer').show();
-                $('#remark').prop('required', true);
-            } else {
-                $('#remarkContainer').hide();
-                $('#remark').prop('required', false);
-            }
+            
             function rampdefecttype() {
                 $.ajax({
                     url: '../includes/data_fetch.php',
@@ -255,17 +204,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             $('#dataModal').modal('show');
         }
 
-        // Ensure remark container is hidden on modal open
-        $('#dataModal').on('shown.bs.modal', function () {
-            var defecttype = $('#driverDefect').val();
-            if (defecttype != '1') {
-                $('#remarkContainer').show();
-                $('#remark').prop('required', true);
-            } else {
-                $('#remarkContainer').hide();
-                $('#remark').prop('required', false);
-            }
-        });
         // Handle the change event for ramp defect select field
         $('#ramp_defect').on('change', function () {
             var selectedValue = $(this).val();
@@ -334,10 +272,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 // Check if ID is present
                 if ($('#sch_out_id').val().trim() === '') {
                     alert('something went wrong. Please refresh the page and try again.');
-                    isValid = false;
-                }
-                if ($('#sch_in_id').val().trim() === '') {
-                    alert('something went wrong2. Please refresh the page and try again.');
                     isValid = false;
                 }
                 if ($('#ramp_defect').val().trim() === '') {

@@ -75,7 +75,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         $depot2 = $row['depot_id'];
 
         // Fetch Driver, Conductor, DCC from API
-        $apiUrl = "http://localhost/data.php?division=$division1&depot=$depot1";
+        $apiUrl = "http://localhost:8880/dvp/includes/data.php?division=$division1&depot=$depot1";
         $apiResponse = file_get_contents($apiUrl);
         $apiData = json_decode($apiResponse, true);
 

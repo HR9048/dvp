@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $depot = $_SESSION['KMPL_DEPOT'];
 
     // Fetch data from the first API based on division and depot
-    $url = 'http://192.168.1.32:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+    $url = 'http://localhost:8880/dvp/includes/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
     $response = file_get_contents($url);
     if ($response === FALSE) {
         die('Error occurred while fetching data from LMS API');
@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // If the data is not found in the first API, call the second API
-    $urlPrivate = 'http://192.168.1.32/transfer/dvp/database/private_emp_api.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+    $urlPrivate = 'http://localhost:8880/dvp/database/private_emp_api.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
     $responsePrivate = file_get_contents($urlPrivate);
     if ($responsePrivate === FALSE) {
         die('Error occurred while fetching data from the private API');
@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // If the data is not found in the first two APIs, call the third API
-    $urlDeputation = 'http://192.168.1.32/transfer/dvp/database/deputation_crew_api1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+    $urlDeputation = 'http://localhost:8880/dvp/database/deputation_crew_api1.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
     $responseDeputation = file_get_contents($urlDeputation);
     if ($responseDeputation === FALSE) {
         die('Error occurred while fetching data from the deputation crew API');

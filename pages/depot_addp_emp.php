@@ -75,7 +75,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
             foreach ($divisionsDepots as $location) {
                 $division = $location['kmpl_division'];
                 $depot = $location['kmpl_depot'];
-                $url = 'http://localhost/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+                $url = 'http://localhost:8880/dvp/includes/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
                 $curlHandle = curl_init($url);
                 curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, true);

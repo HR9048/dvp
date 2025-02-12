@@ -33,7 +33,11 @@ confirm_logged_in();
   <link
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 
+  <!-- Select2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
   <!-- Bootstrap core CSS -->
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -196,6 +200,7 @@ confirm_logged_in();
                           <li><a class="dropdown-item" href="main_kmpl.php">Corporation KMPL</a></li>
                           <li><a class="dropdown-item" href="main_divisionwise_kmpl.php">Division wise KMPL</a></li>
                           <li><a class="dropdown-item" href="main_depotwise_kmpl.php">Depot wise KMPL</a></li>
+                          <li><a class="dropdown-item" href="co_daily_vehicle_kmpl.php">Daily Vehicle Wise KMPL</a></li>
                         </ul>
                       </div>
                     </li>
@@ -231,9 +236,12 @@ confirm_logged_in();
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="main_schedule_info.php">View Schedule Master</a></li>
-                          <li><a class="dropdown-item" href="main_schedule_depotwise_view.php">View Schedules depotwise fixation report</a></li>
-                          <li><a class="dropdown-item" href="main_schedule_depotwise_view_detail.php">View Schedules depotwise alloted report</a></li>
-                          <li><a class="dropdown-item" href="central_office_schedule_monitor.php">Schedule Monitor</a></li>
+                          <li><a class="dropdown-item" href="main_schedule_depotwise_view.php">View Schedules depotwise
+                              fixation report</a></li>
+                          <li><a class="dropdown-item" href="main_schedule_depotwise_view_detail.php">View Schedules
+                              depotwise alloted report</a></li>
+                          <li><a class="dropdown-item" href="central_office_schedule_monitor.php">Schedule Monitor</a>
+                          </li>
                         </ul>
                       </div>
                     </li>
@@ -245,9 +253,13 @@ confirm_logged_in();
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="report.php">Off-Road Report</a></li>
-                          <li><a class="dropdown-item" href="main_schedule_report_dailywise.php">Daily Schedule Report</a></li>
-                          <li><a class="dropdown-item" href="central_office_schedule_report_month.php">Monthly Schedule Report</a></li>
-                          <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a></li>
+                          <li><a class="dropdown-item" href="main_schedule_report_dailywise.php">Daily Schedule Report</a>
+                          </li>
+                          <li><a class="dropdown-item" href="central_office_schedule_report_month.php">Monthly Schedule
+                              Report</a></li>
+                          <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a>
+                          </li>
+                          <li><a class="dropdown-item" href="co_vehicle_kmpl.php">kmpl report month</a></li>
                         </ul>
                       </div>
                     </li>

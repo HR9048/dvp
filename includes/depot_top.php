@@ -375,6 +375,7 @@ function getBaseUrl()
 
                             <li><a class="dropdown-item" href="depot_offroad_fromto.php">Off-Road From to To date</a></li>
                             <li><a class="dropdown-item" href="depot_report.php">Off-Road One day report</a></li>
+                            <li><a class="dropdown-item" href="depot_kmpl_report.php">KMPL Report</a></li>
                           <?php } ?>
                           <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
                           <li><a class="dropdown-item" href="depot_crew_report_m.php">Route Monthly Crew report</a></li>

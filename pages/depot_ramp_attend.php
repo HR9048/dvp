@@ -1,6 +1,9 @@
 <?php
 include '../includes/connection.php';
 include '../includes/depot_top.php';
+error_reporting(0);
+ini_set('display_errors', 0);
+
 
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
@@ -11,7 +14,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
-
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
         $sch_out_id = $_POST['sch_out_id'];
         // Prepare the SQL query
@@ -42,7 +44,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         // Run your SQL query to update the status
         $sql = "UPDATE sch_veh_out SET schedule_status = ? WHERE id = ?";
         $stmt = $db->prepare($sql);
-        $stmt->bind_param("ii",$schedule_status_value, $sch_out_id);
+        $stmt->bind_param("ii", $schedule_status_value, $sch_out_id);
         if ($stmt->execute()) {
             // Redirect or reload the page after successful update
             echo "<script>
@@ -55,7 +57,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         }
     }
 
-    ?>
+?>
     <style>
         /* Target only the off-road details modal */
         #myModal4 .modal-dialog {
@@ -95,44 +97,28 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             <thead>
                 <tr>
                     <th class="d-none">sch out ID</th>
-                    <th class="d-none">sch in ID</th>
-                    <th class="d-none">defect ID</th>
                     <th>Sch No</th>
                     <th>Vehicle No</th>
                     <th>Driver Token</th>
                     <th>Conductor Token</th>
                     <th>Arrival Time</th>
-                    <th>Driver Defect noticed</th>
-                    <th>Driver Remark</th>
                     <th>Ramp Defect</th>
                     <th>ramp remark</th>
                     <th>Action</th>
                     <th>Off-road</th>
-                    <th class="d-none">remark</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
                 $sql = "SELECT 
-                svi.id AS sch_in_id,
-                svi.*,         
                 svo.*,
-                dd.defect_name AS driver_defect_name,
                 rd.defect_name AS ramp_defect_name
             FROM 
-                sch_veh_in svi
-            JOIN 
                 sch_veh_out svo
-            ON 
-                svo.id = svi.sch_out_id
-            LEFT JOIN 
-                driver_defect dd
-            ON 
-                svi.driver_defect = dd.id
             LEFT JOIN 
                 ramp_defect rd
             ON 
-                svi.ramp_defect = rd.id
+                svo.ramp_defect = rd.id
             WHERE 
                 svo.division_id = '$division_id'
             AND 
@@ -153,21 +139,16 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         $conductor_token = !empty($row["conductor_token_no"]) ? $row["conductor_token_no"] : "Single Crew";
 
                         echo "<tr>
-                                    <td class='d-none'>" . $row["sch_out_id"] . "</td>
-                                    <td class='d-none'>" . $row["sch_in_id"] . "</td>
-                                    <td class='d-none'>" . $row["driver_defect"] . "</td>
+                                    <td class='d-none'>" . $row["id"] . "</td>
                                     <td>" . $row["sch_no"] . "</td>
                                     <td>" . $row["vehicle_no"] . "</td>
                                     <td>" . $driver_token . "</td>
                                     <td>" . $conductor_token . "</td>
                                     <td>" . date('H:i', strtotime($row["arr_time"])) . "</td>
-                                    <td>" . $row["driver_defect_name"] . "</td>
-                                    <td>" . $row["driver_remark"] . "</td>
                                     <td>" . $row["ramp_defect_name"] . "</td>
                                     <td>" . $row["ramp_remark"] . "</td>
                                     <td><button class='btn btn-success' onclick='openModal(this)'>Attend</button></td>
-                                    <td><button class='btn btn-danger' data-sch-out-id='" . $row["sch_out_id"] . "' onclick='openForm(this)'>Off-road</button></td>
-
+                                    <td><button class='btn btn-danger' data-sch-out-id='" . $row["id"] . "' onclick='openForm(this)'>Off-road</button></td>
                                   </tr>";
                     }
                 } else {
@@ -225,21 +206,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                                 </div>
                             </div>
                         </div>
-
-                        <div class="row">
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="defectname">Driver Defect Noticed</label>
-                                    <input type="text" class="form-control" id="defectname" name="defectname" readonly>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group">
-                                    <label for="remark">Remark</label>
-                                    <input type="text" class="form-control" id="remark" name="remark" readonly>
-                                </div>
-                            </div>
-                        </div>
                         <div class="row">
                             <div class="col">
                                 <div class="form-group">
@@ -267,17 +233,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             // Get the row data
             var row = $(button).closest('tr');
             var id = row.find('td:eq(0)').text();
-            var scheduleNo = row.find('td:eq(3)').text();
-            var vehicleNo = row.find('td:eq(4)').text();
-            var driverToken = row.find('td:eq(5)').text();
-            var conductorToken = row.find('td:eq(6)').text();
-            var arrivalTime = row.find('td:eq(7)').text();
-            var defectname = row.find('td:eq(8)').text();
-            var defecttype = row.find('td:eq(2)').text();
-            var remark = row.find('td:eq(9)').text();
-            var sch_in_id = row.find('td:eq(1)').text();
-            var rampdefecttype = row.find('td:eq(10)').text();
-            var rampremark = row.find('td:eq(11)').text();
+            var scheduleNo = row.find('td:eq(1)').text();
+            var vehicleNo = row.find('td:eq(2)').text();
+            var driverToken = row.find('td:eq(3)').text();
+            var conductorToken = row.find('td:eq(4)').text();
+            var arrivalTime = row.find('td:eq(5)').text();
+            var rampdefecttype = row.find('td:eq(6)').text();
+            var rampremark = row.find('td:eq(7)').text();
             // Set the modal input values
             $('#sch_out_id').val(id);
             $('#scheduleNo').val(scheduleNo);
@@ -285,10 +247,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             $('#driverToken').val(driverToken);
             $('#conductorToken').val(conductorToken);
             $('#arrivalTime').val(arrivalTime);
-            $('#defectname').val(defectname);
-            $('#driverDefect').val(defecttype);
-            $('#remark').val(remark);
-            $('#sch_in_id').val(sch_in_id);
             $('#ramp_defect').val(rampdefecttype);
             $('#ramp_remark').val(rampremark);
             // Open the modal
@@ -296,7 +254,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         }
 
 
-        $('#attendButton').on('click', function () {
+        $('#attendButton').on('click', function() {
             var vehicleNo = $('#vehicleNo').val();
             var sch_out_id = $('#sch_out_id').val();
 
@@ -326,7 +284,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
 
 
-        $('.close').on('click', function (e) {
+        $('.close').on('click', function(e) {
             e.preventDefault();
             // other code...
             $('#dataModal').modal('hide');
@@ -448,7 +406,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         </div>
                     </div>
                     <script>
-                        document.getElementById('submitBtn').addEventListener('click', function () {
+                        document.getElementById('submitBtn').addEventListener('click', function() {
                             const submitBtn = document.getElementById('submitBtn');
                             submitBtn.disabled = true;
 
@@ -469,7 +427,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
 
     <script>
-
         function adjustOffRoadModalSize() {
             const modalDialog = document.querySelector("#myModal4 .modal-dialog");
             const table = document.querySelector("#myModal4 #busTable");
@@ -488,12 +445,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 }
             }
         }
-
     </script>
 
     <script>
-
-
         // Function to search for bus
         function searchBus() {
             var busNumber = $('#busSearch').val();
@@ -502,15 +456,17 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             $.ajax({
                 url: 'dvp_bus_search.php',
                 type: 'POST',
-                data: { busNumber: busNumber },
+                data: {
+                    busNumber: busNumber
+                },
                 dataType: 'json', // Specify the expected data type as JSON
-                success: function (response) {
+                success: function(response) {
                     // Populate form fields with fetched data
                     $('#bus_number').val(response.bus_number);
                     $('#make').val(response.make);
                     $('#emission_norms').val(response.emission_norms);
                 },
-                error: function (xhr, status, error) {
+                error: function(xhr, status, error) {
                     // Display error message
                     if (xhr.status === 403) {
                         alert(xhr.responseJSON.error);
@@ -522,7 +478,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         }
 
         // Function to handle Enter key press in search input field
-        $('#busSearch').keypress(function (event) {
+        $('#busSearch').keypress(function(event) {
             // Check if the Enter key was pressed
             if (event.which == 13) {
                 // Prevent default form submission behavior
@@ -537,29 +493,33 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             $.ajax({
                 url: '../includes/data_fetch.php',
                 type: 'GET',
-                data: { action: 'fetchOffroadLocation' },
-                success: function (response) {
+                data: {
+                    action: 'fetchOffroadLocation'
+                },
+                success: function(response) {
                     var Location = JSON.parse(response);
-                    $.each(Location, function (index, value) {
+                    $.each(Location, function(index, value) {
                         $('#offRoadLocation').append('<option value="' + value + '">' + value + '</option>');
                     });
                 }
             });
 
-            $('#offRoadLocation').change(function () {
+            $('#offRoadLocation').change(function() {
                 var Location = $(this).val();
                 $.ajax({
                     url: '../includes/data_fetch.php?action=fetchReason',
                     method: 'POST',
-                    data: { offRoadLocation: Location },
-                    success: function (data) {
+                    data: {
+                        offRoadLocation: Location
+                    },
+                    success: function(data) {
                         // Clear previous options
                         $('#partsRequired').empty();
                         // Append options with line breaks
                         $('#partsRequired').html(data.replace(/,/g, '<br>'));
                         // Clear previous remarks and generate new ones
                         $('#remarksContainer').empty();
-                        $('input[name="partsRequired[]"]').change(function () {
+                        $('input[name="partsRequired[]"]').change(function() {
                             generateRemarks();
                         });
                     }
@@ -571,7 +531,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         function generateRemarks() {
             var remarksContainer = $('#remarksContainer');
             remarksContainer.empty();
-            $('input[name="partsRequired[]"]:checked').each(function () {
+            $('input[name="partsRequired[]"]:checked').each(function() {
                 var remark = $(this).val();
                 remarksContainer.append('<textarea class="form-control remark" placeholder="Remark for ' + remark + '"></textarea><br>');
             });
@@ -579,7 +539,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
 
         // Call the function to fetch data on page load
-        $(document).ready(function () {
+        $(document).ready(function() {
             fetchOffroadLocation();
         });
 
@@ -587,7 +547,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         function openForm(button) {
             // Get the row data
             var row = $(button).closest('tr');
-            var vehicleNo = row.find('td:eq(4)').text(); // Adjust the index if necessary
+            var vehicleNo = row.find('td:eq(2)').text(); // Adjust the index if necessary
             var Schoutid = row.find('td:eq(0)').text(); // Adjust the index if necessary
 
             // Set the vehicle number in the search input field
@@ -627,7 +587,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
             // Collect Parts Required data
             var partsRequired = [];
-            $('input[name="partsRequired[]"]:checked').each(function () {
+            $('input[name="partsRequired[]"]:checked').each(function() {
                 partsRequired.push($(this).val());
             });
 
@@ -646,7 +606,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             // Collect remarks from textareas
             var remarks = [];
             var anyEmptyRemarks = false; // Flag to track if any remarks are empty
-            $('.remark').each(function () {
+            $('.remark').each(function() {
                 var remark = $(this).val().trim();
                 if (remark === "") {
                     anyEmptyRemarks = true; // Set flag if any remark is empty
@@ -699,7 +659,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             var columnWidth = "13%";
 
             var keys = ['sch_out_id1', 'busNumber', 'make', 'emissionNorms', 'offRoadFromDate', 'offRoadLocation', 'partsRequired', 'remarks'];
-            keys.forEach(function (key) {
+            keys.forEach(function(key) {
                 var input = document.createElement("input");
                 input.type = "text";
                 input.name = key + "[]"; // Use array notation for names
@@ -724,7 +684,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             removeBtn.type = "button";
             removeBtn.textContent = "Remove";
             removeBtn.style.width = "13%";
-            removeBtn.onclick = function () {
+            removeBtn.onclick = function() {
                 formContainer.removeChild(rowDiv);
             };
             removeBtn.style.margin = "0"; // Remove margin around the button
@@ -750,7 +710,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             document.getElementById("busTable").deleteRow(rowIndex);
         }
         // Function to handle form submission
-        $('#submitBtn').click(function (e) {
+        $('#submitBtn').click(function(e) {
             e.preventDefault();
 
             // Check if there are any rows in the form
@@ -761,9 +721,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
             // Collect all rows data
             var rowsData = [];
-            $('#busFormContainer > div').each(function () {
+            $('#busFormContainer > div').each(function() {
                 var rowData = {};
-                $(this).find('input').each(function () {
+                $(this).find('input').each(function() {
                     var name = $(this).attr('name');
                     var value = $(this).val();
                     if (name) {
@@ -774,18 +734,17 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 rowsData.push(rowData);
             });
 
-            // Log the collected data for debugging
-            console.log('Rows Data:', rowsData);
 
             // Send form data to the server
             $.ajax({
                 url: '../database/ramp_off_road_submit.php',
                 type: 'POST',
-                data: JSON.stringify({ rowsData: rowsData }), // Send as JSON string
+                data: JSON.stringify({
+                    rowsData: rowsData
+                }), // Send as JSON string
                 contentType: 'application/json', // Set the content type to JSON
-                success: function (response) {
+                success: function(response) {
                     // Since response is already an object, no need to parse it
-                    console.log('Server Response:', response);
 
                     if (response.status === 'success') {
                         alert(response.message);
@@ -795,7 +754,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         window.location.href = 'depot_ramp.php';
                     }
                 },
-                error: function (xhr, status, error) {
+                error: function(xhr, status, error) {
                     console.log('Error submitting data:', error); // Log AJAX error
                     alert('Error submitting data: ' + error);
                     window.location.href = 'depot.php';
@@ -818,15 +777,17 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             $.ajax({
                 url: 'dvp_bus_search.php',
                 type: 'POST',
-                data: { busNumber: busNumber },
+                data: {
+                    busNumber: busNumber
+                },
                 dataType: 'json', // Specify the expected data type as JSON
-                success: function (response) {
+                success: function(response) {
                     // Populate form fields with fetched data
                     $('#bus_number').val(response.bus_number);
                     $('#make').val(response.make);
                     $('#emission_norms').val(response.emission_norms);
                 },
-                error: function (xhr, status, error) {
+                error: function(xhr, status, error) {
                     // Display error message
                     if (xhr.status === 403) {
                         alert(xhr.responseJSON.error);
@@ -837,14 +798,14 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             });
         }
         // Handle Enter key press in search input field
-        $('#busSearch').keypress(function (event) {
+        $('#busSearch').keypress(function(event) {
             if (event.which == 13) {
                 event.preventDefault();
                 searchBus();
             }
         });
     </script>
-    <?php
+<?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
     exit;

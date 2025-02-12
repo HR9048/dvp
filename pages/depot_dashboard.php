@@ -166,7 +166,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                     </div>
                                     <div class="h6 mb-0 font-weight-bold text-gray-800">
                                         <?php
-                                        $apiUrl = 'http://192.168.1.32:50/data.php';
+                                        $apiUrl = 'http://localhost:8880/dvp/includes/data.php';
 
                                         $apiUrl .= '?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
@@ -249,7 +249,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         <?php
 
                                         // Append division and depot as query parameters to the URL
-                                        $apiUrl = 'http://192.168.1.32:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+                                        $apiUrl = 'http://localhost:8880/dvp/includes/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
                                         // Initialize cURL session
                                         $ch = curl_init($apiUrl);
@@ -330,7 +330,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         <div class="col-auto">
                                             <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
                                                 <?php
-                                                $apiUrl = 'http://192.168.1.32:50/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
+                                                $apiUrl = 'http://localhost:8880/dvp/includes/data.php?division=' . urlencode($division) . '&depot=' . urlencode($depot);
 
                                                 // Initialize cURL session
                                                 $ch = curl_init($apiUrl);

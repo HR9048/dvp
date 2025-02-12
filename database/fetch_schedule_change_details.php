@@ -225,13 +225,13 @@ $db->close();
         let allConductors = [];
 
         // Fetch driver data from API1 (drivers)
-        $.get("http://117.203.105.106:50/data.php", { division: division, depot: depot }, function (response) {
+        $.get("http://117.203.105.106:8880/dvp/includes/data.php", { division: division, depot: depot }, function (response) {
             allDrivers = response.data || [];  // Store drivers in a variable, default to empty array if no data
             populateSelectOptions();
         });
 
         // Fetch conductor data from API2 (conductors)
-        $.get("http://117.203.105.106/transfer/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
+        $.get("http://117.203.105.106:8880/dvp/database/private_emp_api.php", { division: division, depot: depot }, function (response) {
             allConductors = response.data || [];  // Store conductors in a variable, default to empty array if no data
             conductorDataFetched = true;
             populateSelectOptions();

@@ -25,7 +25,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                                 </div>
                                 <div class="h6 mb-0 font-weight-bold text-gray-800">
                                     <?php
-                                    $apiUrl = 'http://localhost/data.php';
+                                    $apiUrl = 'http://localhost:8880/dvp/includes/data.php';
 
                                     // Initialize cURL session
                                     $ch = curl_init($apiUrl);
@@ -105,7 +105,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                                 </div>
                                 <div class="h6 mb-0 font-weight-bold text-gray-800">
                                     <?php
-                                    $apiUrl = 'http://localhost/data.php';
+                                    $apiUrl = 'http://localhost:8880/dvp/includes/data.php';
 
                                     // Initialize cURL session
                                     $ch = curl_init($apiUrl);
@@ -179,7 +179,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                                     <div class="col-auto">
                                         <div class="h6 mb-0 mr-3 font-weight-bold text-gray-800">
                                             <?php
-                                            $apiUrl = 'http://localhost/data.php';
+                                            $apiUrl = 'http://localhost:8880/dvp/includes/data.php';
 
                                             // Initialize cURL session
                                             $ch = curl_init($apiUrl);

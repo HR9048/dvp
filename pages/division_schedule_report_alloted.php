@@ -74,7 +74,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || 
 
         // Fetch Driver, Conductor, DCC from API
         //$apiUrl = "http://117.203.105.106:50/data.php?division=$division1&depot=$depot1";
-        $apiUrl = "http://192.168.1.32:50/data.php?division=$division1&depot=$depot1";
+        $apiUrl = "http://localhost:8880/dvp/includes/data.php?division=$division1&depot=$depot1";
 
         $apiResponse = file_get_contents($apiUrl);
         $apiData = json_decode($apiResponse, true);

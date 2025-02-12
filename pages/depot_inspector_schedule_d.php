@@ -1350,7 +1350,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
-                                    xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
+                                    xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true);
                                     //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
@@ -1448,7 +1448,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
-                                    xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + division + '&depot=' + depot, true);
+                                    xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true);
                                     //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
@@ -1609,7 +1609,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             // First API call
                             var xhr1 = new XMLHttpRequest();
-                            xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
                             //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
@@ -1721,7 +1721,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             // First API call
                             var xhr1 = new XMLHttpRequest();
-                            xhr1.open('GET', '<?php echo getBaseUrl(); ?>/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
                             //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {

@@ -766,7 +766,7 @@ $depot = $_SESSION['KMPL_DEPOT'];
 
         function fetchDriverDetails(tokenNumber, nameElementId, pfElementId, tokenElementId) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'http://localhost/data.php?token=' + tokenNumber, true);
+            xhr.open('GET', 'http://localhost:8880/dvp/includes/data.php?token=' + tokenNumber, true);
             xhr.onload = function () {
                 if (xhr.status === 200) {
                     var response = JSON.parse(this.responseText);

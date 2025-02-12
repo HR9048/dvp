@@ -29,7 +29,11 @@ confirm_logged_in();
 
   <!-- Include Bootstrap JavaScript -->
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 
+  <!-- Select2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
   <link
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
@@ -159,54 +163,56 @@ confirm_logged_in();
                         style="color: black; font-size: 18px;">Home</a>
                     </h4>
                   </li>
-                  <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)' ) { ?>
+                  <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)') { ?>
                     <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
-                    <li class="nav-item">
-                      <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
-                          <b>Off-road</b>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="division_ORP.php">View/Update Off-road</a></li>
-                          <li><a class="dropdown-item" href="division_offroad_print.php">Print Off-road</a></li>
-                        </ul>
-                      </div>
-                    </li>
-                    <li class="nav-item">
-                      <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
-                          <b>DVP</b>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="division_dvp.php">View/Download DVP</a></li>
-                        </ul>
-                      </div>
-                    </li>
-                    <li class="nav-item">
-                      <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
-                          <b>KMPL</b>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="division_kmpl.php">Division KMPL</a></li>
-                          <li><a class="dropdown-item" href="division_depotwise_kmpl.php">Depot wise KMPL</a></li>
-                        </ul>
-                      </div>
-                    </li>
-                    <li class="nav-item">
-                      <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
-                          <b>Defect records</b>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="division_camera_defect.php">View camera/VLTS/PIS Defect</a></li>
-                        </ul>
-                      </div>
-                    </li>
+                      <li class="nav-item">
+                        <div class="dropdown">
+                          <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                            style="font-size: 15px;">
+                            <b>Off-road</b>
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="division_ORP.php">View/Update Off-road</a></li>
+                            <li><a class="dropdown-item" href="division_offroad_print.php">Print Off-road</a></li>
+                          </ul>
+                        </div>
+                      </li>
+                      <li class="nav-item">
+                        <div class="dropdown">
+                          <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                            style="font-size: 15px;">
+                            <b>DVP</b>
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="division_dvp.php">View/Download DVP</a></li>
+                          </ul>
+                        </div>
+                      </li>
+                      <li class="nav-item">
+                        <div class="dropdown">
+                          <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                            style="font-size: 15px;">
+                            <b>KMPL</b>
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="division_kmpl.php">Division KMPL</a></li>
+                            <li><a class="dropdown-item" href="division_depotwise_kmpl.php">Depot wise KMPL</a></li>
+                            <li><a class="dropdown-item" href="division_vehicle_kmpl.php">Depot Vehicle wise KMPL</a></li>
+                          </ul>
+                        </div>
+                      </li>
+                      <li class="nav-item">
+                        <div class="dropdown">
+                          <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                            style="font-size: 15px;">
+                            <b>Defect records</b>
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="division_camera_defect.php">View camera/VLTS/PIS Defect</a>
+                            </li>
+                          </ul>
+                        </div>
+                      </li>
                     <?php } ?>
                     <li class="nav-item">
                       <div class="dropdown">
@@ -217,26 +223,27 @@ confirm_logged_in();
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="division_buses.php">View Bus</a></li>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
-                          <li><a class="dropdown-item" href="division_bus_transfer.php">Buse Transfer</a></li>
-                          <li><a class="dropdown-item" href="division_bus_Scrap.php">Bus Scrap</a></li>
+                            <li><a class="dropdown-item" href="division_bus_transfer.php">Buse Transfer</a></li>
+                            <li><a class="dropdown-item" href="division_bus_Scrap.php">Bus Scrap</a></li>
                           <?php } ?>
                         </ul>
                       </div>
                     </li>
                     <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DTO') { ?>
 
-                    <li class="nav-item">
-                      <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
-                          <b>Schedule Master</b>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="division_schedule_info.php">View Schedule Master</a></li>
-                          <li><a class="dropdown-item" href="division_schedule_report_alloted.php">View Schedule Alloted Reports</a></li>
-                        </ul>
-                      </div>
-                    </li>
+                      <li class="nav-item">
+                        <div class="dropdown">
+                          <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                            style="font-size: 15px;">
+                            <b>Schedule Master</b>
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="division_schedule_info.php">View Schedule Master</a></li>
+                            <li><a class="dropdown-item" href="division_schedule_report_alloted.php">View Schedule Alloted
+                                Reports</a></li>
+                          </ul>
+                        </div>
+                      </li>
                     <?php } ?>
                     <li class="nav-item">
                       <div class="dropdown">
@@ -245,16 +252,19 @@ confirm_logged_in();
                           <b>Report</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
+                          <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
 
-                          <li><a class="dropdown-item" href="division_report.php">One day Off-Road Report</a></li>
-                          <li><a class="dropdown-item" href="division_offroad.php">From - To days Off-Road Report</a></li>
+                            <li><a class="dropdown-item" href="division_report.php">One day Off-Road Report</a></li>
+                            <li><a class="dropdown-item" href="division_offroad.php">From - To days Off-Road Report</a></li>
+                            <li><a class="dropdown-item" href="division_mkmpl_report.php">Monthly KMPL Report</a></li>
                           <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
-                          <li><a class="dropdown-item" href="division_schedule_report_day.php">Daily Schedule reports</a></li>
-                          <li><a class="dropdown-item" href="division_schedule_report_month.php">Monthly Schedule reports</a></li>
-                          <li><a class="dropdown-item" href="division_schedule_monitor.php">Schedule Monitor</a></li>
-                          <li><a class="dropdown-item" href="division_departure_report.php">Departure Report</a></li>
+                            <li><a class="dropdown-item" href="division_schedule_report_day.php">Daily Schedule reports</a>
+                            </li>
+                            <li><a class="dropdown-item" href="division_schedule_report_month.php">Monthly Schedule
+                                reports</a></li>
+                            <li><a class="dropdown-item" href="division_schedule_monitor.php">Schedule Monitor</a></li>
+                            <li><a class="dropdown-item" href="division_departure_report.php">Departure Report</a></li>
                           <?php } ?>
                         </ul>
                       </div>
@@ -304,26 +314,26 @@ confirm_logged_in();
             </div>
           </nav>
         </div>
-        </div>
-        <br><br><br><br><br>
-        <!-- End of Topbar -->
-        <script>
-          $(document).ready(function () {
-            // Close dropdown when clicking outside
-            $(document).click(function (e) {
-              var target = e.target;
-              if (!$(target).is('.dropdown-toggle') && !$(target).parents().is('.dropdown-menu')) {
-                $('.dropdown-menu').removeClass('show');
-              }
-            });
-
-            // Open dropdown when clicking dropdown toggle
-            $('.dropdown-toggle').click(function () {
-              var dropdownMenu = $(this).next('.dropdown-menu');
-              $('.dropdown-menu').not(dropdownMenu).removeClass('show');
-              dropdownMenu.toggleClass('show');
-            });
+      </div>
+      <br><br><br><br><br>
+      <!-- End of Topbar -->
+      <script>
+        $(document).ready(function () {
+          // Close dropdown when clicking outside
+          $(document).click(function (e) {
+            var target = e.target;
+            if (!$(target).is('.dropdown-toggle') && !$(target).parents().is('.dropdown-menu')) {
+              $('.dropdown-menu').removeClass('show');
+            }
           });
-        </script>
-        <!-- Begin Page Content -->
-        <div class="container-fluid"></div>
+
+          // Open dropdown when clicking dropdown toggle
+          $('.dropdown-toggle').click(function () {
+            var dropdownMenu = $(this).next('.dropdown-menu');
+            $('.dropdown-menu').not(dropdownMenu).removeClass('show');
+            dropdownMenu.toggleClass('show');
+          });
+        });
+      </script>
+      <!-- Begin Page Content -->
+      <div class="container-fluid"></div>

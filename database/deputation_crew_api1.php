@@ -18,8 +18,7 @@ if (isset($_GET['division']) && isset($_GET['depot'])) {
             WHERE `tr_date` = ? 
             AND `t_Division` = ? 
             AND `t_Depot` = ? 
-            AND deleted = '0' 
-            AND status = '2'";
+            AND deleted = '0'";
 
     // Prepare the statement
     if ($stmt = $db->prepare($sql)) {

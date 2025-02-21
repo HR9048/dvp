@@ -54,7 +54,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                     $depotQuery = "SELECT DISTINCT loc.depot , loc.depot_id as depotID
                                FROM dvp_data d 
                                INNER JOIN location loc ON d.depot = loc.depot_id 
-                               WHERE d.division = '$divisionId' ORDER BY loc.depot";
+                               WHERE d.division = '$divisionId' ORDER BY loc.depot_id";
                     $depotResult = mysqli_query($db, $depotQuery) or die(mysqli_error($db));
 
                     // Fetch the distinct depot names for the current division

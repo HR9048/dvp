@@ -7,8 +7,6 @@ $requestData = json_decode(file_get_contents('php://input'), true);
 
 if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekmpldata') {
     $data = $requestData['data'];
-    $division_id = $_SESSION['DIVISION_ID'];
-    $depot_id = $_SESSION['DEPOT_ID'];
     $reportDate = $requestData["date"] ?? null;
 
     if (empty($reportDate) || !preg_match("/^\d{4}-\d{2}-\d{2}$/", $reportDate)) {
@@ -34,14 +32,14 @@ if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekm
 
                 if ($rowExists) {
                     // Update existing record
-                    $updateQuery = "UPDATE kmpl_data SET total_km = ?, hsd = ?, kmpl = ? WHERE division = ? AND depot = ? AND date = ?";
-                    $stmt = $db->prepare($updateQuery);
-                    $stmt->bind_param("dddiis", $total_km, $total_hsd, $total_kmpl, $division_id, $depot_id, $reportDate);
+                    //$updateQuery = "UPDATE kmpl_data SET total_km = ?, hsd = ?, kmpl = ? WHERE division = ? AND depot = ? AND date = ?";
+                    //$stmt = $db->prepare($updateQuery);
+                    //$stmt->bind_param("dddiis", $total_km, $total_hsd, $total_kmpl, $division_id, $depot_id, $reportDate);
                 } else {
                     // Insert new record
-                    $insertQuery = "INSERT INTO kmpl_data (total_km, hsd, kmpl, division, depot, date) VALUES (?, ?, ?, ?, ?, ?)";
-                    $stmt = $db->prepare($insertQuery);
-                    $stmt->bind_param("dddiis", $total_km, $total_hsd, $total_kmpl, $division_id, $depot_id, $reportDate);
+                    //$insertQuery = "INSERT INTO kmpl_data (total_km, hsd, kmpl, division, depot, date) VALUES (?, ?, ?, ?, ?, ?)";
+                    //$stmt = $db->prepare($insertQuery);
+                    //$stmt->bind_param("dddiis", $total_km, $total_hsd, $total_kmpl, $division_id, $depot_id, $reportDate);
                 }
             } else {
                 // Normal row processing for vehicle_kmpl
@@ -54,24 +52,10 @@ if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekm
                 $hsd = $row['hsd'] ?? null;
                 $kmpl = ($hsd > 0) ? $km_operated / $hsd : 0;
                 $thump_status = $row['thump_status'] ?? null;
-                $driver_defect = $row['driver_defect'] ?? null;
                 $remarks = $row['remarks'] ?? null;
-
-                if (!empty($driver_defect)) {
-                    $checkDefectQuery = "SELECT COUNT(*) as count FROM driver_defect WHERE id = ?";
-                    $stmt = $db->prepare($checkDefectQuery);
-                    $stmt->bind_param("i", $driver_defect);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    $defectExists = $result->fetch_assoc()['count'] > 0;
-
-                    if (!$defectExists) {
-                        echo json_encode(["success" => false, "message" => "Invalid driver_defect_id: $driver_defect"]);
-                        exit;
-                    }
-                } else {
-                    $driver_defect = null;
-                }
+                $division_id = $row['division_id'];
+                $depot_id = $row['depot_id'];
+                
 
                 $checkQuery = "SELECT COUNT(*) as count FROM vehicle_kmpl WHERE bus_number = ? AND division_id = ? AND depot_id = ? AND date = ?";
                 $stmt = $db->prepare($checkQuery);
@@ -81,13 +65,13 @@ if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekm
                 $rowExists = $result->fetch_assoc()['count'] > 0;
 
                 if ($rowExists) {
-                    $updateQuery = "UPDATE vehicle_kmpl SET route_no = ?, driver_1_pf = ?, driver_2_pf = ?, logsheet_no = ?, km_operated = ?, hsd = ?, kmpl = ?, thumps_id = ?, driver_defect_id = ?, remarks = ? WHERE bus_number = ? AND division_id = ? AND depot_id = ? AND date = ?";
+                    $updateQuery = "UPDATE vehicle_kmpl SET route_no = ?, driver_1_pf = ?, driver_2_pf = ?, logsheet_no = ?, km_operated = ?, hsd = ?, kmpl = ?, thumps_id = ?,  remarks = ?, division_id = ?, depot_id = ? WHERE bus_number = ?  AND date = ?";
                     $stmt = $db->prepare($updateQuery);
-                    $stmt->bind_param("sssssssssssiis", $route_no, $driver_1_pf, $driver_2_pf, $logsheet_no, $km_operated, $hsd, $kmpl, $thump_status, $driver_defect, $remarks, $bus_number, $division_id, $depot_id, $reportDate);
+                    $stmt->bind_param("ssssssssssiis", $route_no, $driver_1_pf, $driver_2_pf, $logsheet_no, $km_operated, $hsd, $kmpl, $thump_status,  $remarks, $division_id, $depot_id, $bus_number, $reportDate);
                 } else {
-                    $insertQuery = "INSERT INTO vehicle_kmpl (bus_number, route_no, driver_1_pf, driver_2_pf, logsheet_no, km_operated, hsd, kmpl, thumps_id, driver_defect_id, remarks, division_id, depot_id, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $insertQuery = "INSERT INTO vehicle_kmpl (bus_number, route_no, driver_1_pf, driver_2_pf, logsheet_no, km_operated, hsd, kmpl, thumps_id, remarks, division_id, depot_id, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     $stmt = $db->prepare($insertQuery);
-                    $stmt->bind_param("sssssssssssiis", $bus_number, $route_no, $driver_1_pf, $driver_2_pf, $logsheet_no, $km_operated, $hsd, $kmpl, $thump_status, $driver_defect, $remarks, $division_id, $depot_id, $reportDate);
+                    $stmt->bind_param("ssssssssssiis", $bus_number, $route_no, $driver_1_pf, $driver_2_pf, $logsheet_no, $km_operated, $hsd, $kmpl, $thump_status, $remarks, $division_id, $depot_id, $reportDate);
                 }
             }
             if (!$stmt->execute()) {

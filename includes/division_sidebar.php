@@ -37,7 +37,8 @@ confirm_logged_in();
   <link
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <!-- Bootstrap core CSS -->
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -144,7 +145,7 @@ confirm_logged_in();
             </div>
             <div class="navcenter" style="text-align: center; flex: 1;">
               <h6 style="color: white; margin: 0;"><b>ಕಲ್ಯಾಣ ಕರ್ನಾಟಕ ರಸ್ತೆ ಸಾರಿಗೆ ನಿಗಮ</b></h6>
-              <p style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ | Daily Vehicle Position</p>
+              <p style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ</p>
             </div>
           </div>
           <nav class="navbar navbar-expand-md" style="background-color: #bfc9ca;">
@@ -245,6 +246,22 @@ confirm_logged_in();
                         </div>
                       </li>
                     <?php } ?>
+                    <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DTO') { ?>
+                      <li class="nav-item">
+                        <div class="dropdown">
+                          <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                            style="font-size: 15px;">
+                            <b>Uploads</b>
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                          <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)') { ?>
+                            <li><a class="dropdown-item" href="division_upload_statistics.php">Upload Operational Statistics</a></li>
+                            <?php } ?>
+                            <li><a class="dropdown-item" href="division_view_statistics.php">View Operational Statistics</a></li>
+                          </ul>
+                        </div>
+                      </li>
+                    <?php } ?>
                     <li class="nav-item">
                       <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -293,10 +310,10 @@ confirm_logged_in();
                         <b
                           class="mr-2 d-none d-lg-inline text-gray-600 small"><b><?php echo $_SESSION['FIRST_NAME'] . ' ' . $_SESSION['LAST_NAME']; ?></b></b>
                         <img class="img-profile rounded-circle profile-img" <?php if ($_SESSION['GENDER'] == 'Male') {
-                          echo 'src="../images/male.jpeg"';
-                        } else {
-                          echo 'src="../images/female2.jpeg"';
-                        } ?>>
+                                                                              echo 'src="../images/male.jpeg"';
+                                                                            } else {
+                                                                              echo 'src="../images/female2.jpeg"';
+                                                                            } ?>>
                       </button>
                       <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                         <li><button class="dropdown-item" onclick="on()"><i
@@ -318,9 +335,9 @@ confirm_logged_in();
       <br><br><br><br><br>
       <!-- End of Topbar -->
       <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
           // Close dropdown when clicking outside
-          $(document).click(function (e) {
+          $(document).click(function(e) {
             var target = e.target;
             if (!$(target).is('.dropdown-toggle') && !$(target).parents().is('.dropdown-menu')) {
               $('.dropdown-menu').removeClass('show');
@@ -328,7 +345,7 @@ confirm_logged_in();
           });
 
           // Open dropdown when clicking dropdown toggle
-          $('.dropdown-toggle').click(function () {
+          $('.dropdown-toggle').click(function() {
             var dropdownMenu = $(this).next('.dropdown-menu');
             $('.dropdown-menu').not(dropdownMenu).removeClass('show');
             dropdownMenu.toggleClass('show');

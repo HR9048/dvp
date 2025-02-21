@@ -175,7 +175,7 @@ function getBaseUrl()
             </div>
             <div class="navcenter" style="text-align: center; flex: 1;">
               <h6 style="color: white; margin: 0;"><b>ಕಲ್ಯಾಣ ಕರ್ನಾಟಕ ರಸ್ತೆ ಸಾರಿಗೆ ನಿಗಮ</b></h6>
-              <p style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ | Daily Vehicle Position</p>
+              <p style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ</p>
             </div>
           </div>
           <nav class="navbar navbar-expand-md" style="background-color: #bfc9ca;padding:0px 0px;margin: bottom 0px;">

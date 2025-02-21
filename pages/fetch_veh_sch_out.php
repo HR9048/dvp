@@ -13,7 +13,7 @@ header('Content-Type: application/json');
 
 try {
     // Fetch data from VEH_SCH_OUT table
-    $sql = "SELECT driver_1_pf, driver_2_pf, conductor_pf_no FROM sch_veh_out WHERE schedule_status in (1) AND division_id = $division_id and depot_id= $depot_id";
+    $sql = "SELECT driver_1_pf, driver_2_pf, conductor_pf_no FROM sch_veh_out WHERE schedule_status in ('1') AND division_id = $division_id and depot_id= $depot_id";
     $result = $db->query($sql);
 
     if (!$result) {

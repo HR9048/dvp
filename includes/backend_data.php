@@ -637,6 +637,104 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'operationalstatisticsupload') {
 
+    if (!isset($_SESSION['MEMBER_ID'], $_SESSION['TYPE'], $_SESSION['JOB_TITLE'])) {
+        echo json_encode(["status" => "error", "message" => "Session expired. Please log in again."]);
+        exit;
+    }
+
+    if ($_SESSION['TYPE'] !== 'DIVISION' || $_SESSION['JOB_TITLE'] !== 'ASO(Stat)') {
+        echo json_encode(["status" => "error", "message" => "Unauthorized access."]);
+        exit;
+    }
+
+    $division_id = $_SESSION['DIVISION_ID'];
+    $depot_id = $_POST['depot_id'];
+    $selected_date = $_POST['selected_date'];
+
+    if (!isset($_FILES['pdf_file'])) {
+        echo json_encode(["status" => "error", "message" => "No file uploaded."]);
+        exit;
+    }
+
+    $file = $_FILES['pdf_file'];
+    $file_name = $file['name'];
+    $file_tmp = $file['tmp_name'];
+    $file_size = $file['size'];
+    $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+    // Validate file type and size
+    if ($file_ext !== 'pdf') {
+        echo json_encode(["status" => "error", "message" => "Only PDF files are allowed!"]);
+        exit;
+    }
+    if ($file_size > 1048576) { // 1MB limit
+        echo json_encode(["status" => "error", "message" => "File size should be 1MB or less!"]);
+        exit;
+    }
+
+    // Define upload directory
+    $upload_dir = '../../uploads/';
+    if (!is_dir($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
+    }
+
+    // File name format: divisionID_depotID_selectedDate.pdf
+    $new_file_name = $division_id . "_" . $depot_id . "_" . $selected_date . ".pdf";
+    $file_path = $upload_dir . $new_file_name;
+
+    // Move the uploaded file
+    if (move_uploaded_file($file_tmp, $file_path)) {
+        // Check if record already exists for this depot_id and date
+        $check_query = "SELECT id FROM operational_statistics WHERE depot_id = '$depot_id' AND date = '$selected_date'";
+        $check_result = mysqli_query($db, $check_query);
+
+        if (mysqli_num_rows($check_result) > 0) {
+            // If record exists, update the file_name
+            $update_query = "UPDATE operational_statistics SET file_name = '$new_file_name' 
+                             WHERE depot_id = '$depot_id' AND date = '$selected_date'";
+            if (mysqli_query($db, $update_query)) {
+                echo json_encode(["status" => "success", "message" => "File updated successfully!"]);
+            } else {
+                echo json_encode(["status" => "error", "message" => "Database update error: " . mysqli_error($db)]);
+            }
+        } else {
+            // If no existing record, insert a new one
+            $insert_query = "INSERT INTO operational_statistics (division_id, depot_id, date, file_name) 
+                             VALUES ('$division_id', '$depot_id', '$selected_date', '$new_file_name')";
+            if (mysqli_query($db, $insert_query)) {
+                echo json_encode(["status" => "success", "message" => "File uploaded successfully!"]);
+            } else {
+                echo json_encode(["status" => "error", "message" => "Database insert error: " . mysqli_error($db)]);
+            }
+        }
+    } else {
+        echo json_encode(["status" => "error", "message" => "Failed to upload file!"]);
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] == 'fetchLatestFile') {
+
+    $division_id = mysqli_real_escape_string($db, $_POST['division']);
+    $depot_id = mysqli_real_escape_string($db, $_POST['depot']);
+
+    $query = "SELECT file_name, date FROM operational_statistics 
+              WHERE division_id = '$division_id' AND depot_id = '$depot_id' 
+              ORDER BY date DESC LIMIT 1";
+    
+    $result = mysqli_query($db, $query);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        $file_path = "../../uploads/" . $row['file_name'];
+
+        if (file_exists($file_path)) {
+            echo json_encode(["file" => $row['file_name'], "date" => $row['date']]);
+        } else {
+            echo json_encode(["file" => "file_not_found"]);
+        }
+    } else {
+        echo json_encode(["file" => "no_file"]);
+    }
+}
 
 ?>

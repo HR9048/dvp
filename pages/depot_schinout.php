@@ -263,6 +263,7 @@ $(document).ready(function() {
         placeholder: 'ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
         allowClear: true
     });
+    
     $('#sch_no').on('change', function() {
         var schNo = $(this).val();
         if (schNo) {
@@ -487,8 +488,22 @@ $(document).ready(function() {
 
                     $('.select2').select2();
                     $(document).on('change', '#act_dep_time', function() {
-                        calculateTimeDifference();
-                    });
+    var actDepTime = document.getElementById('act_dep_time').value;
+    var currentTime = new Date().toTimeString().slice(0, 5); // Get current time in HH:MM format
+
+    if (actDepTime > currentTime) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Invalid Time!',
+            text: 'ನಿಗದಿತ ನಿರ್ಗಮನ ಸಮಯ ಪ್ರಸ್ತುತ ಸಮಯಕ್ಕಿಂತ ಹೆಚ್ಚು ಇರಬಾರದು!',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            document.getElementById('act_dep_time').value = '';
+        });
+    } else {
+        calculateTimeDifference();
+    }
+});
 
                     // updateCurrentTime();
                     // calculateTimeDifference();

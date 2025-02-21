@@ -383,7 +383,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
         ON skm.service_type_id = st.id
     WHERE 
         skm.division_id = '" . $_SESSION['DIVISION_ID'] . "' 
-        AND skm.depot_id = '" . $_SESSION['DEPOT_ID'] . "'";
+        AND skm.depot_id = '" . $_SESSION['DEPOT_ID'] . "'
+        and skm.status = 1";
 
             $result = $db->query($sql);
 

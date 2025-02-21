@@ -12,17 +12,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
     $depot = $_SESSION['DEPOT_ID'];
     $today = date('Y-m-d');
 
-    $query = "SELECT * FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$today'";
-    $result = mysqli_query($db, $query);
-
-    if (mysqli_num_rows($result) > 0) {
-        ?>
-        <script type="text/javascript">
-            alert("Restricted Page! Today's DVP has been Submitted. You are able to edit Off-road by Tomorrow.");
-            window.location = "../includes/depot_verify.php"; // Redirect to another page if necessary
-        </script>
-        <?php
-    }
     ?>
 
 

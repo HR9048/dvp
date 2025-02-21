@@ -3,7 +3,7 @@ include '../includes/connection.php';
 include '../includes/depot_top.php';
 
 // Check if session variables are set
-if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
+if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE']) || !isset($_SESSION['DIVISION_ID']) || !isset($_SESSION['DEPOT_ID'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
@@ -97,33 +97,40 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSI
         <input type="date" name="report_date" id="reportDate" required>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
+
     <script>
         function validateAndSubmit1() {
-    let reportDate = document.getElementById('reportDate').value;
-    if (!reportDate) {
-        Swal.fire('Error', 'Please select a date.', 'error');
-        return false;
-    }
+            let reportDate = document.getElementById('reportDate').value;
+            if (!reportDate) {
+                Swal.fire('Error', 'Please select a date.', 'error');
+                return false;
+            }
 
-    let selectedDate = new Date(reportDate);
-    let today = new Date("2025-02-06"); // Set today's date explicitly
-    let yesterday = new Date(today);
-    let fourDaysAgo = new Date(today);
+            let selectedDate = new Date(reportDate);
+            let today = new Date();
+            let yesterday = new Date();
+            let fourDaysAgo = new Date();
 
-    yesterday.setDate(today.getDate() - 1);
-    fourDaysAgo.setDate(today.getDate() - 4);
+            yesterday.setDate(today.getDate());
+            fourDaysAgo.setDate(today.getDate() - 4);
 
-    if (selectedDate > yesterday || selectedDate < fourDaysAgo) {
-        Swal.fire('Date Outside the allowed range', 'Date must be between ' +
-            fourDaysAgo.toLocaleDateString('en-GB') + ' and ' +
-            yesterday.toLocaleDateString('en-GB') + '.', 'error');
-        return false;
-    }
+            // Convert dates to 'YYYY-MM-DD' for accurate comparison
+            let selectedDateString = selectedDate.toISOString().split('T')[0];
+            let yesterdayString = yesterday.toISOString().split('T')[0];
+            let fourDaysAgoString = fourDaysAgo.toISOString().split('T')[0];
 
-    return true; // Allow form submission
-}
+            if (selectedDateString > yesterdayString || selectedDateString < fourDaysAgoString) {
+                Swal.fire('Date Outside Allowed Range',
+                    `Date must be between ${fourDaysAgo.toLocaleDateString('en-GB')} and ${yesterday.toLocaleDateString('en-GB')}.`,
+                    'error'
+                );
+                return false;
+            }
 
+            return true; // Allow form submission
+        }
     </script>
+
     <form method="post" onsubmit="event.preventDefault(); validateAndSubmit();">
         <div id="reportTable" style="margin-top: 20px;">
             <?php
@@ -177,10 +184,13 @@ AND vd.deleted = 0
                         <th>HSD</th>
                         <th>KMPL</th>
                         <th>Thump Status</th>
-                        <th>Driver Defect</th>
-                        <th>Remarks</th>
+                        <th>Logsheet Defects</th>
                         <th class="hidden">Make</th>
                         <th class="hidden">Norms</th>
+                        <th class="hidden">Division</th>
+                        <th class="hidden">Depot</th>
+                        <th>ID</th>
+                        <th>Action</th>
                       </tr>';
 
                     $sl_no = 1;
@@ -223,6 +233,7 @@ AND vd.deleted = 0
                             echo '<option value="CC">CC</option>';
                             echo '<option value="BD">BD</option>';
                             echo '<option value="Extra Operation">Extra Operation</option>';
+                            echo '<option value="Jatra Operation">Jatra Operation</option>';
                             echo '<option value="Road Test">Road Test</option>';
                             echo '<option value="Relief">Relief</option>';
                         } else {
@@ -298,32 +309,15 @@ AND vd.deleted = 0
                             echo 'N/A';
                         }
                         echo '</td>';
-                        echo '<td>';
-                        echo '<select style="width:100%;" name="driver_defect[]">';
-                        echo '<option value="">Select</option>';
 
-                        // Query to fetch defect names
-                        $defectQuery = "SELECT id, defect_name FROM driver_defect";
-                        $defectResult = $db->query($defectQuery);
-
-                        if ($defectResult && $defectResult->num_rows > 0) {
-                            while ($defectRow = $defectResult->fetch_assoc()) {
-                                $selected = ($existingData['driver_defect_id'] ?? '') == $defectRow['id'] ? 'selected' : ''; // Check existing data
-                                echo '<option value="' . htmlspecialchars($defectRow['id']) . '" ' . $selected . '>' .
-                                    htmlspecialchars($defectRow['defect_name']) .
-                                    '</option>';
-                            }
-                        } else {
-                            echo '<option value="">No Defects Available</option>';
-                        }
-
-                        echo '</select>';
-                        echo '</td>';
 
                         echo '<td><input style="width:100%;" type="text" name="remarks[]" value="' . ($existingData['remarks'] ?? '') . '"></td>';
                         echo '<td class="hidden">' . htmlspecialchars($make) . '</td>';
                         echo '<td class="hidden">' . htmlspecialchars($emission_norms) . '</td>';
-
+                        echo '<td class="hidden">' . $division_id . '</td>';
+                        echo '<td class="hidden">' . $depot_id . '</td>';
+                        echo '<td>' . ($existingData['id'] ?? '') . '</td>';
+                        echo '<td><button style="width:100%;" type="button" class="btn btn-success">Update</button></td>';
                         echo '</tr>';
                     }
                     echo '<tr id="total_row" style="font-weight: bold; background-color: #f2f2f2;">';
@@ -337,8 +331,9 @@ AND vd.deleted = 0
                     echo '<td id="total_hsd">0.00</td>';
                     echo '<td id="total_kmpl">0.00</td>';
                     echo '<td></td>';
-                    echo '<td><input type="numner" value="1" hidden></td>';
                     echo '<td></td>';
+                    echo '<td class="hidden"></td>';
+                    echo '<td class="hidden"></td>';
                     echo '</tr>';
                     echo '</table><br>';
                     echo '<div class="text-center my-3">';
@@ -382,7 +377,7 @@ AND vd.deleted = 0
                 const options = [...select.options];
                 options.forEach(option => {
                     // Do not disable the "Select" option or options with value "BD" or "CC"
-                    if (option.value !== "" && !["BD", "CC", "Extra Operation", "Road Test"].includes(option.value) && selectedValues.includes(option.value)) {
+                    if (option.value !== "" && !["BD", "CC", "Extra Operation", "Jatra Operation", "Road Test", "Relief", ].includes(option.value) && selectedValues.includes(option.value)) {
                         option.disabled = true; // Disable if already selected and not "BD" or "CC"
                     } else {
                         option.disabled = false; // Enable if not selected or is "BD" or "CC"
@@ -429,16 +424,16 @@ AND vd.deleted = 0
                 const logsheetNo = row.querySelector('input[name="logsheet_no[]"]').value;
                 const kmOperated = row.querySelector('input[name="km_operated[]"]').value;
                 const hsd = row.querySelector('input[name="hsd[]"]').value;
-                const driverDefect = row.querySelector('select[name="driver_defect[]"]').value;
                 const remarks = row.querySelector('input[name="remarks[]"]').value;
                 const thumpStatus = row.querySelector('select[name="thump_status[]"]')?.value;
-
+                const division_id = row.querySelector('td:nth-child(14)').innerText;
+                const depot_id = row.querySelector('td:nth-child(15)').innerText;
                 // Check if any required field is filled
-                if (routeNo || driverToken1 || logsheetNo || kmOperated || hsd || driverDefect) {
+                if (routeNo || driverToken1 || logsheetNo || kmOperated || hsd) {
                     hasData = true;
 
                     // Validate required fields
-                    if (!routeNo || !driverToken1 || !logsheetNo || !kmOperated || !hsd || !driverDefect) {
+                    if (!routeNo || !driverToken1 || !logsheetNo || !kmOperated || !hsd) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Incomplete Row',
@@ -448,8 +443,8 @@ AND vd.deleted = 0
                     }
 
                     // Validate Thump Status for Leyland BS-6 buses
-                    const make = row.querySelector('td:nth-child(13)').innerText;
-                    const emissionNorms = row.querySelector('td:nth-child(14)').innerText;
+                    const make = row.querySelector('td:nth-child(12)').innerText;
+                    const emissionNorms = row.querySelector('td:nth-child(13)').innerText;
                     if (make === 'Leyland' && emissionNorms === 'BS-6' && !thumpStatus) {
                         Swal.fire({
                             icon: 'error',
@@ -459,15 +454,6 @@ AND vd.deleted = 0
                         return;
                     }
 
-                    // Validate Remarks if Driver Defect is selected
-                    if (driverDefect !== "1" && remarks.trim() === "") {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Remarks Required',
-                            text: `Row ${i}: Remarks are required when Driver Defect is Not None.`
-                        });
-                        return;
-                    }
 
                     // Push valid row data
                     validRows.push({
@@ -480,8 +466,9 @@ AND vd.deleted = 0
                         hsd: hsd,
                         kmpl: row.querySelector('input[name="kmpl[]"]').value,
                         thump_status: thumpStatus || 0,
-                        driver_defect: driverDefect,
-                        remarks: remarks || null
+                        remarks: remarks || null,
+                        division_id: division_id,
+                        depot_id: depot_id
                     });
                 }
             }

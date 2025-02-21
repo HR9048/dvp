@@ -144,7 +144,7 @@ confirm_logged_in();
             </div>
             <div class="navcenter" style="text-align: center; flex: 1;">
               <h6 style="color: white; margin: 0;"><b>ಕಲ್ಯಾಣ ಕರ್ನಾಟಕ ರಸ್ತೆ ಸಾರಿಗೆ ನಿಗಮ</b></h6>
-              <p style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ | Daily Vehicle Position</p>
+              <p style="color: white; margin: 0;">ದೈನಂದಿನ ವಾಹನದ ಸ್ದಿತಿಗತಿ</p>
             </div>
           </div>
           <nav class="navbar navbar-expand-md" style="background-color: #bfc9ca;">
@@ -260,6 +260,7 @@ confirm_logged_in();
                           <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a>
                           </li>
                           <li><a class="dropdown-item" href="co_vehicle_kmpl.php">kmpl report month</a></li>
+                          <li><a class="dropdown-item" href="co_schedule_live.php">Schedule Live Track</a></li>
                         </ul>
                       </div>
                     </li>

@@ -4,7 +4,6 @@ require_once '../includes/connection.php'; // Include the db.php file to access 
 error_reporting(0);
 ini_set('display_errors', 0);
 
-confirm_logged_in();
 
 function fetchDivision()
 {
@@ -52,7 +51,7 @@ function fetchDepot()
         $stmt->execute();
         $result = $stmt->get_result();
 
-        echo "<option value='' disabled selected>Select Depot</option>";
+        echo "<option value='' disabled selected>Select</option>";
 
         // Check if there are any results
         if ($result->num_rows > 0) {

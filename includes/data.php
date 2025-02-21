@@ -4,14 +4,13 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header("Content-Type:application/json");
 
-// Database connection parameters
-$servername = "localhost";  // Replace with your database server name
-$username = "root"; // Replace with your database username
-$password = ""; // Replace with your database password
-$dbname = "leave2022";   // Replace with your database name
-
-// Create connection
-$db = new mysqli($servername, $username, $password, $dbname);
+$servername = "localhost"; 
+$username = "root"; 
+$password = "kkrtcsystem";
+$port = 33306; // MySQL custom port
+$database = "lms2021"; 
+// Create connection using the custom MySQL port
+$db = new mysqli($servername, $username, $password, $database, $port);
 
 // Check connection
 if ($db->connect_error) {
@@ -24,7 +23,7 @@ if (isset($_GET['division']) && isset($_GET['depot'])) {
     $depot = $_GET['depot'];
 
     // Prepare the SQL statement
-    $sql = "SELECT a.`EMP_PF_NUMBER`,a.`Division`,a.`Depot`,a.`EMP_NAME`,a.`EMP_DESGN_AT_APPOINTMENT`,b.`token_number` FROM `employee_details` a,`employment_details` b where a.`EMP_PF_NUMBER`=b.`pf_no` and a.`Division` = ? AND a.`Depot` = ?";
+    $sql = "SELECT * from employee where `Division` = ? AND `Depot` = ?";
     if ($stmt = $db->prepare($sql)) {
         $stmt->bind_param('ss', $division, $depot);
         $stmt->execute();

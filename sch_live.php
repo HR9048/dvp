@@ -186,8 +186,8 @@ include 'includes/connection.php';
                                 margin-top: 0px !important;
                             }
 
-                            h2 {
-                                font-size: 12px;
+                            h4 {
+                                font-size: 10px;
                                 /* Smaller font on mobile */
                             }
 
@@ -300,7 +300,22 @@ include 'includes/connection.php';
                         }
                     </style>
 
-                    <h2 class="text-center my-3">LIVE DEPARTURES REPORT ON <span id="current-time"></span> @ <span id="current-time1"></span></h2>
+                    <?php
+                    date_default_timezone_set('Asia/Kolkata');
+                    $current_date = date('Y-m-d');
+                    $current_time = date('d-m-Y');
+                    $current_time1 = date('H:i');
+                    ?>
+
+                    <div class="d-flex justify-content-between align-items-center my-3">
+                        <h4 class="mb-0" id="departure-heading">
+                            DEPARTURES AS ON <span id="current-time"><?= $current_time ?></span>
+                            <?php if ($current_date === date('Y-m-d')) : ?>
+                                @ <span id="current-time1"><?= $current_time1 ?></span>
+                            <?php endif; ?>
+                        </h4>
+                        <input style="font-size: 12px;" type="date" id="date-selector" class="form-control w-auto" max="<?= date('Y-m-d'); ?>" value="<?= date('Y-m-d'); ?>">
+                    </div>
 
                     <div class="table-container">
                         <table class="table table-bordered">
@@ -481,10 +496,47 @@ include 'includes/connection.php';
                         </div>
                     </div>
                     <script>
+                        document.getElementById("date-selector").addEventListener("change", function() {
+                            let selectedDate = this.value;
+                            let today = new Date().toISOString().split("T")[0];
+
+                            if (selectedDate > today) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Invalid Date Selection',
+                                    text: 'You cannot select a future date!',
+                                });
+                                this.value = today; // Reset to today's date
+                                return;
+                            }
+
+                            updateDepartureHeading(selectedDate);
+                            fetchLiveDepartures();
+                        });
+
+                        function updateDepartureHeading(selectedDate) {
+                            let today = new Date().toISOString().split("T")[0];
+                            let heading = document.getElementById("departure-heading");
+
+                            if (selectedDate === today) {
+                                heading.innerHTML = `DEPARTURES AS ON <span id="current-time"></span> @ <span id="current-time1"></span>`;
+                            } else {
+                                heading.innerHTML = `DEPARTURES AS ON <span id="current-time"></span>`;
+                            }
+                        }
+
+                        // Set initial heading on page load
+                        updateDepartureHeading(document.getElementById("date-selector").value);
+
                         function fetchLiveDepartures() {
+                            let selectedDate = $("#date-selector").val(); // Get selected date
+
                             $.ajax({
                                 url: "database/fetch_live_departures.php",
                                 method: "GET",
+                                data: {
+                                    date: selectedDate
+                                }, // Pass date as a parameter
                                 dataType: "json",
                                 success: function(response) {
                                     $("#current-time").text(response.time);
@@ -508,12 +560,14 @@ include 'includes/connection.php';
                                     response.data.forEach((row, index) => {
                                         if (lastDivision && lastDivision !== row.division) {
                                             tableContent += `<tr class="division-total">
-                        <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division')">${lastDivision} Total</td>
+                        <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division', '${selectedDate}')">${lastDivision} Total</td>
                         <td>${divisionData.total_schedules}</td>
                         <td>${divisionData.actual_schedules}</td>
-                        <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division')">${divisionData.difference}</td>
-                        <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division')">${divisionData.late_departures}</td>
+                        <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
+                        <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
                     </tr>`;
+
+                                            // Reset division data
                                             divisionData = {
                                                 total_schedules: 0,
                                                 actual_schedules: 0,
@@ -524,13 +578,14 @@ include 'includes/connection.php';
 
                                         tableContent += `<tr>
                     <td>${row.division}</td>
-                    <td class="clickable" onclick="opendepotschdetails('${row.depot}', 'Depot')">${row.depot}</td>
+                    <td class="clickable" onclick="opendepotschdetails('${row.depot}', 'Depot', '${selectedDate}')">${row.depot}</td>
                     <td>${row.total_schedules}</td>
                     <td>${row.actual_schedules}</td>
-                    <td class="clickable" onclick="openModal('${row.depot}', 'difference', 'Depot')">${row.difference}</td>
-                    <td class="clickable" onclick="openModal('${row.depot}', 'late', 'Depot')">${row.late_departures}</td>
+                    <td class="clickable" onclick="openModal('${row.depot}', 'difference', 'Depot', '${selectedDate}')">${row.difference}</td>
+                    <td class="clickable" onclick="openModal('${row.depot}', 'late', 'Depot', '${selectedDate}')">${row.late_departures}</td>
                 </tr>`;
 
+                                        // Update division and overall totals
                                         divisionData.total_schedules += parseInt(row.total_schedules);
                                         divisionData.actual_schedules += parseInt(row.actual_schedules);
                                         divisionData.difference += parseInt(row.difference);
@@ -544,41 +599,48 @@ include 'includes/connection.php';
                                         lastDivision = row.division;
                                     });
 
+                                    // Add last division total row
                                     tableContent += `<tr class="division-total">
-                <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division')">${lastDivision} Total</td>
+                <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division', '${selectedDate}')">${lastDivision} Total</td>
                 <td>${divisionData.total_schedules}</td>
                 <td>${divisionData.actual_schedules}</td>
-                <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division')">${divisionData.difference}</td>
-                <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division')">${divisionData.late_departures}</td>
+                <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
+                <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
             </tr>`;
 
+                                    // Update overall total row
                                     $("#overall-total-row").html(`<tr class="overall-total">
-                <td colspan="2">Corporation Total</td>
+                <td colspan="2" class="clickable" onclick="opendepotschdetails('Corporation', 'Corporation', '${selectedDate}')">Corporation Total</td>
                 <td>${overallTotal.total_schedules}</td>
                 <td>${overallTotal.actual_schedules}</td>
                 <td>${overallTotal.difference}</td>
                 <td>${overallTotal.late_departures}</td>
             </tr>`);
 
+                                    // Update report body
                                     $("#report-body").html(tableContent);
                                 }
                             });
                         }
 
-                        function openModal(id, type, location) {
+
+                        function openModal(id, type, location, selectedDate) {
                             let modalId = type === 'difference' ? '#difference-modal' : '#late-modal';
                             let modalBodyId = type === 'difference' ? '#difference-modal-body' : '#late-modal-body';
 
-                            $(modalId + " .modal-title").text(`${type === 'difference' ? "Difference" : "Late Departures"} Details for ${id}`);
+                            // Convert selectedDate from yyyy-mm-dd to dd-mm-yyyy
+                            let formattedDate = selectedDate.split('-').reverse().join('-');
+
+                            $(modalId + " .modal-title").text(`${type === 'difference' ? "Difference" : "Late Departures"} Details for ${id} on ${formattedDate}`);
                             $(modalBodyId).html("<tr><td colspan='8' class='text-center'>Loading...</td></tr>");
-                            
                             $.ajax({
                                 url: "database/fetch_schedule_details.php",
                                 method: "POST",
                                 data: {
                                     id: id,
                                     type: type,
-                                    location: location
+                                    location: location,
+                                    date: selectedDate // Pass the selected date
                                 },
                                 dataType: "json",
                                 success: function(data) {
@@ -694,7 +756,7 @@ include 'includes/connection.php';
 
                             // Update the modal header and reset counts
                             $("#modalDepotName").text(headerLabel);
-                            
+
                             $("#modalScheduleCount").text("Loading...");
                             $("#modalDepartureCount").text("Loading...");
 
@@ -735,6 +797,9 @@ include 'includes/connection.php';
 
                         setInterval(fetchLiveDepartures, 5000);
                         fetchLiveDepartures();
+                        document.getElementById("date-selector").addEventListener("change", function() {
+                            fetchLiveDepartures();
+                        });
                     </script>
 
 
@@ -800,7 +865,7 @@ include 'includes/connection.php';
                     </div>
 
 
-                    <!-- Accordion Item 4 -->
+                    <!-- Accordion Item 4 
                     <div class="card">
                         <div class="card-header" id="headingFour">
                             <h2 class="mb-0">
@@ -816,7 +881,6 @@ include 'includes/connection.php';
                         </div>
                     </div>
 
-                    <!-- Accordion Item 5 -->
                     <div class="card">
                         <div class="card-header" id="headingFive">
                             <h2 class="mb-0">
@@ -830,11 +894,10 @@ include 'includes/connection.php';
                                 This is the content of the third accordion item.
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
             </div>
-            <!-- End of Main Content -->
-            <!-- Include jQuery library -->
+
 
             <!-- Include Bootstrap JavaScript -->
             <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"

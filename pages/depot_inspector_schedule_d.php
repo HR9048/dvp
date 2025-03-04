@@ -221,6 +221,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             while ($row = $tokenCheckResult->fetch_assoc()) {
                 for ($j = 1; $j <= 6; $j++) {
                     $existingPFs[] = $row['driver_pf_' . $j];
+                }
+            
+                // Collect conductor PFs (1 to 3)
+                for ($j = 1; $j <= 3; $j++) {
                     $existingPFs[] = $row['conductor_pf_' . $j];
                 }
             }
@@ -262,19 +266,20 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
                 echo "<script>alert('$duplicateMessage');</script>";
             } else {
                 $sql = "SELECT SUM(sch_count) AS total_sch_count
-                FROM schedule_master 
-                WHERE driver_pf_1 = ? 
-                   OR driver_pf_2 = ? 
-                   OR driver_pf_3 = ? 
-                   OR driver_pf_4 = ? 
-                   OR driver_pf_5 = ? 
-                   OR driver_pf_6 = ? 
-                   OR conductor_pf_1 = ? 
-                   OR conductor_pf_2 = ? 
-                   OR conductor_pf_3 = ? 
-                   OR offreliverdriver_pf_1 = ? 
-                   OR offreliverdriver_pf_2 = ? 
-                   OR offreliverconductor_pf_1 = ?";
+        FROM schedule_master 
+        WHERE (driver_pf_1 = ? 
+           OR driver_pf_2 = ? 
+           OR driver_pf_3 = ? 
+           OR driver_pf_4 = ? 
+           OR driver_pf_5 = ? 
+           OR driver_pf_6 = ? 
+           OR conductor_pf_1 = ? 
+           OR conductor_pf_2 = ? 
+           OR conductor_pf_3 = ? 
+           OR offreliverdriver_pf_1 = ? 
+           OR offreliverdriver_pf_2 = ? 
+           OR offreliverconductor_pf_1 = ?)
+          AND id != $id";
     
         $stmt = $db->prepare($sql);
     
@@ -306,7 +311,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $
             if ($totalScheduleCount > 5) {
                 // Alert message if total schedule count exceeds limit
                 echo "<script>
-                    alert('The selected PF number {$pfNumber} has exceeded the maximum of 6 schedule counts (Current Total: {$totalScheduleCount}). Please select another PF's Token number realocate the crew to this schedule.');
+                    alert('The selected PF number {$pfNumber} has exceeded the maximum of 6 schedule counts (Current Total: {$totalScheduleCount}). Please select another PFs Token number realocate the crew to this schedule.');
                     window.history.back();
                 </script>";
                 exit; // Stop further execution
@@ -1351,7 +1356,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
                                     xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true);
-                                    //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    //xhr1.open('GET', 'http://192.168.1.16:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1449,7 +1454,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
                                     xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true);
-                                    //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    //xhr1.open('GET', 'http://192.168.1.16:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1610,7 +1615,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             // First API call
                             var xhr1 = new XMLHttpRequest();
                             xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+                            //xhr1.open('GET', 'http://192.168.1.16:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);
@@ -1722,7 +1727,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                             // First API call
                             var xhr1 = new XMLHttpRequest();
                             xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            //xhr1.open('GET', 'http://192.168.1.32:50/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true); //test URL
+                            //xhr1.open('GET', 'http://192.168.1.16:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);

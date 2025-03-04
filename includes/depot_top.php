@@ -274,7 +274,7 @@ function getBaseUrl()
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="depot_kmpl.php">Add Depot KMPL</a></li>
-                          <li><a class="dropdown-item" href="depot_route_kmpl.php">Add Route KMPL</a></li>
+                          <li><a class="dropdown-item" href="depot_route_kmpl.php">Add Vehicle KMPL</a></li>
                         </ul>
                       </div>
                     </li>

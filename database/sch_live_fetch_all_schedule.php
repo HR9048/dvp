@@ -68,7 +68,23 @@ if ($type === "Depot") {
     $stmt->bind_result($departure_count);
     $stmt->fetch();
     $stmt->close();
+} elseif ($type === "Corporation") {
+
+    // Fetch schedule count (SUM of sch_count)
+    $stmt = $db->prepare("SELECT COALESCE(SUM(sch_count), 0) FROM schedule_master WHERE status ='1'");
+    $stmt->execute();
+    $stmt->bind_result($schedule_count);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Fetch departure count (COUNT of actual departures from sch_veh_out)
+    $stmt = $db->prepare("SELECT COUNT(*) FROM schedule_master WHERE status ='1'");
+    $stmt->execute();
+    $stmt->bind_result($departure_count);
+    $stmt->fetch();
+    $stmt->close();
 }
+
 if ($type === "Depot") {
     // Get depot_id from location
     $depotQuery = "SELECT depot_id FROM location WHERE depot = ?";
@@ -84,7 +100,7 @@ if ($type === "Depot") {
     sm.sch_dep_time, 
     sm.sch_key_no, 
     sm.sch_abbr, 
-    st.name,
+    st.type,
     sm.division_id, 
     sm.depot_id,
     COALESCE(SUM(CASE WHEN svo.dep_time_diff > 30 THEN 1 ELSE 0 END), 0) AS late,
@@ -95,7 +111,7 @@ LEFT JOIN sch_veh_out svo
     ON sm.sch_key_no = svo.sch_no 
     AND sm.depot_id = svo.depot_id 
     AND svo.departed_date BETWEEN ? AND ?  -- Moved inside JOIN
-LEFT JOIN service_class st 
+LEFT JOIN schedule_type st 
     ON sm.service_type_id = st.id
 WHERE sm.depot_id = ? 
 AND sm.status = '1'
@@ -119,9 +135,10 @@ ORDER BY sm.sch_dep_time;";
     sm.sch_dep_time, 
     sm.sch_key_no, 
     sm.sch_abbr, 
-    st.name,
+    st.type,
     sm.division_id, 
     sm.depot_id,
+    l.depot AS depot_name,  -- Fetch depot name from location table
     COALESCE(SUM(CASE WHEN svo.dep_time_diff > 30 THEN 1 ELSE 0 END), 0) AS late,
     COALESCE(SUM(CASE WHEN svo.dep_time_diff <= 30 THEN 1 ELSE 0 END), 0) AS on_time,
     COALESCE(COUNT(svo.sch_no), 0) AS total_schedules
@@ -130,14 +147,46 @@ LEFT JOIN sch_veh_out svo
     ON sm.sch_key_no = svo.sch_no 
     AND sm.depot_id = svo.depot_id 
     AND svo.departed_date BETWEEN ? AND ?
-LEFT JOIN service_class st 
+LEFT JOIN schedule_type st 
     ON sm.service_type_id = st.id
+LEFT JOIN location l
+    ON sm.depot_id = l.depot_id
 WHERE sm.division_id = ? 
 AND sm.status = '1'
 GROUP BY sm.sch_key_no, sm.depot_id  -- Now grouping by sch_key_no AND depot_id
-ORDER BY sm.sch_dep_time;";
+ORDER BY l.depot_id,sm.sch_dep_time;";
     $stmt = $db->prepare($query);
     $stmt->bind_param("ssi", $last_30_days, $today, $division_id);
+    $stmt->execute();
+}elseif ($type === "Corporation") {
+
+    // Fetch schedules for all depots under this division
+    $query = "SELECT 
+    sm.sch_dep_time, 
+    sm.sch_key_no, 
+    sm.sch_abbr, 
+    st.type,
+    sm.division_id, 
+    sm.depot_id,
+    l.depot AS depot_name,  -- Fetch depot name from location table
+    COALESCE(SUM(CASE WHEN svo.dep_time_diff > 30 THEN 1 ELSE 0 END), 0) AS late,
+    COALESCE(SUM(CASE WHEN svo.dep_time_diff <= 30 THEN 1 ELSE 0 END), 0) AS on_time,
+    COALESCE(COUNT(svo.sch_no), 0) AS total_schedules
+FROM schedule_master sm
+LEFT JOIN sch_veh_out svo 
+    ON sm.sch_key_no = svo.sch_no 
+    AND sm.depot_id = svo.depot_id 
+    AND svo.departed_date BETWEEN ? AND ?
+LEFT JOIN schedule_type st 
+    ON sm.service_type_id = st.id
+LEFT JOIN location l
+    ON sm.depot_id = l.depot_id
+WHERE sm.status = '1'
+GROUP BY sm.sch_key_no, sm.depot_id  -- Now grouping by sch_key_no AND depot_id
+HAVING late > 7 
+ORDER BY l.depot_id,sm.sch_dep_time;";
+    $stmt = $db->prepare($query);
+    $stmt->bind_param("ss", $last_30_days, $today);
     $stmt->execute();
 }
 
@@ -145,12 +194,14 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
+    if ($type === "Depot") {
+
     $html .= "<table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
                 <tr>
                     <th rowspan='2'>Sl. No</th>
                     <th rowspan='2'>Sch Key No</th>
                     <th rowspan='2'>Sch Dep Time</th>
-                    <th rowspan='2'>discription</th>
+                    <th rowspan='2'>description</th>
                     <th rowspan='2'>Service Type</th>
                     <th colspan='2'>last 30 days</th>
                     <th rowspan='2' style='display:none'> division</th>
@@ -162,21 +213,25 @@ if ($result->num_rows > 0) {
                     </tr>";
     $serial_number = 1;
     while ($row = $result->fetch_assoc()) {
+        $lateColor = ($row['late'] > 5) ? "style='color: red; font-weight: bold;'" : ""; // Apply red color to 'late' count if > 5
+
         $html .= "<tr>
                     <td>{$serial_number}</td>
-                        <td onclick='fetchScheduleDetails(\"{$row['sch_key_no']}\", \"{$row['division_id']}\", \"{$row['depot_id']}\", \"{$row['sch_abbr']}\", \"{$row['name']}\", \"{$row['sch_dep_time']}\")'>
+                    <td onclick='fetchScheduleDetails(\"{$row['sch_key_no']}\", \"{$row['division_id']}\", \"{$row['depot_id']}\", \"{$row['sch_abbr']}\", \"{$row['type']}\", \"{$row['sch_dep_time']}\")'>
                         {$row['sch_key_no']}
                     </td>
                     <td>{$row['sch_dep_time']}</td>
                     <td>{$row['sch_abbr']}</td>
-                    <td>{$row['name']}</td>
-                    <td>{$row['late']}</td>
+                    <td>{$row['type']}</td>
+                    <td {$lateColor}>{$row['late']}</td>  <!-- Apply red color only if 'late' > 5 -->
                     <td>{$row['on_time']}</td>
                     <td style='display:none'>{$row['division_id']}</td>
                     <td style='display:none'>{$row['depot_id']}</td>
                 </tr>";
         $serial_number++;
     }
+
+
     $html .= "</table>";
 
     echo json_encode([
@@ -185,6 +240,55 @@ if ($result->num_rows > 0) {
         "schedule_count" => $schedule_count ?: 0,
         "departure_count" => $departure_count ?: 0
     ]);
+}elseif($type === "Division" || $type === "Corporation"){
+    $html .= "<table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
+    <tr>
+        <th rowspan='2'>Sl. No</th>
+        <th rowspan='2'>Depot</th>
+        <th rowspan='2'>Sch Key No</th>
+        <th rowspan='2'>Sch Dep Time</th>
+        <th rowspan='2'>description</th>
+        <th rowspan='2'>Service Type</th>
+        <th colspan='2'>last 30 days</th>
+        <th rowspan='2' style='display:none'> division</th>
+        <th rowspan='2' style='display:none'>depot</th>
+    </tr>
+    <tr>
+    <th>Late</th>
+        <th>On Time</th>
+        </tr>";
+$serial_number = 1;
+while ($row = $result->fetch_assoc()) {
+$lateColor = ($row['late'] > 5) ? "style='color: red; font-weight: bold;'" : ""; // Apply red color to 'late' count if > 5
+
+$html .= "<tr>
+        <td>{$serial_number}</td>
+        <td>{$row['depot_name']}</td>
+        <td onclick='fetchScheduleDetails(\"{$row['sch_key_no']}\", \"{$row['division_id']}\", \"{$row['depot_id']}\", \"{$row['sch_abbr']}\", \"{$row['type']}\", \"{$row['sch_dep_time']}\")'>
+            {$row['sch_key_no']}
+        </td>
+        <td>{$row['sch_dep_time']}</td>
+        <td style='max-width: 5%;'>{$row['sch_abbr']}</td>
+        <td>{$row['type']}</td>
+        <td {$lateColor}>{$row['late']}</td>  <!-- Apply red color only if 'late' > 5 -->
+        <td>{$row['on_time']}</td>
+        <td style='display:none'>{$row['division_id']}</td>
+        <td style='display:none'>{$row['depot_id']}</td>
+    </tr>";
+$serial_number++;
+}
+
+
+$html .= "</table>";
+
+echo json_encode([
+"status" => "success",
+"html" => $html,
+"schedule_count" => $schedule_count ?: 0,
+"departure_count" => $departure_count ?: 0
+]);
+
+}
 } else {
     echo json_encode(["status" => "error", "message" => "No records found"]);
 }

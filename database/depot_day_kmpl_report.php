@@ -27,7 +27,7 @@ if (isset($_POST['date'])) {
                     SUM(hsd) AS total_hsd, 
                     (SUM(km_operated) / NULLIF(SUM(hsd), 0)) AS kmpl
                  FROM vehicle_kmpl
-                 WHERE date = ?
+                 WHERE date = ? and deleted != '1'
                  GROUP BY division_id, depot_id";
 
     $stmtDaily = $db->prepare($sqlDaily);
@@ -43,7 +43,7 @@ if (isset($_POST['date'])) {
                         SUM(hsd) AS total_hsd, 
                         (SUM(km_operated) / NULLIF(SUM(hsd), 0)) AS kmpl
                      FROM vehicle_kmpl
-                     WHERE date BETWEEN ? AND ?
+                     WHERE deleted != '1' and date BETWEEN ? AND ?
                      GROUP BY division_id, depot_id";
 
     $startDate = "$year-$month-01";

@@ -1,14 +1,26 @@
 <?php
 include '../includes/connection.php';
 date_default_timezone_set('Asia/Kolkata'); // Set the timezone
-$current_time = date('H:i:s');
-$current_time1 = date('H:i');
-$current_date = date('Y-m-d');
-$current_date1 = date('d-m-Y');
+
+// Get the selected date from the AJAX request
+$selected_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
+$current_date = date('Y-m-d'); // Today's date
+$current_date1 = date('d-m-Y', strtotime($selected_date)); // Format for display
+
+// Determine the time condition based on the selected date
+if ($selected_date == $current_date) {
+    $current_time = date('H:i:s'); // Use current time for today's data
+    $current_time1 = date('H:i');
+} else {
+    $current_time = "23:59:59"; // Set to 11:59 PM for past dates
+    $current_time1 = "23:59";
+}
+
 // Run each query separately and fetch results
-$total_schedules = []; 
-$actual_schedules = []; 
-$late_departures = []; 
+$total_schedules = [];
+$actual_schedules = [];
+$late_departures = [];
+
 // Query 1: Total Schedules
 $query1 = "SELECT l.kmpl_division, l.depot, COUNT(sm.sch_key_no) AS total_schedules 
            FROM location l
@@ -37,7 +49,7 @@ FROM location l
 LEFT JOIN sch_veh_out svo 
     ON l.division_id = svo.division_id 
     AND l.depot_id = svo.depot_id 
-    AND DATE(svo.departed_date) = '$current_date'
+    AND DATE(svo.departed_date) = '$selected_date'
 LEFT JOIN schedule_master sm
     ON svo.sch_no = sm.sch_key_no
     AND svo.division_id = sm.division_id
@@ -47,8 +59,7 @@ WHERE
     AND l.depot != 'DIVISION'
     AND sm.sch_dep_time <= '$current_time'
 GROUP BY 
-    l.division_id, l.depot_id;
-";
+    l.division_id, l.depot_id;";
 $result2 = mysqli_query($db, $query2);
 if (!$result2) {
     die("Query 2 failed: " . mysqli_error($db));
@@ -63,7 +74,7 @@ $query3 = "SELECT l.kmpl_division, l.depot, COALESCE(COUNT(DISTINCT svo.sch_no),
            LEFT JOIN sch_veh_out svo 
            ON l.division_id = svo.division_id 
            AND l.depot_id = svo.depot_id 
-           AND DATE(svo.departed_date) = '$current_date' 
+           AND DATE(svo.departed_date) = '$selected_date' 
            AND svo.dep_time_diff > 30
            WHERE l.division_id NOT IN ('0', '10') 
            AND l.depot != 'DIVISION'
@@ -83,7 +94,7 @@ foreach ($total_schedules as $division => $depots) {
         $actual = isset($actual_schedules[$division][$depot]) ? $actual_schedules[$division][$depot] : 0;
         $late = isset($late_departures[$division][$depot]) ? $late_departures[$division][$depot] : 0;
         $difference = $total - $actual;
-        
+
         $report[] = [
             'division' => $division,
             'depot' => $depot,
@@ -95,6 +106,6 @@ foreach ($total_schedules as $division => $depots) {
     }
 }
 
-// Convert to JSON if needed for AJAX
+// Convert to JSON for AJAX response
 echo json_encode(['time' => $current_date1, 'time1' => $current_time1, 'data' => $report]);
 ?>

@@ -736,5 +736,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         echo json_encode(["file" => "no_file"]);
     }
 }
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['kmpl_delete_id']) && isset($_POST['action']) && $_POST['action'] == 'delete_kmpl') {
+    $id = $_POST['kmpl_delete_id'];
 
+    if (!is_numeric($id)) {
+        echo json_encode(["status" => "error", "message" => "Invalid ID provided"]);
+        exit;
+    }
+
+    $deleteQuery = "UPDATE vehicle_kmpl SET deleted = '1' WHERE id = '$id'";
+    $result = $db->query($deleteQuery);
+
+    if ($result) {
+        echo json_encode(["status" => "success", "message" => "KMPL details deleted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database update failed: " . $db->error]);
+    }
+}
 ?>

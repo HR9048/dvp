@@ -353,18 +353,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         $formattedDate = date('d/m/Y', strtotime($selectedDate));
         ?>
 
-        <script>
-            document.getElementById('downloadExcel').addEventListener('click', function () {
-                // Get container1 HTML content
-                var htmlContent = document.querySelector('.container').outerHTML;
-
-                // Convert HTML to workbook
-                var workbook = XLSX.utils.table_to_book(document.querySelector('.container'));
-
-                // Save workbook as Excel file with the PHP formatted date and "KMPL" appended to the file name
-                XLSX.writeFile(workbook, '<?php echo $formattedDate; ?>_KMPL.xlsx');
-            });
-
+        
 
             document.getElementById('downloadText').addEventListener('click', function () {
                 // Get today's date

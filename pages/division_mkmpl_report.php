@@ -219,8 +219,8 @@ if ($_SESSION['TYPE'] == 'DIVISION' && ($_SESSION['JOB_TITLE'] == 'DME') || ($_S
             }
 
             function callApis(kmplDivision, kmplDepot, reportDate) {
-                var apiUrl1 = `http://localhost:8880/dvp/includes/data.php?division=${kmplDivision}&depot=${kmplDepot}`;
-                var apiUrl2 = `http://localhost:8880/dvp/database/private_emp_api.php?division=${kmplDivision}&depot=${kmplDepot}`;
+                var apiUrl1 = `../includes/data.php?division=${kmplDivision}&depot=${kmplDepot}`;
+                var apiUrl2 = `../database/private_emp_api.php?division=${kmplDivision}&depot=${kmplDepot}`;
 
                 $.when(
                     $.get(apiUrl1),

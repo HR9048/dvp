@@ -5,9 +5,11 @@ date_default_timezone_set('Asia/Kolkata'); // Set the timezone
 $id = mysqli_real_escape_string($db, $_POST['id']); // Prevent SQL injection
 $type = mysqli_real_escape_string($db, $_POST['type']);
 $location = mysqli_real_escape_string($db, $_POST['location']);
+$today = mysqli_real_escape_string($db, $_POST['date']); // Get selected date
 
-$today = date('Y-m-d'); // Get today's date
-$curr_time = date('H:i:s');
+$today1 = date('Y-m-d'); // Get today's date
+$curr_time = ($today == $today1) ? date('H:i:s') : '23:59:59'; // Use current time if today, else 23:59:59
+
 
 $data = [];
 

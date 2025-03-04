@@ -111,7 +111,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSI
             let yesterday = new Date();
             let fourDaysAgo = new Date();
 
-            yesterday.setDate(today.getDate());
+            yesterday.setDate(today.getDate() - 1);
             fourDaysAgo.setDate(today.getDate() - 4);
 
             // Convert dates to 'YYYY-MM-DD' for accurate comparison
@@ -189,8 +189,6 @@ AND vd.deleted = 0
                         <th class="hidden">Norms</th>
                         <th class="hidden">Division</th>
                         <th class="hidden">Depot</th>
-                        <th>ID</th>
-                        <th>Action</th>
                       </tr>';
 
                     $sl_no = 1;
@@ -316,8 +314,6 @@ AND vd.deleted = 0
                         echo '<td class="hidden">' . htmlspecialchars($emission_norms) . '</td>';
                         echo '<td class="hidden">' . $division_id . '</td>';
                         echo '<td class="hidden">' . $depot_id . '</td>';
-                        echo '<td>' . ($existingData['id'] ?? '') . '</td>';
-                        echo '<td><button style="width:100%;" type="button" class="btn btn-success">Update</button></td>';
                         echo '</tr>';
                     }
                     echo '<tr id="total_row" style="font-weight: bold; background-color: #f2f2f2;">';

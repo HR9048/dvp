@@ -44,10 +44,10 @@ if ($row = $result->fetch_assoc()) {
 
 $stmt->close();
 // Calculate the start and end dates for the selected month
-$startDate = "$year-$month-01"; 
+$startDate = "$year-$month-01";
 $endDate = date("Y-m-t", strtotime($startDate));
 
-$whereClauses = "WHERE v.date BETWEEN '$startDate' AND '$endDate'";
+$whereClauses = "WHERE v.date BETWEEN '$startDate' AND '$endDate' and deleted !='1'";
 
 if ($depot_id) $whereClauses .= " AND v.depot_id = '$depot_id'";
 if ($division_id) $whereClauses .= " AND v.division_id = '$division_id'";
@@ -136,7 +136,7 @@ foreach ($data as &$entry) {
     // Update cumulative values
     $cumulative_km += $entry['km_operated'];
     $cumulative_hsd += $entry['hsd'];
-    
+
     // Calculate cumulative KMPL (prevent division by zero)
     $cumulative_kmpl = ($cumulative_hsd > 0) ? round($cumulative_km / $cumulative_hsd, 2) : 0;
 
@@ -165,4 +165,3 @@ echo json_encode([
     'html' => $tableHtml,
     'details' => $detailsData // Sending detailed data for all dates
 ]);
-?>

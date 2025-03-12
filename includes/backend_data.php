@@ -721,7 +721,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $query = "SELECT file_name, date FROM operational_statistics 
               WHERE division_id = '$division_id' AND depot_id = '$depot_id' 
               ORDER BY date DESC LIMIT 1";
-    
+
     $result = mysqli_query($db, $query);
 
     if ($row = mysqli_fetch_assoc($result)) {
@@ -753,4 +753,184 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['kmpl_delete_id']) && i
         echo json_encode(["status" => "error", "message" => "Database update failed: " . $db->error]);
     }
 }
-?>
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["action"]) && $_POST["action"] == "othercorporationfindvehicle") {
+    $bus_number = $_POST["bus_number"];
+    $report_date = $_POST["report_date"];
+    $division_id = $_SESSION["DIVISION_ID"]; // Adjust as needed
+    $depot_id = $_SESSION["DEPOT_ID"]; // Adjust as needed
+    if (!$bus_number || !$report_date) {
+        echo json_encode(["error" => "Missing parameters"]);
+        exit;
+    }
+    $query = "
+            SELECT br.bus_number FROM bus_registration br
+            WHERE br.division_name = '$division_id' AND br.depot_name = '$depot_id'
+            UNION 
+            SELECT vd.bus_number FROM vehicle_deputation vd
+            WHERE vd.t_division_id = '$division_id' 
+            AND vd.t_depot_id = '$depot_id' 
+            AND vd.tr_date = '$report_date' 
+            AND vd.status NOT IN (1) 
+            AND vd.deleted = 0
+        ";
+
+    $result = mysqli_query($db, $query);
+    $busExists = false;
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row["bus_number"] == $bus_number) {
+            $busExists = true;
+            break;
+        }
+    }
+
+    echo json_encode(["exists" => $busExists]);
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetch_vehicle_kmpl') {
+    $id = $_POST['id'] ?? '';
+    $type = $_POST['type'] ?? '';
+    $selectedDate = $_POST['date'] ?? '';
+
+    if (empty($id) || empty($type) || empty($selectedDate)) {
+        echo json_encode(['success' => false, 'message' => 'Missing parameters']);
+        exit;
+    }
+
+    // Adjust date (Selected Date - 1)
+    $adjustedDate = date('Y-m-d', strtotime($selectedDate));
+
+    $whereClause = "";
+
+    if ($type === 'Depot') {
+        $whereClause = "WHERE v.depot_id = '$id'";
+    } elseif ($type === 'Division') {
+        $whereClause = "WHERE v.division_id = '$id'";
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid type']);
+        exit;
+    }
+
+    $query = "SELECT 
+                v.bus_number, v.route_no, v.km_operated, v.hsd, v.kmpl,
+                v.driver_1_pf, v.driver_2_pf, l.depot as depot_name, l.kmpl_division, l.kmpl_depot
+              FROM vehicle_kmpl v
+              LEFT JOIN location l ON v.depot_id = l.depot_id
+              $whereClause AND v.date = '$adjustedDate'
+              order by v.depot_id, v.bus_number";
+
+    $result = mysqli_query($db, $query);
+
+    if (!$result) {
+        echo json_encode(['success' => false, 'message' => 'SQL Error: ' . mysqli_error($db)]);
+        exit;
+    }
+
+    if (mysqli_num_rows($result) > 0) {
+        $data = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $data[] = $row;
+        }
+        echo json_encode(['success' => true, 'data' => $data]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'No data found']);
+    }
+}
+if (isset($_POST['action']) && isset($_POST['action']) && $_POST['action'] == 'fetchvehiclekmpldataentereddetails') {
+    $selected_date = $_POST['selected_date'];
+    $formatted_date = date('d-m-Y', strtotime($selected_date));
+    $query = "SELECT l.division, l.division_id, l.depot_id, l.depot,
+                COUNT(br.bus_number) AS total_buses,
+                (SELECT COUNT(DISTINCT vk.bus_number) FROM vehicle_kmpl vk WHERE vk.date = '$selected_date' AND vk.depot_id = l.depot_id) AS kmpl_registered
+              FROM bus_registration br
+              INNER JOIN location l ON br.depot_name = l.depot_id AND br.division_name = l.division_id
+              GROUP BY l.division_id, l.depot_id
+              ORDER BY l.division_id, l.depot_id";
+
+    $result = mysqli_query($db, $query);
+
+    $table = '<h2 class="text-center">Vehicle wise kmpl entered report on date :' . $formatted_date . '</h2><table border="1" id="reportTable">
+                <thead>
+                    <tr>
+                        <th>Sl. No</th>
+                        <th>Division</th>
+                        <th>Depot</th>
+                        <th>Vehicles Held</th>
+                        <th>Vehicles KMPL Registered</th>
+                        <th>Not Operated Vehicles</th>
+                    </tr>
+                </thead>
+                <tbody>';
+    
+    $sl_no = 1;
+    $previous_division = null;
+    $division_total_buses = 0;
+    $division_total_registered = 0;
+    $overall_total_buses = 0;
+    $overall_total_registered = 0;
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $not_operated = $row['total_buses'] - $row['kmpl_registered'];
+
+        // Check if division has changed, and print division total before moving to the next
+        if ($previous_division !== null && $previous_division !== $row['division']) {
+            $division_not_operated = $division_total_buses - $division_total_registered;
+            $table .= '<tr style="font-weight: bold; background-color: #e0e0e0;">
+                            <td></td>
+                            <td colspan="2">' . $previous_division . '</td>
+                            <td>' . $division_total_buses . '</td>
+                            <td>' . $division_total_registered . '</td>
+                            <td>' . $division_not_operated . '</td>
+                       </tr>';
+            $division_total_buses = 0;
+            $division_total_registered = 0;
+        }
+
+        // Row for each depot
+        $table .= '<tr>
+                        <td>' . $sl_no . '</td>
+                        <td>' . $row['division'] . '</td>
+                        <td>' . $row['depot'] . '</td>
+                        <td>' . $row['total_buses'] . '</td>
+                        <td>' . $row['kmpl_registered'] . '</td>
+                        <td>' . $not_operated . '</td>
+                   </tr>';
+        $sl_no++;
+
+        // Accumulate division totals
+        $division_total_buses += $row['total_buses'];
+        $division_total_registered += $row['kmpl_registered'];
+        $overall_total_buses += $row['total_buses'];
+        $overall_total_registered += $row['kmpl_registered'];
+        
+        $previous_division = $row['division'];
+    }
+
+    // Print the last division total after the loop
+    if ($previous_division !== null) {
+        $division_not_operated = $division_total_buses - $division_total_registered;
+        $table .= '<tr style="font-weight: bold; background-color: #e0e0e0;">
+                        <td></td>
+                        <td colspan="2">' . $previous_division . '</td>
+                        <td>' . $division_total_buses . '</td>
+                        <td>' . $division_total_registered . '</td>
+                        <td>' . $division_not_operated . '</td>
+                   </tr>';
+    }
+
+    // Overall Total
+    $overall_not_operated = $overall_total_buses - $overall_total_registered;
+    $table .= '<tr style="background-color: #f2f2f2; font-weight: bold;">
+                    <td></td>
+                    <td>Overall Total</td>
+                    <td></td>
+                    <td>' . $overall_total_buses . '</td>
+                    <td>' . $overall_total_registered . '</td>
+                    <td>' . $overall_not_operated . '</td>
+               </tr>';
+
+    $table .= '</tbody></table>';
+
+    echo $table;
+    exit;
+}

@@ -26,7 +26,6 @@ include 'includes/connection.php';
     <!-- Include jQuery library -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Include Bootstrap JavaScript -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
@@ -859,29 +858,30 @@ include 'includes/connection.php';
                         </div>
                         <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample" data-loaded="false">
                             <div class="card-body">
-                                <div id="kmpl-content">Loading KMPL data, Please Wait...</div>
+                                <div id="loadingMessage1" style="display: none;">Loading KMPL data, please wait...</div>
+                                <div id="kmpl-content" class="table-responsive"></div>
                             </div>
                         </div>
                     </div>
 
 
-                    <!-- Accordion Item 4 
                     <div class="card">
                         <div class="card-header" id="headingFour">
                             <h2 class="mb-0">
                                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                    Commercial Data <i class="fas fa-chevron-down float-right"></i>
+                                    Commercial Stall Data <i class="fas fa-chevron-down float-right"></i>
                                 </button>
                             </h2>
                         </div>
                         <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionExample">
                             <div class="card-body">
-                                This is the content of the third accordion item.
+                                <div id="loadingMessagecommerial" style="display: none;">Loading Commertial data, please wait...</div>
+                                <div id="commertialTable" class="table-responsive"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="card">
+                    <!--<div class="card">
                         <div class="card-header" id="headingFive">
                             <h2 class="mb-0">
                                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
@@ -920,6 +920,25 @@ include 'includes/connection.php';
                             </p>
                         </div>
                         <a id="downloadBtn" href="#" class="btn btn-primary" download>Download PDF</a>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Vehicle KMPL Details Modal -->
+            <div class="modal fade" id="kmplDetailsModal" tabindex="-1" role="dialog" aria-labelledby="kmplDetailsLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="kmplDetailsLabel">Vehicle KMPL Details</h5>
+                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" id="kmplDetailsBody">
+                            <!-- Data will be inserted here dynamically -->
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
@@ -1077,6 +1096,48 @@ include 'includes/connection.php';
                         });
                     }
                 });
+                $(document).ready(function() {
+                    $('#collapseFour').on('show.bs.collapse', function() {
+                        fetchCommercialData();
+                    });
+
+                    function fetchCommercialData() {
+                        $("#loadingMessagecommerial").show();
+                        $("#commertialTable").html(""); // Clear previous content
+
+                        let urls = [
+                            "http://117.203.105.106:50/transfer/commercial/csms_live_fetch_stalls.php",
+                            "http://192.168.1.32:50/transfer/commercial/csms_live_fetch_stalls.php"
+                        ];
+
+                        let attempt = 0;
+
+                        function tryFetch() {
+                            if (attempt >= urls.length) {
+                                $("#loadingMessagecommerial").hide();
+                                $("#commertialTable").html("<p>Error loading data from all sources.</p>");
+                                return;
+                            }
+
+                            $.ajax({
+                                url: urls[attempt],
+                                type: "GET",
+                                dataType: "html",
+                                timeout: 1000, // Wait 5 seconds before failing
+                                success: function(response) {
+                                    $("#loadingMessagecommerial").hide();
+                                    $("#commertialTable").html(response);
+                                },
+                                error: function() {
+                                    attempt++;
+                                    tryFetch(); // Try the next URL
+                                }
+                            });
+                        }
+
+                        tryFetch(); // Start the first request
+                    }
+                });
 
                 function fetchoffroadDetails(id, name, type) {
                     // Show modal with loading message
@@ -1104,31 +1165,167 @@ include 'includes/connection.php';
                         }
                     });
                 }
-
                 $(document).ready(function() {
-                    $('#collapseThree').on('shown.bs.collapse', function() {
-                        let $contentDiv = $('#kmpl-content');
+                    $('#collapseThree').on('show.bs.collapse', function() {
+                        fetchKMPLData();
+                    });
 
-                        // Check if data is already loaded
-                        if ($(this).attr('data-loaded') === "false") {
-                            $.ajax({
-                                url: 'database/sch_live_fetch_kmpl_data.php', // PHP script to fetch KMPL data
-                                type: 'POST',
-                                data: {
-                                    date: 'yesterday'
-                                }, // Send yesterday's date
-                                dataType: 'html',
-                                success: function(response) {
-                                    $contentDiv.html(response); // Insert fetched data into div
-                                    $('#collapseThree').attr('data-loaded', "true"); // Mark as loaded
-                                },
-                                error: function() {
-                                    $contentDiv.html('<p>Error fetching data.</p>');
-                                }
-                            });
+                    function fetchKMPLData() {
+                        $("#loadingMessage1").show();
+                        $("#kmpl-content").html(""); // Clear previous content
+
+                        let selectedDate = $("#date-selector").val(); // Get selected date
+                        console.log(selectedDate); // Fixed typo here
+
+                        $.ajax({
+                            url: 'database/sch_live_fetch_kmpl_data.php', // PHP script to fetch KMPL data
+                            type: 'POST',
+                            data: {
+                                date: selectedDate // Send selected date
+                            },
+                            dataType: 'html',
+                            success: function(response) {
+                                $("#loadingMessage1").hide();
+                                $("#kmpl-content").html(response);
+                            },
+                            error: function() {
+                                $("#loadingMessage1").hide();
+                                $("#kmpl-content").html("<p>Error loading data.</p>");
+                            }
+                        });
+
+                    }
+                });
+
+                function fetchvehiclekmplDetails(id, type, selectedDate) {
+                    console.log("Fetching data for:", {
+                        id,
+                        type,
+                        selectedDate
+                    });
+
+                    $.ajax({
+                        url: 'includes/backend_data.php', // Ensure the path is correct
+                        type: 'POST',
+                        data: {
+                            action: 'fetch_vehicle_kmpl',
+                            id: id,
+                            type: type,
+                            date: selectedDate
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            console.log("Response received:", response);
+                            if (response.success) {
+                                displayKMPLData(response.data, type, selectedDate);
+                            } else {
+                                console.error("Server Response Error:", response.message);
+                                alert('Error: ' + response.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("AJAX Error: ", status, error);
+                            console.error("Response Text:", xhr.responseText);
+                            alert('AJAX Request Failed: ' + error + '\nCheck the console for more details.');
                         }
                     });
-                });
+                }
+
+
+                async function fetchTokenNumber(pfNumber) {
+    const apiUrl = `http://localhost:8880/dvp_test/database/combined_api_data.php?pf_no=${pfNumber}`;
+
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            console.error(`Error: HTTP status ${response.status}`);
+            return "Other"; 
+        }
+
+        const data = await response.json();
+        console.log("API Response:", data); // Debugging log
+
+        // Ensure 'data' contains an array and at least one item
+        if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
+            return data.data[0].token_number || "Other"; // Return token_number from first record
+        } else {
+            console.warn(`Token number not found for PF: ${pfNumber}`);
+        }
+    } catch (error) {
+        console.error(`Error fetching token number for PF: ${pfNumber}`, error);
+    }
+    
+    return "Other"; // Default value if not found or API fails
+}
+
+
+                async function displayKMPLData(data, type, selectedDate) {
+                    // Show modal and set loading text
+                    $('#kmplDetailsBody').html('<p class="text-center">Loading data...</p>');
+                    $('#kmplDetailsModal').modal('show');
+
+                    // Check if data is available
+                    if (data.length === 0) {
+                        $('#kmplDetailsBody').html('<p class="text-center">No data available.</p>');
+                        return;
+                    }
+
+                    let tableHtml = `<table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Sl. No</th>`;
+
+                    if (type === "Division") {
+                        tableHtml += `<th>Depot Name</th>`;
+                    }
+
+                    tableHtml += `<th>Bus Number</th>
+                  <th>Route No</th>
+                  <th>Crew Token</th>
+                  <th>Km Operated</th>
+                  <th>HSD</th>
+                  <th>KMPL</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+                    for (const [index, row] of data.entries()) {
+                        let crewTokens = [];
+
+                        if (row.driver_1_pf) {
+                            let token1 = await fetchTokenNumber(row.driver_1_pf);
+                            console.log(`Token for ${row.driver_1_pf}: ${token1}`);
+                            crewTokens.push(`${token1}`);
+                        }
+
+                        if (row.driver_2_pf) {
+                            let token2 = await fetchTokenNumber(row.driver_2_pf);
+                            crewTokens.push(`${token2}`);
+                        }
+
+                        let crewTokenString = crewTokens.length > 0 ? crewTokens.join(', ') : 'N/A';
+
+                        tableHtml += `<tr>
+            <td>${index + 1}</td>`;
+
+                        if (type === "Division") {
+                            tableHtml += `<td>${row.depot_name}</td>`;
+                        }
+
+                        tableHtml += `<td>${row.bus_number}</td>
+                      <td>${row.route_no}</td>
+                      <td>${crewTokenString}</td>
+                      <td>${row.km_operated}</td>
+                      <td>${row.hsd}</td>
+                      <td>${row.kmpl}</td>
+                  </tr>`;
+                    }
+
+                    tableHtml += `</tbody></table>`;
+
+                    // Insert final table into modal body
+                    $('#kmplDetailsBody').html(tableHtml);
+                }
             </script>
 
             <footer id="sticky-footer" class="flex-shrink-0 py-4">

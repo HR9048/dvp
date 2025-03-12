@@ -786,7 +786,7 @@ $(document).ready(function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred: ' + (xhr.responseText || error),
+                    text: 'An Network error occurred Please refresh page and try once again: ' + (xhr.responseText || error),
                     confirmButtonText: 'OK'
                 });
             }
@@ -881,7 +881,7 @@ $(document).ready(function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred: ' + error,
+                    text: 'An Network error occurred Please refresh page and try once again: ' + error,
                     confirmButtonText: 'OK'
                 });
             }
@@ -1028,7 +1028,7 @@ $(document).ready(function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred: ' + error,
+                    text: 'An Network error occurred Please refresh page and try once again:' + error,
                     confirmButtonText: 'OK'
                 });
             }
@@ -1093,7 +1093,7 @@ $(document).ready(function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred: ' + error,
+                    text: 'An Network error occurred Please refresh page and try once again: ' + error,
                     confirmButtonText: 'OK'
                 });
             }

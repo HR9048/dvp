@@ -260,6 +260,7 @@ confirm_logged_in();
                           <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a>
                           </li>
                           <li><a class="dropdown-item" href="co_vehicle_kmpl.php">kmpl report month</a></li>
+                          <li><a class="dropdown-item" href="co_vehicle_kmpl_ft.php">kmpl report Fron-To Date</a></li>
                           <li><a class="dropdown-item" href="co_schedule_live.php">Schedule Live Track</a></li>
                         </ul>
                       </div>

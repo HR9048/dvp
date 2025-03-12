@@ -40,22 +40,22 @@ if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekm
 
                 if ($rowExists) {
                     // Update existing total row
-                    $updateQuery = "UPDATE kmpl_data SET total_km = ?, hsd = ?, kmpl = ? WHERE division = ? AND depot = ? AND date = ?";
+                    /*$updateQuery = "UPDATE kmpl_data SET total_km = ?, hsd = ?, kmpl = ? WHERE division = ? AND depot = ? AND date = ?";
                     $stmt = $db->prepare($updateQuery);
                     $stmt->bind_param("dddiis", $total_km, $total_hsd, $total_kmpl, $division_id, $depot_id, $reportDate);
                     if (!$stmt->execute()) {
                         $insertSuccess = false;
                         $errorMessage = "Failed to update totals row.";
-                    }
+                    }*/
                 } else {
                     // Insert new total row
-                    $insertQuery = "INSERT INTO kmpl_data (division, depot, date, total_km, hsd, kmpl, username, submitted_datetime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    /*$insertQuery = "INSERT INTO kmpl_data (division, depot, date, total_km, hsd, kmpl, username, submitted_datetime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                     $stmt = $db->prepare($insertQuery);
                     $stmt->bind_param("iisdssss", $division_id, $depot_id, $reportDate, $total_km, $total_hsd, $total_kmpl, $username, $submitted_datetime);
                     if (!$stmt->execute()) {
                         $insertSuccess = false;
                         $errorMessage = "Failed to insert totals row.";
-                    }
+                    }*/
                 }
             } else {
                 // Handle all other rows (Update if ID exists, Insert if not)

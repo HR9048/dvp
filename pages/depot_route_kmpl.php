@@ -116,56 +116,59 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSI
     </div>
 
     <div id="page-content">
-        <form id="busReportForm" method="POST" onsubmit="return validateAndSubmit1();">
-            <label for="reportDate">Select Date:</label>
-            <input type="date" name="report_date" id="reportDate" required>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
+    <form id="busReportForm" method="POST" onsubmit="return validateAndSubmit1();">
+        <label for="reportDate">Select Date:</label>
+        <input type="date" name="report_date" id="reportDate" required>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
 
-    <script>
-        document.getElementById("busReportForm").addEventListener("submit", function() {
-            document.getElementById("loading").style.display = "flex";
-            document.getElementById("page-content").style.display = "none";
-        });
+<div id="loading" style="display: none;">
+    <p>Loading, please wait...</p>
+</div>
 
-        window.onload = function() {
-            document.getElementById("loading").style.display = "none";
-            document.getElementById("page-content").style.display = "block";
-        };
-    </script>
-    <script>
-        function validateAndSubmit1() {
-            let reportDate = document.getElementById('reportDate').value;
-            if (!reportDate) {
-                Swal.fire('Error', 'Please select a date.', 'error');
-                return false;
-            }
-
-            let selectedDate = new Date(reportDate);
-            let today = new Date();
-            let yesterday = new Date();
-            let fourDaysAgo = new Date();
-
-            yesterday.setDate(today.getDate());
-            fourDaysAgo.setDate(today.getDate() - 4);
-
-            // Convert dates to 'YYYY-MM-DD' for accurate comparison
-            let selectedDateString = selectedDate.toISOString().split('T')[0];
-            let yesterdayString = yesterday.toISOString().split('T')[0];
-            let fourDaysAgoString = fourDaysAgo.toISOString().split('T')[0];
-
-            if (selectedDateString > yesterdayString || selectedDateString < fourDaysAgoString) {
-                Swal.fire('Date Outside Allowed Range',
-                    `Date must be between ${fourDaysAgo.toLocaleDateString('en-GB')} and ${yesterday.toLocaleDateString('en-GB')}.`,
-                    'error'
-                );
-                return false;
-            }
-
-            return true; // Allow form submission
+<script>
+    function validateAndSubmit1() {
+        let reportDate = document.getElementById('reportDate').value;
+        if (!reportDate) {
+            Swal.fire('Error', 'Please select a date.', 'error');
+            return false;
         }
-    </script>
+
+        let selectedDate = new Date(reportDate);
+        let today = new Date();
+        let yesterday = new Date();
+        let fourDaysAgo = new Date();
+
+        yesterday.setDate(today.getDate());
+        fourDaysAgo.setDate(today.getDate() - 4);
+
+        // Convert dates to 'YYYY-MM-DD' format for accurate comparison
+        let selectedDateString = selectedDate.toISOString().split('T')[0];
+        let yesterdayString = yesterday.toISOString().split('T')[0];
+        let fourDaysAgoString = fourDaysAgo.toISOString().split('T')[0];
+
+        if (selectedDateString > yesterdayString || selectedDateString < fourDaysAgoString) {
+            Swal.fire('Date Outside Allowed Range',
+                `Date must be between ${fourDaysAgo.toLocaleDateString('en-GB')} and ${yesterday.toLocaleDateString('en-GB')}.`,
+                'error'
+            );
+            return false; // Prevent submission
+        }
+
+        // If date is valid, show loading screen and hide content
+        document.getElementById("loading").style.display = "flex";
+        document.getElementById("page-content").style.display = "none";
+
+        return true; // Allow form submission
+    }
+
+    window.onload = function () {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("page-content").style.display = "block";
+    };
+</script>
+
     <form method="post">
         <div id="reportTable" style="margin-top: 20px;">
             <?php
@@ -362,7 +365,14 @@ AND vd.deleted = 0
                         echo '<td class="hidden">' . ($existingData['id'] ?? '') . '</td>';
                         echo '<td class="v-change-cell hidden">' . ($existingData['v_change'] ?? '') . '</td>';
                         echo '<td class="c_change hidden">' . ($existingData['c_change'] ?? '') . '</td>';
-                        echo '<td><button style="width:100%;" type="button" class="update-btn btn btn-primary">Update</button></td>';
+                        echo '<td>';
+                        if (!empty($existingData['id'])) {
+                            echo ' <button type="button" class="delete-btn btn btn-danger" onclick="deleteRow(' . $existingData['id'] . ')">
+                                    <i class="fas fa-trash"></i>
+                                  </button> &nbsp;<button type="button" class="update-btn btn btn-primary">Update</button></td>';
+                        } else {
+                            echo ' <button style="width:100%;" type="button" class="update-btn btn btn-primary">Update</button></td>';
+                        }
                         echo '</tr>';
                     }
                     // Query to fetch vehicle_kmpl data where c_change = '1'
@@ -373,7 +383,7 @@ AND vd.deleted = 0
     WHERE vk.division_id = '$division_id' 
     AND vk.depot_id = '$depot_id' 
     AND vk.date = '$report_date' 
-    AND vk.c_change = '1' 
+    AND vk.c_change in ('1','2') 
     AND vk.deleted = '0'
 ";
 
@@ -558,29 +568,37 @@ AND vd.deleted = 0
                             <label for="busNumber" class="form-label">Bus Number:</label>
                             <select id="busNumber" class="form-select" onchange="updateHiddenFields()">
                                 <option value="">Select</option>
+                                <option value="other">Other Corporation</option> <!-- Added "Other Corporation" option -->
                                 <?php
                                 $busQuery = "SELECT br.bus_number, br.make, br.emission_norms 
-FROM bus_registration br
-WHERE br.division_name = '$division_id' 
-AND br.depot_name = '$depot_id'
+                 FROM bus_registration br
+                 WHERE br.division_name = '$division_id' 
+                 AND br.depot_name = '$depot_id'
+                 UNION 
+                 SELECT vd.bus_number, COALESCE(br.make, '') AS make, COALESCE(br.emission_norms, '') AS emission_norms
+                 FROM vehicle_deputation vd
+                 LEFT JOIN bus_registration br ON vd.bus_number = br.bus_number
+                 WHERE vd.t_division_id = '$division_id' 
+                 AND vd.t_depot_id = '$depot_id' 
+                 AND vd.tr_date = '$report_date' 
+                 AND vd.status NOT IN (1) 
+                 AND vd.deleted = 0";
 
-UNION 
-
-SELECT vd.bus_number, COALESCE(br.make, '') AS make, COALESCE(br.emission_norms, '') AS emission_norms
-FROM vehicle_deputation vd
-LEFT JOIN bus_registration br ON vd.bus_number = br.bus_number
-WHERE vd.t_division_id = '$division_id' 
-AND vd.t_depot_id = '$depot_id' 
-AND vd.tr_date = '$report_date' 
-AND vd.status NOT IN (1) 
-AND vd.deleted = 0";
                                 $busResult = mysqli_query($db, $busQuery);
                                 while ($bus = mysqli_fetch_assoc($busResult)) { ?>
                                     <option value="<?= htmlspecialchars($bus['bus_number']) ?>"
                                         data-make="<?= htmlspecialchars($bus['make']) ?>"
-                                        data-emission_norms="<?= htmlspecialchars($bus['emission_norms']) ?>"><?= $bus['bus_number'] ?></option>
+                                        data-emission_norms="<?= htmlspecialchars($bus['emission_norms']) ?>">
+                                        <?= $bus['bus_number'] ?>
+                                    </option>
                                 <?php } ?>
                             </select>
+
+                            <div id="otherBusInput" style="display: none; margin-top: 10px;">
+                                <label for="otherBusNumber" class="form-label">Enter Bus Number:</label>
+                                <input type="text" id="otherBusNumber" class="form-control" oninput="validateBusNumber()" placeholder="KA32F0001" style="text-transform: uppercase;">
+                                <small id="error-msg" style="color: red; display: none;">Invalid format! Use KA32F0001.</small>
+                            </div>
                         </div>
                         <input type="hidden" id="make" name="make">
                         <input type="hidden" id="emission_norms" name="emission_norms">
@@ -639,6 +657,81 @@ AND vd.deleted = 0";
 
     <!-- Select2 Initialization -->
     <script>
+        document.getElementById("otherBusNumber").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent form submission
+                validateBusNumber(); // Validate the input
+            }
+        });
+
+        function validateBusNumber() {
+            var inputField = document.getElementById("otherBusNumber");
+            var errorMsg = document.getElementById("error-msg");
+            var busSelect = document.getElementById("busNumber");
+            var otherBusInputDiv = document.getElementById("otherBusInput");
+
+            var busPattern = /^[A-Z a-z]{2}\d{2}[A-Z a-z]\d{4}$/; // Format: KA32F0001
+
+            // Convert input to uppercase
+            var busNumber = inputField.value.toUpperCase();
+
+            if (busPattern.test(busNumber)) {
+                errorMsg.style.display = "none";
+
+                // Check if the option already exists to avoid duplicates
+                var optionExists = Array.from(busSelect.options).some(option => option.value === busNumber);
+                if (!optionExists) {
+                    var newOption = new Option(busNumber, busNumber, true, true);
+                    busSelect.appendChild(newOption);
+                }
+
+                // Select the entered bus number
+                busSelect.value = busNumber;
+                inputField.value = ""; // Clear input field
+
+                // Hide input field after successful entry
+                otherBusInputDiv.style.display = "none";
+            } else {
+                errorMsg.style.display = "block";
+            }
+        }
+
+        function handleBusSelection() {
+            var busSelect = document.getElementById("busNumber");
+            var routeNumber = document.getElementById("routeNumber");
+            var driver1 = document.getElementById("driver1");
+            var driver2 = document.getElementById("driver2");
+
+            if (busSelect.value === "other") {
+                addOtherOptionBelowSelect(routeNumber);
+                addOtherOptionBelowSelect(driver1);
+                addOtherOptionBelowSelect(driver2);
+            } else {
+                removeOtherOption(routeNumber);
+                removeOtherOption(driver1);
+                removeOtherOption(driver2);
+            }
+        }
+
+        function addOtherOptionBelowSelect(selectElement) {
+            let options = selectElement.options;
+
+            // Check if "Other" already exists
+            if (![...options].some(opt => opt.value === "other")) {
+                let newOption = new Option("Other", "other");
+                selectElement.add(newOption, options[1]); // Insert after "Select"
+            }
+        }
+
+        function removeOtherOption(selectElement) {
+            let options = Array.from(selectElement.options);
+            options.forEach(opt => {
+                if (opt.value === "other") {
+                    selectElement.removeChild(opt);
+                }
+            });
+        }
+
         $(document).ready(function() {
             $('#repeatVehicleModal select').select2({
                 width: '100%',
@@ -649,15 +742,28 @@ AND vd.deleted = 0";
         function updateHiddenFields() {
             let busSelect = document.getElementById("busNumber");
             let selectedOption = busSelect.options[busSelect.selectedIndex];
+            let otherBusInput = document.getElementById("otherBusInput");
+            let otherBusNumber = document.getElementById("otherBusNumber");
 
-            document.getElementById("make").value = selectedOption.getAttribute("data-make") || "";
-            document.getElementById("emission_norms").value = selectedOption.getAttribute("data-emission_norms") || "";
+            // If "Other Corporation" is selected, show input field
+            if (busSelect.value === "other") {
+                otherBusInput.style.display = "block";
+                otherBusNumber.value = ""; // Clear input field
+                document.getElementById("make").value = "";
+                document.getElementById("emission_norms").value = "";
+            } else {
+                otherBusInput.style.display = "none";
+                document.getElementById("make").value = selectedOption.getAttribute("data-make") || "";
+                document.getElementById("emission_norms").value = selectedOption.getAttribute("data-emission_norms") || "";
+            }
+            handleBusSelection();
         }
+
 
         function deleteRow(kmplId) {
             Swal.fire({
                 title: "Are you sure?",
-                text: "This action cannot be undone!",
+                text: "This action cannot be undone and page will refresh!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
@@ -681,13 +787,10 @@ AND vd.deleted = 0";
                                     title: "Deleted!",
                                     text: response.message,
                                     icon: "success",
-                                    timer: 2000,
+                                    timer: 1500,
                                     showConfirmButton: false
-                                });
-
-                                // Remove the row dynamically from the table
-                                $("#kmpl-row-" + kmplId).fadeOut(500, function() {
-                                    $(this).remove();
+                                }).then(() => {
+                                    location.reload(); // Reload the page after deletion
                                 });
                             } else {
                                 Swal.fire("Error!", response.message, "error");
@@ -748,6 +851,17 @@ AND vd.deleted = 0";
             let driver2 = document.getElementById("driver2").value;
             let make = document.getElementById("make").value;
             let emission_norms = document.getElementById("emission_norms").value;
+
+            // Check if bus number is valid
+            let busPattern = /^[A-Z a-z]{2}\d{2}[A-Z a-z]\d{4}$/;
+            if (!busPattern.test(busNumber)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Bus Number',
+                    text: 'Bus number format is incorrect! Please enter in the format KA32F0001.',
+                });
+                return; // Stop function execution
+            }
             if (!busNumber || !routeNumber || !driver1) {
                 Swal.fire({
                     icon: 'warning',
@@ -773,12 +887,12 @@ AND vd.deleted = 0";
             // Determine Serial Number (Take last row SN and increment)
             let lastSnCell = table.rows[rowCount - 2]?.cells[0];
             let newSerialNumber = lastSnCell ? parseInt(lastSnCell.innerText) + 1 : 1;
+            checkBusNumber(busNumber,reportDate, function(c_change) {
+                // Create a new row
+                let newRow = table.insertRow(insertIndex);
 
-            // Create a new row
-            let newRow = table.insertRow(insertIndex);
-
-            // Insert cells and populate with selected values
-            newRow.innerHTML = `
+                // Insert cells and populate with selected values
+                newRow.innerHTML = `
         <td>${newSerialNumber}</td>
         <td>${busNumber}</td>
         <td>
@@ -802,7 +916,7 @@ AND vd.deleted = 0";
         <td class="hidden">${depot_id}</td>
         <td class="hidden"></td>
         <td class="hidden"></td>
-        <td class="c_change hidden">1</td>
+            <td class="c_change hidden">${c_change}</td>
         <td>
         <button type="button" class="delete-btn btn btn-danger">
                 <i class="fa fa-trash"></i>
@@ -813,24 +927,47 @@ AND vd.deleted = 0";
 </td>
 
     `;
-            newRow.querySelector(".delete-btn").addEventListener("click", function() {
-                table.deleteRow(newRow.rowIndex);
+                newRow.querySelector(".delete-btn").addEventListener("click", function() {
+                    table.deleteRow(newRow.rowIndex);
+                });
+                // 🔥 Fix: Ensure the button retains Bootstrap styles
+                let lastButton = newRow.querySelector('.update-btn');
+                if (lastButton) {
+                    lastButton.classList.add('btn', 'btn-primary');
+                }
+
+                // Close modal after adding row
+                let modal = bootstrap.Modal.getInstance(document.getElementById("repeatVehicleModal"));
+                modal.hide();
+
+
+                // Update total values
+                updateTotal();
+                resetModalFields();
             });
-            // 🔥 Fix: Ensure the button retains Bootstrap styles
-            let lastButton = newRow.querySelector('.update-btn');
-            if (lastButton) {
-                lastButton.classList.add('btn', 'btn-primary');
-            }
+        }
+        const reportDate = "<?php echo isset($report_date) ? $report_date : ''; ?>";
 
-            // Close modal after adding row
-            let modal = bootstrap.Modal.getInstance(document.getElementById("repeatVehicleModal"));
-            modal.hide();
-
-
-            // Update total values
-            updateTotal();
-            resetModalFields();
-
+        function checkBusNumber(busNumber, reportDate, callback) {
+            console.log("Report Date Sent: ", reportDate);
+            $.ajax({
+                url: "../includes/backend_data.php", // Replace with actual PHP script path
+                type: "POST",
+                data: {
+                    action: "othercorporationfindvehicle",
+                    bus_number: busNumber,
+                    report_date: reportDate // Send selected report date
+                },
+                dataType: "json",
+                success: function(response) {
+                    callback(response.exists ? 1 : 2); // If bus exists, set c_change = 1, otherwise 2
+                },
+                error: function(xhr, status, error) {
+    console.error("AJAX Error:", status, error);
+    console.error("Response Text:", xhr.responseText); // Log full response
+    callback(2); // Default to 2 if an error occurs
+}
+            });
         }
 
         function resetModalFields() {
@@ -1013,11 +1150,11 @@ AND vd.deleted = 0";
                 options.forEach(option => {
                     if (!isModal) {
                         // Disable options that are already selected in other dropdowns (except for modal)
-                        if (option.value !== "" && selectedValues.includes(option.value)) {
-                            option.disabled = true;
-                        } else {
-                            option.disabled = false;
-                        }
+                        if (option.value !== "" && !["BD", "CC", "Extra Operation", "Jatra Operation", "Road Test", "Relief", ].includes(option.value) && selectedValues.includes(option.value)) {
+                        option.disabled = true; // Disable if already selected and not "BD" or "CC"
+                    } else {
+                        option.disabled = false; // Enable if not selected or is "BD" or "CC"
+                    }
                     } else {
                         // In modal, keep everything enabled
                         option.disabled = false;

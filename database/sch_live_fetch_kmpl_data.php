@@ -1,9 +1,11 @@
 <?php
 include '../includes/connection.php'; // Include database connection
 
-$selectedDate = date('Y-m-d', strtotime('-1 day')); // Yesterday’s date
-$formateddate = date('d-m-Y', strtotime('-1 day'));
-$firstDateOfMonth = date("Y-m-01", strtotime($selectedDate)); // First date of the month
+$receivedDate = $_POST['date'];
+
+$selectedDate = date('Y-m-d', strtotime($receivedDate . ' -1 day'));
+$formateddate = date('d-m-Y', strtotime($selectedDate));
+$firstDateOfMonth = date("Y-m-01", strtotime($selectedDate));
 
 // Static Target KMPL values for depots
 $targetKmplValues = [
@@ -76,7 +78,7 @@ $query = "SELECT
     l.kmpl_division AS division_name, 
     l.depot AS depot_name,
     l.depot_id,
-
+    l.division_id,
     -- Daily Data
     SUM(CASE WHEN k.date = '$selectedDate' THEN k.total_km ELSE 0 END) AS daily_total_km,
     SUM(CASE WHEN k.date = '$selectedDate' THEN k.hsd ELSE 0 END) AS daily_hsd,
@@ -195,7 +197,7 @@ foreach ($data as $division => $depots) {
     foreach ($depots as $row) {
         echo "<tr>
                 <td>{$serialNo}</td>
-                <td>{$row['depot_name']}</td>
+                <td onclick='fetchvehiclekmplDetails(\"{$row['depot_id']}\", \"Depot\" , \"{$selectedDate}\")'>{$row['depot_name']}</td>
                 <td>{$row['daily_total_km']}</td>
                 <td>{$row['daily_hsd']}</td>
                 <td>" . number_format($row['daily_kmpl'], 2) . "</td>
@@ -210,7 +212,7 @@ foreach ($data as $division => $depots) {
     }
     // Display Division Total Row
     echo "<tr class='division-total'>
-            <td colspan='2'>$division Total</td>
+            <td colspan='2' onclick='fetchvehiclekmplDetails(\"{$row['division_id']}\", \"Division\" , \"{$selectedDate}\")'>$division Total</td>
             <td>{$division_totals[$division]['daily_total_km']}</td>
             <td>{$division_totals[$division]['daily_hsd']}</td>
             <td>" . number_format($divDailyKMPL, 2) . "</td>

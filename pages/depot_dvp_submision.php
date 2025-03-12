@@ -33,7 +33,9 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
     $serialNumber = 1;
 
     ?>
+
     <div class="container1">
+        <button class="btn btn-success"><a style="color:black;" href="co_kmpl_entry_details.php">view Vehicle wise KMPL entered details</a></button>
         <!-- HTML table to display the fetched data -->
         <h2 style="text-align:center;">DVP Submission <?php echo $todayDate; ?></h2>
         <table>

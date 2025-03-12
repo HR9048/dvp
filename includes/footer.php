@@ -17,7 +17,25 @@
 </footer>
 </div>
 </div>
- <!-- End of Footer -->
+<script>
+  function checkSession() {
+    //console.log('Checking session...');
+    fetch('session1.php') // Calls the session checker
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'expired') {
+          alert("Session expired or missing necessary information. You will be logged out. Please Login Again.");
+          window.location.href = 'logout.php';
+        }
+      })
+      .catch(error => console.error('Session check error:', error));
+  }
+
+  // Check session every second
+  setInterval(checkSession, 1000);
+</script>
+
+<!-- End of Footer -->
 <!-- Scroll to Top Button-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous"></script>
 <a class="scroll-to-top rounded" href="#page-top">
@@ -80,7 +98,7 @@
 
 <!-- DataTable initialization -->
 <script>
-  $(document).ready(function () {
+  $(document).ready(function() {
     $('#dataTable').DataTable({
       "paging": true, // Enable pagination
       "lengthChange": true, // Enable the row count dropdown
@@ -101,7 +119,7 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 <script>
-  $(document).ready(function () {
+  $(document).ready(function() {
     var table = $('#dataTable3').DataTable({
       "paging": true,
       "lengthChange": true,
@@ -109,20 +127,18 @@
       "ordering": true,
       "info": true,
       "autoWidth": true,
-      "columnDefs": [
-        {
-          "orderable": false,
-          "targets": 0
-        }
-      ],
+      "columnDefs": [{
+        "orderable": false,
+        "targets": 0
+      }],
       "order": [],
-      initComplete: function () {
+      initComplete: function() {
         // Add a text input to each footer cell
-        this.api().columns().every(function () {
+        this.api().columns().every(function() {
           var column = this;
           var input = $('<input type="text" placeholder="Search" style="width: 100%;"/>')
             .appendTo($(column.footer()).empty())
-            .on('keyup change', function () {
+            .on('keyup change', function() {
               if (column.search() !== this.value) {
                 column
                   .search(this.value)
@@ -134,15 +150,19 @@
     });
 
     // Update serial numbers after each draw event (including filtering)
-    table.on('draw', function () {
+    table.on('draw', function() {
       var info = table.page.info();
-      table.column(0, { search: 'applied', order: 'applied', page: 'applied' }).nodes().each(function (cell, i) {
+      table.column(0, {
+        search: 'applied',
+        order: 'applied',
+        page: 'applied'
+      }).nodes().each(function(cell, i) {
         cell.innerHTML = i + 1 + info.start;
       });
     });
 
     // Excel download functionality
-    $('#downloadExcel1').on('click', function () {
+    $('#downloadExcel1').on('click', function() {
       var today = new Date();
       var dd = String(today.getDate()).padStart(2, '0');
       var mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -150,13 +170,17 @@
       today = dd + '-' + mm + '-' + yyyy;
 
       // Use DataTables API to get filtered data
-      var filteredData = table.rows({ filter: 'applied' }).data().toArray();
+      var filteredData = table.rows({
+        filter: 'applied'
+      }).data().toArray();
 
       // Create a new workbook
       var wb = XLSX.utils.book_new();
-      var ws_data = [['Serial Number', 'Bus Number', 'Division Name', 'Depot Name', 'Make', 'Emission norms', 'DOC', 'Wheel Base', 'Chassis Number', 'Bus Category', 'Bus Sub Category', 'Seating Capacity', 'Bus Body Builder']];
+      var ws_data = [
+        ['Serial Number', 'Bus Number', 'Division Name', 'Depot Name', 'Make', 'Emission norms', 'DOC', 'Wheel Base', 'Chassis Number', 'Bus Category', 'Bus Sub Category', 'Seating Capacity', 'Bus Body Builder']
+      ];
 
-      filteredData.forEach(function (row, index) {
+      filteredData.forEach(function(row, index) {
         ws_data.push([
           index + 1,
           row[1],
@@ -179,7 +203,7 @@
 
       // Get filter values to use in the file name
       var filterValues = [];
-      table.columns().every(function () {
+      table.columns().every(function() {
         var value = this.search();
         if (value) {
           filterValues.push(value);
@@ -226,7 +250,7 @@
   // Check if the user dropdown exists, then add click event listener
   var userDropdown = document.getElementById('userDropdown');
   if (userDropdown) {
-    userDropdown.addEventListener('click', function (event) {
+    userDropdown.addEventListener('click', function(event) {
       // Prevent the default action (redirecting to another page)
       event.preventDefault();
       // Toggle the visibility of the dropdown menu
@@ -238,7 +262,7 @@
   // Check if the logout link exists, then add click event listener
   var logoutLink = document.querySelector('[data-target="#logoutModal"]');
   if (logoutLink) {
-    logoutLink.addEventListener('click', function (event) {
+    logoutLink.addEventListener('click', function(event) {
       // Prevent the default action (redirecting to another page)
       event.preventDefault();
       // Show the logout modal
@@ -264,7 +288,7 @@
 </html>
 
 <?php
-include ('connection.php');
+include('connection.php');
 // JOB SELECT OPTION TAB
 $sql = "SELECT DISTINCT TYPE, TYPE_ID FROM type";
 $result = mysqli_query($db, $sql) or die("Bad SQL: $sql");
@@ -439,7 +463,7 @@ while ($row = mysqli_fetch_array($result)) {
 </div>
 
 <script>
- document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('passwordInput');
     const passwordRequirements = document.getElementById('passwordRequirements');
@@ -454,61 +478,60 @@ while ($row = mysqli_fetch_array($result)) {
     noSpaces.textContent = "No spaces allowed";
     passwordRequirements.appendChild(noSpaces);
 
-    togglePassword.addEventListener("click", function () {
-        var type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
-        passwordInput.setAttribute("type", type);
-        togglePassword.innerHTML = type === "password" ? '<i class="fa fa-eye-slash" aria-hidden="true"></i>' : '<i class="fa fa-eye" aria-hidden="true"></i>';
+    togglePassword.addEventListener("click", function() {
+      var type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      passwordInput.setAttribute("type", type);
+      togglePassword.innerHTML = type === "password" ? '<i class="fa fa-eye-slash" aria-hidden="true"></i>' : '<i class="fa fa-eye" aria-hidden="true"></i>';
     });
 
-    passwordInput.addEventListener('input', function () {
-        const value = passwordInput.value;
-        letter.classList.toggle('valid', /[a-zA-Z]/.test(value));
-        letter.classList.toggle('invalid', !/[a-zA-Z]/.test(value));
-        number.classList.toggle('valid', /\d/.test(value));
-        number.classList.toggle('invalid', !/\d/.test(value));
-        special.classList.toggle('valid', /[!@#$%^&*]/.test(value));
-        special.classList.toggle('invalid', !/[!@#$%^&*]/.test(value));
-        length.classList.toggle('valid', value.length >= 6);
-        length.classList.toggle('invalid', value.length < 6);
-        noSpaces.classList.toggle('valid', !/\s/.test(value));
-        noSpaces.classList.toggle('invalid', /\s/.test(value));
+    passwordInput.addEventListener('input', function() {
+      const value = passwordInput.value;
+      letter.classList.toggle('valid', /[a-zA-Z]/.test(value));
+      letter.classList.toggle('invalid', !/[a-zA-Z]/.test(value));
+      number.classList.toggle('valid', /\d/.test(value));
+      number.classList.toggle('invalid', !/\d/.test(value));
+      special.classList.toggle('valid', /[!@#$%^&*]/.test(value));
+      special.classList.toggle('invalid', !/[!@#$%^&*]/.test(value));
+      length.classList.toggle('valid', value.length >= 6);
+      length.classList.toggle('invalid', value.length < 6);
+      noSpaces.classList.toggle('valid', !/\s/.test(value));
+      noSpaces.classList.toggle('invalid', /\s/.test(value));
 
-        passwordRequirements.style.display = 'block';
+      passwordRequirements.style.display = 'block';
     });
 
-    passwordInput.addEventListener('focus', function () {
-        passwordRequirements.style.display = 'block';
+    passwordInput.addEventListener('focus', function() {
+      passwordRequirements.style.display = 'block';
     });
 
-    passwordInput.addEventListener('blur', function () {
-        if (passwordInput.value === '') {
-            passwordRequirements.style.display = 'none';
-        }
+    passwordInput.addEventListener('blur', function() {
+      if (passwordInput.value === '') {
+        passwordRequirements.style.display = 'none';
+      }
     });
 
-    window.addEventListener('click', function (event) {
-        if (event.target !== passwordInput) {
-            passwordRequirements.style.display = 'none';
-        }
+    window.addEventListener('click', function(event) {
+      if (event.target !== passwordInput) {
+        passwordRequirements.style.display = 'none';
+      }
     });
 
     const form = document.getElementById('settingsForm');
-    form.addEventListener('submit', function (event) {
-        const email = form.querySelector('input[name="email"]').value;
-        const phone = form.querySelector('input[name="phone"]').value;
+    form.addEventListener('submit', function(event) {
+      const email = form.querySelector('input[name="email"]').value;
+      const phone = form.querySelector('input[name="phone"]').value;
 
-        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-            alert('Please enter a valid email address.');
-            event.preventDefault();
-        }
+      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        alert('Please enter a valid email address.');
+        event.preventDefault();
+      }
 
-        if (!phone.match(/^\d{10}$/)) {
-            alert('Please enter a valid 10-digit phone number.');
-            event.preventDefault();
-        }
+      if (!phone.match(/^\d{10}$/)) {
+        alert('Please enter a valid 10-digit phone number.');
+        event.preventDefault();
+      }
     });
-});
-
+  });
 </script>
 <!-- Include Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">

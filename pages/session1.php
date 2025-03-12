@@ -8,7 +8,6 @@ ini_set('session.gc_divisor', 100);
 // Start session
 session_start();
 
-
 // Function to check if session variables are set
 function logged_in() {
     return isset($_SESSION['MEMBER_ID']) && isset($_SESSION['DIVISION_ID']) && isset($_SESSION['DEPOT_ID']) && 
@@ -17,14 +16,12 @@ function logged_in() {
            isset($_SESSION['USERNAME']);
 }
 
-// Function to confirm login
-function confirm_logged_in() {
-    if (!logged_in()) {
-        echo "<script>
-                alert('Session expired or missing necessary information. You will be logged out. Please Login Again.');
-                window.location = 'logout.php';
-              </script>";
-        exit();
-    }
+// Return JSON response for session status
+header('Content-Type: application/json');
+
+if (logged_in()) {
+    echo json_encode(['status' => 'active']);
+} else {
+    echo json_encode(['status' => 'expired']);
 }
 ?>

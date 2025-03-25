@@ -154,6 +154,7 @@ LEFT JOIN location l
 WHERE sm.division_id = ? 
 AND sm.status = '1'
 GROUP BY sm.sch_key_no, sm.depot_id  -- Now grouping by sch_key_no AND depot_id
+HAVING late > 7 
 ORDER BY l.depot_id,sm.sch_dep_time;";
     $stmt = $db->prepare($query);
     $stmt->bind_param("ssi", $last_30_days, $today, $division_id);
@@ -201,7 +202,7 @@ if ($result->num_rows > 0) {
                     <th rowspan='2'>Sl. No</th>
                     <th rowspan='2'>Sch Key No</th>
                     <th rowspan='2'>Sch Dep Time</th>
-                    <th rowspan='2'>description</th>
+                    <th rowspan='2'>Description</th>
                     <th rowspan='2'>Service Type</th>
                     <th colspan='2'>last 30 days</th>
                     <th rowspan='2' style='display:none'> division</th>

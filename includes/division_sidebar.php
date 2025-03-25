@@ -277,6 +277,7 @@ confirm_logged_in();
                             <li><a class="dropdown-item" href="division_offroad.php">From - To days Off-Road Report</a></li>
                             <li><a class="dropdown-item" href="division_mkmpl_report.php">Monthly KMPL Report</a></li>
                             <li><a class="dropdown-item" href="division_vehicle_kmpl_ft.php">kmpl report Fron-To Date</a></li>
+                            <li><a class="dropdown-item" href="division_kmpl_entry_details.php">KMPL Entered Report</a></li>
                           <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
                             <li><a class="dropdown-item" href="division_schedule_report_day.php">Daily Schedule reports</a>

@@ -116,58 +116,58 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSI
     </div>
 
     <div id="page-content">
-    <form id="busReportForm" method="POST" onsubmit="return validateAndSubmit1();">
-        <label for="reportDate">Select Date:</label>
-        <input type="date" name="report_date" id="reportDate" required>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-</div>
+        <form id="busReportForm" method="POST" onsubmit="return validateAndSubmit1();">
+            <label for="reportDate">Select Date:</label>
+            <input type="date" name="report_date" id="reportDate" required>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
 
-<div id="loading" style="display: none;">
-    <p>Loading, please wait...</p>
-</div>
+    <div id="loading" style="display: none;">
+        <p>Loading, please wait...</p>
+    </div>
 
-<script>
-    function validateAndSubmit1() {
-        let reportDate = document.getElementById('reportDate').value;
-        if (!reportDate) {
-            Swal.fire('Error', 'Please select a date.', 'error');
-            return false;
+    <script>
+        function validateAndSubmit1() {
+            let reportDate = document.getElementById('reportDate').value;
+            if (!reportDate) {
+                Swal.fire('Error', 'Please select a date.', 'error');
+                return false;
+            }
+
+            let selectedDate = new Date(reportDate);
+            let today = new Date();
+            let yesterday = new Date();
+            let fourDaysAgo = new Date();
+
+            yesterday.setDate(today.getDate());
+            fourDaysAgo.setDate(today.getDate() - 4);
+
+            // Convert dates to 'YYYY-MM-DD' format for accurate comparison
+            let selectedDateString = selectedDate.toISOString().split('T')[0];
+            let yesterdayString = yesterday.toISOString().split('T')[0];
+            let fourDaysAgoString = fourDaysAgo.toISOString().split('T')[0];
+
+            if (selectedDateString > yesterdayString || selectedDateString < fourDaysAgoString) {
+                Swal.fire('Date Outside Allowed Range',
+                    `Date must be between ${fourDaysAgo.toLocaleDateString('en-GB')} and ${yesterday.toLocaleDateString('en-GB')}.`,
+                    'error'
+                );
+                return false; // Prevent submission
+            }
+
+            // If date is valid, show loading screen and hide content
+            document.getElementById("loading").style.display = "flex";
+            document.getElementById("page-content").style.display = "none";
+
+            return true; // Allow form submission
         }
 
-        let selectedDate = new Date(reportDate);
-        let today = new Date();
-        let yesterday = new Date();
-        let fourDaysAgo = new Date();
-
-        yesterday.setDate(today.getDate());
-        fourDaysAgo.setDate(today.getDate() - 4);
-
-        // Convert dates to 'YYYY-MM-DD' format for accurate comparison
-        let selectedDateString = selectedDate.toISOString().split('T')[0];
-        let yesterdayString = yesterday.toISOString().split('T')[0];
-        let fourDaysAgoString = fourDaysAgo.toISOString().split('T')[0];
-
-        if (selectedDateString > yesterdayString || selectedDateString < fourDaysAgoString) {
-            Swal.fire('Date Outside Allowed Range',
-                `Date must be between ${fourDaysAgo.toLocaleDateString('en-GB')} and ${yesterday.toLocaleDateString('en-GB')}.`,
-                'error'
-            );
-            return false; // Prevent submission
-        }
-
-        // If date is valid, show loading screen and hide content
-        document.getElementById("loading").style.display = "flex";
-        document.getElementById("page-content").style.display = "none";
-
-        return true; // Allow form submission
-    }
-
-    window.onload = function () {
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("page-content").style.display = "block";
-    };
-</script>
+        window.onload = function() {
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("page-content").style.display = "block";
+        };
+    </script>
 
     <form method="post">
         <div id="reportTable" style="margin-top: 20px;">
@@ -613,6 +613,13 @@ AND vd.deleted = 0
                                 while ($route = mysqli_fetch_assoc($routeResult)) { ?>
                                     <option value="<?= $route['sch_key_no'] ?>"><?= $route['sch_key_no'] ?></option>
                                 <?php } ?>
+                                <option value="CC">CC</option>
+                                <option value="BD">BD</option>
+                                <option value="Extra Operation">Extra Operation</option>
+                                <option value="Jatra Operation">Jatra Operation</option>
+                                <option value="Road Test">Road Test</option>
+                                <option value="Relief">Relief</option>
+
                             </select>
                         </div>
 
@@ -887,7 +894,7 @@ AND vd.deleted = 0
             // Determine Serial Number (Take last row SN and increment)
             let lastSnCell = table.rows[rowCount - 2]?.cells[0];
             let newSerialNumber = lastSnCell ? parseInt(lastSnCell.innerText) + 1 : 1;
-            checkBusNumber(busNumber,reportDate, function(c_change) {
+            checkBusNumber(busNumber, reportDate, function(c_change) {
                 // Create a new row
                 let newRow = table.insertRow(insertIndex);
 
@@ -963,10 +970,10 @@ AND vd.deleted = 0
                     callback(response.exists ? 1 : 2); // If bus exists, set c_change = 1, otherwise 2
                 },
                 error: function(xhr, status, error) {
-    console.error("AJAX Error:", status, error);
-    console.error("Response Text:", xhr.responseText); // Log full response
-    callback(2); // Default to 2 if an error occurs
-}
+                    console.error("AJAX Error:", status, error);
+                    console.error("Response Text:", xhr.responseText); // Log full response
+                    callback(2); // Default to 2 if an error occurs
+                }
             });
         }
 
@@ -1151,10 +1158,10 @@ AND vd.deleted = 0
                     if (!isModal) {
                         // Disable options that are already selected in other dropdowns (except for modal)
                         if (option.value !== "" && !["BD", "CC", "Extra Operation", "Jatra Operation", "Road Test", "Relief", ].includes(option.value) && selectedValues.includes(option.value)) {
-                        option.disabled = true; // Disable if already selected and not "BD" or "CC"
-                    } else {
-                        option.disabled = false; // Enable if not selected or is "BD" or "CC"
-                    }
+                            option.disabled = true; // Disable if already selected and not "BD" or "CC"
+                        } else {
+                            option.disabled = false; // Enable if not selected or is "BD" or "CC"
+                        }
                     } else {
                         // In modal, keep everything enabled
                         option.disabled = false;

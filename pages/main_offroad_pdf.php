@@ -702,11 +702,12 @@ $sql = "SELECT
             COUNT(DISTINCT CASE WHEN o.make = 'Corona' AND o.emission_norms = 'BS-4' THEN o.bus_number END) AS Corona_BS4,
             COUNT(DISTINCT CASE WHEN o.make = 'Corona' AND o.emission_norms = 'BS-6' THEN o.bus_number END) AS Corona_BS6,
             COUNT(DISTINCT CASE WHEN o.make = 'Volvo' AND o.emission_norms = 'BS-6' THEN o.bus_number END) AS Volvo_BS6,
+            COUNT(DISTINCT CASE WHEN o.parts_required = 'Engine Head' THEN o.bus_number END) AS `Engine_Head`,
             COUNT(DISTINCT o.bus_number) AS TOTAL
         FROM off_road_data o
         LEFT JOIN bus_registration b ON o.bus_number = b.bus_number
         LEFT JOIN location l ON o.division = l.division_id
-        WHERE o.status = 'off_road' AND o.parts_required = 'Engine'
+        WHERE o.status = 'off_road' AND o.parts_required IN ('Engine', 'Engine Head')
         GROUP BY l.division_id";
 
 // Execute the SQL query
@@ -718,12 +719,13 @@ if ($result) {
     $html = '<h2 style="text-align:center;">Engine related OFF-ROAD POSITION</h2>';
     $html .= '<table border="1" cellpadding="4" cellspacing="0">';
     $html .= '<tr>
-                <th rowspan="2" style="width:110px;"><b>DIVISION</b></th>
-                <th colspan="5" style="text-align:center;width:160px;"><b>Tata</b></th>
-                <th colspan="4" style="text-align:center;width:135px;"><b>Leyland</b></th>
-                <th colspan="4" style="text-align:center;width:135px;"><b>Eicher</b></th>
-                <th colspan="4" style="text-align:center;width:135px;"><b>Corona</b></th>
-                <th colspan="1" style="text-align:center;width:40px;"><b>Volvo</b></th>
+                <th rowspan="2" style="width:90px;"><b>DIVISION</b></th>
+                <th colspan="5" style="text-align:center;width:155px;"><b>Tata</b></th>
+                <th colspan="4" style="text-align:center;width:130px;"><b>Leyland</b></th>
+                <th colspan="4" style="text-align:center;width:130px;"><b>Eicher</b></th>
+                <th colspan="4" style="text-align:center;width:130px;"><b>Corona</b></th>
+                <th colspan="1" style="text-align:center;width:35px;"><b>Volvo</b></th>
+                <th rowspan="2" style="width:50px"><b>Engine Head</b></th>
                 <th rowspan="2" style="width:50px"><b>TOTAL</b></th>
             </tr>
             <tr>
@@ -747,7 +749,7 @@ if ($result) {
                 <th><b>BS-6</b></th>
             </tr>';
 
-    $corporation_totals = array_fill(0, 19, 0); // Initialize array for corporation totals
+    $corporation_totals = array_fill(0, 20, 0); // Initialize array for corporation totals
 
     while ($row = $result->fetch_assoc()) {
         $html .= '<tr>';
@@ -770,6 +772,7 @@ if ($result) {
         $html .= '<td>' . $row['Corona_BS4'] . '</td>';
         $html .= '<td>' . $row['Corona_BS6'] . '</td>';
         $html .= '<td>' . $row['Volvo_BS6'] . '</td>';
+        $html .= '<td>' . $row['Engine_Head'] . '</td>';
         $html .= '<td><b>' . $row['TOTAL'] . '</b></td>';
         $html .= '</tr>';
 
@@ -792,7 +795,8 @@ if ($result) {
         $corporation_totals[15] += $row['Corona_BS4'];
         $corporation_totals[16] += $row['Corona_BS6'];
         $corporation_totals[17] += $row['Volvo_BS6'];
-        $corporation_totals[18] += $row['TOTAL'];
+        $corporation_totals[18] += $row['Engine_Head'];
+        $corporation_totals[19] += $row['TOTAL'];
     }
 
     // Display the row for corporation totals
@@ -834,7 +838,7 @@ $sql = "SELECT o1.*,
         FROM off_road_data o1
         JOIN location l ON o1.depot = l.depot_id
         JOIN bus_registration br ON o1.bus_number = br.bus_number
-        WHERE o1.status = 'off_road' and o1.parts_required='Engine'
+        WHERE o1.status = 'off_road' and o1.parts_required in('Engine', 'Engine Head')
           AND o1.off_road_location NOT IN ('RWY') 
           AND NOT EXISTS (
               SELECT 1 

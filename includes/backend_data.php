@@ -839,13 +839,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if (isset($_POST['action']) && isset($_POST['action']) && $_POST['action'] == 'fetchvehiclekmpldataentereddetails') {
     $selected_date = $_POST['selected_date'];
     $formatted_date = date('d-m-Y', strtotime($selected_date));
-    $query = "SELECT l.division, l.division_id, l.depot_id, l.depot,
-                COUNT(br.bus_number) AS total_buses,
-                (SELECT COUNT(DISTINCT vk.bus_number) FROM vehicle_kmpl vk WHERE vk.date = '$selected_date' AND vk.depot_id = l.depot_id) AS kmpl_registered
-              FROM bus_registration br
-              INNER JOIN location l ON br.depot_name = l.depot_id AND br.division_name = l.division_id
-              GROUP BY l.division_id, l.depot_id
-              ORDER BY l.division_id, l.depot_id";
+    $query = "SELECT 
+    l.division, 
+    l.division_id, 
+    l.depot_id, 
+    l.depot,
+    COUNT(DISTINCT svo.vehicle_no) AS total_buses,
+    COUNT(DISTINCT vk.bus_number) AS kmpl_registered
+FROM location l
+LEFT JOIN sch_veh_out svo 
+    ON svo.depot_id = l.depot_id 
+    AND svo.arr_date = '$selected_date'
+LEFT JOIN vehicle_kmpl vk 
+    ON vk.depot_id = l.depot_id 
+    AND vk.date = '$selected_date'
+where l.division_id not in ('0', '10') and l.DEPOT != 'DIVISION'
+GROUP BY l.division_id, l.depot_id
+ORDER BY l.division_id, l.depot_id";
 
     $result = mysqli_query($db, $query);
 
@@ -855,13 +865,13 @@ if (isset($_POST['action']) && isset($_POST['action']) && $_POST['action'] == 'f
                         <th>Sl. No</th>
                         <th>Division</th>
                         <th>Depot</th>
-                        <th>Vehicles Held</th>
+                        <th>Vehicles Operated in ORMS</th>
                         <th>Vehicles KMPL Registered</th>
-                        <th>Not Operated Vehicles</th>
+                        <th>Difference</th>
                     </tr>
                 </thead>
                 <tbody>';
-    
+
     $sl_no = 1;
     $previous_division = null;
     $division_total_buses = 0;
@@ -902,7 +912,7 @@ if (isset($_POST['action']) && isset($_POST['action']) && $_POST['action'] == 'f
         $division_total_registered += $row['kmpl_registered'];
         $overall_total_buses += $row['total_buses'];
         $overall_total_registered += $row['kmpl_registered'];
-        
+
         $previous_division = $row['division'];
     }
 
@@ -933,4 +943,2270 @@ if (isset($_POST['action']) && isset($_POST['action']) && $_POST['action'] == 'f
 
     echo $table;
     exit;
+}
+
+if (isset($_POST['action']) && $_POST['action'] == 'fetchvehiclekmpldataentereddetailsdivision') {
+
+    $selected_date = mysqli_real_escape_string($db, $_POST['selected_date']);
+    $formatted_date = date('d-m-Y', strtotime($selected_date));
+    $division_id = mysqli_real_escape_string($db, $_SESSION['DIVISION_ID']);
+
+    $query = "SELECT 
+                l.division, 
+                l.division_id, 
+                l.depot_id, 
+                l.depot,
+                COUNT(DISTINCT svo.vehicle_no) AS total_buses,
+                COUNT(DISTINCT vk.bus_number) AS kmpl_registered
+              FROM location l
+              LEFT JOIN sch_veh_out svo 
+                ON svo.depot_id = l.depot_id 
+                AND svo.arr_date = '$selected_date'
+              LEFT JOIN vehicle_kmpl vk 
+                ON vk.depot_id = l.depot_id 
+                AND vk.date = '$selected_date'
+              WHERE l.division_id NOT IN ('0', '10') 
+                AND l.depot != 'DIVISION' 
+                AND l.division_id = '$division_id'
+              GROUP BY l.division_id, l.depot_id
+              ORDER BY l.division_id, l.depot_id";
+
+    $result = mysqli_query($db, $query);
+
+    $table = '<h2 class="text-center">Vehicle-wise KMPL Entered Report on ' . $formatted_date . '</h2>
+              <table border="1" id="reportTable">
+                <thead>
+                    <tr>
+                        <th>Sl. No</th>
+                        <th>Depot</th>
+                        <th>Vehicles Operated in ORMS</th>
+                        <th>Vehicles KMPL Registered</th>
+                        <th>Difference</th>
+                    </tr>
+                </thead>
+                <tbody>';
+
+    $sl_no = 1;
+    $total_buses = 0;
+    $total_registered = 0;
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $not_operated = $row['total_buses'] - $row['kmpl_registered'];
+
+        // Depot-level data
+        $table .= '<tr>
+                        <td>' . $sl_no . '</td>
+                        <td>' . $row['depot'] . '</td>
+                        <td>' . $row['total_buses'] . '</td>
+                        <td>' . $row['kmpl_registered'] . '</td>
+                        <td>' . $not_operated . '</td>
+                   </tr>';
+        $sl_no++;
+
+        // Accumulate division totals
+        $total_buses += $row['total_buses'];
+        $total_registered += $row['kmpl_registered'];
+    }
+
+    // Display division total
+    $division_not_operated = $total_buses - $total_registered;
+    $table .= '<tr style="background-color: #e0e0e0; font-weight: bold;">
+                    <td></td>
+                    <td>Division Total</td>
+                    <td>' . $total_buses . '</td>
+                    <td>' . $total_registered . '</td>
+                    <td>' . $division_not_operated . '</td>
+               </tr>';
+
+    $table .= '</tbody></table>';
+
+    echo $table;
+    exit;
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == "inventorypartsdetailsfetch") {
+    $part_name = $_POST['part_name'];
+
+    if (empty($part_name)) {
+        echo "<p>Part name is required.</p>";
+        exit;
+    }
+
+    if ($part_name == 'Engine') {
+        echo "<form id='engineForm'>"; // Wrap all fields inside a form
+        echo "<div class='mb-3'>
+        <label class='form-label'>Engine Card No:</label> 
+        <input type='text' name='engine_card_number' id='engine_card_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+      </div>";
+
+        echo "<div class='mb-3'>
+        <label class='form-label'>Engine No:</label>
+        <input type='text' name='engine_number' id='engine_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+      </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Engine Make:</label>
+            <select name='engine_make' id='engine_make' class='form-control' required>";
+
+        $sql = "SELECT * FROM makes";
+        $result = mysqli_query($db, $sql);
+        echo "<option value=''>Select Engine Make</option>";
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<option value='" . $row['make'] . "'>" . $row['make'] . "</option>";
+        }
+
+        echo "</select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Engine Model:</label>
+            <select name='engine_model' id='engine_model' class='form-control' required>
+                <option value=''>Select Engine Model</option>";
+
+        $sql = "SELECT * FROM norms";
+        $result = mysqli_query($db, $sql);
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<option value='" . $row['emission_norms'] . "'>" . $row['emission_norms'] . "</option>";
+        }
+
+        echo "</select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Engine Type:</label>
+            <select name='engine_type' id='engine_type' class='form-control' required>
+                <option value=''>Select Engine Type</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Engine Condition:</label>
+            <select name='engine_condition' id='engine_condition' class='form-control' required>
+                <option value=''>Select Engine Condition</option>
+                <option value='New'>New</option>
+                <option value='RC'>RC</option>
+                <option value='RECON'>RECON</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Progressive KM (As on 31.03.2025)</label>
+            <input type='number' name='progressive_km' id='progressive_km' class='form-control' required>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <button type='button' class='btn btn-primary' id='engine_submit'>Submit</button>
+        </div>";
+
+        echo "</form>"; // Close form
+
+?>
+        <script>
+            $(document).ready(function() {
+                // Fetch Engine Type based on Engine Make selection
+                $('#engine_make').change(function() {
+                    var make = $(this).val();
+                    if (make !== "") {
+                        $.ajax({
+                            url: '../includes/backend_data.php',
+                            type: 'POST',
+                            data: {
+                                action: 'fetchenginetypeforinventory',
+                                engine_make: make
+                            },
+                            success: function(response) {
+                                $('#engine_type').html(response);
+                            }
+                        });
+                    } else {
+                        $('#engine_type').html('<option value="">Select Engine Type</option>');
+                    }
+                });
+
+                // Bind event listener for submit button
+                $("#engine_submit").click(function() {
+                    submitEngineForm();
+                });
+            });
+
+
+            function submitEngineForm() {
+                let form = $("#engineForm");
+                let isValid = true;
+                let missingFields = [];
+
+                // Validate required fields
+                form.find(".form-control").each(function() {
+                    let inputValue = $(this).val();
+                    if (inputValue === null || inputValue.trim() === "") {
+                        let label = $(this).prev("label").text().trim(); // Get label text
+                        missingFields.push(label);
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Fields',
+                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                    });
+                    return;
+                }
+
+                // Prepare form data
+                let formData = new FormData(form[0]);
+                formData.append("action", "submitengineinventoryform");
+
+                // AJAX Submission
+                $.ajax({
+                    url: '../includes/backend_data.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        try {
+                            let res = JSON.parse(response); // Parse JSON response
+                            console.log("Server Response:", res);
+
+                            if (res.status === "success") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: res.message,
+                                    confirmButtonText: 'OK' // Ensures user clicks OK
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload(); // Reload only after clicking OK
+                                    }
+                                });
+                            } else if (res.status === "error") {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Submission Failed!',
+                                    html: res.messages ? res.messages.join("<br>") : res.message,
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error:", e, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Invalid server response format.',
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while submitting the form.',
+                        });
+                    }
+                });
+
+            }
+        </script>
+    <?php
+    } elseif ($part_name == 'gear_box') {
+        echo "<form id='gearBoxForm'>"; // Wrap all fields inside a form
+        echo "<div class='mb-3'>
+        <label class='form-label'>Gear Box Card No:</label> 
+        <input type='text' name='gear_box_card_number' id='gear_box_card_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+      </div>";
+
+        echo "<div class='mb-3'>
+        <label class='form-label'>Gear Box No:</label>
+        <input type='text' name='gear_box_number' id='gear_box_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Gear Box Make:</label>
+            <select name='gear_box_make' id='gear_box_make' class='form-control' required>";
+
+        $sql = "SELECT * FROM makes";
+        $result = mysqli_query($db, $sql);
+        echo "<option value=''>Select Gear Box Make</option>";
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<option value='" . $row['make'] . "'>" . $row['make'] . "</option>";
+        }
+        echo "</select>
+            </div>";
+        echo "<div class='mb-3'>
+            <label class='form-label'>Gear Box Model:</label>
+            <select name='gear_box_model' id='gear_box_model' class='form-control' required>
+                <option value=''>Select Gear Box Model</option>";
+
+        $sql = "SELECT * FROM norms";
+        $result = mysqli_query($db, $sql);
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<option value='" . $row['emission_norms'] . "'>" . $row['emission_norms'] . "</option>";
+        }
+        echo "</select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Gear Box Type:</label>
+            <select name='gear_box_type' id='gear_box_type' class='form-control' required>
+                <option value=''>Select Gear Box Type</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Gear Box Condition:</label>
+            <select name='gear_box_condition' id='gear_box_condition' class='form-control' required>
+                <option value=''>Select Gear Box Condition</option>
+                <option value='New'>New</option>
+                <option value='RC'>RC</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Progressive KM (As on 31.03.2025)</label>
+            <input type='number' name='gear_box_progressive_km' id='gear_box_progressive_km' class='form-control' required>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <button type='button' class='btn btn-primary' id='gear_box_submit'>Submit</button>
+        </div>";
+
+        echo "</form>"; // Close form
+
+    ?>
+        <script>
+            $(document).ready(function() {
+                // Fetch Gear Box Type based on Gear Box Make selection
+                $('#gear_box_make').change(function() {
+                    var make = $(this).val();
+                    if (make !== "") {
+                        $.ajax({
+                            url: '../includes/backend_data.php',
+                            type: 'POST',
+                            data: {
+                                action: 'fetchgearboxtypeforinventory',
+                                gear_box_make: make
+                            },
+                            success: function(response) {
+                                $('#gear_box_type').html(response);
+                            }
+                        });
+                    } else {
+                        $('#gear_box_type').html('<option value="">Select Gear Box Type</option>');
+                    }
+                });
+
+                // Bind event listener for submit button
+                $("#gear_box_submit").click(function() {
+                    submitGearBoxForm();
+                });
+            });
+
+            function submitGearBoxForm() {
+                let form = $("#gearBoxForm");
+                let isValid = true;
+                let missingFields = [];
+
+                // Validate required fields
+                form.find(".form-control").each(function() {
+                    let inputValue = $(this).val();
+                    if (inputValue === null || inputValue.trim() === "") {
+                        let label = $(this).prev("label").text().trim(); // Get label text
+                        missingFields.push(label);
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Fields',
+                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                    });
+                    return;
+                }
+
+                // Prepare form data
+                let formData = new FormData(form[0]);
+                formData.append("action", "submitgearboxinventoryform");
+
+                // AJAX Submission
+                $.ajax({
+                    url: '../includes/backend_data.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        try {
+                            let res = JSON.parse(response); // Parse JSON response
+                            console.log("Server Response:", res);
+
+                            if (res.status === "success") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: res.message,
+                                    confirmButtonText: 'OK' // Ensures user clicks OK
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload(); // Reload only after clicking OK
+                                    }
+                                });
+                            } else if (res.status === "error") {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Submission Failed!',
+                                    html: res.messages ? res.messages.join("<br>") : res.message,
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error:", e, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Invalid server response format.',
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while submitting the form.',
+                        });
+                    }
+                });
+
+            }
+        </script>
+    <?php
+
+
+    } elseif ($part_name == 'fip_hpp') {
+        echo "<form id='fipHppForm'>"; // Wrap all fields inside a form
+        echo "<div class='mb-3'>
+        <label class='form-label'>FIP/HPP Card No:</label> 
+        <input type='text' name='fip_hpp_card_number' id='fip_hpp_card_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+      </div>";
+
+        echo "<div class='mb-3'>
+        <label class='form-label'>FIP/HPP No:</label>
+        <input type='text' name='fip_hpp_number' id='fip_hpp_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>FIP/HPP's Bus Make:</label>
+            <select name='fip_hpp_bus_make' id='fip_hpp_bus_make' class='form-control' required>";
+
+        $sql = "SELECT * FROM makes";
+        $result = mysqli_query($db, $sql);
+        echo "<option value=''>Select FIP/HPP's Bus Make</option>";
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<option value='" . $row['make'] . "'>" . $row['make'] . "</option>";
+        }
+        echo "</select>
+            </div>";
+
+            echo "<div class='mb-3'>
+            <label class='form-label'>FIP/HPP Make:</label>
+            <select name='fip_hpp_make' id='fip_hpp_make' class='form-control' required>
+                <option value=''>Select FIP/HPP Make</option>
+                <option value='BOSCH'>BOSCH</option>
+                <option value='DENSO'>DENSO</option>
+                </select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>FIP/HPP Model:</label>
+            <select name='fip_hpp_model' id='fip_hpp_model' class='form-control' required>
+                <option value=''>Select FIP/HPP Model</option>";
+
+        $sql = "SELECT * FROM norms";
+        $result = mysqli_query($db, $sql);
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<option value='" . $row['emission_norms'] . "'>" . $row['emission_norms'] . "</option>";
+        }
+        echo "</select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>FIP/HPP Type:</label>
+            <select name='fip_hpp_type' id='fip_hpp_type' class='form-control' required>
+                <option value=''>Select FIP/HPP Type</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>FIP/HPP Condition:</label>
+            <select name='fip_hpp_condition' id='fip_hpp_condition' class='form-control' required>
+                <option value=''>Select FIP/HPP Condition</option>
+                <option value='New'>New</option>
+                <option value='RC'>RC</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Progressive KM (As on 31.03.2025)</label>
+            <input type='number' name='fip_hpp_progressive_km' id='fip_hpp_progressive_km' class='form-control' required>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <button type='button' class='btn btn-primary' id='fip_hpp_submit'>Submit</button>
+        </div>";
+
+        echo "</form>"; // Close form
+
+    ?>
+        <script>
+            $(document).ready(function() {
+                // Fetch FIP/HPP Type based on FIP/HPP Make selection
+                $('#fip_hpp_bus_make').change(function() {
+                    var make = $(this).val();
+                    if (make !== "") {
+                        $.ajax({
+                            url: '../includes/backend_data.php',
+                            type: 'POST',
+                            data: {
+                                action: 'fetchfiphtypeforinventory',
+                                fiph_make: make
+                            },
+                            success: function(response) {
+                                $('#fip_hpp_type').html(response);
+                            }
+                        });
+                    } else {
+                        $('#fip_hpp_type').html('<option value="">Select FIP/HPP Type</option>');
+                    }
+                });
+
+                // Bind event listener for submit button
+                $("#fip_hpp_submit").click(function() {
+                    submitFipHppForm();
+                });
+            });
+
+            function submitFipHppForm() {
+                let form = $("#fipHppForm");
+                let isValid = true;
+                let missingFields = [];
+
+                // Validate required fields
+                form.find(".form-control").each(function() {
+                    let inputValue = $(this).val();
+                    if (inputValue === null || inputValue.trim() === "") {
+                        let label = $(this).prev("label").text().trim(); // Get label text
+                        missingFields.push(label);
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Fields',
+                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                    });
+                    return;
+                }
+
+                // Prepare form data
+                let formData = new FormData(form[0]);
+                formData.append("action", "submitfiphppinventoryform");
+
+                // AJAX Submission
+                $.ajax({
+                    url: '../includes/backend_data.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        try {
+                            let res = JSON.parse(response); // Parse JSON response
+                            console.log("Server Response:", res);
+
+                            if (res.status === "success") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: res.message,
+                                    confirmButtonText: 'OK' // Ensures user clicks OK
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload(); // Reload only after clicking OK
+                                    }
+                                });
+                            } else if (res.status === "error") {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Submission Failed!',
+                                    html: res.messages ? res.messages.join("<br>") : res.message,
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error:", e, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Invalid server response format.',
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while submitting the form.',
+                        });
+                    }
+                });
+            }
+        </script>
+    <?php
+    } elseif ($part_name == 'starter') {
+        echo "<form id='starterForm'>"; // Wrap all fields inside a form
+        echo "<div class='mb-3'>
+        <label class='form-label'>Starter Card No:</label> 
+        <input type='text' name='starter_card_number' id='starter_card_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+      </div>";
+
+        echo "<div class='mb-3'>
+        <label class='form-label'>Starter No:</label>
+        <input type='text' name='starter_number' id='starter_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Starter Make:</label>
+            <select name='starter_make' id='starter_make' class='form-control' required>
+            <option value=''>Select Starter Make</option>
+            <option value='BOSCH'>BOSCH</option>
+            <option value='LUCAS'>LUCAS</option>
+            <option value='BECON'>BECON</option>
+            <option value='SEG (BOSCH)'>SEG (BOSCH)</option>
+            </select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label' >Starter Condition:</label>
+            <select name='starter_condition' id='starter_condition' class='form-control' required>
+                <option value=''>Select Starter Condition</option>
+                <option value='New'>New</option>
+                <option value='RC'>RC</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Progressive KM (As on 31.03.2025)</label>
+            <input type='number' name='starter_progressive_km' id='starter_progressive_km' class='form-control' required>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <button type='button' class='btn btn-primary' id='starter_submit'>Submit</button>
+        </div>";
+
+        echo "</form>"; // Close form
+
+    ?>
+
+        <script>
+            $(document).ready(function() {
+                // Bind event listener for submit button
+                $("#starter_submit").click(function() {
+                    submitStarterForm();
+                });
+            });
+
+            function submitStarterForm() {
+                let form = $("#starterForm");
+                let isValid = true;
+                let missingFields = [];
+
+                // Validate required fields
+                form.find(".form-control").each(function() {
+                    let inputValue = $(this).val();
+                    if (inputValue === null || inputValue.trim() === "") {
+                        let label = $(this).prev("label").text().trim(); // Get label text
+                        missingFields.push(label);
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Fields',
+                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                    });
+                    return;
+                }
+
+                // Prepare form data
+                let formData = new FormData(form[0]);
+                formData.append("action", "submitstarterinventoryform");
+
+                // AJAX Submission
+                $.ajax({
+                    url: '../includes/backend_data.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        try {
+                            let res = JSON.parse(response); // Parse JSON response
+                            console.log("Server Response:", res);
+
+                            if (res.status === "success") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: res.message,
+                                    confirmButtonText: 'OK' // Ensures user clicks OK
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload(); // Reload only after clicking OK
+                                    }
+                                });
+                            } else if (res.status === "error") {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Submission Failed!',
+                                    html: res.messages ? res.messages.join("<br>") : res.message,
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error:", e, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Invalid server response format.',
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while submitting the form.',
+                        });
+                    }
+                });
+
+            }
+        </script>
+    <?php
+    } elseif ($part_name == 'alternator') {
+        echo "<form id='alternatorForm'>"; // Wrap all fields inside a form
+        echo "<div class='mb-3'>
+        <label class='form-label'>Alternator Card No:</label>
+        <input type='text' name='alternator_card_number' id='alternator_card_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+        <label class='form-label'>Alternator No:</label>
+        <input type='text' name='alternator_number' id='alternator_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Alternator Make:</label>
+            <select name='alternator_make' id='alternator_make' class='form-control' required>
+            <option value=''>Select Alternator Make</option>
+            <option value='BOSCH'>BOSCH</option>
+            <option value='LUCAS'>LUCAS</option>
+            <option value='BECON'>BECON</option>
+            <option value='SEG (BOSCH)'>SEG (BOSCH)</option>
+            </select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Alternator Condition:</label>
+            <select name='alternator_condition' id='alternator_condition' class='form-control' required>
+                <option value=''>Select Alternator Condition</option>
+                <option value='New'>New</option>
+                <option value='RC'>RC</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Progressive KM (As on 31.03.2025)</label>
+            <input type='number' name='alternator_progressive_km' id='alternator_progressive_km' class='form-control' required>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <button type='button' class='btn btn-primary' id='alternator_submit'>Submit</button>
+        </div>";
+
+        echo "</form>"; // Close form
+
+    ?>
+
+        <script>
+            $(document).ready(function() {
+                // Bind event listener for submit button
+                $("#alternator_submit").click(function() {
+                    submitAlternatorForm();
+                });
+            });
+
+            function submitAlternatorForm() {
+                let form = $("#alternatorForm");
+                let isValid = true;
+                let missingFields = [];
+
+                // Validate required fields
+                form.find(".form-control").each(function() {
+                    let inputValue = $(this).val();
+                    if (inputValue === null || inputValue.trim() === "") {
+                        let label = $(this).prev("label").text().trim(); // Get label text
+                        missingFields.push(label);
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Fields',
+                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                    });
+                    return;
+                }
+
+                // Prepare form data
+                let formData = new FormData(form[0]);
+                formData.append("action", "submitalternatorinventoryform");
+
+                // AJAX Submission
+                $.ajax({
+                    url: '../includes/backend_data.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        try {
+                            let res = JSON.parse(response); // Parse JSON response
+                            console.log("Server Response:", res);
+
+                            if (res.status === "success") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: res.message,
+                                    confirmButtonText: 'OK' // Ensures user clicks OK
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload(); // Reload only after clicking OK
+                                    }
+                                });
+                            } else if (res.status === "error") {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Submission Failed!',
+                                    html: res.messages ? res.messages.join("<br>") : res.message,
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error:", e, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Invalid server response format.',
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while submitting the form.',
+                        });
+                    }
+                });
+            }
+        </script>
+    <?php
+    } elseif ($part_name == 'rear_axle') {
+        echo "<form id='rearAxleForm'>"; // Wrap all fields inside a form
+        echo "<div class='mb-3'>
+        <label class='form-label'>Rear Axle Card No:</label>
+        <input type='text' name='rear_axle_card_number' id='rear_axle_card_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+        <label class='form-label'>Rear Axle No:</label>
+        <input type='text' name='rear_axle_number' id='rear_axle_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Rear Axle Make:</label>
+            <select name='rear_axle_make' id='rear_axle_make' class='form-control' required>
+            <option value=''>Select Rear Axle Make</option>
+            <option value='AIL'>AIL</option>
+            <option value='BIL'>BIL</option>
+            </select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Rear Axle Condition:</label>
+            <select name='rear_axle_condition' id='rear_axle_condition' class='form-control' required>
+                <option value=''>Select Rear Axle Condition</option>
+                <option value='New'>New</option>
+                <option value='RC'>RC</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Progressive KM (As on 31.03.2025)</label>
+            <input type='number' name='rear_axle_progressive_km' id='rear_axle_progressive_km' class='form-control' required>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <button type='button' class='btn btn-primary' id='rear_axle_submit'>Submit</button>
+        </div>";
+
+        echo "</form>"; // Close form
+
+    ?>
+
+        <script>
+            $(document).ready(function() {
+                // Bind event listener for submit button
+                $("#rear_axle_submit").click(function() {
+                    submitRearAxleForm();
+                });
+            });
+
+            function submitRearAxleForm() {
+                let form = $("#rearAxleForm");
+                let isValid = true;
+                let missingFields = [];
+
+                // Validate required fields
+                form.find(".form-control").each(function() {
+                    let inputValue = $(this).val();
+                    if (inputValue === null || inputValue.trim() === "") {
+                        let label = $(this).prev("label").text().trim(); // Get label text
+                        missingFields.push(label);
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Fields',
+                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                    });
+                    return;
+                }
+
+                // Prepare form data
+                let formData = new FormData(form[0]);
+                formData.append("action", "submitrearaxleinventoryform");
+
+                // AJAX Submission
+                $.ajax({
+                    url: '../includes/backend_data.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        try {
+                            let res = JSON.parse(response); // Parse JSON response
+                            console.log("Server Response:", res);
+
+                            if (res.status === "success") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: res.message,
+                                    confirmButtonText: 'OK' // Ensures user clicks OK
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload(); // Reload only after clicking OK
+                                    }
+                                });
+                            } else if (res.status === "error") {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Submission Failed!',
+                                    html: res.messages ? res.messages.join("<br>") : res.message,
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error:", e, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Invalid server response format.',
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while submitting the form.',
+                        });
+                    }
+                });
+            }
+        </script>
+    <?php
+    } elseif ($part_name == 'battery') {
+        echo "<form id='batteryForm'>"; // Wrap all fields inside a form
+        echo "<div class='mb-3'>
+        <label class='form-label'>Battery Card No:</label>
+        <input type='text' name='battery_card_number' id='battery_card_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+        <label class='form-label'>Battery No:</label>
+        <input type='text' name='battery_number' id='battery_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Battery Make:</label>
+            <select name='battery_make' id='battery_make' class='form-control' required>
+            <option value=''>Select Battery Make</option>";
+        $sql = "SELECT * FROM battery_makes";
+        $result = mysqli_query($db, $sql);
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<option value='" . $row['make'] . "'>" . $row['make'] . "</option>";
+        }
+        echo "</select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Progressive KM (As on 31.03.2025)</label>
+            <input type='number' name='battery_progressive_km' id='battery_progressive_km' class='form-control' required>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <button type='button' class='btn btn-primary' id='battery_submit'>Submit</button>
+        </div>";
+
+        echo "</form>"; // Close form
+
+    ?>
+
+        <script>
+            $(document).ready(function() {
+                // Bind event listener for submit button
+                $("#battery_submit").click(function() {
+                    submitBatteryForm();
+                });
+            });
+
+            function submitBatteryForm() {
+                let form = $("#batteryForm");
+                let isValid = true;
+                let missingFields = [];
+
+                // Validate required fields
+                form.find(".form-control").each(function() {
+                    let inputValue = $(this).val();
+                    if (inputValue === null || inputValue.trim() === "") {
+                        let label = $(this).prev("label").text().trim(); // Get label text
+                        missingFields.push(label);
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Fields',
+                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                    });
+                    return;
+                }
+
+                // Prepare form data
+                let formData = new FormData(form[0]);
+                formData.append("action", "submitbatteryinventoryform");
+
+                // AJAX Submission
+                $.ajax({
+                    url: '../includes/backend_data.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        try {
+                            let res = JSON.parse(response); // Parse JSON response
+                            console.log("Server Response:", res);
+
+                            if (res.status === "success") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: res.message,
+                                    confirmButtonText: 'OK' // Ensures user clicks OK
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload(); // Reload only after clicking OK
+                                    }
+                                });
+                            } else if (res.status === "error") {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Submission Failed!',
+                                    html: res.messages ? res.messages.join("<br>") : res.message,
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error:", e, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Invalid server response format.',
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while submitting the form.',
+                        });
+                    }
+                });
+            }
+        </script>
+    <?php
+    } elseif ($part_name == 'tyre') {
+        echo "<form id='tyreForm'>"; // Wrap all fields inside a form
+        echo "<div class='mb-3'>
+        <label class='form-label'>Tyre Card No:</label>
+        <input type='text' name='tyre_card_number' id='tyre_card_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+        <label class='form-label'>Tyre No:</label>
+        <input type='text' name='tyre_number' id='tyre_number' class='form-control' required oninput='validateAndFormatInput(this)'>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Tyre Make:</label>
+            <select name='tyre_make' id='tyre_make' class='form-control' required>
+            <option value=''>Select Tyre Make</option>
+            <option value='JK'>JK</option>
+            <option value='CEAT'>CEAT</option>
+            <option value='MRF'>MRF</option>
+            <option value='APOLLO'>APOLLO</option>
+            <option value='MICHELIN'>MICHELIN</option>
+            </select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Tyre Size:</label>
+            <select name='tyre_size' id='tyre_size' class='form-control' required>
+            <option value=''>Select Tyre Size</option>
+            <option value='1000x20 R'>1000x20 R</option>
+            <option value='1000x20 N'>1000x20 N</option>
+            <option value='295/R/22.5'>295/R/22.5</option>
+            <option value='235/7.5 R'>235/7.5 R</option>
+            </select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Tyre Brand/Pattern:</label>
+            <select name='tyre_brand' id='tyre_brand' class='form-control' required>
+            <option value=''>Select Tyre Brand/Pattern</option>
+            <option value='WINMILE X3R'>WINMILE X3R</option>
+            </select>
+            </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Tyre Condition:</label>
+            <select name='tyre_condition' id='tyre_condition' class='form-control' required>
+                <option value=''>Select Tyre Condition</option>
+                <option value='New'>New</option>
+                <option value='RC'>RC</option>
+            </select>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <label class='form-label'>Progressive KM (As on 31.03.2025)</label>
+            <input type='number' name='tyre_progressive_km' id='tyre_progressive_km' class='form-control' required>
+        </div>";
+
+        echo "<div class='mb-3'>
+            <button type='button' class='btn btn-primary' id='tyre_submit'>Submit</button>
+        </div>";
+
+        echo "</form>"; // Close form
+
+    ?>
+        <script>
+            $(document).ready(function() {
+                // Bind event listener for submit button
+                $("#tyre_submit").click(function() {
+                    submitTyreForm();
+                });
+            });
+
+            function submitTyreForm() {
+                let form = $("#tyreForm");
+                let isValid = true;
+                let missingFields = [];
+
+                // Validate required fields
+                form.find(".form-control").each(function() {
+                    let inputValue = $(this).val();
+                    if (inputValue === null || inputValue.trim() === "") {
+                        let label = $(this).prev("label").text().trim(); // Get label text
+                        missingFields.push(label);
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Missing Fields',
+                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                    });
+                    return;
+                }
+
+                // Prepare form data
+                let formData = new FormData(form[0]);
+                formData.append("action", "submittyreinventoryform");
+
+                // AJAX Submission
+                $.ajax({
+                    url: '../includes/backend_data.php',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        try {
+                            let res = JSON.parse(response); // Parse JSON response
+                            console.log("Server Response:", res);
+
+                            if (res.status === "success") {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: res.message,
+                                    confirmButtonText: 'OK' // Ensures user clicks OK
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        location.reload(); // Reload only after clicking OK
+                                    }
+                                });
+                            } else if (res.status === "error") {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Submission Failed!',
+                                    html: res.messages ? res.messages.join("<br>") : res.message,
+                                });
+                            }
+                        } catch (e) {
+                            console.error("JSON Parse Error:", e, response);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Invalid server response format.',
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while submitting the form.',
+                        });
+                    }
+                });
+            }
+        </script>
+<?php
+
+    }
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'fetchenginetypeforinventory') {
+    $make = $_POST['engine_make'];
+
+    // Secure query to fetch engine types based on the selected make
+    $sql = "SELECT id, type FROM engine_types WHERE make = ?";
+    $stmt = $db->prepare($sql);
+    $stmt->bind_param("s", $make);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    echo "<option value=''>Select Engine Type</option>";
+    while ($row = $result->fetch_assoc()) {
+        echo "<option value='" . $row['id'] . "'>" . $row['type'] . "</option>";
+    }
+
+    $stmt->close();
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'fetchgearboxtypeforinventory') {
+    $make = $_POST['gear_box_make'];
+
+    // Secure query to fetch gearbox types based on the selected make
+    $sql = "SELECT id, type FROM gearbox_types WHERE make = ?";
+    $stmt = $db->prepare($sql);
+    $stmt->bind_param("s", $make);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    echo "<option value=''>Select Gear Box Type</option>";
+    while ($row = $result->fetch_assoc()) {
+        echo "<option value='" . $row['id'] . "'>" . $row['type'] . "</option>";
+    }
+
+    $stmt->close();
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'fetchfiphtypeforinventory') {
+    $make = $_POST['fiph_make'];
+
+    // Secure query to fetch FIP/HPP types based on the selected make
+    $sql = "SELECT id, type, model FROM fip_types WHERE make = ?";
+    $stmt = $db->prepare($sql);
+    $stmt->bind_param("s", $make);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    echo "<option value=''>Select FIP/HPP Type</option>";
+    while ($row = $result->fetch_assoc()) {
+        echo "<option value='" . $row['id'] . "'>" . $row['type'] . " - " . $row['model'] . "</option>";
+    }
+    $stmt->close();
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'submitengineinventoryform') {
+    // Sanitize and validate input data
+    $engine_card_number = trim($_POST['engine_card_number']);
+    $engine_number = trim($_POST['engine_number']);
+    $engine_make = trim($_POST['engine_make']);
+    $engine_model = trim($_POST['engine_model']);
+    $engine_type_id = isset($_POST['engine_type']) ? (int) $_POST['engine_type'] : 0;
+    $engine_condition = trim($_POST['engine_condition']);
+    $progressive_km = isset($_POST['progressive_km']) ? (int) $_POST['progressive_km'] : 0;
+    $username = $_SESSION['USERNAME'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    // Validation checks
+    $errors = [];
+
+    if (empty($engine_card_number)) {
+        $errors[] = "Engine Card Number is required.";
+    }
+    if (empty($engine_number)) {
+        $errors[] = "Engine Number is required.";
+    }
+    if (empty($engine_make)) {
+        $errors[] = "Engine Make is required.";
+    }
+    if (empty($engine_model)) {
+        $errors[] = "Engine Model is required.";
+    }
+    if ($engine_type_id <= 0) {
+        $errors[] = "Invalid Engine Type selected.";
+    }
+    if (!in_array($engine_condition, ['New', 'RC', 'RECON'])) {
+        $errors[] = "Invalid Engine Condition.";
+    }
+    if ($progressive_km < 0) {
+        $errors[] = "Progressive KM cannot be negative.";
+    }
+
+    // If errors exist, return them as JSON response
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "messages" => $errors]);
+        exit;
+    }
+
+    $query = "SELECT engine_card_number, engine_number FROM engine_master WHERE engine_card_number = ? OR engine_number = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ss", $engine_card_number, $engine_number);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $existingRecords = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['engine_card_number'] === $engine_card_number) {
+            $existingRecords[] = "Engine Card Number: " . $engine_card_number;
+        }
+        if ($row['engine_number'] === $engine_number) {
+            $existingRecords[] = "Engine Number: " . $engine_number;
+        }
+    }
+
+    if (!empty($existingRecords)) {
+        echo json_encode(["status" => "error", "message" => implode("<br>", $existingRecords) . " already exists!"]);
+        exit;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    // Insert into database after validation
+    $query = "INSERT INTO engine_master (engine_card_number, engine_number, engine_make, engine_model, engine_type_id, engine_condition, progressive_km, created_by, depot_id, division_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ssssisisii", $engine_card_number, $engine_number, $engine_make, $engine_model, $engine_type_id, $engine_condition, $progressive_km, $username, $depot_id, $division_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "Engine details submitted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($db)]);
+    }
+
+    mysqli_stmt_close($stmt);
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'submitgearboxinventoryform') {
+    // Sanitize and validate input data
+    $gear_box_card_number = trim($_POST['gear_box_card_number']);
+    $gear_box_number = trim($_POST['gear_box_number']);
+    $gear_box_make = trim($_POST['gear_box_make']);
+    $gear_box_model = trim($_POST['gear_box_model']);
+    $gear_box_type_id = isset($_POST['gear_box_type']) ? (int) $_POST['gear_box_type'] : 0;
+    $gear_box_condition = trim($_POST['gear_box_condition']);
+    $progressive_km = isset($_POST['gear_box_progressive_km']) ? (int) $_POST['gear_box_progressive_km'] : 0;
+    $username = $_SESSION['USERNAME'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    // Validation checks
+    $errors = [];
+
+    if (empty($gear_box_card_number)) {
+        $errors[] = "Gear Box Card Number is required.";
+    }
+    if (empty($gear_box_number)) {
+        $errors[] = "Gear Box Number is required.";
+    }
+    if (empty($gear_box_make)) {
+        $errors[] = "Gear Box Make is required.";
+    }
+    if (empty($gear_box_model)) {
+        $errors[] = "Gear Box Model is required.";
+    }
+    if ($gear_box_type_id <= 0) {
+        $errors[] = "Invalid Gear Box Type selected.";
+    }
+    if (!in_array($gear_box_condition, ['New', 'RC'])) {
+        $errors[] = "Invalid Gear Box Condition.";
+    }
+    if ($progressive_km < 0) {
+        $errors[] = "Progressive KM cannot be negative.";
+    }
+
+    // If errors exist, return them as JSON response
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "messages" => $errors]);
+        exit;
+    }
+
+    $query = "SELECT gear_box_card_number, gear_box_number FROM gearbox_master WHERE gear_box_card_number = ? OR gear_box_number = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ss", $gear_box_card_number, $gear_box_number);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $existingRecords = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['gear_box_card_number'] === $gear_box_card_number) {
+            $existingRecords[] = "Gear Box Card Number: " . $gear_box_card_number;
+        }
+        if ($row['gear_box_number'] === $gear_box_number) {
+            $existingRecords[] = "Gear Box Number: " . $gear_box_number;
+        }
+    }
+
+    if (!empty($existingRecords)) {
+        echo json_encode(["status" => "error", "message" => implode("<br>", $existingRecords) . " already exists!"]);
+        exit;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    // Insert into database after validation
+    $query = "INSERT INTO gearbox_master (gear_box_card_number, gear_box_number, gear_box_make, gear_box_model, gear_box_type_id, gear_box_condition, progressive_km, created_by, depot_id, division_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ssssisisii", $gear_box_card_number, $gear_box_number, $gear_box_make, $gear_box_model, $gear_box_type_id, $gear_box_condition, $progressive_km, $username, $depot_id, $division_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "Gear Box details submitted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($db)]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'submitfiphppinventoryform') {
+    // Sanitize and validate input data
+    $fip_hpp_card_number = trim($_POST['fip_hpp_card_number']);
+    $fip_hpp_number = trim($_POST['fip_hpp_number']);
+    $fip_hpp_bus_make = trim($_POST['fip_hpp_bus_make']);
+    $fip_hpp_make = trim($_POST['fip_hpp_make']);
+    $fip_hpp_model = trim($_POST['fip_hpp_model']);
+    $fip_hpp_type_id = isset($_POST['fip_hpp_type']) ? (int) $_POST['fip_hpp_type'] : 0;
+    $fip_hpp_condition = trim($_POST['fip_hpp_condition']);
+    $progressive_km = isset($_POST['fip_hpp_progressive_km']) ? (int) $_POST['fip_hpp_progressive_km'] : 0;
+    $username = $_SESSION['USERNAME'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    // Validation checks
+    $errors = [];
+
+    if (empty($fip_hpp_card_number)) {
+        $errors[] = "FIP/HPP Card Number is required.";
+    }
+    if (empty($fip_hpp_number)) {
+        $errors[] = "FIP/HPP Number is required.";
+    }
+    if (empty($fip_hpp_bus_make)) {
+        $errors[] = "FIP/HPP Bus Make is required.";
+    }
+    if (empty($fip_hpp_make)) {
+        $errors[] = "FIP/HPP Make is required.";
+    }
+    if (empty($fip_hpp_model)) {
+        $errors[] = "FIP/HPP Model is required.";
+    }
+    if ($fip_hpp_type_id <= 0) {
+        $errors[] = "Invalid FIP/HPP Type selected.";
+    }
+    if (!in_array($fip_hpp_condition, ['New', 'RC'])) {
+        $errors[] = "Invalid FIP/HPP Condition.";
+    }
+    if ($progressive_km < 0) {
+        $errors[] = "Progressive KM cannot be negative.";
+    }
+
+    // If errors exist, return them as JSON response
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "messages" => $errors]);
+        exit;
+    }
+
+    $query = "SELECT fip_hpp_card_number, fip_hpp_number FROM fip_hpp_master WHERE fip_hpp_card_number = ? OR fip_hpp_number = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ss", $fip_hpp_card_number, $fip_hpp_number);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $existingRecords = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['fip_hpp_card_number'] === $fip_hpp_card_number) {
+            $existingRecords[] = "FIP/HPP Card Number: " . $fip_hpp_card_number;
+        }
+        if ($row['fip_hpp_number'] === $fip_hpp_number) {
+            $existingRecords[] = "FIP/HPP Number: " . $fip_hpp_number;
+        }
+    }
+
+    if (!empty($existingRecords)) {
+        echo json_encode(["status" => "error", "message" => implode("<br>", $existingRecords) . " already exists!"]);
+        exit;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    // Insert into database after validation
+    $query = "INSERT INTO fip_hpp_master (fip_hpp_card_number, fip_hpp_number, fip_hpp_bus_make, fip_hpp_make, fip_hpp_model, fip_hpp_type_id, fip_hpp_condition, progressive_km, created_by, depot_id, division_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "sssssisisii", $fip_hpp_card_number, $fip_hpp_number, $fip_hpp_bus_make, $fip_hpp_make, $fip_hpp_model, $fip_hpp_type_id, $fip_hpp_condition, $progressive_km, $username, $depot_id, $division_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "FIP/HPP details submitted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($db)]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'submitstarterinventoryform') {
+    // Sanitize and validate input data
+    $starter_card_number = trim($_POST['starter_card_number']);
+    $starter_number = trim($_POST['starter_number']);
+    $starter_make = trim($_POST['starter_make']);
+    $starter_condition = trim($_POST['starter_condition']);
+    $progressive_km = isset($_POST['starter_progressive_km']) ? (int) $_POST['starter_progressive_km'] : 0;
+    $username = $_SESSION['USERNAME'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    // Validation checks
+    $errors = [];
+
+    if (empty($starter_card_number)) {
+        $errors[] = "Starter Card Number is required.";
+    }
+    if (empty($starter_number)) {
+        $errors[] = "Starter Number is required.";
+    }
+    if (empty($starter_make)) {
+        $errors[] = "Starter Make is required.";
+    }
+    if (!in_array($starter_condition, ['New', 'RC'])) {
+        $errors[] = "Invalid Starter Condition.";
+    }
+    if ($progressive_km < 0) {
+        $errors[] = "Progressive KM cannot be negative.";
+    }
+
+    // If errors exist, return them as JSON response
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "messages" => $errors]);
+        exit;
+    }
+
+
+    $query = "SELECT starter_card_number, starter_number FROM starter_master WHERE starter_card_number = ? OR starter_number = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ss", $starter_card_number, $starter_number);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $existingRecords = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['starter_card_number'] === $starter_card_number) {
+            $existingRecords[] = "Starter Card Number: " . $starter_card_number;
+        }
+        if ($row['starter_number'] === $starter_number) {
+            $existingRecords[] = "Starter Number: " . $starter_number;
+        }
+    }
+
+    if (!empty($existingRecords)) {
+        echo json_encode(["status" => "error", "message" => implode("<br>", $existingRecords) . " already exists!"]);
+        exit;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    // Insert into database after validation
+    $query = "INSERT INTO starter_master (starter_card_number, starter_number, starter_make, starter_condition, progressive_km, created_by, depot_id, division_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ssssisii", $starter_card_number, $starter_number, $starter_make, $starter_condition, $progressive_km, $username, $depot_id, $division_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "Starter details submitted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($db)]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'submitalternatorinventoryform') {
+    // Sanitize and validate input data
+    $alternator_card_number = trim($_POST['alternator_card_number']);
+    $alternator_number = trim($_POST['alternator_number']);
+    $alternator_make = trim($_POST['alternator_make']);
+    $alternator_condition = trim($_POST['alternator_condition']);
+    $progressive_km = isset($_POST['alternator_progressive_km']) ? (int) $_POST['alternator_progressive_km'] : 0;
+    $username = $_SESSION['USERNAME'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    // Validation checks
+    $errors = [];
+
+    if (empty($alternator_card_number)) {
+        $errors[] = "Alternator Card Number is required.";
+    }
+    if (empty($alternator_number)) {
+        $errors[] = "Alternator Number is required.";
+    }
+    if (empty($alternator_make)) {
+        $errors[] = "Alternator Make is required.";
+    }
+    if (!in_array($alternator_condition, ['New', 'RC'])) {
+        $errors[] = "Invalid Alternator Condition.";
+    }
+    if ($progressive_km < 0) {
+        $errors[] = "Progressive KM cannot be negative.";
+    }
+
+    // If errors exist, return them as JSON response
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "messages" => $errors]);
+        exit;
+    }
+
+    $query = "SELECT alternator_card_number, alternator_number FROM alternator_master WHERE alternator_card_number = ? OR alternator_number = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ss", $alternator_card_number, $alternator_number);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $existingRecords = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['alternator_card_number'] === $alternator_card_number) {
+            $existingRecords[] = "Alternator Card Number: " . $alternator_card_number;
+        }
+        if ($row['alternator_number'] === $alternator_number) {
+            $existingRecords[] = "Alternator Number: " . $alternator_number;
+        }
+    }
+
+    if (!empty($existingRecords)) {
+        echo json_encode(["status" => "error", "message" => implode("<br>", $existingRecords) . " already exists!"]);
+        exit;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    // Insert into database after validation
+    $query = "INSERT INTO alternator_master (alternator_card_number, alternator_number, alternator_make, alternator_condition, progressive_km, created_by, depot_id, division_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ssssisii", $alternator_card_number, $alternator_number, $alternator_make, $alternator_condition, $progressive_km, $username, $depot_id, $division_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "Alternator details submitted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($db)]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'submitrearaxleinventoryform') {
+    // Sanitize and validate input data
+    $rear_axle_card_number = trim($_POST['rear_axle_card_number']);
+    $rear_axle_number = trim($_POST['rear_axle_number']);
+    $rear_axle_make = trim($_POST['rear_axle_make']);
+    $rear_axle_condition = trim($_POST['rear_axle_condition']);
+    $progressive_km = isset($_POST['rear_axle_progressive_km']) ? (int) $_POST['rear_axle_progressive_km'] : 0;
+    $username = $_SESSION['USERNAME'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    // Validation checks
+    $errors = [];
+
+    if (empty($rear_axle_card_number)) {
+        $errors[] = "Rear Axle Card Number is required.";
+    }
+    if (empty($rear_axle_number)) {
+        $errors[] = "Rear Axle Number is required.";
+    }
+    if (empty($rear_axle_make)) {
+        $errors[] = "Rear Axle Make is required.";
+    }
+    if (!in_array($rear_axle_condition, ['New', 'RC'])) {
+        $errors[] = "Invalid Rear Axle Condition.";
+    }
+    if ($progressive_km < 0) {
+        $errors[] = "Progressive KM cannot be negative.";
+    }
+
+    // If errors exist, return them as JSON response
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "messages" => $errors]);
+        exit;
+    }
+
+    $query = "SELECT rear_axle_card_number, rear_axle_number FROM rear_axle_master WHERE rear_axle_card_number = ? OR rear_axle_number = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ss", $rear_axle_card_number, $rear_axle_number);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $existingRecords = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['rear_axle_card_number'] === $rear_axle_card_number) {
+            $existingRecords[] = "Rear Axle Card Number: " . $rear_axle_card_number;
+        }
+        if ($row['rear_axle_number'] === $rear_axle_number) {
+            $existingRecords[] = "Rear Axle Number: " . $rear_axle_number;
+        }
+    }
+
+    if (!empty($existingRecords)) {
+        echo json_encode(["status" => "error", "message" => implode("<br>", $existingRecords) . " already exists!"]);
+        exit;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    // Insert into database after validation
+    $query = "INSERT INTO rear_axle_master (rear_axle_card_number, rear_axle_number, rear_axle_make, rear_axle_condition, progressive_km, created_by, depot_id, division_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ssssisii", $rear_axle_card_number, $rear_axle_number, $rear_axle_make, $rear_axle_condition, $progressive_km, $username, $depot_id, $division_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "Rear Axle details submitted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($db)]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'submitbatteryinventoryform') {
+    // Sanitize and validate input data
+    $battery_card_number = trim($_POST['battery_card_number']);
+    $battery_number = trim($_POST['battery_number']);
+    $battery_make = trim($_POST['battery_make']);
+    $progressive_km = isset($_POST['battery_progressive_km']) ? (int) $_POST['battery_progressive_km'] : 0;
+    $username = $_SESSION['USERNAME'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    // Validation checks
+    $errors = [];
+
+    if (empty($battery_card_number)) {
+        $errors[] = "Battery Card Number is required.";
+    }
+    if (empty($battery_number)) {
+        $errors[] = "Battery Number is required.";
+    }
+    if (empty($battery_make)) {
+        $errors[] = "Battery Make is required.";
+    }
+    if ($progressive_km < 0) {
+        $errors[] = "Progressive KM cannot be negative.";
+    }
+
+    // If errors exist, return them as JSON response
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "messages" => $errors]);
+        exit;
+    }
+
+    $query = "SELECT battery_card_number, battery_number FROM battery_master WHERE battery_card_number = ? OR battery_number = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ss", $battery_card_number, $battery_number);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $existingRecords = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['battery_card_number'] === $battery_card_number) {
+            $existingRecords[] = "Battery Card Number: " . $battery_card_number;
+        }
+        if ($row['battery_number'] === $battery_number) {
+            $existingRecords[] = "Battery Number: " . $battery_number;
+        }
+    }
+
+    if (!empty($existingRecords)) {
+        echo json_encode(["status" => "error", "message" => implode("<br>", $existingRecords) . " already exists!"]);
+        exit;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    // Insert into database after validation
+    $query = "INSERT INTO battery_master (battery_card_number, battery_number, battery_make, progressive_km, created_by, depot_id, division_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "sssisii", $battery_card_number, $battery_number, $battery_make, $progressive_km, $username, $depot_id, $division_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "Battery details submitted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($db)]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'submittyreinventoryform') {
+    // Sanitize and validate input data
+    $tyre_card_number = trim($_POST['tyre_card_number']);
+    $tyre_number = trim($_POST['tyre_number']);
+    $tyre_make = trim($_POST['tyre_make']);
+    $tyre_size = trim($_POST['tyre_size']);
+    $tyre_brand = trim($_POST['tyre_brand']);
+    $tyre_condition = trim($_POST['tyre_condition']);
+    $tyre_progressive_km = isset($_POST['tyre_progressive_km']) ? (int) $_POST['tyre_progressive_km'] : 0;
+    $username = $_SESSION['USERNAME'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    // Validation checks
+    $errors = [];
+
+    if (empty($tyre_card_number)) {
+        $errors[] = "Tyre Card Number is required.";
+    }
+    if (empty($tyre_number)) {
+        $errors[] = "Tyre Number is required.";
+    }
+    if (empty($tyre_make)) {
+        $errors[] = "Tyre Make is required.";
+    }
+    if (empty($tyre_size)) {
+        $errors[] = "Tyre Size is required.";
+    }
+    if (empty($tyre_brand)) {
+        $errors[] = "Tyre Brand/Pattern is required.";
+    }
+    if (!in_array($tyre_condition, ['New', 'RC'])) {
+        $errors[] = "Invalid Tyre Condition.";
+    }
+    if ($tyre_progressive_km < 0) {
+        $errors[] = "Progressive KM cannot be negative.";
+    }
+
+    // If errors exist, return them as JSON response
+    if (!empty($errors)) {
+        echo json_encode(["status" => "error", "messages" => $errors]);
+        exit;
+    }
+
+    $query = "SELECT tyre_card_number, tyre_number FROM tyre_master WHERE tyre_card_number = ? OR tyre_number = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "ss", $tyre_card_number, $tyre_number);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $existingRecords = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($row['tyre_card_number'] === $tyre_card_number) {
+            $existingRecords[] = "Tyre Card Number: " . $tyre_card_number;
+        }
+        if ($row['tyre_number'] === $tyre_number) {
+            $existingRecords[] = "Tyre Number: " . $tyre_number;
+        }
+    }
+
+    if (!empty($existingRecords)) {
+        echo json_encode(["status" => "error", "message" => implode("<br>", $existingRecords) . " already exists!"]);
+        exit;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    // Insert into database after validation
+    $query = "INSERT INTO tyre_master (tyre_card_number, tyre_number, tyre_make, tyre_size, tyre_brand, tyre_condition, progressive_km, created_by, depot_id, division_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($db, $query);
+
+    mysqli_stmt_bind_param($stmt, "ssssssisii", $tyre_card_number, $tyre_number, $tyre_make, $tyre_size, $tyre_brand, $tyre_condition, $tyre_progressive_km, $username, $depot_id, $division_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["status" => "success", "message" => "Tyre details submitted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . mysqli_error($db)]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'fetch_inventory_basic_data') {
+    $category_type = $_POST['category'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    ?>
+    <script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "paging": true,       // Enable pagination
+            "ordering": true,     // Enable sorting
+            "searching": true,    // Enable search
+            "info": true          // Show table info
+        });
+    });
+</script>
+<?php
+    if ($category_type == 'engine') {
+        //return the table of engine data
+        //join the engine_master and engine_types table to get the engine type
+        $query = "SELECT em.engine_card_number, em.engine_number, em.engine_make, em.engine_model, et.type as engine_type, em.engine_condition, em.progressive_km
+                  FROM engine_master em
+                  JOIN engine_types et ON em.engine_type_id = et.id
+                  WHERE em.depot_id = ? AND em.division_id = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        //create a table and assign the data to the table and return the table and for table add dataTable to sort the data
+        echo "<table class='table table-bordered table-striped table-hover' id='dataTable'>";
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>Engine Card Number</th>";
+        echo "<th>Engine Number</th>";
+        echo "<th>Engine Make</th>";
+        echo "<th>Engine Model</th>";
+        echo "<th>Engine Type</th>";
+        echo "<th>Engine Condition</th>";
+        echo "<th>Progressive KM</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['engine_card_number'] . "</td>";
+            echo "<td>" . $row['engine_number'] . "</td>";
+            echo "<td>" . $row['engine_make'] . "</td>";
+            echo "<td>" . $row['engine_model'] . "</td>";
+            echo "<td>" . $row['engine_type'] . "</td>";
+            echo "<td>" . $row['engine_condition'] . "</td>";
+            echo "<td>" . $row['progressive_km'] . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+        
+    } else if ($category_type == 'gearbox') {
+        //return the table of gearbox data
+        //join the gearbox_master and gearbox_types table to get the gearbox type
+        $query = "SELECT gm.gear_box_card_number, gm.gear_box_number, gm.gear_box_make, gm.gear_box_model, gt.type as gear_box_type, gm.gear_box_condition, gm.progressive_km
+                  FROM gearbox_master gm
+                  JOIN gearbox_types gt ON gm.gear_box_type_id = gt.id
+                  WHERE gm.depot_id = ? AND gm.division_id = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        //create a table and assign the data to the table and return the table
+        echo "<table class='table table-bordered table-striped table-hover'  id='dataTable'>";
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>Gear Box Card Number</th>";
+        echo "<th>Gear Box Number</th>";
+        echo "<th>Gear Box Make</th>";
+        echo "<th>Gear Box Model</th>";
+        echo "<th>Gear Box Type</th>";
+        echo "<th>Gear Box Condition</th>";
+        echo "<th>Progressive KM</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['gear_box_card_number'] . "</td>";
+            echo "<td>" . $row['gear_box_number'] . "</td>";
+            echo "<td>" . $row['gear_box_make'] . "</td>";
+            echo "<td>" . $row['gear_box_model'] . "</td>";
+            echo "<td>" . $row['gear_box_type'] . "</td>";
+            echo "<td>" . $row['gear_box_condition'] . "</td>";
+            echo "<td>" . $row['progressive_km'] . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+    } else if ($category_type == 'fiphpp') {
+        //return the table of fip/hpp data
+        //join the fip_hpp_master and fip_types table to get the fip/hpp type
+        $query = "SELECT fm.fip_hpp_card_number, fm.fip_hpp_number, fm.fip_hpp_make, fm.fip_hpp_model, ft.type as fip_hpp_type, fm.fip_hpp_condition, fm.progressive_km
+                  FROM fip_hpp_master fm
+                  JOIN fip_types ft ON fm.fip_hpp_type_id = ft.id
+                  WHERE fm.depot_id = ? AND fm.division_id = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        //create a table and assign the data to the table and return the table
+        echo "<table class='table table-bordered table-striped table-hover' id='dataTable'>";
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>FIP/HPP Card Number</th>";
+        echo "<th>FIP/HPP Number</th>";
+        echo "<th>FIP/HPP Make</th>";
+        echo "<th>FIP/HPP Model</th>";
+        echo "<th>FIP/HPP Type</th>";
+        echo "<th>FIP/HPP Condition</th>";
+        echo "<th>Progressive KM</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['fip_hpp_card_number'] . "</td>";
+            echo "<td>" . $row['fip_hpp_number'] . "</td>";
+            echo "<td>" . $row['fip_hpp_make'] . "</td>";
+            echo "<td>" . $row['fip_hpp_model'] . "</td>";
+            echo "<td>" . $row['fip_hpp_type'] . "</td>";
+            echo "<td>" . $row['fip_hpp_condition'] . "</td>";
+            echo "<td>" . $row['progressive_km'] . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+    } else if ($category_type == 'starter') {
+        //return the table of starter data
+        $query = "SELECT sm.starter_card_number, sm.starter_number, sm.starter_make, sm.starter_condition, sm.progressive_km
+                  FROM starter_master sm
+                  WHERE sm.depot_id = ? AND sm.division_id = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        //create a table and assign the data to the table and return the table
+        echo "<table class='table table-bordered table-striped table-hover' id='dataTable'>";
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>Starter Card Number</th>";
+        echo "<th>Starter Number</th>";
+        echo "<th>Starter Make</th>";
+        echo "<th>Starter Condition</th>";
+        echo "<th>Progressive KM</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['starter_card_number'] . "</td>";
+            echo "<td>" . $row['starter_number'] . "</td>";
+            echo "<td>" . $row['starter_make'] . "</td>";
+            echo "<td>" . $row['starter_condition'] . "</td>";
+            echo "<td>" . $row['progressive_km'] . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+    }else if ($category_type == 'alternator') {
+        //return the table of alternator data
+        $query = "SELECT am.alternator_card_number, am.alternator_number, am.alternator_make, am.alternator_condition, am.progressive_km
+                  FROM alternator_master am
+                  WHERE am.depot_id = ? AND am.division_id = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        //create a table and assign the data to the table and return the table
+        echo "<table class='table table-bordered table-striped table-hover' id='dataTable'>";
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>Alternator Card Number</th>";
+        echo "<th>Alternator Number</th>";
+        echo "<th>Alternator Make</th>";
+        echo "<th>Alternator Condition</th>";
+        echo "<th>Progressive KM</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['alternator_card_number'] . "</td>";
+            echo "<td>" . $row['alternator_number'] . "</td>";
+            echo "<td>" . $row['alternator_make'] . "</td>";
+            echo "<td>" . $row['alternator_condition'] . "</td>";
+            echo "<td>" . $row['progressive_km'] . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+    }else if ($category_type == 'rear_axle') {
+        //return the table of rear axle data
+        $query = "SELECT ram.rear_axle_card_number, ram.rear_axle_number, ram.rear_axle_make, ram.rear_axle_condition, ram.progressive_km
+                  FROM rear_axle_master ram
+                  WHERE ram.depot_id = ? AND ram.division_id = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        //create a table and assign the data to the table and return the table 
+        echo "<table class='table table-bordered table-striped table-hover' id='dataTable'>";
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>Rear Axle Card Number</th>";
+        echo "<th>Rear Axle Number</th>";
+        echo "<th>Rear Axle Make</th>";
+        echo "<th>Rear Axle Condition</th>";
+        echo "<th>Progressive KM</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['rear_axle_card_number'] . "</td>";
+            echo "<td>" . $row['rear_axle_number'] . "</td>";
+            echo "<td>" . $row['rear_axle_make'] . "</td>";
+            echo "<td>" . $row['rear_axle_condition'] . "</td>";
+            echo "<td>" . $row['progressive_km'] . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+    }elseif ($category_type == 'battery') {
+        //return the table of battery data
+        $query = "SELECT bm.battery_card_number, bm.battery_number, bm.battery_make, bm.progressive_km
+                  FROM battery_master bm
+                  WHERE bm.depot_id = ? AND bm.division_id = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        //create a table and assign the data to the table and return the table
+        echo "<table class='table table-bordered table-striped table-hover' id='dataTable'>";
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>Battery Card Number</th>";
+        echo "<th>Battery Number</th>";
+        echo "<th>Battery Make</th>";
+        echo "<th>Progressive KM</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['battery_card_number'] . "</td>";
+            echo "<td>" . $row['battery_number'] . "</td>";
+            echo "<td>" . $row['battery_make'] . "</td>";
+            echo "<td>" . $row['progressive_km'] . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+    }elseif ($category_type == 'tyre') {
+        //return the table of tyre data
+        $query = "SELECT tm.tyre_card_number, tm.tyre_number, tm.tyre_make, tm.tyre_size, tm.tyre_brand, tm.tyre_condition, tm.progressive_km
+                  FROM tyre_master tm
+                  WHERE tm.depot_id = ? AND tm.division_id = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        //create a table and assign the data to the table and return the table
+        echo "<table class='table table-bordered table-striped table-hover' id='dataTable'>";
+        echo "<thead>";
+        echo "<tr>";
+        echo "<th>Tyre Card Number</th>";
+        echo "<th>Tyre Number</th>";
+        echo "<th>Tyre Make</th>";
+        echo "<th>Tyre Size</th>";
+        echo "<th>Tyre Brand/Pattern</th>";
+        echo "<th>Tyre Condition</th>";
+        echo "<th>Progressive KM</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['tyre_card_number'] . "</td>";
+            echo "<td>" . $row['tyre_number'] . "</td>";
+            echo "<td>" . $row['tyre_make'] . "</td>";
+            echo "<td>" . $row['tyre_size'] . "</td>";
+            echo "<td>" . $row['tyre_brand'] . "</td>";
+            echo "<td>" . $row['tyre_condition'] . "</td>";
+            echo "<td>" . $row['progressive_km'] . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+    }
 }

@@ -75,7 +75,7 @@ function getBaseUrl()
   <link rel="stylesheet" href="style.css">
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -391,58 +391,73 @@ function getBaseUrl()
                       </div>
                     </li>
                   <?php } ?>
+                  <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') { ?>
+
+                    <li class="nav-item">
+                      <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                          style="font-size: 15px;">
+                          <b>Inventory</b>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                              <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Inventory Items</a></li>
+                              <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Inventory Items</a></li>                              
+                        </ul>
+                      </div>
+                    </li>
+                  <?php } ?>
                 </ul>
                 <ul class="navbar-nav ml-auto">
                   <div class="topbar-divider d-none d-sm-block"></div>
                   <!-- Nav Item - Notification for deputations -->
                   <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech') {
-                  // Query for Deputation Requests (status = 1)
-                  $sql_deputation = "SELECT * FROM `vehicle_deputation` 
+                    // Query for Deputation Requests (status = 1)
+                    $sql_deputation = "SELECT * FROM `vehicle_deputation` 
                    WHERE `status` = '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                    GROUP BY `bus_number`";
 
-                  $result_deputation = mysqli_query($db, $sql_deputation);
-                  $count_deputation = mysqli_num_rows($result_deputation);
+                    $result_deputation = mysqli_query($db, $sql_deputation);
+                    $count_deputation = mysqli_num_rows($result_deputation);
 
-                  // Query for Deputed Vehicles Returned (status = 3)
-                  $sql_returned = "SELECT * FROM `vehicle_deputation` 
+                    // Query for Deputed Vehicles Returned (status = 3)
+                    $sql_returned = "SELECT * FROM `vehicle_deputation` 
                  WHERE `status` = '3' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                  GROUP BY `bus_number`";
 
-                  $result_returned = mysqli_query($db, $sql_returned);
-                  $count_returned = mysqli_num_rows($result_returned);
+                    $result_returned = mysqli_query($db, $sql_returned);
+                    $count_returned = mysqli_num_rows($result_returned);
 
-                  // Total count for badge display
-                  $total_count = $count_deputation + $count_returned;
+                    // Total count for badge display
+                    $total_count = $count_deputation + $count_returned;
 
-                  // Set default bell icon
-                  $bell_icon = '<i id="bellIcon" class="fa-regular fa-bell fa-lg" style="color: #0fd71c;"></i>';
+                    // Set default bell icon
+                    $bell_icon = '<i id="bellIcon" class="fa-regular fa-bell fa-lg" style="color: #0fd71c;"></i>';
 
-                  // If notifications exist, use the shaking red bell icon
-                  if ($total_count > 0) {
-                    $bell_icon = '<i id="bellIcon" class="fa-solid fa-bell fa-shake fa-xl" style="color:rgb(45, 199, 18);"></i>';
-                  }
+                    // If notifications exist, use the shaking red bell icon
+                    if ($total_count > 0) {
+                      $bell_icon = '<i id="bellIcon" class="fa-solid fa-bell fa-shake fa-xl" style="color:rgb(45, 199, 18);"></i>';
+                    }
                   ?>
-                  <li class="nav-item">
-                    <div class="dropdown">
-                      <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                        aria-expanded="false" style="font-size: 15px;">
-                        <?php echo $bell_icon; ?>
-                        <!-- Counter - Alerts -->
-                        <?php if ($total_count > 0) { ?>
-                          <span class="badge badge-success badge-counter"><?php echo $total_count; ?></span>
-                        <?php } ?>
-                      </button>
+                    <li class="nav-item">
+                      <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
+                          aria-expanded="false" style="font-size: 15px;">
+                          <?php echo $bell_icon; ?>
+                          <!-- Counter - Alerts -->
+                          <?php if ($total_count > 0) { ?>
+                            <span class="badge badge-success badge-counter"><?php echo $total_count; ?></span>
+                          <?php } ?>
+                        </button>
 
-                      <!-- Dropdown - Alerts -->
-                      <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="dropdownMenuButton1">
-                        <h6 class="dropdown-header">Deputation Requests & Returns</h6>
+                        <!-- Dropdown - Alerts -->
+                        <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="dropdownMenuButton1">
+                          <h6 class="dropdown-header">Deputation Requests & Returns</h6>
 
-                        <!-- Deputation Requests -->
-                        <?php
-                        if ($count_deputation > 0) {
-                          while ($row = mysqli_fetch_assoc($result_deputation)) {
-                            echo '<a class="dropdown-item d-flex align-items-center" href="depot_veh_dep_monitor.php">
+                          <!-- Deputation Requests -->
+                          <?php
+                          if ($count_deputation > 0) {
+                            while ($row = mysqli_fetch_assoc($result_deputation)) {
+                              echo '<a class="dropdown-item d-flex align-items-center" href="depot_veh_dep_monitor.php">
                             <div class="mr-3">
                                 <div class="icon-circle bg-warning">
                                     <i class="fas fa-file-alt text-white"></i>
@@ -454,13 +469,13 @@ function getBaseUrl()
                                 <span class="text-muted">Deputation Request</span>
                             </div>
                         </a>';
+                            }
                           }
-                        }
 
-                        // Deputed Vehicles Returned
-                        if ($count_returned > 0) {
-                          while ($row = mysqli_fetch_assoc($result_returned)) {
-                            echo '<a class="dropdown-item d-flex align-items-center" href="depot_veh_dep_monitor.php">
+                          // Deputed Vehicles Returned
+                          if ($count_returned > 0) {
+                            while ($row = mysqli_fetch_assoc($result_returned)) {
+                              echo '<a class="dropdown-item d-flex align-items-center" href="depot_veh_dep_monitor.php">
                             <div class="mr-3">
                                 <div class="icon-circle bg-success">
                                     <i class="fas fa-file-alt text-white"></i>
@@ -472,12 +487,12 @@ function getBaseUrl()
                                 <span class="text-muted">Deputed Vehicle Returned</span>
                             </div>
                         </a>';
+                            }
                           }
-                        }
 
-                        // If no requests are found
-                        if ($total_count == 0) {
-                          echo '<a class="dropdown-item d-flex align-items-center" href="#">
+                          // If no requests are found
+                          if ($total_count == 0) {
+                            echo '<a class="dropdown-item d-flex align-items-center" href="#">
                         <div class="mr-3">
                             <div class="icon-circle bg-primary">
                                 <i class="fas fa-file-alt text-white"></i>
@@ -487,61 +502,62 @@ function getBaseUrl()
                             <div class="small text-gray-500">No Requests</div>
                         </div>
                     </a>';
-                        }
-                        ?>
+                          }
+                          ?>
 
-                        <a class="dropdown-item text-center small text-gray-500" href="depot_veh_dep_monitor.php">Show All Requests</a>
+                          <a class="dropdown-item text-center small text-gray-500" href="depot_veh_dep_monitor.php">Show All Requests</a>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                  <?php }  if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
-                  // Query for Deputation Requests (status = 1)
-                  $sql_deputation = "SELECT * FROM `crew_deputation` 
+                    </li>
+                  <?php }
+                  if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
+                    // Query for Deputation Requests (status = 1)
+                    $sql_deputation = "SELECT * FROM `crew_deputation` 
                    WHERE `status` = '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                    GROUP BY `token_number`";
 
-                  $result_deputation = mysqli_query($db, $sql_deputation);
-                  $count_deputation = mysqli_num_rows($result_deputation);
+                    $result_deputation = mysqli_query($db, $sql_deputation);
+                    $count_deputation = mysqli_num_rows($result_deputation);
 
-                  // Query for Deputed Vehicles Returned (status = 3)
-                  $sql_returned = "SELECT * FROM `crew_deputation` 
+                    // Query for Deputed Vehicles Returned (status = 3)
+                    $sql_returned = "SELECT * FROM `crew_deputation` 
                  WHERE `status` = '3' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                  GROUP BY `token_number`";
 
-                  $result_returned = mysqli_query($db, $sql_returned);
-                  $count_returned = mysqli_num_rows($result_returned);
+                    $result_returned = mysqli_query($db, $sql_returned);
+                    $count_returned = mysqli_num_rows($result_returned);
 
-                  // Total count for badge display
-                  $total_count = $count_deputation + $count_returned;
+                    // Total count for badge display
+                    $total_count = $count_deputation + $count_returned;
 
-                  // Set default bell icon
-                  $bell_icon = '<i id="bellIcon" class="fa-regular fa-bell fa-lg" style="color: #0fd71c;"></i>';
+                    // Set default bell icon
+                    $bell_icon = '<i id="bellIcon" class="fa-regular fa-bell fa-lg" style="color: #0fd71c;"></i>';
 
-                  // If notifications exist, use the shaking red bell icon
-                  if ($total_count > 0) {
-                    $bell_icon = '<i id="bellIcon" class="fa-solid fa-bell fa-shake fa-xl" style="color:rgb(45, 199, 18);"></i>';
-                  }
+                    // If notifications exist, use the shaking red bell icon
+                    if ($total_count > 0) {
+                      $bell_icon = '<i id="bellIcon" class="fa-solid fa-bell fa-shake fa-xl" style="color:rgb(45, 199, 18);"></i>';
+                    }
                   ?>
-                  <li class="nav-item">
-                    <div class="dropdown">
-                      <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                        aria-expanded="false" style="font-size: 15px;">
-                        <?php echo $bell_icon; ?>
-                        <!-- Counter - Alerts -->
-                        <?php if ($total_count > 0) { ?>
-                          <span class="badge badge-success badge-counter"><?php echo $total_count; ?></span>
-                        <?php } ?>
-                      </button>
+                    <li class="nav-item">
+                      <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
+                          aria-expanded="false" style="font-size: 15px;">
+                          <?php echo $bell_icon; ?>
+                          <!-- Counter - Alerts -->
+                          <?php if ($total_count > 0) { ?>
+                            <span class="badge badge-success badge-counter"><?php echo $total_count; ?></span>
+                          <?php } ?>
+                        </button>
 
-                      <!-- Dropdown - Alerts -->
-                      <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="dropdownMenuButton1">
-                        <h6 class="dropdown-header">Deputation Requests & Returns</h6>
+                        <!-- Dropdown - Alerts -->
+                        <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="dropdownMenuButton1">
+                          <h6 class="dropdown-header">Deputation Requests & Returns</h6>
 
-                        <!-- Deputation Requests -->
-                        <?php
-                        if ($count_deputation > 0) {
-                          while ($row = mysqli_fetch_assoc($result_deputation)) {
-                            echo '<a class="dropdown-item d-flex align-items-center" href="depot_crew_dep_monitor.php">
+                          <!-- Deputation Requests -->
+                          <?php
+                          if ($count_deputation > 0) {
+                            while ($row = mysqli_fetch_assoc($result_deputation)) {
+                              echo '<a class="dropdown-item d-flex align-items-center" href="depot_crew_dep_monitor.php">
                             <div class="mr-3">
                                 <div class="icon-circle bg-warning">
                                     <i class="fas fa-file-alt text-white"></i>
@@ -553,13 +569,13 @@ function getBaseUrl()
                                 <span class="text-muted">Deputation Request</span>
                             </div>
                         </a>';
+                            }
                           }
-                        }
 
-                        // Deputed Vehicles Returned
-                        if ($count_returned > 0) {
-                          while ($row = mysqli_fetch_assoc($result_returned)) {
-                            echo '<a class="dropdown-item d-flex align-items-center" href="depot_crew_dep_monitor.php">
+                          // Deputed Vehicles Returned
+                          if ($count_returned > 0) {
+                            while ($row = mysqli_fetch_assoc($result_returned)) {
+                              echo '<a class="dropdown-item d-flex align-items-center" href="depot_crew_dep_monitor.php">
                             <div class="mr-3">
                                 <div class="icon-circle bg-success">
                                     <i class="fas fa-file-alt text-white"></i>
@@ -571,12 +587,12 @@ function getBaseUrl()
                                 <span class="text-muted">Deputed Crew Returned</span>
                             </div>
                         </a>';
+                            }
                           }
-                        }
 
-                        // If no requests are found
-                        if ($total_count == 0) {
-                          echo '<a class="dropdown-item d-flex align-items-center" href="#">
+                          // If no requests are found
+                          if ($total_count == 0) {
+                            echo '<a class="dropdown-item d-flex align-items-center" href="#">
                         <div class="mr-3">
                             <div class="icon-circle bg-primary">
                                 <i class="fas fa-file-alt text-white"></i>
@@ -586,13 +602,13 @@ function getBaseUrl()
                             <div class="small text-gray-500">No Requests</div>
                         </div>
                     </a>';
-                        }
-                        ?>
+                          }
+                          ?>
 
-                        <a class="dropdown-item text-center small text-gray-500" href="depot_crew_dep_monitor.php">Show All Requests</a>
+                          <a class="dropdown-item text-center small text-gray-500" href="depot_crew_dep_monitor.php">Show All Requests</a>
+                        </div>
                       </div>
-                    </div>
-                  </li>
+                    </li>
                   <?php } ?>
                   <li class="nav-item">
                     <div class="dropdown">

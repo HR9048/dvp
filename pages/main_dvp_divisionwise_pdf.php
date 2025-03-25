@@ -107,7 +107,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 $html .= '<table style="width: 100%; margin-top: 50px;">';
                 $html .= '<tr>';
                 $html .= '<td style="text-align: left;"><b>CENTRAL OFFICE</b></td>';
-                $html .= '<td style="text-align: center;"><b>KALABUGAGI</b></td>';
+                $html .= '<td style="text-align: center;"><b>KALABURAGI</b></td>';
                 $html .= '<td style="text-align: right;"><b>' . date('d/m/Y', strtotime($selectedDate)) . '</b></td>';
                 $html .= '</tr>';
                 $html .= '</table><br><br>';

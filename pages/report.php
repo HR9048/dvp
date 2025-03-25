@@ -74,7 +74,7 @@ JOIN location l ON o.depot = l.depot_id";
                             <option value="All" <?php echo (!isset($_POST['like_items']) || ($_POST['like_items'] == 'All')) ? 'selected' : ''; ?>>All</option>
                             <?php
                             // Fetching reason names from the reason table
-                            $reasonSql = "SELECT * FROM reason";
+                            $reasonSql = "SELECT distinct reason_name FROM reason";
                             $reasonResult = $db->query($reasonSql);
 
                             if ($reasonResult->num_rows > 0) {
@@ -237,7 +237,7 @@ JOIN location l ON o.depot = l.depot_id";
                             <option value="All">All</option>
                             <?php
                             // Fetching reason names from the reason table
-                            $reasonSql = "SELECT * FROM reason";
+                            $reasonSql = "SELECT distinct reason_name FROM reason";
                             $reasonResult = $db->query($reasonSql);
 
                             if ($reasonResult->num_rows > 0) {

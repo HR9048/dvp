@@ -70,7 +70,7 @@ AND ('$selected_date' BETWEEN ord.off_road_date AND IFNULL(ord.on_road_date, CUR
                         <option value="All" <?php echo (!isset($_POST['like_items']) || ($_POST['like_items'] == 'All')) ? 'selected' : ''; ?>>All</option>
                         <?php
                         // Fetching reason names from the reason table
-                        $reasonSql = "SELECT * FROM reason";
+                        $reasonSql = "SELECT distinct reason_name FROM reason";
                         $reasonResult = $db->query($reasonSql);
 
                         if ($reasonResult->num_rows > 0) {
@@ -156,7 +156,7 @@ AND ('$selected_date' BETWEEN ord.off_road_date AND IFNULL(ord.on_road_date, CUR
                         <option value="All">All</option>
                         <?php
                         // Fetching reason names from the reason table
-                        $reasonSql = "SELECT * FROM reason";
+                        $reasonSql = "SELECT distinct reason_name FROM reason";
                         $reasonResult = $db->query($reasonSql);
 
                         if ($reasonResult->num_rows > 0) {

@@ -1,14 +1,13 @@
 <?php
 include '../includes/connection.php';
-include '../includes/sidebar.php';
-
+include '../includes/division_sidebar.php';
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-
-if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) {
-?>
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DTO') {
+    // Allow access
+    ?>
 
     <h2>Bus kmpl Report</h2>
     <form id="dateForm">
@@ -38,7 +37,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
                     url: "../includes/backend_data.php",
                     type: "POST",
                     data: {
-                        action: "fetchvehiclekmpldataentereddetails",
+                        action: "fetchvehiclekmpldataentereddetailsdivision",
                         selected_date: selected_date
                     },
                     success: function(response) {

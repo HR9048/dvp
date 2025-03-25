@@ -104,7 +104,6 @@ $currentDateTime = date('Y-m-d H:i:s'); // Current server datetime in IST
             // Update schedule_master
             $updateScheduleSql = "UPDATE schedule_master 
                                       SET status = ?, 
-                                          single_crew = NULL,
                                           bus_number_1 = NULL,
                                           bus_make_1 = NULL,
                                           bus_emission_norms_1 = NULL,
@@ -165,7 +164,7 @@ $currentDateTime = date('Y-m-d H:i:s'); // Current server datetime in IST
                 $inactivesch->execute();
                 $inactivesch->close();
             } elseif ($status === 1) {
-                $updateinactive = "UPDATE sch_actinact set inact_to=? where sch_key_no=? and division_id = ? and depot_id = ?";
+                $updateinactive = "UPDATE sch_actinact set inact_to=? where sch_key_no=? and division_id = ? and depot_id = ? and inact_to is null";
                 $inactschup = $db->prepare($updateinactive);
                 $inactschup->bind_param('ssii', $currentDateTime, $scheduleNo, $division, $depot);
                 $inactschup->execute();

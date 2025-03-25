@@ -733,11 +733,12 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
             COUNT(DISTINCT CASE WHEN o.make = 'Corona' AND o.emission_norms = 'BS-4' THEN o.bus_number END) AS Corona_BS4,
             COUNT(DISTINCT CASE WHEN o.make = 'Corona' AND o.emission_norms = 'BS-6' THEN o.bus_number END) AS Corona_BS6,
             COUNT(DISTINCT CASE WHEN o.make = 'Volvo' AND o.emission_norms = 'BS-6' THEN o.bus_number END) AS Volvo_BS6,
+            COUNT(DISTINCT CASE WHEN o.parts_required = 'Engine Head' THEN o.bus_number END) AS `Engine_Head`,
             COUNT(DISTINCT o.bus_number) AS TOTAL
         FROM off_road_data o
         LEFT JOIN bus_registration b ON o.bus_number = b.bus_number
         LEFT JOIN location l ON o.division = l.division_id
-        WHERE o.status = 'off_road' AND o.parts_required = 'Engine'
+        WHERE o.status = 'off_road' AND o.parts_required in ('Engine', 'Engine Head')
         GROUP BY l.division_id";
 
                     // Execute the SQL query
@@ -757,6 +758,7 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                                 <th colspan="4" style="text-align:center;">Eicher</th>
                                 <th colspan="4" style="text-align:center;">Corona</th>
                                 <th colspan="1" style="text-align:center;">Volvo</th>
+                                <th rowspan="2">Engine Head</th>
                                 <th rowspan="2">TOTAL</th>
                             </tr>
                             <tr>
@@ -802,6 +804,7 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                                 echo "<td>" . $row['Corona_BS4'] . "</td>";
                                 echo "<td>" . $row['Corona_BS6'] . "</td>";
                                 echo "<td>" . $row['Volvo_BS6'] . "</td>";
+                                echo "<td>" . $row['Engine_Head'] . "</td>";
                                 echo "<td><b>" . $row['TOTAL'] . "</b></td>";
                                 echo "</tr>";
 
@@ -824,7 +827,8 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                                 $corporation_totals[15] += $row['Corona_BS4'];
                                 $corporation_totals[16] += $row['Corona_BS6'];
                                 $corporation_totals[17] += $row['Volvo_BS6'];
-                                $corporation_totals[18] += $row['TOTAL'];
+                                $corporation_totals[18] += $row['Engine_Head'];
+                                $corporation_totals[19] += $row['TOTAL'];
                             }
                             // Display the row for corporation totals
                             echo "<tr style='font-weight:bold;'>";
@@ -862,7 +866,7 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
     FROM off_road_data o1
     JOIN location l ON o1.depot = l.depot_id
     JOIN bus_registration br ON o1.bus_number = br.bus_number
-    WHERE o1.status = 'off_road' and o1.parts_required='Engine'
+    WHERE o1.status = 'off_road' and o1.parts_required in('Engine', 'Engine Head')
       AND o1.off_road_location NOT IN ('RWY') 
       AND NOT EXISTS (
           SELECT 1 

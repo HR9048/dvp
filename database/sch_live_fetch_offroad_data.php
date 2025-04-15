@@ -113,7 +113,7 @@ $corp_off_road_percentage = $corporation_totals['TOTAL_BUS'] > 0 ?
     round(($corporation_totals['G_TOTAL'] * 100) / $corporation_totals['TOTAL_BUS'], 1) : 0;
 
 echo "<tr style='background-color: #f8d7da; font-weight: bold;'>
-    <td colspan='2'>Corporation Total</td>
+    <td colspan='2' onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\")'>Corporation Total</td>
     <td>{$corporation_totals['TOTAL_BUS']}</td>
     <td>{$corporation_totals['DEPOT_COUNT']}</td>
     <td>{$corporation_totals['DWS']}</td>

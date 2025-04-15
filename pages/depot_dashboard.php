@@ -529,14 +529,14 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
     if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
     // Query for Deputation Requests (status = 1)
     $sql_deputation = "SELECT * FROM `crew_deputation` 
-                       WHERE `status` = '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
+                       WHERE `status` = '1' and deleted != '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                        GROUP BY `token_number`";
     $result_deputation = mysqli_query($db, $sql_deputation);
     $count_deputation = mysqli_num_rows($result_deputation);
 
     // Query for Deputed Vehicles Returned (status = 3)
     $sql_returned = "SELECT * FROM `crew_deputation` 
-                     WHERE `status` = '3' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
+                     WHERE `status` = '3' and deleted != '1' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                      GROUP BY `token_number`";
     $result_returned = mysqli_query($db, $sql_returned);
     $count_returned = mysqli_num_rows($result_returned);
@@ -547,14 +547,14 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech') {
     // Query for Deputation Requests (status = 1)
     $sql_deputation = "SELECT * FROM `vehicle_deputation` 
-                       WHERE `status` = '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
+                       WHERE `status` = '1' and deleted != '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                        GROUP BY `bus_number`";
     $result_deputation = mysqli_query($db, $sql_deputation);
     $count_deputation = mysqli_num_rows($result_deputation);
 
     // Query for Deputed Vehicles Returned (status = 3)
     $sql_returned = "SELECT * FROM `vehicle_deputation` 
-                     WHERE `status` = '3' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
+                     WHERE `status` = '3' and deleted != '1' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                      GROUP BY `bus_number`";
     $result_returned = mysqli_query($db, $sql_returned);
     $count_returned = mysqli_num_rows($result_returned);

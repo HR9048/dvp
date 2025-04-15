@@ -141,7 +141,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSI
             let fourDaysAgo = new Date();
 
             yesterday.setDate(today.getDate());
-            fourDaysAgo.setDate(today.getDate() - 4);
+            fourDaysAgo.setDate(today.getDate() - 12);
 
             // Convert dates to 'YYYY-MM-DD' format for accurate comparison
             let selectedDateString = selectedDate.toISOString().split('T')[0];

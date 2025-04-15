@@ -51,7 +51,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             l.depot_id";
         $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
-        ?>
+?>
 
         <style>
             #dataEntryModal {
@@ -174,7 +174,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                                     // Set KMPL to 0 if hsd is zero to avoid division by zero error
                                     $divisionTotal['kmpl'] = 0;
                                 }
-                                ?>
+                    ?>
                                 <tr>
                                     <!-- Division total data -->
                                     <?php
@@ -194,7 +194,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                                     <td><?php echo number_format($divisionCumulativeTotal[$currentDivision]['total_km'] / $divisionCumulativeTotal[$currentDivision]['hsd'], 2); ?>
                                     </td>
                                 </tr>
-                                <?php
+                        <?php
                             }
 
                             // Reset division-wise total for the new division
@@ -242,7 +242,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                             </td>
                         </tr>
 
-                        <?php
+                    <?php
                         $index++;
                     }
 
@@ -256,7 +256,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                             // Set KMPL to 0 if hsd is zero to avoid division by zero error
                             $divisionTotal['kmpl'] = 0;
                         }
-                        ?>
+                    ?>
                         <tr>
                             <!-- Division total data -->
                             <?php
@@ -276,7 +276,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                             </td>
                         </tr>
 
-                        <?php
+                    <?php
                     }
 
                     // Calculate KMPL for cumulative total
@@ -353,15 +353,14 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         $formattedDate = date('d/m/Y', strtotime($selectedDate));
         ?>
 
-        
-
-            document.getElementById('downloadText').addEventListener('click', function () {
+        <script>
+            document.getElementById('downloadText').addEventListener('click', function() {
                 // Get today's date
 
                 // Get all table data as a 2D array
-                var tableData = Array.from(document.querySelectorAll('table')).map(function (table) {
-                    return Array.from(table.querySelectorAll('tr')).map(function (row) {
-                        return Array.from(row.querySelectorAll('td, th')).map(function (cell) {
+                var tableData = Array.from(document.querySelectorAll('table')).map(function(table) {
+                    return Array.from(table.querySelectorAll('tr')).map(function(row) {
+                        return Array.from(row.querySelectorAll('td, th')).map(function(cell) {
                             return cell.innerText;
                         }).join('\t');
                     }).join('\n');
@@ -388,10 +387,10 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 document.body.removeChild(link);
             });
         </script>
-        <?php
+    <?php
     } else {
         // If the form is not submitted or date is not set, show the form
-        ?>
+    ?>
         <div class="container">
             <form action="" method="post">
                 <label for="date">Select Date:</label>
@@ -399,9 +398,9 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 <button type="submit">Submit</button>
             </form>
         </div>
-        <?php
+    <?php
     }
-?>
+    ?>
 <?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";

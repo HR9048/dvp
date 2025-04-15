@@ -277,6 +277,17 @@ confirm_logged_in();
                         </ul>
                       </div>
                     </li>
+                    <li class="nav-item">
+                      <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                          style="font-size: 15px;">
+                          <b>Inventory</b>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                          <li><a class="dropdown-item" href="co_inventory_details_view.php">View Inventory Details</a></li>
+                        </ul>
+                      </div>
+                    </li>
                   <?php } ?>
                 </ul>
                 <ul class="navbar-nav ml-auto">

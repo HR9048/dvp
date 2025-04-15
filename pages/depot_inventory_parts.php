@@ -6,7 +6,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') {
+if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'WM') {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
@@ -20,23 +20,23 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     <div class="container d-flex justify-content-center mt-4">
         <div class="card shadow-lg custom-container">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Add Inventory Part Details</h4>
+                <h4 class="mb-0">Add Assembly Details</h4>
             </div>
             <div class="card-body">
-                    <div class="mb-3">
-                        <label for="part_name" class="form-label">Select Part:</label>
-                        <select id="part_name" name="part_name" class="form-control">
-                            <option value="">-- Select Part --</option>
-                            <option value="Engine">Engine</option>
-                            <option value="gear_box">Gear Box</option>
-                            <option value="fip_hpp">FIP/HPP</option>
-                            <option value="starter">Starter</option>
-                            <option value="alternator">Alternator</option>
-                            <option value="rear_axle">Rear Axle</option>
-                            <option value="battery">Battery</option>
-                            <!--<option value="tyre">Tyre</option> -->
-                        </select>
-                    </div>
+                <div class="mb-3">
+                    <label for="part_name" class="form-label">Select Part:</label>
+                    <select id="part_name" name="part_name" class="form-control">
+                        <option value="">-- Select Part --</option>
+                        <option value="Engine">Engine</option>
+                        <option value="gear_box">Gear Box</option>
+                        <option value="fip_hpp">FIP/HPP</option>
+                        <option value="starter">Starter</option>
+                        <option value="alternator">Alternator</option>
+                        <option value="rear_axle">Rear Axle</option>
+                        <option value="battery">Battery</option>
+                        <option value="tyre">Tyre</option>
+                    </select>
+                </div>
 
                 <!-- Section to display fetched form -->
                 <div id="formContainer" class="mt-3"></div>
@@ -70,17 +70,14 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         });
 
         function validateAndFormatInput(inputField) {
-                let value = inputField.value;
+            let value = inputField.value;
 
-                // Allow only letters and numbers, remove spaces and special characters
-                value = value.replace(/[^a-zA-Z0-9]/g, '');
+            // Allow only letters and numbers, remove spaces and special characters
+            value = value.replace(/[^a-zA-Z0-9]/g, '');
 
-                // Convert letters to uppercase
-                inputField.value = value.toUpperCase();
-            }
-
-
-        
+            // Convert letters to uppercase
+            inputField.value = value.toUpperCase();
+        }
     </script>
 <?php
 } else {

@@ -100,7 +100,7 @@ if ($type === "Depot") {
     sm.sch_dep_time, 
     sm.sch_key_no, 
     sm.sch_abbr, 
-    st.type,
+    st.name AS type,
     sm.division_id, 
     sm.depot_id,
     COALESCE(SUM(CASE WHEN svo.dep_time_diff > 30 THEN 1 ELSE 0 END), 0) AS late,
@@ -111,8 +111,7 @@ LEFT JOIN sch_veh_out svo
     ON sm.sch_key_no = svo.sch_no 
     AND sm.depot_id = svo.depot_id 
     AND svo.departed_date BETWEEN ? AND ?  -- Moved inside JOIN
-LEFT JOIN schedule_type st 
-    ON sm.service_type_id = st.id
+LEFT JOIN service_class st ON sm.service_class_id = st.id
 WHERE sm.depot_id = ? 
 AND sm.status = '1'
 GROUP BY sm.sch_key_no
@@ -131,63 +130,16 @@ ORDER BY sm.sch_dep_time;";
     $division_id = $row['division_id'];
 
     // Fetch schedules for all depots under this division
-    $query = "SELECT 
-    sm.sch_dep_time, 
-    sm.sch_key_no, 
-    sm.sch_abbr, 
-    st.type,
-    sm.division_id, 
-    sm.depot_id,
-    l.depot AS depot_name,  -- Fetch depot name from location table
-    COALESCE(SUM(CASE WHEN svo.dep_time_diff > 30 THEN 1 ELSE 0 END), 0) AS late,
-    COALESCE(SUM(CASE WHEN svo.dep_time_diff <= 30 THEN 1 ELSE 0 END), 0) AS on_time,
-    COALESCE(COUNT(svo.sch_no), 0) AS total_schedules
-FROM schedule_master sm
-LEFT JOIN sch_veh_out svo 
-    ON sm.sch_key_no = svo.sch_no 
-    AND sm.depot_id = svo.depot_id 
-    AND svo.departed_date BETWEEN ? AND ?
-LEFT JOIN schedule_type st 
-    ON sm.service_type_id = st.id
-LEFT JOIN location l
-    ON sm.depot_id = l.depot_id
-WHERE sm.division_id = ? 
-AND sm.status = '1'
-GROUP BY sm.sch_key_no, sm.depot_id  -- Now grouping by sch_key_no AND depot_id
-HAVING late > 7 
-ORDER BY l.depot_id,sm.sch_dep_time;";
+    $query = "SELECT * from schedule_report where report_date = ? and division_id = ?";
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssi", $last_30_days, $today, $division_id);
+    $stmt->bind_param("si", $today, $division_id);
     $stmt->execute();
 }elseif ($type === "Corporation") {
 
     // Fetch schedules for all depots under this division
-    $query = "SELECT 
-    sm.sch_dep_time, 
-    sm.sch_key_no, 
-    sm.sch_abbr, 
-    st.type,
-    sm.division_id, 
-    sm.depot_id,
-    l.depot AS depot_name,  -- Fetch depot name from location table
-    COALESCE(SUM(CASE WHEN svo.dep_time_diff > 30 THEN 1 ELSE 0 END), 0) AS late,
-    COALESCE(SUM(CASE WHEN svo.dep_time_diff <= 30 THEN 1 ELSE 0 END), 0) AS on_time,
-    COALESCE(COUNT(svo.sch_no), 0) AS total_schedules
-FROM schedule_master sm
-LEFT JOIN sch_veh_out svo 
-    ON sm.sch_key_no = svo.sch_no 
-    AND sm.depot_id = svo.depot_id 
-    AND svo.departed_date BETWEEN ? AND ?
-LEFT JOIN schedule_type st 
-    ON sm.service_type_id = st.id
-LEFT JOIN location l
-    ON sm.depot_id = l.depot_id
-WHERE sm.status = '1'
-GROUP BY sm.sch_key_no, sm.depot_id  -- Now grouping by sch_key_no AND depot_id
-HAVING late > 7 
-ORDER BY l.depot_id,sm.sch_dep_time;";
+    $query = "SELECT * from schedule_report where report_date = ?";
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ss", $last_30_days, $today);
+    $stmt->bind_param("s", $today);
     $stmt->execute();
 }
 

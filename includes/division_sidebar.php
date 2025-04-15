@@ -303,7 +303,23 @@ confirm_logged_in();
                       </div>
                     </li>
                   <?php } ?>
+                  <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' ) { ?>
+                    <li class="nav-item">
+                      <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                          style="font-size: 15px;">
+                          <b>Inventory</b>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                              <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
+                              <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li> 
+                              <li><a class="dropdown-item" href="division_bus_inventory_view.php">View Bus Inventory</a></li> 
+                        </ul>
+                      </div>
+                    </li>
+                  <?php } ?>
                 </ul>
+
                 <ul class="navbar-nav ml-auto">
                   <div class="topbar-divider d-none d-sm-block"></div>
 

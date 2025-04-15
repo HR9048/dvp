@@ -751,7 +751,14 @@ include 'includes/connection.php';
                         }
 
                         function opendepotschdetails(name, type) {
-                            let headerLabel = (type === "Depot") ? "Depot: " + name : "Division: " + name;
+                            let headerLabel = (type === "Depot") ?
+                                "Depot: " + name :
+                                (type === "Division") ?
+                                "Division: " + name :
+                                (type === "Corporation") ?
+                                "Corporation " :
+                                name;
+
 
                             // Update the modal header and reset counts
                             $("#modalDepotName").text(headerLabel);
@@ -1096,6 +1103,7 @@ include 'includes/connection.php';
                         });
                     }
                 });
+                
                 $(document).ready(function() {
                     $('#collapseFour').on('show.bs.collapse', function() {
                         fetchCommercialData();
@@ -1233,30 +1241,30 @@ include 'includes/connection.php';
 
 
                 async function fetchTokenNumber(pfNumber) {
-    const apiUrl = `http://localhost:8880/dvp_test/database/combined_api_data.php?pf_no=${pfNumber}`;
+                    const apiUrl = `http://localhost:8880/dvp_test/database/combined_api_data.php?pf_no=${pfNumber}`;
 
-    try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            console.error(`Error: HTTP status ${response.status}`);
-            return "Other"; 
-        }
+                    try {
+                        const response = await fetch(apiUrl);
+                        if (!response.ok) {
+                            console.error(`Error: HTTP status ${response.status}`);
+                            return "Other";
+                        }
 
-        const data = await response.json();
-        console.log("API Response:", data); // Debugging log
+                        const data = await response.json();
+                        console.log("API Response:", data); // Debugging log
 
-        // Ensure 'data' contains an array and at least one item
-        if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
-            return data.data[0].token_number || "Other"; // Return token_number from first record
-        } else {
-            console.warn(`Token number not found for PF: ${pfNumber}`);
-        }
-    } catch (error) {
-        console.error(`Error fetching token number for PF: ${pfNumber}`, error);
-    }
-    
-    return "Other"; // Default value if not found or API fails
-}
+                        // Ensure 'data' contains an array and at least one item
+                        if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
+                            return data.data[0].token_number || "Other"; // Return token_number from first record
+                        } else {
+                            console.warn(`Token number not found for PF: ${pfNumber}`);
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching token number for PF: ${pfNumber}`, error);
+                    }
+
+                    return "Other"; // Default value if not found or API fails
+                }
 
 
                 async function displayKMPLData(data, type, selectedDate) {

@@ -379,7 +379,8 @@ function getBaseUrl()
                               <li><a class="dropdown-item" href="depot_offroad_fromto.php">Off-Road From to To date</a></li>
                               <li><a class="dropdown-item" href="depot_report.php">Off-Road One day report</a></li>
                             <?php } ?>
-                            <li><a class="dropdown-item" href="depot_kmpl_report.php">KMPL Report</a></li>
+                            <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Day KMPL Report</a></li>
+                            <li><a class="dropdown-item" href="depot_kmpl_report.php">Monthly KMPL Report</a></li>
                             <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft.php">KMPL Report From-To date</a></li>
                           <?php }
                           if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
@@ -400,8 +401,10 @@ function getBaseUrl()
                           <b>Inventory</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                              <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Inventory Items</a></li>
-                              <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Inventory Items</a></li>                              
+                              <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
+                              <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
+                              <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
+                              <li><a class="dropdown-item" href="depot_bus_inventory_view.php">View Bus Inventory</a></li>
                         </ul>
                       </div>
                     </li>
@@ -413,7 +416,7 @@ function getBaseUrl()
                   <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech') {
                     // Query for Deputation Requests (status = 1)
                     $sql_deputation = "SELECT * FROM `vehicle_deputation` 
-                   WHERE `status` = '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
+                   WHERE `status` = '1' and deleted != '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                    GROUP BY `bus_number`";
 
                     $result_deputation = mysqli_query($db, $sql_deputation);
@@ -421,7 +424,7 @@ function getBaseUrl()
 
                     // Query for Deputed Vehicles Returned (status = 3)
                     $sql_returned = "SELECT * FROM `vehicle_deputation` 
-                 WHERE `status` = '3' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
+                 WHERE `status` = '3' and deleted != '1' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                  GROUP BY `bus_number`";
 
                     $result_returned = mysqli_query($db, $sql_returned);
@@ -513,7 +516,7 @@ function getBaseUrl()
                   if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
                     // Query for Deputation Requests (status = 1)
                     $sql_deputation = "SELECT * FROM `crew_deputation` 
-                   WHERE `status` = '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
+                   WHERE `status` = '1' and deleted != '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                    GROUP BY `token_number`";
 
                     $result_deputation = mysqli_query($db, $sql_deputation);
@@ -521,7 +524,7 @@ function getBaseUrl()
 
                     // Query for Deputed Vehicles Returned (status = 3)
                     $sql_returned = "SELECT * FROM `crew_deputation` 
-                 WHERE `status` = '3' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
+                 WHERE `status` = '3' and deleted != '1' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                  GROUP BY `token_number`";
 
                     $result_returned = mysqli_query($db, $sql_returned);

@@ -75,19 +75,19 @@ confirm_logged_in();
                     <span>Corporation Off Road</span></a>
             </li>
 
-            <!--<li class="nav-item">
-                <a class="nav-link1" href="rwy_bus_allocation.php">
+            <li class="nav-item">
+                <a class="nav-link1" href="depot_inventory_parts.php">
                     <i class="fas fa-bus"></i>
-                    <span>Bus Allocation</span></a>
+                    <span>Add Assemblies</span></a>
             </li>
 
              <li class="nav-item">
-                <a class="nav-link1" href="depot_kmpl.php">
+                <a class="nav-link1" href="depot_inventory_parts_view.php">
                     <i class="fas fa-fw fa-archive"></i>
-                    <span>KMPL</span></a>
+                    <span>View Assemblies</span></a>
             </li>
 
-            <li class="nav-item">
+            <!--<li class="nav-item">
                 <a class="nav-link1" href="depot_busses.php">
                     <i class="fas fa-fw fa-bus"></i>
                     <span>Buses</span>

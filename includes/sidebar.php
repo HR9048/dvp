@@ -261,7 +261,7 @@ confirm_logged_in();
                           </li>
                           <li><a class="dropdown-item" href="co_vehicle_kmpl.php">kmpl report month</a></li>
                           <li><a class="dropdown-item" href="co_vehicle_kmpl_ft.php">kmpl report Fron-To Date</a></li>
-                          <li><a class="dropdown-item" href="co_schedule_live.php">Schedule Live Track</a></li>
+                          <li><a class="dropdown-item" href="co_kmpl_compare_report.php">KMPL Comparision Report</a>
                         </ul>
                       </div>
                     </li>
@@ -285,6 +285,9 @@ confirm_logged_in();
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="co_inventory_details_view.php">View Inventory Details</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_report_depotwise.php">Inventory report depotwise</a>
                         </ul>
                       </div>
                     </li>

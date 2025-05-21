@@ -2104,6 +2104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             <option value='CEAT'>CEAT</option>
             <option value='MRF'>MRF</option>
             <option value='APOLLO'>APOLLO</option>
+            <option value='MICHELIN'>MICHELIN</option>
             </select>
             </div>";
 
@@ -2142,6 +2143,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             <option value='STEEL MUSCLE S1 R4 PLUS'>STEEL MUSCLE S1 R4 PLUS</option>
             <option value='JK-JUH-5'>JK-JUH-5</option>
             <option value='ENDURACE RA'>ENDURACE RA</option>
+            <option value='X-MULTI'>X-MULTI</option>
             </select>
             </div>";
 
@@ -2351,7 +2353,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         exit;
     }
 
-    $query = "SELECT engine_card_number, engine_number FROM engine_master WHERE deleted!= '1' and engine_card_number = ? OR engine_number = ?";
+    $query = "SELECT engine_card_number, engine_number FROM engine_master WHERE deleted!= '1' and (engine_card_number = ? OR engine_number = ?)";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $engine_card_number, $engine_number);
     mysqli_stmt_execute($stmt);
@@ -2432,7 +2434,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         exit;
     }
 
-    $query = "SELECT gear_box_card_number, gear_box_number FROM gearbox_master WHERE gear_box_card_number = ? OR gear_box_number = ?";
+    $query = "SELECT gear_box_card_number, gear_box_number FROM gearbox_master WHERE deleted!= '1' AND (gear_box_card_number = ? OR gear_box_number = ?)";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $gear_box_card_number, $gear_box_number);
     mysqli_stmt_execute($stmt);
@@ -2516,7 +2518,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         exit;
     }
 
-    $query = "SELECT fip_hpp_card_number, fip_hpp_number FROM fip_hpp_master WHERE fip_hpp_card_number = ? OR fip_hpp_number = ?";
+    $query = "SELECT fip_hpp_card_number, fip_hpp_number FROM fip_hpp_master WHERE deleted!= '1' AND (fip_hpp_card_number = ? OR fip_hpp_number = ?)";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $fip_hpp_card_number, $fip_hpp_number);
     mysqli_stmt_execute($stmt);
@@ -2589,7 +2591,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     }
 
 
-    $query = "SELECT starter_card_number, starter_number FROM starter_master WHERE starter_card_number = ? OR starter_number = ?";
+    $query = "SELECT starter_card_number, starter_number FROM starter_master WHERE deleted!= '1' AND (starter_card_number = ? OR starter_number = ?)";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $starter_card_number, $starter_number);
     mysqli_stmt_execute($stmt);
@@ -2661,7 +2663,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         exit;
     }
 
-    $query = "SELECT alternator_card_number, alternator_number FROM alternator_master WHERE alternator_card_number = ? OR alternator_number = ?";
+    $query = "SELECT alternator_card_number, alternator_number FROM alternator_master WHERE deleted!= '1' AND (alternator_card_number = ? OR alternator_number = ?)";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $alternator_card_number, $alternator_number);
     mysqli_stmt_execute($stmt);
@@ -2733,7 +2735,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         exit;
     }
 
-    $query = "SELECT rear_axle_card_number, rear_axle_number FROM rear_axle_master WHERE rear_axle_card_number = ? OR rear_axle_number = ?";
+    $query = "SELECT rear_axle_card_number, rear_axle_number FROM rear_axle_master WHERE deleted!= '1' AND (rear_axle_card_number = ? OR rear_axle_number = ?)";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $rear_axle_card_number, $rear_axle_number);
     mysqli_stmt_execute($stmt);
@@ -2802,7 +2804,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         exit;
     }
 
-    $query = "SELECT battery_card_number, battery_number FROM battery_master WHERE battery_card_number = ? OR battery_number = ?";
+    $query = "SELECT battery_card_number, battery_number FROM battery_master WHERE deleted!= '1' AND (battery_card_number = ? OR battery_number = ?)";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $battery_card_number, $battery_number);
     mysqli_stmt_execute($stmt);
@@ -2883,7 +2885,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         exit;
     }
 
-    $query = "SELECT tyre_card_number, tyre_number FROM tyre_master WHERE tyre_card_number = ? OR tyre_number = ?";
+    $query = "SELECT tyre_card_number, tyre_number FROM tyre_master WHERE deleted!= '1' AND (tyre_card_number = ? OR tyre_number = ?)";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $tyre_card_number, $tyre_number);
     mysqli_stmt_execute($stmt);
@@ -3747,6 +3749,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 let id = $("#edit_fip_hpp_id").val();
                 let fip_hpp_card_number = $("#edit_fip_hpp_card_number").val().trim();
                 let fip_hpp_number = $("#edit_fip_hpp_number").val().trim();
+                let fip_hpp_bus_make = $("#edit_fip_hpp_bus_make").val().trim();
                 let fip_hpp_make = $("#edit_fip_hpp_make").val().trim();
                 let fip_hpp_model = $("#edit_fip_hpp_model").val().trim();
                 let fip_hpp_type = $("#edit_fip_hpp_type").val().trim();
@@ -3754,7 +3757,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 let progressive_km = $("#edit_fip_hpp_progressive_km").val().trim();
 
                 // Validation Checks
-                if (fip_hpp_card_number === "" || fip_hpp_number === "" || fip_hpp_make === "" || fip_hpp_type === "" || fip_hpp_model === "" || fip_hpp_condition === "") {
+                if (fip_hpp_card_number === "" || fip_hpp_number === "" || fip_hpp_bus_make === "" || fip_hpp_make === "" || fip_hpp_type === "" || fip_hpp_model === "" || fip_hpp_condition === "") {
                     Swal.fire({
                         icon: "warning",
                         title: "Validation Error",
@@ -3801,6 +3804,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                                 id: id,
                                 fip_hpp_card_number: fip_hpp_card_number,
                                 fip_hpp_number: fip_hpp_number,
+                                fip_hpp_bus_make: fip_hpp_bus_make,
                                 fip_hpp_make: fip_hpp_make,
                                 fip_hpp_model: fip_hpp_model,
                                 fip_hpp_type: fip_hpp_type,
@@ -4197,7 +4201,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 });
             });
             // Handle Update
-            $("#startereditForm").submit(function(e) {
+            $("#alternatoreditForm").submit(function(e) {
                 e.preventDefault(); // Prevent default form submission
 
                 let id = $("#edit_alternator_id").val();
@@ -4792,6 +4796,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                                 <option value='CEAT'>CEAT</option>
                                 <option value='MRF'>MRF</option>
                                 <option value='Apollo'>Apollo</option>
+                                <option value='MICHELIN'>MICHELIN</option>
                                 </select>
                                 </div>
 
@@ -4830,6 +4835,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                                 <option value='STEEL MUSCLE S1 R4 PLUS'>STEEL MUSCLE S1 R4 PLUS</option>
                                 <option value='JK-JUH-5'>JK-JUH-5</option>
                                 <option value='ENDURACE RA'>ENDURACE RA</option>
+                                <option value='X-MULTI'>X-MULTI</option>
                                 </select>
                                 </div>
 
@@ -5135,6 +5141,35 @@ WHERE br.bus_number = '$bus_number'");
         echo json_encode(['success' => false]);
     }
 }
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'get_bus_details_scraped' && isset($_POST['bus_number'])) {
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+    $query = mysqli_query($db, "SELECT 
+    br.*, 
+    bs.bus_type 
+FROM bus_scrap_data br
+LEFT JOIN bus_seat_category bs 
+    ON br.bus_sub_category = bs.bus_sub_category
+WHERE br.bus_number = '$bus_number'");
+
+    if ($row = mysqli_fetch_assoc($query)) {
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'chassis_number' => $row['chassis_number'],
+                'make' => $row['make'],
+                'emission_norms' => $row['emission_norms'],
+                'bus_category' => $row['bus_sub_category'],
+                'bus_body_builder' => $row['bus_body_builder'],
+                'seating_capacity' => $row['seating_capacity'],
+                'date_of_commission' => $row['doc'],
+                'wheel_base' => $row['wheel_base'],
+                'bus_type' => $row['bus_type']
+            ]
+        ]);
+    } else {
+        echo json_encode(['success' => false]);
+    }
+}
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == "get_engine_details" && isset($_POST['make']) && isset($_POST['norms'])) {
     $make = $_POST['make'];
     $norms = $_POST['norms'];
@@ -5299,9 +5334,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     }
 
     // Update Engine Record
-    $query = "UPDATE engine_master SET engine_card_number = ?, engine_number = ?, engine_make = ?, engine_model = ?, engine_condition = ?, progressive_km = ? WHERE id = ?";
+    $query = "UPDATE engine_master SET engine_card_number = ?, engine_number = ?, engine_make = ?, engine_type_id = ?, engine_model = ?, engine_condition = ?, progressive_km = ? WHERE id = ?";
     $stmt = mysqli_prepare($db, $query);
-    mysqli_stmt_bind_param($stmt, "ssssssi", $engine_card_number, $engine_number, $engine_make, $engine_model, $engine_condition, $progressive_km, $id);
+    mysqli_stmt_bind_param($stmt, "sssssssi", $engine_card_number, $engine_number, $engine_make, $engine_type, $engine_model, $engine_condition, $progressive_km, $id);
 
     if (mysqli_stmt_execute($stmt)) {
         echo "success";
@@ -5433,13 +5468,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $id = $_POST['id'];
     $fip_hpp_card_number = trim($_POST['fip_hpp_card_number']);
     $fip_hpp_number = trim($_POST['fip_hpp_number']);
+    $fip_hpp_bus_make = trim($_POST['fip_hpp_bus_make']);
     $fip_hpp_make = trim($_POST['fip_hpp_make']);
     $fip_hpp_model = trim($_POST['fip_hpp_model']);
+    $fip_hpp_type = trim($_POST['fip_hpp_type']);
     $fip_hpp_condition = trim($_POST['fip_hpp_condition']);
     $progressive_km = trim($_POST['progressive_km']);
 
     // Backend Validation: Check Empty Fields
-    if (empty($fip_hpp_card_number) || empty($fip_hpp_number) || empty($fip_hpp_make) || empty($fip_hpp_model) || empty($fip_hpp_condition)) {
+    if (empty($fip_hpp_card_number) || empty($fip_hpp_number) || empty($fip_hpp_bus_make) || empty($fip_hpp_make) || empty($fip_hpp_model) || empty($fip_hpp_condition) || empty($fip_hpp_type)) {
         echo "All fields are required";
         exit;
     }
@@ -5474,9 +5511,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     }
 
     // Update FIP/HPP Record
-    $query = "UPDATE fip_hpp_master SET fip_hpp_card_number = ?, fip_hpp_number = ?, fip_hpp_make = ?, fip_hpp_model = ?, fip_hpp_condition = ?, progressive_km = ? WHERE id = ?";
+    $query = "UPDATE fip_hpp_master SET fip_hpp_card_number = ?, fip_hpp_number = ?, fip_hpp_bus_make = ?, fip_hpp_make = ?, fip_hpp_model = ?, fip_hpp_type_id = ?, fip_hpp_condition = ?, progressive_km = ? WHERE id = ?";
     $stmt = mysqli_prepare($db, $query);
-    mysqli_stmt_bind_param($stmt, "ssssssi", $fip_hpp_card_number, $fip_hpp_number, $fip_hpp_make, $fip_hpp_model, $fip_hpp_condition, $progressive_km, $id);
+    mysqli_stmt_bind_param($stmt, "ssssssssi", $fip_hpp_card_number, $fip_hpp_number, $fip_hpp_bus_make, $fip_hpp_make, $fip_hpp_model, $fip_hpp_type, $fip_hpp_condition, $progressive_km, $id);
 
     if (mysqli_stmt_execute($stmt)) {
         echo "success";
@@ -5832,18 +5869,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 }
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'delete_tyre_from_list') {
     $id = $_POST['id'];
-    //before deleting check if the tyre is allotted or not if allotted find the bus number and return the bus number the vehicle no present in bus_inventory table
-    $query = "SELECT bus_number FROM bus_inventory WHERE tyre_id = ? AND deleted != '1'";
-    $stmt = mysqli_prepare($db, $query);
-    mysqli_stmt_bind_param($stmt, "i", $id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    if (mysqli_num_rows($result) > 0) {
-        $row = mysqli_fetch_assoc($result);
-        echo "Tyre is allotted to bus number: " . $row['bus_number'] . ". Cannot delete.";
-        exit;
-    }
-
+   
     $query = "UPDATE tyre_master SET deleted = 1 WHERE id = ?";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "i", $id);
@@ -5988,6 +6014,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $battery_2_no_progressive_km = $_POST['battery_2_no_progressive_km'];
     $speed_governor = $_POST['speed_governor'];
 
+
     if ($speed_governor == 'FITTED') {
         $speed_governor_model = $_POST['speed_governor_model'];
         $speed_governor_serial_no = $_POST['speed_governor_serial_no'];
@@ -6082,6 +6109,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $depot_id = $_SESSION['DEPOT_ID'];
     $user_name = $_SESSION['USERNAME'];
     $inventory_date = '2025-03-31';
+    $scrap_status_from_bus = $_POST['scrap_status'];
 
     //validate the inputs depend on condition if any value is not found if condition also true then return a response of erro which fields are missing
     $missing_fields = [];
@@ -6160,7 +6188,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         if (empty($fdas_fdss_present)) $missing_fields[] = "FDAS FDSS Present";
     }
     if (empty($fire_extinguisher_nos)) $missing_fields[] = "Fire Extinguisher Nos";
-    if (empty($fire_extinguisher_total_kg)) $missing_fields[] = "Fire Extinguisher Total KG";
+    if ($fire_extinguisher_total_kg === '' || !isset($fire_extinguisher_total_kg)) {
+        $missing_fields[] = "Fire Extinguisher Total KG";
+    }
     if (empty($first_aid_box_status)) $missing_fields[] = "First Aid Box Status";
 
 
@@ -6305,52 +6335,52 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $part_count1 = '1';
     $part_count2 = '2';
     //insert every parts id and part name into inventory_part_track table
-    $query = "INSERT INTO `inventory_item_track`(`part_name`, `part_id`, `bus_number`, `from_date`, part_count) VALUES (?, ?, ?, ?, ?)";
+    $query = "INSERT INTO `inventory_item_track`(`part_name`, `part_id`, `bus_number`, `from_date`, part_count, division_id, depot_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssssi", $engine_no1, $engine_no, $busNumber, $todaydate, $part_count1);
+    $stmt->bind_param("ssssiii", $engine_no1, $engine_no, $busNumber, $todaydate, $part_count1, $division_id, $depot_id);
     $stmt->execute();
     $stmt->close();
 
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssssi", $fiphpp_no1, $fiphpp_no, $busNumber, $todaydate, $part_count1);
+    $stmt->bind_param("ssssiii", $fiphpp_no1, $fiphpp_no, $busNumber, $todaydate, $part_count1, $division_id, $depot_id);
     $stmt->execute();
     $stmt->close();
 
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssssi", $gearbox_no1, $gearbox_no, $busNumber, $todaydate, $part_count1);
+    $stmt->bind_param("ssssiii", $gearbox_no1, $gearbox_no, $busNumber, $todaydate, $part_count1, $division_id, $depot_id);
     $stmt->execute();
     $stmt->close();
 
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssssi", $starter_no1, $starter_no, $busNumber, $todaydate, $part_count1);
+    $stmt->bind_param("ssssiii", $starter_no1, $starter_no, $busNumber, $todaydate, $part_count1, $division_id, $depot_id);
     $stmt->execute();
     $stmt->close();
 
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssssi", $alternator_no1, $alternator_no, $busNumber, $todaydate, $part_count1);
+    $stmt->bind_param("ssssiii", $alternator_no1, $alternator_no, $busNumber, $todaydate, $part_count1, $division_id, $depot_id);
     $stmt->execute();
     $stmt->close();
 
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssssi", $rear_axel_no1, $rear_axel_no, $busNumber, $todaydate, $part_count1);
+    $stmt->bind_param("ssssiii", $rear_axel_no1, $rear_axel_no, $busNumber, $todaydate, $part_count1, $division_id, $depot_id);
     $stmt->execute();
     $stmt->close();
 
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssssi", $battery_1_no1, $battery_1_no, $busNumber, $todaydate, $part_count1);
+    $stmt->bind_param("ssssiii", $battery_1_no1, $battery_1_no, $busNumber, $todaydate, $part_count1, $division_id, $depot_id);
     $stmt->execute();
     $stmt->close();
 
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ssssi", $battery_2_no1, $battery_2_no, $busNumber, $todaydate, $part_count2);
+    $stmt->bind_param("ssssiii", $battery_2_no1, $battery_2_no, $busNumber, $todaydate, $part_count2, $division_id, $depot_id);
     $stmt->execute();
     $stmt->close();
 
     //insert the data into bus_inventory table
-    $sqlinventory = "INSERT INTO `bus_inventory`( `bus_number`, `date_of_fc`, `bus_progressive_km`, `engine_id`, `fiphpp_id`, `gearbox_id`, `starter_id`, `alternator_id`, `rear_axel_id`, `battery_1_id`, `battery_2_id`, `speed_governor`, `speed_governor_model`, `speed_governor_serial_no`, `ac_unit`, `ac_model`, `led_board`, `led_board_make`, `led_board_front`, `led_board_front_inside`, `led_board_rear`, `led_board_lhs_outside`, `camera_f_saloon`, `camera_f_outside`, `camera_r_saloon`, `camera_r_outside`, `camera_monitor`, `camera_storage_unit`, `pis_mike_amplefier`, `vlts_unit_present`, `vlts_unit_make`, `fdas_fdss_present`, `fire_extinguisher_nos`, `fire_extinguisher_total_kg`, `first_aid_box_status`, division_id, depot_id, created_by, inventory_date) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sqlinventory = "INSERT INTO `bus_inventory`( `bus_number`, `date_of_fc`, `bus_progressive_km`, `engine_id`, `fiphpp_id`, `gearbox_id`, `starter_id`, `alternator_id`, `rear_axel_id`, `battery_1_id`, `battery_2_id`, `speed_governor`, `speed_governor_model`, `speed_governor_serial_no`, `ac_unit`, `ac_model`, `led_board`, `led_board_make`, `led_board_front`, `led_board_front_inside`, `led_board_rear`, `led_board_lhs_outside`, `camera_f_saloon`, `camera_f_outside`, `camera_r_saloon`, `camera_r_outside`, `camera_monitor`, `camera_storage_unit`, `pis_mike_amplefier`, `vlts_unit_present`, `vlts_unit_make`, `fdas_fdss_present`, `fire_extinguisher_nos`, `fire_extinguisher_total_kg`, `first_aid_box_status`, division_id, depot_id, created_by, inventory_date, scraped) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $db->prepare($sqlinventory);
 
-    $stmt->bind_param("sssssssssssssssssssssssssssssssssssiiss", $busNumber, $date_of_fc, $bus_progressive_km, $engine_no, $fiphpp_no, $gearbox_no, $starter_no, $alternator_no, $rear_axel_no, $battery_1_no, $battery_2_no, $speed_governor, $speed_governor_model, $speed_governor_serial_no, $ac_unit, $ac_model, $led_board, $led_board_make, $led_board_front, $led_board_front_inside, $led_board_rear, $led_board_lhs_outside, $camera_f_saloon, $camera_f_outside, $camera_r_saloon, $camera_r_outside, $camera_monitor, $camera_storage_unit, $pis_mike_amplefier, $vlts_unit_present, $vlts_unit_make, $fdas_fdss_present, $fire_extinguisher_nos, $fire_extinguisher_total_kg, $first_aid_box_status, $division_id, $depot_id, $user_name, $inventory_date);
+    $stmt->bind_param("sssssssssssssssssssssssssssssssssssiissi", $busNumber, $date_of_fc, $bus_progressive_km, $engine_no, $fiphpp_no, $gearbox_no, $starter_no, $alternator_no, $rear_axel_no, $battery_1_no, $battery_2_no, $speed_governor, $speed_governor_model, $speed_governor_serial_no, $ac_unit, $ac_model, $led_board, $led_board_make, $led_board_front, $led_board_front_inside, $led_board_rear, $led_board_lhs_outside, $camera_f_saloon, $camera_f_outside, $camera_r_saloon, $camera_r_outside, $camera_monitor, $camera_storage_unit, $pis_mike_amplefier, $vlts_unit_present, $vlts_unit_make, $fdas_fdss_present, $fire_extinguisher_nos, $fire_extinguisher_total_kg, $first_aid_box_status, $division_id, $depot_id, $user_name, $inventory_date, $scrap_status_from_bus);
 
     if ($stmt->execute()) {
         echo json_encode(["status" => "success", "message" => "Bus inventory data submitted successfully."]);
@@ -6364,7 +6394,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $id = intval($_POST['id']);
 
     $query = "SELECT bi.*, 
-            br.*,
+               CASE WHEN bi.scraped = 0 THEN br.make ELSE bs.make END AS make,
+               CASE WHEN bi.scraped = 0 THEN br.doc ELSE bs.doc END AS doc,
+               CASE WHEN bi.scraped = 0 THEN br.emission_norms ELSE bs.emission_norms END AS emission_norms,
+               CASE WHEN bi.scraped = 0 THEN br.chassis_number ELSE bs.chassis_number END AS chassis_number,
+                CASE WHEN bi.scraped = 0 THEN br.bus_sub_category ELSE bs.bus_sub_category END AS bus_sub_category,
+                CASE WHEN bi.scraped = 0 THEN br.bus_body_builder ELSE bs.bus_body_builder END AS bus_body_builder,
+                CASE WHEN bi.scraped = 0 THEN br.seating_capacity ELSE bs.seating_capacity END AS seating_capacity,
+                CASE WHEN bi.scraped = 0 THEN br.wheel_base ELSE bs.wheel_base END AS wheel_base,
+            
             em.*, 
             fm.*, 
             gm.*, 
@@ -6387,6 +6425,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             bct.bus_type
         FROM bus_inventory bi
         LEFT JOIN bus_registration br ON bi.bus_number = br.bus_number
+        LEFT JOIN bus_scrap_data bs ON bi.bus_number = bs.bus_number
         LEFT JOIN engine_master em ON bi.engine_id = em.id
         LEFT JOIN fip_hpp_master fm ON bi.fiphpp_id = fm.id
         LEFT JOIN gearbox_master gm ON bi.gearbox_id = gm.id
@@ -6399,7 +6438,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         LEFT JOIN engine_types et on em.engine_type_id = et.id
         LEFT JOIN fip_types ft on fm.fip_hpp_type_id = ft.id
         LEFT JOIN gearbox_types gt on gm.gear_box_type_id = gt.id
-        LEFT JOIN bus_seat_category bct on br.bus_sub_category = bct.bus_sub_category
+        LEFT JOIN bus_seat_category bct ON 
+    CASE WHEN bi.scraped = 0 THEN br.bus_sub_category ELSE bs.bus_sub_category END = bct.bus_sub_category
         WHERE bi.id = $id
     ";
 
@@ -6410,10 +6450,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         echo "<table class='table table-bordered '><tbody>";
 
         // Bus Basic Info
-        echo "<tr><th>Bus Number</th><td>" . htmlspecialchars($row['bus_number']) . "</td><th>Division</th><td>" . htmlspecialchars($row['division']) . "</td><th>Depot</th><td>" . htmlspecialchars($row['depot']) . "</td><th>Date of Comminss</th><td>" . date('d-m-Y', strtotime($row['doc'])) . "</td></tr>";
+        echo "<tr><th>Bus Number</th><td>" . htmlspecialchars($row['bus_number']) . "</td><th>Division</th><td>" . htmlspecialchars($row['division']) . "</td><th>Depot</th><td>" . htmlspecialchars($row['depot']) . "</td><th>DOC</th><td>" . date('d-m-Y', strtotime($row['doc'])) . "</td></tr>";
         echo "<tr><th>Make</th><td>" . htmlspecialchars($row['make']) . "</td><th>Emission Norms</th><td>" . htmlspecialchars($row['emission_norms']) . "</td><th>Chassis No</th><td>" . htmlspecialchars($row['chassis_number']) . "</td><th>Bus Category</th><td>" . htmlspecialchars($row['bus_sub_category']) . "</td></tr>";
         echo "<tr><th>Body Builder</th><td>" . htmlspecialchars($row['bus_body_builder']) . "</td><th>Seating Capacity</th><td>" . htmlspecialchars($row['seating_capacity']) . "</td><th>wheel Base</th><td>" . htmlspecialchars($row['wheel_base']) . "</td><th>Bus Progressive Km</th><td>" . htmlspecialchars($row['bus_progressive_km']) . "</td></tr>";
-        echo "<tr><th>Last FC date</th><td colspan='2'>" . date('d-m-Y', strtotime($row['date_of_fc'])) . "</td></tr>";
+        echo "<tr><th>FC date</th><td colspan='2'>" . date('d-m-Y', strtotime($row['date_of_fc'])) . "</td></tr>";
         echo "<tr><th colspan='8'><h4 class='text-center'>Engine Details</h4></th></tr>";
         echo "<tr><th>Card No</th><td>" . htmlspecialchars($row['engine_card_number']) . "</td><th>Engine No</th><td>" . htmlspecialchars($row['engine_number']) . "</td><th>Make</th><td>" . htmlspecialchars($row['engine_make']) . "</td><th>Model</th><td>" . htmlspecialchars($row['engine_model']) . "</td></tr>";
         echo "<tr><th>Type</th><td>" . htmlspecialchars($row['engine_type']) . "</td><th>Condition</th><td>" . htmlspecialchars($row['engine_condition']) . "</td><th colspan='2'>Progressive KM</th><td>" . htmlspecialchars($row['engine_progressive_km']) . "</td></tr>";
@@ -6495,10 +6535,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $bus_number = $_POST['veh_no_out'];
     $todaydate = date('Y-m-d');
 
-    // Step 1: Check if the vehicle is already on operation (status = 1)
-    $check_query = "SELECT vehicle_no FROM sch_veh_out WHERE vehicle_no = ? AND schedule_status = 1";
+    /*// Step 1: Check if the vehicle is already on operation (status = 1)
+    $check_query = "SELECT vehicle_no FROM sch_veh_out WHERE vehicle_no = ? AND schedule_status = 1 and division_id = ? AND depot_id = ?";
     $check_stmt = $db->prepare($check_query);
-    $check_stmt->bind_param("s", $bus_number);
+    $check_stmt->bind_param("sss", $bus_number, $division_id, $depot_id);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
 
@@ -6508,7 +6548,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             'message' => 'Selected vehicle is already on Operation. Please select a different vehicle.'
         ]);
         exit;
-    }
+    }*/
 
     // Step 2: Fetch schedules if the vehicle is not in operation
     $query = "SELECT sch_key_no, bus_number_1, bus_number_2, additional_bus_number FROM schedule_master WHERE division_id = ? AND depot_id = ? ORDER BY sch_dep_time ASC";

@@ -313,7 +313,10 @@ confirm_logged_in();
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                               <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
                               <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li> 
+                              <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add bus Inventory</a></li>
                               <li><a class="dropdown-item" href="division_bus_inventory_view.php">View Bus Inventory</a></li> 
+                              <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
                         </ul>
                       </div>
                     </li>

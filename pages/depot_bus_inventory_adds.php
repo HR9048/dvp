@@ -6,7 +6,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'WM') {
+if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' ) {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
@@ -21,11 +21,7 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESS
                         <option value="">-- Select Bus Number --</option>
                         <?php
                         if ($_SESSION['TYPE'] == 'DEPOT'){
-                        $q = mysqli_query($db, "SELECT bus_number FROM bus_registration WHERE division_name = '$division_id' AND depot_name = '$depot_id' AND NOT EXISTS (SELECT 1 FROM bus_inventory WHERE bus_inventory.bus_number = bus_registration.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
-                        }elseif($_SESSION['TYPE'] == 'DIVISION'){
-                            $q = mysqli_query($db, "SELECT bus_number FROM bus_registration WHERE division_name = '$division_id'  AND NOT EXISTS (SELECT 1 FROM bus_inventory WHERE bus_inventory.bus_number = bus_registration.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
-                        }elseif($_SESSION['TYPE'] == 'RWY'){
-                            $q = mysqli_query($db, "SELECT bus_number FROM bus_registration WHERE NOT EXISTS (SELECT 1 FROM bus_inventory WHERE bus_inventory.bus_number = bus_registration.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
+                        $q = mysqli_query($db, "SELECT bus_number FROM bus_scrap_data WHERE division = '$division_id' AND depot = '$depot_id' AND order_date > '2025-03-31' AND NOT EXISTS (SELECT 1 FROM bus_inventory WHERE bus_inventory.bus_number = bus_scrap_data.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
                         }
                         while ($row = mysqli_fetch_assoc($q)) {
                             echo '<option value="' . $row['bus_number'] . '">' . $row['bus_number'] . '</option>';
@@ -424,7 +420,7 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESS
                     </select>
                 </div>
             </div>
-            <input type="hidden" name="scrap_status" id="scrap_status" value="0">
+            <input type="hidden" name="scrap_status" id="scrap_status" value="1">
 
             <div class="row mb-3">
                 <div class="col-md-12 text-center">
@@ -488,7 +484,7 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESS
                     url: '../includes/backend_data.php',
                     type: 'POST',
                     data: {
-                        action: 'get_bus_details',
+                        action: 'get_bus_details_scraped',
                         bus_number: bus_number
                     },
                     dataType: 'json',
@@ -874,6 +870,7 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESS
             var form = document.getElementById("busForm");
 
             var formData = new FormData(form);
+            
             formData.append("action", "submit_bus_inventory");
             $.ajax({
                 url: "../includes/backend_data.php",

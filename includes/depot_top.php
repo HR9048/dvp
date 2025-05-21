@@ -404,7 +404,11 @@ function getBaseUrl()
                               <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
                               <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
                               <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
+                              <li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>
                               <li><a class="dropdown-item" href="depot_bus_inventory_view.php">View Bus Inventory</a></li>
+                              <li><a class="dropdown-item" href="depot_fc_date_update.php">Update FC Date</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
                         </ul>
                       </div>
                     </li>

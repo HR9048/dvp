@@ -47,7 +47,7 @@ $stmt->close();
 $startDate = "$year-$month-01";
 $endDate = date("Y-m-t", strtotime($startDate));
 
-$whereClauses = "WHERE v.date BETWEEN '$startDate' AND '$endDate' and deleted !='1'";
+$whereClauses = "WHERE v.date BETWEEN '$startDate' AND '$endDate' and v.deleted !='1'";
 
 if ($depot_id) $whereClauses .= " AND v.depot_id = '$depot_id'";
 if ($division_id) $whereClauses .= " AND v.division_id = '$division_id'";

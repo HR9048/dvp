@@ -87,20 +87,20 @@ confirm_logged_in();
                     <span>View Assemblies</span></a>
             </li>
 
-            <!--<li class="nav-item">
-                <a class="nav-link1" href="depot_busses.php">
+            <li class="nav-item">
+                <a class="nav-link1" href="depot_bus_inventory_add.php">
                     <i class="fas fa-fw fa-bus"></i>
-                    <span>Buses</span>
+                    <span>Add vehicle Inventory</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link1" href="depot_bd.php">
+                <a class="nav-link1" href="co_inventory_details_view.php">
                     <i class="fas fa-fw fa-retweet"></i>
-                    <span>Break Down</span></a>
+                    <span>View vehicle Inventory</span></a>
             </li>
 
-            <li class="nav-item">
+            <!--<li class="nav-item">
                 <a class="nav-link1" href="depot_report.php">
                     <i class="fas fa-fw fa-cogs"></i>
                     <span>Reports</span></a>

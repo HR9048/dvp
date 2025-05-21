@@ -625,137 +625,140 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             }
 
             function fetchAdditionalData() {
-                return new Promise(function(resolve, reject) {
-                    var division = '<?php echo $_SESSION['KMPL_DIVISION']; ?>';
-                    var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
+    return new Promise(function (resolve, reject) {
+        var division = '<?php echo $_SESSION['KMPL_DIVISION']; ?>';
+        var depot = '<?php echo $_SESSION['KMPL_DEPOT']; ?>';
 
-                    // API URLs with division and depot as query parameters
-                    // var dataApiUrl = 'http://192.168.1.32:50/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); // test
-                    var dataApiUrl = '../includes/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot); // server
-                    var empApiUrl = '../database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
-                    var depApiUrl = '../database/deputation_crew_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+        var dataApiUrl = '../includes/data.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+        var empApiUrl = '../database/private_emp_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
+        var depApiUrl = '../database/deputation_crew_api.php?division=' + encodeURIComponent(division) + '&depot=' + encodeURIComponent(depot);
 
-                    // Function to fetch data from an API
-                    function fetchApiData(url) {
-                        return new Promise(function(resolve, reject) {
-                            var xhr = new XMLHttpRequest();
-                            xhr.open('GET', url, true);
-                            xhr.onreadystatechange = function() {
-                                if (xhr.readyState === 4) {
-                                    if (xhr.status === 200) {
-                                        try {
-                                            var response = JSON.parse(xhr.responseText);
-
-                                            // Handle "No Data Found" or empty responses
-                                            if (!response.data || response.data.length === 0) {
-                                                resolve([]); // Resolve with an empty array if no data is found
-                                            } else {
-                                                resolve(response.data); // Resolve with the data if available
-                                            }
-                                        } catch (e) {
-                                            reject('Error parsing response from ' + url + ': ' + e.message);
-                                        }
-                                    } else {
-                                        reject('Error fetching data from ' + url);
-                                    }
+        function fetchApiData(url) {
+            return new Promise(function (resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            try {
+                                var response = JSON.parse(xhr.responseText);
+                                if (!response.data || response.data.length === 0) {
+                                    resolve([]);
+                                } else {
+                                    resolve(response.data);
                                 }
-                            };
-                            xhr.send();
-                        });
+                            } catch (e) {
+                                reject('Error parsing response from ' + url + ': ' + e.message);
+                            }
+                        } else {
+                            reject('Error fetching data from ' + url);
+                        }
                     }
+                };
+                xhr.send();
+            });
+        }
 
-                    // Fetch data from all three APIs
-                    Promise.all([fetchApiData(dataApiUrl), fetchApiData(empApiUrl), fetchApiData(depApiUrl)])
-                        .then(function(responses) {
-                            // Combine data from all three APIs (ensure responses are arrays even if empty)
-                            var combinedData = [].concat(responses[0], responses[1], responses[2]);
+        Promise.all([fetchApiData(dataApiUrl), fetchApiData(empApiUrl), fetchApiData(depApiUrl)])
+            .then(function (responses) {
+                var dataResp = responses[0];
+                var empResp = responses[1];
+                var depResp = responses[2];
 
-                            // Filter data by division and depot (already passed in the API call, so this may not be necessary)
-                            var filteredData = combinedData.filter(function(item) {
-                                return item.Division === division && item.Depot === depot;
-                            });
+                
+                let combinedData = [].concat(dataResp, empResp, depResp);
 
-                            // Sort filtered data by token_number
-                            filteredData.sort(function(a, b) {
-                                return a.token_number - b.token_number;
-                            });
+                // Normalize token_number and Division/Depot casing if needed
+                combinedData.forEach(function (item) {
+                    item.token_number = parseInt(item.token_number) || 0;
+                    item.Division = (item.Division || '').toString().trim();
+                    item.Depot = (item.Depot || '').toString().trim();
+                });
 
-                            // Fetch and filter VEH_SCH_OUT data
-                            fetchVechSchOutData().then(function(vehSchOutData) {
-                                combinedData = combinedData.filter(function(item) {
-                                    return !vehSchOutData.some(function(vehItem) {
-                                        return vehItem.driver_1_pf === item.EMP_PF_NUMBER ||
-                                            vehItem.driver_2_pf === item.EMP_PF_NUMBER ||
-                                            vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
-                                    });
-                                });
 
-                                // Fetch and filter DEPUTATION_CREW data
-                                fetchdepCrewData().then(function(depCrewData) {
-                                    combinedData = combinedData.filter(function(item) {
-                                        return !depCrewData.some(function(depItem) {
-                                            return depItem.DEP_EMP_PF_NUMBER === item.EMP_PF_NUMBER;
-                                        });
-                                    });
-
-                                    // Filter data by division and depot (already passed in the API call, so this may not be necessary)
-                                    var filteredData = combinedData.filter(function(item) {
-                                        return item.Division === division && item.Depot === depot;
-                                    });
-
-                                    // Sort filtered data by token_number
-                                    filteredData.sort(function(a, b) {
-                                        return a.token_number - b.token_number;
-                                    });
-
-                                    // Resolve the combined filtered data
-                                    resolve(filteredData);
-                                }).catch(function(error) {
-                                    reject('Error filtering DEPUTATION_CREW data: ' + error);
-                                });
-                            }).catch(function(error) {
-                                reject('Error filtering VEH_SCH_OUT data: ' + error);
-                            });
-                        })
-                        .catch(function(error) {
-                            reject(error);
+                fetchVechSchOutData().then(function (vehSchOutData) {
+                    combinedData = combinedData.filter(function (item) {
+                        return !vehSchOutData.some(function (vehItem) {
+                            return vehItem.driver_1_pf === item.EMP_PF_NUMBER ||
+                                   vehItem.driver_2_pf === item.EMP_PF_NUMBER ||
+                                   vehItem.conductor_pf_no === item.EMP_PF_NUMBER;
                         });
+                    });
+
+
+                    fetchdepCrewData().then(function (depCrewData) {
+                        combinedData = combinedData.filter(function (item) {
+                            return !depCrewData.some(function (depItem) {
+                                return depItem.DEP_EMP_PF_NUMBER === item.EMP_PF_NUMBER;
+                            });
+                        });
+
+
+                        // Final filter by division and depot (optional if API already filters)
+                        combinedData = combinedData.filter(function (item) {
+                            return item.Division === division && item.Depot === depot;
+                        });
+
+                        // Final sort by token_number
+                        combinedData.sort(function (a, b) {
+                            return a.token_number - b.token_number;
+                        });
+
+
+                        resolve(combinedData);
+                    }).catch(function (error) {
+                        reject('Error filtering DEPUTATION_CREW data: ' + error);
+                    });
+                }).catch(function (error) {
+                    reject('Error filtering VEH_SCH_OUT data: ' + error);
                 });
+            })
+            .catch(function (error) {
+                reject(error);
+            });
+    });
+}
+
+function fetchVechSchOutData() {
+    return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'fetch_veh_sch_out.php', true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    resolve(data);
+                } catch (e) {
+                    reject('Error parsing VEH_SCH_OUT data: ' + e.message);
+                }
+            } else if (xhr.readyState === 4) {
+                reject('Error fetching VEH_SCH_OUT data');
             }
+        };
+        xhr.send();
+    });
+}
 
-
-
-            function fetchVechSchOutData() {
-                return new Promise(function(resolve, reject) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', 'fetch_veh_sch_out.php', true);
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            var data = JSON.parse(xhr.responseText);
-                            resolve(data);
-                        } else if (xhr.readyState === 4) {
-                            reject('Error fetching VEH_SCH_OUT data');
-                        }
-                    };
-                    xhr.send();
-                });
+function fetchdepCrewData() {
+    return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'fetch_deputation_data.php', true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    resolve(data);
+                } catch (e) {
+                    reject('Error parsing deputation data: ' + e.message);
+                }
+            } else if (xhr.readyState === 4) {
+                reject('Error fetching deputation data');
             }
+        };
+        xhr.send();
+    });
+}
 
-            function fetchdepCrewData() {
-                return new Promise(function(resolve, reject) {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('GET', 'fetch_deputation_data.php', true);
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            var data = JSON.parse(xhr.responseText);
-                            resolve(data);
-                        } else if (xhr.readyState === 4) {
-                            reject('Error fetching deptation data');
-                        }
-                    };
-                    xhr.send();
-                });
-            }
         });
         $(document).ready(function() {
             $('#sch_out_form').on('submit', function(e) {

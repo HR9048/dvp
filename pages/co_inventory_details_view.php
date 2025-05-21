@@ -6,7 +6,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) {
+if ( ($_SESSION['JOB_TITLE'] == 'CME_CO') || ($_SESSION['JOB_TITLE'] == 'WM') ) {
     ?>
 
     <style>
@@ -45,7 +45,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
             <tbody>
                 <?php
                 $query = "SELECT 
-    bi.bus_number,
+    bi.bus_number,l.depot,
     em.engine_card_number AS engine_no,
     gm.gear_box_card_number AS gear_box_no,
     fm.fip_hpp_card_number AS fip_hpp_no,
@@ -60,7 +60,8 @@ LEFT JOIN fip_hpp_master fm ON bi.fiphpp_id = fm.id
 LEFT JOIN alternator_master am ON bi.alternator_id = am.id
 LEFT JOIN starter_master sm ON bi.starter_id = sm.id
 LEFT JOIN battery_master bm1 ON bi.battery_1_id = bm1.id
-LEFT JOIN battery_master bm2 ON bi.battery_2_id = bm2.id";
+LEFT JOIN battery_master bm2 ON bi.battery_2_id = bm2.id
+LEFT JOIN location l on bi.depot_id = l.depot_id";
                 $result = mysqli_query($db, $query);
                 if (mysqli_num_rows($result) > 0) {
                     while ($row = mysqli_fetch_assoc($result)) {

@@ -14,7 +14,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
     $vehicle_out_numbers = [];
 
-    /* $query = "SELECT br.bus_number AS id, br.bus_number AS text
+     $query = "SELECT br.bus_number AS id, br.bus_number AS text
     FROM bus_registration br
     LEFT JOIN sch_veh_out svo 
         ON svo.vehicle_no = br.bus_number 
@@ -57,11 +57,11 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         $depot_id,
         $division_id,
         $today
-    ); */
+    ); 
 
-    $query = "SELECT bus_number as id, bus_number as text from bus_registration WHERE depot_name = ? AND division_name = ? AND deleted != '1' AND scraped != '1'";
+    /*$query = "SELECT bus_number as id, bus_number as text from bus_registration WHERE depot_name = ? AND division_name = ? AND deleted != '1' AND scraped != '1'";
     $stmt = $db->prepare($query);
-    $stmt->bind_param("ss", $depot_id, $division_id);
+    $stmt->bind_param("ss", $depot_id, $division_id);*/
     $stmt->execute();
     $result = $stmt->get_result();
 

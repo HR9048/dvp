@@ -1355,8 +1355,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
-                                    xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true);
-                                    //xhr1.open('GET', 'http://192.168.1.16:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    xhr1.open('GET', 'http://117.251.26.11:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true);
+                                    //xhr1.open('GET', 'http://192.168.1.34:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1453,8 +1453,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                                     // First API call
                                     var xhr1 = new XMLHttpRequest();
-                                    xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true);
-                                    //xhr1.open('GET', 'http://192.168.1.16:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
+                                    xhr1.open('GET', 'http://117.251.26.11:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true);
+                                    //xhr1.open('GET', 'http://192.168.1.34:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
                                     xhr1.onload = function () {
                                         if (xhr1.status === 200) {
                                             var response1 = JSON.parse(this.responseText);
@@ -1614,8 +1614,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             // First API call
                             var xhr1 = new XMLHttpRequest();
-                            xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            //xhr1.open('GET', 'http://192.168.1.16:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
+                            xhr1.open('GET', 'http://117.251.26.11:8880/dvp/includes/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            //xhr1.open('GET', 'http://192.168.1.34:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);
@@ -1726,8 +1726,8 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
 
                             // First API call
                             var xhr1 = new XMLHttpRequest();
-                            xhr1.open('GET', 'http://117.203.105.106:8880/dvp/includes/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
-                            //xhr1.open('GET', 'http://192.168.1.16:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
+                            xhr1.open('GET', 'http://117.251.26.11:8880/dvp/includes/data.php?division=' + sessionDivision + '&depot=' + sessionDepot, true);
+                            //xhr1.open('GET', 'http://192.168.1.34:8880/dvp/includes/data.php?division=' + division + '&depot=' + depot, true); //test url
                             xhr1.onload = function () {
                                 if (xhr1.status === 200) {
                                     var response1 = JSON.parse(this.responseText);

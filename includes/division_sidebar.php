@@ -37,10 +37,10 @@ confirm_logged_in();
   <link
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <!-- Bootstrap core CSS -->
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -256,8 +256,8 @@ confirm_logged_in();
                             <b>Uploads</b>
                           </button>
                           <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)') { ?>
-                            <li><a class="dropdown-item" href="division_upload_statistics.php">Upload Operational Statistics</a></li>
+                            <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)') { ?>
+                              <li><a class="dropdown-item" href="division_upload_statistics.php">Upload Operational Statistics</a></li>
                             <?php } ?>
                             <li><a class="dropdown-item" href="division_view_statistics.php">View Operational Statistics</a></li>
                           </ul>
@@ -303,7 +303,7 @@ confirm_logged_in();
                       </div>
                     </li>
                   <?php } ?>
-                  <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' ) { ?>
+                  <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') { ?>
                     <li class="nav-item">
                       <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -311,12 +311,13 @@ confirm_logged_in();
                           <b>Inventory</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                              <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
-                              <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li> 
-                              <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add bus Inventory</a></li>
-                              <li><a class="dropdown-item" href="division_bus_inventory_view.php">View Bus Inventory</a></li> 
-                              <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
+                          <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
+                          <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
+                          <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add bus Inventory</a></li>
+                          <li><a class="dropdown-item" href="division_bus_inventory_view.php">View Bus Inventory</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
                           <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
                         </ul>
                       </div>
                     </li>

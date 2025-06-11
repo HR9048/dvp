@@ -100,11 +100,16 @@ confirm_logged_in();
                     <span>View vehicle Inventory</span></a>
             </li>
 
-            <!--<li class="nav-item">
-                <a class="nav-link1" href="depot_report.php">
+            <li class="nav-item">
+                <a class="nav-link1" href="co_inventory_print.php">
+                    <i class="fas fa-fw fa-retweet"></i>
+                    <span>Print/PDF Inventorty Details</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link1" href="co_inventory_excel.php">
                     <i class="fas fa-fw fa-cogs"></i>
-                    <span>Reports</span></a>
-            </li> -->
+                    <span>Download Excel Inventory Report</span></a>
+            </li>
 
             <!-- <li class="nav-item">
         <a class="nav-link1" href="#">

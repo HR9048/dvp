@@ -287,6 +287,7 @@ confirm_logged_in();
                           <li><a class="dropdown-item" href="co_inventory_details_view.php">View Inventory Details</a></li>
                           <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
                           <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
                           <li><a class="dropdown-item" href="co_inventory_report_depotwise.php">Inventory report depotwise</a>
                         </ul>
                       </div>

@@ -993,7 +993,7 @@ include 'includes/connection.php';
 
                                     let filePath = "../uploads/" + fileName;
                                     let filePath2 = "uploads/" + fileName;
-                                    let googleDocsUrl = "https://docs.google.com/gview?embedded=true&url=http://117.203.105.106:8880/" + encodeURIComponent(filePath2);
+                                    let googleDocsUrl = "https://docs.google.com/gview?embedded=true&url=http://117.251.26.11:8880/" + encodeURIComponent(filePath2);
 
                                     let divisionText = $("#division option:selected").text();
                                     let depotText = $("#depot option:selected").text();

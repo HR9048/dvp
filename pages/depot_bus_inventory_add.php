@@ -21,7 +21,30 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESS
                         <option value="">-- Select Bus Number --</option>
                         <?php
                         if ($_SESSION['TYPE'] == 'DEPOT'){
-                        $q = mysqli_query($db, "SELECT bus_number FROM bus_registration WHERE division_name = '$division_id' AND depot_name = '$depot_id' AND NOT EXISTS (SELECT 1 FROM bus_inventory WHERE bus_inventory.bus_number = bus_registration.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
+                        $q = mysqli_query($db, "SELECT bus_number 
+FROM (
+    -- From bus_registration
+    SELECT bus_number 
+    FROM bus_registration 
+    WHERE division_name = '$division_id' 
+      AND depot_name = '$depot_id'
+    
+    UNION
+
+    -- From bus_transfer_data
+    SELECT bus_number 
+    FROM bus_transfer_data 
+    WHERE order_date > '2025-03-31' 
+      AND division = '$division_id' 
+      AND from_depot = '$depot_id'
+) AS all_buses
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM bus_inventory 
+    WHERE bus_inventory.bus_number = all_buses.bus_number 
+      AND inventory_date = '2025-03-31' 
+      AND deleted != 1
+);");
                         }elseif($_SESSION['TYPE'] == 'DIVISION'){
                             $q = mysqli_query($db, "SELECT bus_number FROM bus_registration WHERE division_name = '$division_id'  AND NOT EXISTS (SELECT 1 FROM bus_inventory WHERE bus_inventory.bus_number = bus_registration.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
                         }elseif($_SESSION['TYPE'] == 'RWY'){

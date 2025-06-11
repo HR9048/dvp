@@ -5016,7 +5016,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     {
         if (empty($pf_no)) return "N/A";
 
-        $api_url = "http://192.168.1.16:8880/dvp/database/combined_api_data.php?pf_no=" . urlencode($pf_no);
+        $api_url = "http://192.168.1.34:8880/dvp/database/combined_api_data.php?pf_no=" . urlencode($pf_no);
         $response = file_get_contents($api_url);
 
         if ($response === false) {

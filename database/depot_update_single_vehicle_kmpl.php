@@ -30,8 +30,28 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
             $stmt = $db->prepare("UPDATE vehicle_kmpl SET route_no=?, driver_1_pf=?, driver_2_pf=?, logsheet_no=?, km_operated=?, hsd=?, kmpl=?, thumps_id=?, remarks=?, v_change=?, c_change=? WHERE id=? AND bus_number=? AND `date`=? AND division_id=? AND depot_id=?");
             $stmt->bind_param("ssssssssssssssss", $route_number, $driver_token_1, $driver_token_2, $logsheet_no, $km_operated, $hsd, $kmpl, $thump_status, $logsheet_defects, $vc, $cc, $id, $bus_number, $reportdate, $division_id, $depot_id);
         } else {
-            $stmt = $db->prepare("INSERT INTO vehicle_kmpl (bus_number, route_no, driver_1_pf, driver_2_pf, logsheet_no, km_operated, hsd, kmpl, thumps_id, remarks, date, division_id, depot_id, v_change, c_change) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssssssssssssss", $bus_number, $route_number, $driver_token_1, $driver_token_2, $logsheet_no, $km_operated, $hsd, $kmpl, $thump_status, $logsheet_defects, $reportdate, $division_id, $depot_id, $vc, $cc);
+            // If no ID is provided, insert a new record
+            //before inserting, check if the record already exists check logsheet no for the report data is exisist then update else insert
+            $checkStmt = $db->prepare("SELECT id FROM vehicle_kmpl WHERE logsheet_no=? AND `date`=? AND division_id=? AND depot_id=?");
+            $checkStmt->bind_param("ssss", $logsheet_no, $reportdate, $division_id, $depot_id);
+            $checkStmt->execute();
+            $checkStmt->store_result();
+            if ($checkStmt->num_rows > 0) {
+                // Record exists, update it
+                // fetch the id of the existing record
+                $checkStmt->bind_result($existing_id);
+                $checkStmt->fetch();
+                $checkStmt->close();
+
+                // Update the existing record
+
+                $stmt = $db->prepare("UPDATE vehicle_kmpl SET route_no=?, driver_1_pf=?, driver_2_pf=?, logsheet_no=?, km_operated=?, hsd=?, kmpl=?, thumps_id=?, remarks=?, v_change=?, c_change=? WHERE id=?");
+                $stmt->bind_param("ssssssssssss", $route_number, $driver_token_1, $driver_token_2, $logsheet_no, $km_operated, $hsd, $kmpl, $thump_status, $logsheet_defects, $vc, $cc, $existing_id);
+            } else {
+                // Record does not exist, insert a new one
+                $stmt = $db->prepare("INSERT INTO vehicle_kmpl (bus_number, route_no, driver_1_pf, driver_2_pf, logsheet_no, km_operated, hsd, kmpl, thumps_id, remarks, date, division_id, depot_id, v_change, c_change) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("sssssssssssssss", $bus_number, $route_number, $driver_token_1, $driver_token_2, $logsheet_no, $km_operated, $hsd, $kmpl, $thump_status, $logsheet_defects, $reportdate, $division_id, $depot_id, $vc, $cc);
+            }
         }
 
         if ($stmt->execute()) {
@@ -53,4 +73,3 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 } else {
     echo json_encode(["status" => "error", "message" => "Invalid request"]);
 }
-?>

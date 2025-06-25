@@ -116,7 +116,7 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' ) {
                 <div class="col-md-6">
                     <label for="gearbox_no" class="form-label">Gear Box No</label>
                     <select class="form-control" id="gearbox_no" name="gearbox_no" required>
-                        <option value="">-- Select FIP/HPP Number --</option>
+                        <option value="">-- Select Gear Box Number --</option>
                     </select>
                 </div>
                 <div class="col-md-6">

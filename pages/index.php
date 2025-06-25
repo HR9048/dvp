@@ -232,29 +232,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                         </div>
                         <div class="col-auto">
                             <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
-                        </div>
-                                   
-                                    <?php
-                                    $session_division = $_SESSION['DIVISION_ID']; // Session-based division
-                                    $session_depot = $_SESSION['DEPOT_ID']; // Session-based depot
-                                
-                                    // SQL query to count only private drivers for the current division and depot
-                                    $query2 = "SELECT COUNT(*) 
-                               FROM private_employee
-                               INNER JOIN location ON private_employee.division_id = location.division_id 
-                                                   AND private_employee.depot_id = location.depot_id
-                               WHERE private_employee.status = '1' 
-                                 AND EMP_DESGN_AT_APPOINTMENT = 'CONDUCTOR'";
-
-                                    // Execute the query
-                                    $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
-
-                                    // Fetch the count from the result
-                                    $row2 = mysqli_fetch_array($result2);
-
-                                    // Output the count of private drivers
-                                    echo "Private Conductor: $row2[0]";
-                                    ?> Record(s)
+                        </div>   
                     </div>
                 </div>
             </div>
@@ -270,27 +248,6 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                             <div class="h6 mb-0 font-weight-bold text-gray-800" id="dcc-count">
                                 <span class="loading">DCC: <i class="fa-solid fa-spinner fa-spin fa-lg"></i></span>
                             </div>
-                                    <?php
-                                    $session_division = $_SESSION['DIVISION_ID']; // Session-based division
-                                    $session_depot = $_SESSION['DEPOT_ID']; // Session-based depot
-                                
-                                    // SQL query to count only private drivers for the current division and depot
-                                    $query2 = "SELECT COUNT(*) 
-                               FROM private_employee
-                               INNER JOIN location ON private_employee.division_id = location.division_id 
-                                                   AND private_employee.depot_id = location.depot_id
-                               WHERE private_employee.status = '1' 
-                                 AND EMP_DESGN_AT_APPOINTMENT = 'DRIVER-CUM-CONDUCTOR'";
-
-                                    // Execute the query
-                                    $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
-
-                                    // Fetch the count from the result
-                                    $row2 = mysqli_fetch_array($result2);
-
-                                    // Output the count of private drivers
-                                    echo "Private DCC: $row2[0]";
-                                    ?> Record(s)
                         </div>
                         <div class="col-auto">
                             <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>

@@ -99,32 +99,75 @@ if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekm
                     // Insert new row
                     $vc = $row['vc'] ?? 0;
                     $cc = $row['cc'] ?? 0;
-                    $insertQuery = "INSERT INTO vehicle_kmpl (bus_number, route_no, driver_1_pf, driver_2_pf, logsheet_no, km_operated, hsd, kmpl, thumps_id, remarks, division_id, depot_id, date, v_change, c_change, created_by) 
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    $stmt = $db->prepare($insertQuery);
-                    $stmt->bind_param(
-                        "sssssssssssssiis",
-                        $row['bus_number'],
-                        $row['route_no'],
-                        $row['driver_token1'],
-                        $row['driver_token2'],
-                        $row['logsheet_no'],
-                        $row['km_operated'],
-                        $row['hsd'],
-                        $row['kmpl'],
-                        $row['thump_status'],
-                        $row['remarks'],
-                        $row['division_id'],
-                        $row['depot_id'],
-                        $reportDate,
-                        $vc,
-                        $cc,
-                        $username
-                    );
 
-                    if (!$stmt->execute()) {
-                        $insertSuccess = false;
-                        $errorMessage = "Failed to insert new row for bus " . $row['bus_number'] . " Error: " . $stmt->error;
+                    //before inserting, check if the record already exists check logsheet no for the report data is exisist then update else insert
+                    $checkQuery = "SELECT id FROM vehicle_kmpl WHERE logsheet_no = ? AND date = ? AND division_id = ? AND depot_id = ?";
+                    $checkStmt = $db->prepare($checkQuery);
+                    $checkStmt->bind_param("ssis", $row['logsheet_no'], $reportDate, $row['division_id'], $row['depot_id']);
+                    $checkStmt->execute();
+                    $checkStmt->store_result();
+                    $recordExists = $checkStmt->num_rows > 0;
+                    $checkStmt->bind_result($id);
+                    $checkStmt->fetch();
+                    $checkStmt->close();
+
+                    if ($recordExists) {
+                        // If record exists, update it
+                        $updateQuery = "UPDATE vehicle_kmpl SET bus_number = ?, route_no = ?, driver_1_pf = ?, driver_2_pf = ?, logsheet_no = ?, km_operated = ?, hsd = ?, kmpl = ?, thumps_id = ?, remarks = ?, division_id = ?, depot_id = ?, date = ?, v_change = ?, c_change = ? WHERE id = ?";
+                        $stmt = $db->prepare($updateQuery);
+                        $stmt->bind_param(
+                            "ssssssssssiisii",
+                            $row['bus_number'],
+                            $row['route_no'],
+                            $row['driver_token1'],
+                            $row['driver_token2'],
+                            $row['logsheet_no'],
+                            $row['km_operated'],
+                            $row['hsd'],
+                            $row['kmpl'],
+                            $row['thump_status'],
+                            $row['remarks'],
+                            $row['division_id'],
+                            $row['depot_id'],
+                            $reportDate,
+                            $vc,
+                            $cc,
+                            $id
+                        );
+                        if (!$stmt->execute()) {
+                            $insertSuccess = false;
+                            $errorMessage = "Failed to update existing row for bus " . $row['bus_number'] . " Error: " . $stmt->error;
+                        }
+                    } else {
+                        // If record does not exist, insert a new one
+
+                        $insertQuery = "INSERT INTO vehicle_kmpl (bus_number, route_no, driver_1_pf, driver_2_pf, logsheet_no, km_operated, hsd, kmpl, thumps_id, remarks, division_id, depot_id, date, v_change, c_change, created_by) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        $stmt = $db->prepare($insertQuery);
+                        $stmt->bind_param(
+                            "sssssssssssssiis",
+                            $row['bus_number'],
+                            $row['route_no'],
+                            $row['driver_token1'],
+                            $row['driver_token2'],
+                            $row['logsheet_no'],
+                            $row['km_operated'],
+                            $row['hsd'],
+                            $row['kmpl'],
+                            $row['thump_status'],
+                            $row['remarks'],
+                            $row['division_id'],
+                            $row['depot_id'],
+                            $reportDate,
+                            $vc,
+                            $cc,
+                            $username
+                        );
+
+                        if (!$stmt->execute()) {
+                            $insertSuccess = false;
+                            $errorMessage = "Failed to insert new row for bus " . $row['bus_number'] . " Error: " . $stmt->error;
+                        }
                     }
                 }
             }

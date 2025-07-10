@@ -17,6 +17,28 @@ if (empty($pf_number) || empty($token_number) || empty($old_schedule_no)) {
     exit;
 }
 
+$queryfordivisiondepotid = "SELECT division_id, depot_id FROM schedule_master WHERE sch_key_no = ? and (driver_pf_1 = ? OR driver_pf_2 = ? OR driver_pf_3 = ? OR driver_pf_4 = ? OR driver_pf_5 = ? OR driver_pf_6 = ? OR conductor_pf_1 = ? OR conductor_pf_2 = ? OR conductor_pf_3 = ?)";
+$stmtfordivisiondepotid = $db->prepare($queryfordivisiondepotid);
+if ($stmtfordivisiondepotid === false) {
+    echo json_encode(['status' => 'error', 'message' => 'Failed to prepare statement for division and depot ID']);
+    exit;
+}
+$stmtfordivisiondepotid->bind_param(
+    "ssssssssss", 
+    $old_schedule_no, $pf_number, $pf_number, $pf_number, $pf_number, 
+    $pf_number, $pf_number, $pf_number, $pf_number, 
+    $pf_number
+);
+$stmtfordivisiondepotid->execute();
+$resultfordivisiondepotid = $stmtfordivisiondepotid->get_result();
+if ($resultfordivisiondepotid->num_rows === 0) {
+    echo json_encode(['status' => 'error', 'message' => 'No matching records found for the provided PF number']);
+    exit;
+}
+$rowfordivisiondepotid = $resultfordivisiondepotid->fetch_assoc();
+$division_id1 = $rowfordivisiondepotid['division_id'];
+$depot_id1 = $rowfordivisiondepotid['depot_id'];
+
 // Prepare the SQL query to nullify matching PF numbers and related driver and conductor details
 $sql = "UPDATE schedule_master 
         SET
@@ -68,7 +90,7 @@ $stmt->bind_param(
     $pf_number, $pf_number, $pf_number, $pf_number, 
     $pf_number, $pf_number, $pf_number, $pf_number, 
     $pf_number, $pf_number, $pf_number, 
-    $old_schedule_no, $division_id, $depot_id
+    $old_schedule_no, $division_id1, $depot_id1
 );
 // Execute the statement
 if ($stmt->execute()) {
@@ -90,7 +112,7 @@ if ($stmt->execute()) {
         exit;
     }
     
-    $updateCrewStmt->bind_param('sssss', $formatted_datetime, $old_schedule_no, $division_id, $depot_id, $pf_number);
+    $updateCrewStmt->bind_param('sssss', $formatted_datetime, $old_schedule_no, $division_id1, $depot_id1, $pf_number);
     
     if ($updateCrewStmt->execute()) {
         echo json_encode(['status' => 'success', 'message' => 'Driver/DCC and Conductor reallocated successfully and crew_data_fix updated']);

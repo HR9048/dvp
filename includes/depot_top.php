@@ -352,6 +352,7 @@ confirm_logged_in();
                             <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Day KMPL Report</a></li>
                             <li><a class="dropdown-item" href="depot_kmpl_report.php">Monthly KMPL Report</a></li>
                             <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft.php">KMPL Report From-To date</a></li>
+                            <li><a class="dropdown-item" href="depot_defect_record.php">KMPL Defect Report</a></li>
                           <?php }
                           if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
                             <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
@@ -371,15 +372,28 @@ confirm_logged_in();
                           <b>Inventory</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                              <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
-                              <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
-                              <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
-                              <li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>
-                              <li><a class="dropdown-item" href="depot_bus_inventory_view.php">View Bus Inventory</a></li>
-                              <li><a class="dropdown-item" href="depot_fc_date_update.php">Update FC Date</a></li>
-                              <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
+                          <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
+                          <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
+                          <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
+                          <li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>
+                          <li><a class="dropdown-item" href="depot_bus_inventory_view.php">View Bus Inventory</a></li>
+                          <li><a class="dropdown-item" href="depot_fc_date_update.php">Update FC Date</a></li>
+                          <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
                           <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
                           <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
+                        </ul>
+                      </div>
+                    </li>
+                    <li class="nav-item">
+                      <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                          style="font-size: 15px;">
+                          <b>Program</b>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                          <li><a class="dropdown-item" href="depot_bus_type_update.php">Update Bus Type for Program</a></li>
+                          <li><a class="dropdown-item" href="depot_program_update.php">Last Program date Update</a></li>
+                          <li><a class="dropdown-item" href="depot_vehicle_program.php">Program Updates</a></li>
                         </ul>
                       </div>
                     </li>

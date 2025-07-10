@@ -240,6 +240,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                     var combinedData = [...data1, ...data2];
 
                     $('#driver_token').html('<option value="">Select Driver</option>');
+                    $('#driver_token').append(`<option value="All">All</option>`);
                     combinedData.forEach(driver => {
                         $('#driver_token').append(`<option value="${driver.EMP_PF_NUMBER}">${driver.token_number}-(${driver.EMP_NAME})</option>`);
                     });
@@ -273,7 +274,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                     return; // Stop execution
                 }
 
-                console.log('Submitting form with values:', from, to, division, depot, sch_no, bus_number, driver_token);
 
                 $.ajax({
                     type: 'POST',

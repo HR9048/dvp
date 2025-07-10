@@ -8,7 +8,7 @@ $servername = "localhost";
 $username = "root"; 
 $password = "kkrtcsystem";
 $port = 33306; // MySQL custom port
-$database = "kkrtcdvp_database"; 
+$database = "kkrtcdvp_data"; 
 // Create connection using the custom MySQL port
 $db = new mysqli($servername, $username, $password, $database, $port);
 

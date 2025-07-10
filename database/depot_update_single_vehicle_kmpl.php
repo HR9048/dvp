@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         $bus_number = $_POST['bus_number'] ?? '';
         $route_number = $_POST['route_number'] ?? '';
         $driver_token_1 = $_POST['driver_token_1'] ?? '';
-        $driver_token_2 = $_POST['driver_token_2'] ?? '';
+        $driver_token_2 = $_POST['driver_token_2'] ?? null;
         $logsheet_no = $_POST['logsheet_no'] ?? '';
         $km_operated = $_POST['km_operated'] ?? '';
         $hsd = $_POST['hsd'] ?? '';
@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         } else {
             // If no ID is provided, insert a new record
             //before inserting, check if the record already exists check logsheet no for the report data is exisist then update else insert
-            $checkStmt = $db->prepare("SELECT id FROM vehicle_kmpl WHERE logsheet_no=? AND `date`=? AND division_id=? AND depot_id=?");
+            $checkStmt = $db->prepare("SELECT id FROM vehicle_kmpl WHERE logsheet_no=? AND `date`=? AND division_id=? AND depot_id=? and deleted != '1' LIMIT 1");
             $checkStmt->bind_param("ssss", $logsheet_no, $reportdate, $division_id, $depot_id);
             $checkStmt->execute();
             $checkStmt->store_result();
@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
                 "cc" => $cc
             ]);
         } else {
-            echo json_encode(["status" => "error", "message" => "Database error: " . $stmt->error]);
+            echo json_encode(["status" => "error", "message" => "Network Error"]);
         }
 
         $stmt->close();

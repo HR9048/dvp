@@ -158,7 +158,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         <td>' . $row['depot_name'] . '</td>
         <td>' . $row['daily_total_km'] . '</td>
         <td>' . $row['daily_hsd'] . '</td>
-        <td>' . number_format($row['daily_total_km'] / $row['daily_hsd'], 2) . '</td>
+        <td>' . ($row['daily_hsd'] > 0 ? number_format($row['daily_total_km'] / $row['daily_hsd'], 2) : '0.00') . '</td>
         <td>' . $row['total_total_km'] . '</td>
         <td>' . $row['total_hsd'] . '</td>
         <td>' . number_format($row['total_total_km'] / $row['total_hsd'], 2) . '</td>

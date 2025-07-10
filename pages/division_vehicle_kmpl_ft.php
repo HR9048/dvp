@@ -250,6 +250,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && ($_SESSION['JOB_TITLE'] == 'DME') || ($_S
                     var combinedData = [...data1, ...data2];
 
                     $('#driver_token').html('<option value="">Select Driver</option>');
+                    $('#driver_token').append(`<option value="All">All</option>`);
                     combinedData.forEach(driver => {
                         $('#driver_token').append(`<option value="${driver.EMP_PF_NUMBER}">${driver.token_number}-(${driver.EMP_NAME})</option>`);
                     });

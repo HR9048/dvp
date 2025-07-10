@@ -18,8 +18,7 @@ $division_id = $_SESSION['DIVISION_ID'];
 $todays_date = date('Y-m-d');
 
 // Query to fetch buses based on the specified conditions
-$query = "
-    SELECT br.bus_number, 'regular' AS source
+$query = "SELECT br.bus_number, 'regular' AS source
     FROM bus_registration br
     LEFT JOIN sch_veh_out vso 
         ON br.bus_number = vso.vehicle_no 

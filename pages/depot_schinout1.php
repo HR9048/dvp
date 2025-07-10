@@ -14,7 +14,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
     $vehicle_out_numbers = [];
 
-    $query = "SELECT br.bus_number AS id, br.bus_number AS text
+    /*$query = "SELECT br.bus_number AS id, br.bus_number AS text
     FROM bus_registration br
     LEFT JOIN sch_veh_out svo 
         ON svo.vehicle_no = br.bus_number 
@@ -41,22 +41,31 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
       AND vd.deleted != '1' 
       AND vd.status != '1' 
       AND vd.tr_date = ?
-      AND svo2.vehicle_no IS NULL
-";
+      AND svo2.vehicle_no IS NULL";*/
+    $query = "SELECT DISTINCT 
+    COALESCE(br.bus_number, vd.bus_number) AS id,
+    CASE 
+        WHEN vd.bus_number IS NOT NULL THEN CONCAT(vd.bus_number, ' (deputed)')
+        ELSE br.bus_number 
+    END AS text
+FROM bus_registration br
+LEFT JOIN vehicle_deputation vd
+    ON vd.t_depot_id = br.depot_name
+    AND vd.t_division_id =br.depot_name
+    AND vd.tr_date = ?
+    AND vd.deleted != '1'
+    AND vd.status != '1'
+    AND br.bus_number = vd.bus_number
+WHERE br.depot_name = ? 
+  AND br.division_name = ? ";
 
 
     $stmt = $db->prepare($query);
     $stmt->bind_param(
-        "sssssssss",
+        "sss",
+        $today,
         $depot_id,
-        $division_id,
-        $depot_id,
-        $division_id,
-        $depot_id,
-        $division_id,
-        $depot_id,
-        $division_id,
-        $today
+        $division_id
     );
 
     /*$query = "SELECT bus_number as id, bus_number as text from bus_registration WHERE depot_name = ? AND division_name = ? AND deleted != '1' AND scraped != '1'";
@@ -144,69 +153,89 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
             }
         }
     </style>
+    <!-- Loader overlay -->
+    <div id="loadingOverlay"
+        style="
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100vw;
+       height: 100vh;
+       background: rgba(255, 255, 255, 0.9);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 1000;
+       font-size: 1.5rem;
+       color: #333;">
+        ⏳ Loading...
+    </div>
+
     <p style="text-align:right"><button class="btn btn-warning"><a href="depot_schedule_incomplete.php">ಅಪೂರ್ಣತೆಯ ಅನುಸೂಚಿ?</a></button></p>
-    <nav>
-        <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
-            <button class="nav-link active custom-size" id="nav-home-tab" data-bs-toggle="tab"
-                data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home"
-                aria-selected="true">ವಾಹನ ಹೊರಗೆ</button>
-            <button class="nav-link custom-size" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile"
-                type="button" role="tab" aria-controls="nav-profile" aria-selected="false">ವಾಹನ ಒಳಗೆ</button>
-        </div>
-    </nav>
-    <div>
-        <div class="tab-content" id="nav-tabContent"
-            style="width: 40%; min-width: 300px; margin: 0 auto; text-align: center;">
-            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                <div class="container" style="padding:2px">
-                    <h4>ಘಟಕ: <?php echo $_SESSION['DEPOT']; ?></h4>
-                    <p style="color: red;">ವಾಹನ ನಿರ್ಗಮನ</p>
-                    <form id="sch_out_form" method="POST" class="mt-4">
-                        <div class="form-group">
-                            <label for="veh_no_out">Vehicle No/ವಾಹನ ಸಂಖ್ಯೆ</label>
-                            <select class="form-control " id="veh_no_out" name="veh_no_out" required style="width: 100%;">
-                                <option value="">ವಾಹನ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</option>
-                                <?php foreach ($vehicle_out_numbers as $vehicle): ?>
-                                    <option value="<?= htmlspecialchars($vehicle['id']) ?>"><?= htmlspecialchars($vehicle['text']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div style="display: none;" id="schedule_field_wrapper">
-                            <label for="schedule_no_out">Schedule No/ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆ</label>
-                            <select name="schedule_no_out" id="schedule_no_out" class="form-control" required style="width: 100%;">
-                                <option value="">Select Schedule</option>
-                            </select>
-                        </div>
-                        <div id="scheduleoutdetailsview"></div>
-                    </form>
-                </div>
+    <div id="showloading">
+        <nav>
+            <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
+                <button class="nav-link active custom-size" id="nav-home-tab" data-bs-toggle="tab"
+                    data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home"
+                    aria-selected="true">ವಾಹನ ಹೊರಗೆ</button>
+                <button class="nav-link custom-size" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile"
+                    type="button" role="tab" aria-controls="nav-profile" aria-selected="false">ವಾಹನ ಒಳಗೆ</button>
             </div>
-            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                <div class="container" style="padding:2px">
-                    <h4>ಘಟಕ: <?php echo $_SESSION['DEPOT']; ?></h4>
-                    <p style="color:red;">ವಾಹನ ಆಗಮನ</p>
-                    <form id="sch_in_form" method="POST" class="mt-4">
-                        <div class="form-group">
-                            <label for="veh_no_in">Vehicle No/ವಾಹನ ಸಂಖ್ಯೆ</label>
-                            <select class="form-control select2" id="veh_no_in" name="veh_no_in" required style="width: 100%;">
-                                <option value="">ವಾಹನ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</option>
-                                <?php
-                                $query = "SELECT vehicle_no FROM sch_veh_out WHERE schedule_status = '1' AND depot_id = ? AND division_id = ?";
-                                $stmt = $db->prepare($query);
-                                $stmt->bind_param("ss", $depot_id, $division_id);
-                                $stmt->execute();
-                                $result = $stmt->get_result();
-                                while ($row = $result->fetch_assoc()) {
-                                    echo "<option value='" . htmlspecialchars($row['vehicle_no']) . "'>" . htmlspecialchars($row['vehicle_no']) . "</option>";
-                                }
-                                $stmt->close();
-                                ?>
-                            </select>
-                        </div>
-                        <div id="scheduleindetailsview">
-                            <!-- Fields will be populated here dynamically using JavaScript -->
-                        </div>
-                    </form>
+        </nav>
+        <div>
+            <div class="tab-content" id="nav-tabContent"
+                style="width: 40%; min-width: 300px; margin: 0 auto; text-align: center;">
+                <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                    <div class="container" style="padding:2px">
+                        <h4>ಘಟಕ: <?php echo $_SESSION['DEPOT']; ?></h4>
+                        <p style="color: red;">ವಾಹನ ನಿರ್ಗಮನ</p>
+                        <form id="sch_out_form" method="POST" class="mt-4">
+                            <div class="form-group">
+                                <label for="veh_no_out">Vehicle No/ವಾಹನ ಸಂಖ್ಯೆ</label>
+                                <select class="form-control " id="veh_no_out" name="veh_no_out" required style="width: 100%;">
+                                    <option value="">ವಾಹನ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</option>
+                                    <?php foreach ($vehicle_out_numbers as $vehicle): ?>
+                                        <option value="<?= htmlspecialchars($vehicle['id']) ?>"><?= htmlspecialchars($vehicle['text']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div style="display: none;" id="schedule_field_wrapper">
+                                <label for="schedule_no_out">Schedule No/ಅನುಸೂಚಿ ಕೀ ಸಂಖ್ಯೆ</label>
+                                <select name="schedule_no_out" id="schedule_no_out" class="form-control" required style="width: 100%;">
+                                    <option value="">Select Schedule</option>
+                                </select>
+                            </div>
+                            <div id="scheduleoutdetailsview"></div>
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                    <div class="container" style="padding:2px">
+                        <h4>ಘಟಕ: <?php echo $_SESSION['DEPOT']; ?></h4>
+                        <p style="color:red;">ವಾಹನ ಆಗಮನ</p>
+                        <form id="sch_in_form" method="POST" class="mt-4">
+                            <div class="form-group">
+                                <label for="veh_no_in">Vehicle No/ವಾಹನ ಸಂಖ್ಯೆ</label>
+                                <select class="form-control select2" id="veh_no_in" name="veh_no_in" required style="width: 100%;">
+                                    <option value="">ವಾಹನ ಸಂಖ್ಯೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</option>
+                                    <?php
+                                    $query = "SELECT vehicle_no FROM sch_veh_out WHERE schedule_status = '1' AND depot_id = ? AND division_id = ?";
+                                    $stmt = $db->prepare($query);
+                                    $stmt->bind_param("ss", $depot_id, $division_id);
+                                    $stmt->execute();
+                                    $result = $stmt->get_result();
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value='" . htmlspecialchars($row['vehicle_no']) . "'>" . htmlspecialchars($row['vehicle_no']) . "</option>";
+                                    }
+                                    $stmt->close();
+                                    ?>
+                                </select>
+                            </div>
+                            <div id="scheduleindetailsview">
+                                <!-- Fields will be populated here dynamically using JavaScript -->
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -231,6 +260,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
         $('#veh_no_out').change(function() {
             var veh_no_out = $(this).val();
+            $('#scheduleoutdetailsview').html("");
             if (veh_no_out) {
                 $.ajax({
                     type: "POST",
@@ -269,18 +299,36 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
 
         $('#schedule_no_out').change(function() {
             var scheduleKey = $(this).val();
+            var busnumber =   $('#veh_no_out').val();
+            $('#scheduleoutdetailsview').html("");
             if (scheduleKey) {
                 $.ajax({
                     type: "POST",
                     url: "../includes/backend_data.php",
                     data: {
                         action: 'fetch_schedule_details',
-                        schedule_key_no: scheduleKey
+                        schedule_key_no: scheduleKey,
+                        busnumber: busnumber
                     },
                     success: function(response) {
                         try {
                             const data = JSON.parse(response);
+
+                            if (data.status && data.status === 'error') {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops!',
+                                    text: data.message,
+                                    confirmButtonColor: '#d33',
+                                }).then(() => {
+                                    // Reset the schedule select
+                                    $('#schedule_no_out').val('');
+                                });
+                                return;
+                            }
+                            // If it's NOT an error, proceed
                             scheduledetailsforselectedschedule(data);
+
                         } catch (e) {
                             console.error("Invalid JSON received", e);
                         }
@@ -738,6 +786,22 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                 });
             });
 
+        });
+    </script>
+    <script>
+        // This script assumes the page has finished making the AJAX request or
+        // that this block is rendered after your $vehicle_out_numbers are available.
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Wait until the page finishes loading
+            const loader = document.getElementById("loadingOverlay");
+            const mainContent = document.getElementById("showloading");
+
+            // If data is available (PHP already rendered the select), show it
+            if (mainContent) {
+                loader.style.display = "none"; // Hide loader
+                mainContent.style.display = "block"; // Show main content
+            }
         });
     </script>
 

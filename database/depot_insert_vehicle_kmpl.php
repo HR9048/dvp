@@ -101,13 +101,14 @@ if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekm
                     $cc = $row['cc'] ?? 0;
 
                     //before inserting, check if the record already exists check logsheet no for the report data is exisist then update else insert
-                    $checkQuery = "SELECT id FROM vehicle_kmpl WHERE logsheet_no = ? AND date = ? AND division_id = ? AND depot_id = ?";
+                    $checkQuery = "SELECT id FROM vehicle_kmpl WHERE logsheet_no = ? AND date = ? AND division_id = ? AND depot_id = ? and deleted != '1' LIMIT 1";
                     $checkStmt = $db->prepare($checkQuery);
                     $checkStmt->bind_param("ssis", $row['logsheet_no'], $reportDate, $row['division_id'], $row['depot_id']);
                     $checkStmt->execute();
                     $checkStmt->store_result();
                     $recordExists = $checkStmt->num_rows > 0;
-                    $checkStmt->bind_result($id);
+                    $existing_id = null;
+                    $checkStmt->bind_result($existing_id);
                     $checkStmt->fetch();
                     $checkStmt->close();
 
@@ -116,7 +117,7 @@ if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekm
                         $updateQuery = "UPDATE vehicle_kmpl SET bus_number = ?, route_no = ?, driver_1_pf = ?, driver_2_pf = ?, logsheet_no = ?, km_operated = ?, hsd = ?, kmpl = ?, thumps_id = ?, remarks = ?, division_id = ?, depot_id = ?, date = ?, v_change = ?, c_change = ? WHERE id = ?";
                         $stmt = $db->prepare($updateQuery);
                         $stmt->bind_param(
-                            "ssssssssssiisii",
+                            "ssssssssssiisiii",
                             $row['bus_number'],
                             $row['route_no'],
                             $row['driver_token1'],
@@ -132,7 +133,7 @@ if (isset($requestData['action']) && $requestData['action'] === 'insertvehiclekm
                             $reportDate,
                             $vc,
                             $cc,
-                            $id
+                            $existing_id
                         );
                         if (!$stmt->execute()) {
                             $insertSuccess = false;

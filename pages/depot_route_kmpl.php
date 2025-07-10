@@ -141,7 +141,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSI
             let fourDaysAgo = new Date();
 
             yesterday.setDate(today.getDate());
-            fourDaysAgo.setDate(today.getDate() - 12);
+            fourDaysAgo.setDate(today.getDate() - 200);
 
             // Convert dates to 'YYYY-MM-DD' format for accurate comparison
             let selectedDateString = selectedDate.toISOString().split('T')[0];
@@ -787,7 +787,6 @@ AND vd.deleted = 0
                         },
                         dataType: "json",
                         success: function(response) {
-                            console.log(response); // Debugging
 
                             if (response.status === "success") {
                                 Swal.fire({
@@ -804,7 +803,6 @@ AND vd.deleted = 0
                             }
                         },
                         error: function(xhr, status, error) {
-                            console.log(xhr.responseText); // Debugging
                             Swal.fire("Error!", "Something went wrong: " + error, "error");
                         }
                     });
@@ -831,7 +829,6 @@ AND vd.deleted = 0
 
     <script>
         function addRepeatVehicle() {
-            console.log("Add Repeat Vehicle Clicked");
 
             // Get the report date
             const reportDate = "<?php echo isset($report_date) ? $report_date : ''; ?>";
@@ -956,7 +953,6 @@ AND vd.deleted = 0
         const reportDate = "<?php echo isset($report_date) ? $report_date : ''; ?>";
 
         function checkBusNumber(busNumber, reportDate, callback) {
-            console.log("Report Date Sent: ", reportDate);
             $.ajax({
                 url: "../includes/backend_data.php", // Replace with actual PHP script path
                 type: "POST",
@@ -1197,11 +1193,13 @@ AND vd.deleted = 0
         $(document).ready(function() {
             $("#submitBtn").click(function(event) {
                 event.preventDefault(); // Prevents page reload
-                validateAndSubmit();
+                let button = $(this);
+                button.prop("disabled", true).text("Submitting..."); // Disable and change text
+                validateAndSubmit(button); // Pass the button reference
             });
         });
 
-        function validateAndSubmit() {
+        function validateAndSubmit(button) {
             const rows = document.querySelectorAll('#reportTable tr'); // Get all rows
             let validRows = []; // To store valid row data
             let hasData = false; // Flag to check if any row has data
@@ -1246,6 +1244,7 @@ AND vd.deleted = 0
                             title: 'Incomplete Row',
                             html: `Row ${i} is incomplete.<br> Missing Fields: <b>${missingFields.join(", ")}</b>`,
                         });
+                        button.prop("disabled", false).text("Submit"); // Re-enable button
                         return;
                     }
 
@@ -1258,6 +1257,7 @@ AND vd.deleted = 0
                             title: 'Thump Status Required',
                             text: `Row ${i}: Thump Status is required for Leyland BS-6 buses.`
                         });
+                        button.prop("disabled", false).text("Submit"); // Re-enable button
                         return;
                     }
 
@@ -1306,20 +1306,21 @@ AND vd.deleted = 0
                     title: 'No Data',
                     text: 'No valid data entered in the table.'
                 });
+                button.prop("disabled", false).text("Submit"); // Re-enable button
                 return;
             }
-
             // Proceed with form submission (AJAX or other method)
 
             // If all rows are valid, submit via AJAX
-            submitData(validRows);
+            submitData(validRows, button);
         }
 
-        function submitData(data) {
+        function submitData(data, button) {
             const reportDate = "<?php echo isset($report_date) ? $report_date : ''; ?>"; // Ensure it's set
 
             if (!reportDate) {
                 alert("Report date is missing. Please select a valid date.");
+                button.prop("disabled", false).text("Submit"); // Re-enable button
                 return;
             }
             // Create an AJAX request
@@ -1333,7 +1334,6 @@ AND vd.deleted = 0
                 date: reportDate,
                 data: data
             };
-            console.log(data);
             xhr.onload = function() {
                 try {
                     // Try to parse the response as JSON
@@ -1355,17 +1355,19 @@ AND vd.deleted = 0
                             text: 'Error: ' + response.message,
                         });
                         // Log error to console
-                        console.error('Error:', response.message);
+                        button.prop("disabled", false).text("Submit"); // Re-enable button
+                        console.error('Error response:', response);
                     }
                 } catch (e) {
                     // Handle invalid JSON response
-                    const errorMessage = 'Invalid response from the server. Check the console for details.';
+                    const errorMessage = 'Network Error Occures Please Try again Once';
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
                         text: errorMessage,
                     });
                     console.error('Invalid JSON response:', xhr.responseText);
+                    button.prop("disabled", false).text("Submit"); // Re-enable button
                 }
             };
 
@@ -1378,6 +1380,7 @@ AND vd.deleted = 0
                 });
                 // Log error to console
                 console.error('Request failed. Check your connection.');
+                button.prop("disabled", false).text("Submit"); // Re-enable button
             };
 
             // Send the data as JSON
@@ -1385,7 +1388,10 @@ AND vd.deleted = 0
         }
         $(document).ready(function() {
             $("#kmpl_table").on("click", ".update-btn", function() {
+                let button = $(this);
                 let row = $(this).closest("tr"); // Get clicked row
+
+                button.prop("disabled", true).text("Updating...");
 
                 function getCellValue(cellSelector, isSelect = false) {
                     let element = row.find(cellSelector);
@@ -1417,31 +1423,13 @@ AND vd.deleted = 0
 
                 if (!reportDate) {
                     alert("Report date is missing. Please select a valid date.");
+                    button.prop("disabled", false).text("Update"); // Re-enable button
                     return;
                 }
                 // Validate Thump Status for Leyland BS-6 buses
                 let make = getCellValue("td:nth-child(12)");
                 let emissionNorms = getCellValue("td:nth-child(13)");
-                console.log({
-                    id,
-                    busNumber,
-                    routeNumber,
-                    driverToken1,
-                    driverToken2,
-                    logsheetNo,
-                    kmOperated,
-                    hsd,
-                    kmpl,
-                    thumpStatus,
-                    logsheetDefects,
-                    division_id,
-                    depot_id,
-                    reportDate,
-                    vc,
-                    cc,
-                    make,
-                    emissionNorms
-                });
+
 
                 let missingFields = [];
                 if (!busNumber) missingFields.push("Bus Number");
@@ -1458,22 +1446,26 @@ AND vd.deleted = 0
                     Swal.fire({
                         icon: "warning",
                         title: "Validation Error",
-                        html: `<b>The following fields are missing:</b><br><br> 
-                   <ul style="text-align:left;"> 
-                       ${missingFields.map(field => `<li>${field}</li>`).join("")}
-                   </ul>`,
+                        html: `<b>The following fields are missing:</b><br><br>
+                       <ul style="text-align:left;">
+                           ${missingFields.map((field) => `<li>${field}</li>`).join("")}
+                       </ul>`,
                     });
+                    button.prop("disabled", false).text("Update"); // Re-enable button
                     return;
                 }
+
                 if (make === 'Leyland' && emissionNorms === 'BS-6' && !thumpStatus) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Thump Status Required',
                         text: `Thump Status is required for Leyland BS-6 buses.`
                     });
+                    button.prop("disabled", false).text("Update"); // Re-enable button
                     return;
                 }
-                // ✅ AJAX Request (No confirmation popup)
+
+                // ✅ AJAX Request
                 $.ajax({
                     url: "../database/depot_update_single_vehicle_kmpl.php",
                     type: "POST",
@@ -1499,7 +1491,6 @@ AND vd.deleted = 0
                     },
                     success: function(response) {
                         if (response.status === "success") {
-                            // ✅ Update table with new values
                             row.find("td:nth-child(16)").text(response.id);
                             row.find("td:nth-child(17)").text(response.vc);
                             row.find("td:nth-child(18)").text(response.cc);
@@ -1516,6 +1507,7 @@ AND vd.deleted = 0
                                 text: response.message
                             });
                         }
+                        button.prop("disabled", false).text("Update"); // Re-enable button
                     },
                     error: function(xhr, status, error) {
                         console.error("AJAX Error:", xhr.responseText);
@@ -1524,6 +1516,7 @@ AND vd.deleted = 0
                             title: 'AJAX Error',
                             text: "Check console for details"
                         });
+                        button.prop("disabled", false).text("Update"); // Re-enable button
                     }
                 });
             });

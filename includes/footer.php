@@ -18,13 +18,14 @@
 </div>
 </div>
 <script>
+   
   function checkSession() {
     //console.log('Checking session...');
     fetch('session1.php') // Calls the session checker
       .then(response => response.json())
       .then(data => {
         if (data.status === 'expired') {
-          alert("Session expired or missing necessary information1. You will be logged out. Please Login Again.");
+          alert("Session expired or missing necessary information. You will be logged out. Please Login Again.");
           window.location.href = 'logout.php';
         }
       })

@@ -814,7 +814,7 @@ include 'includes/connection.php';
 
                 <div class="accordion" id="accordionExample">
                     <!-- Accordion Item 1 -->
-                    <div class="card">
+                    <!--<div class="card">
                         <div class="card-header" id="headingOne">
                             <h2 class="mb-0">
                                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
@@ -836,7 +836,7 @@ include 'includes/connection.php';
                                 </select>
                             </div>
                         </div>
-                    </div>
+                    </div>-->
                     <!-- Accordion Item 2 -->
                     <div class="card">
                         <div class="card-header" id="headingTwo">
@@ -1114,8 +1114,7 @@ include 'includes/connection.php';
                         $("#commertialTable").html(""); // Clear previous content
 
                         let urls = [
-                            "http://117.203.105.106:50/transfer/commercial/csms_live_fetch_stalls.php",
-                            "http://192.168.1.32:50/transfer/commercial/csms_live_fetch_stalls.php"
+                            "http://117.203.105.106:50/transfer/commercial/csms_live_fetch_stalls.php"
                         ];
 
                         let attempt = 0;
@@ -1131,7 +1130,7 @@ include 'includes/connection.php';
                                 url: urls[attempt],
                                 type: "GET",
                                 dataType: "html",
-                                timeout: 1000, // Wait 5 seconds before failing
+                                timeout: 100000, // Wait 100 seconds before failing
                                 success: function(response) {
                                     $("#loadingMessagecommerial").hide();
                                     $("#commertialTable").html(response);

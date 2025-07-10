@@ -1,18 +1,18 @@
 <?php
 include '../includes/connection.php';
-include '../includes/sidebar.php';
+include '../includes/depot_top.php';
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) {
+if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
 ?>
 
-    <h6>Select Data for KMPL Monthly Report</h6>
+    <h6>Select details for Defect Records</h6>
     <form id="scheduleForm">
 
         <label for="from">From:</label>
@@ -20,16 +20,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
 
         <label for="to">To:</label>
         <input id="to" type="date" name="to" required>
-        <label for="division">Division:</label>
-        <select id="division" name="division" required>
-            <option value="">select</option>
-        </select>
-
-        <label for="depot">Depot:</label>
-        <select id="depot" name="depot" required>
-            <option value="">select</option>
-        </select>
-
+        <input type="hidden" id="division" name="division" value="<?php echo $division_id; ?>">
+        <input type="hidden" id="depot" name="depot" value="<?php echo $depot_id; ?>">
         <label for="sch_no">Schedule No:</label>
         <select id="sch_no" name="sch_no">
             <option value="">Select Schedule</option>
@@ -48,56 +40,17 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
         <button class="btn btn-success" onclick="window.print()">Print</button>
 
     </form>
+    <div id="loadingIndicator" style="display:none; text-align:center; margin: 10px;">
+    <img src="https://i.imgur.com/llF5iyg.gif" alt="Loading..." width="50" />
+    <p>Loading data, please wait...</p>
+</div>
+
+
     <div class="container1">
         <div id="reportContainer"></div>
     </div>
-    <script>
-        function fetchBusCategory() {
-            $.ajax({
-                url: '../includes/data_fetch.php',
-                type: 'GET',
-                data: {
-                    action: 'fetchDivision'
-                },
-                success: function(response) {
-                    var divisions = JSON.parse(response);
-                    $.each(divisions, function(index, division) {
-                        if (division.DIVISION !== 'HEAD-OFFICE' && division.DIVISION !== 'RWY') {
-                            $('#division').append('<option value="' + division.division_id + '">' + division
-                                .DIVISION + '</option>');
-                        }
-                    });
-                }
-            });
-
-            $('#division').change(function() {
-                var Division = $(this).val();
-                $.ajax({
-                    url: '../includes/data_fetch.php?action=fetchDepot',
-                    method: 'POST',
-                    data: {
-                        division: Division
-                    },
-                    success: function(data) {
-                        // Update the depot dropdown with fetched data
-                        $('#depot').html(data);
-
-                        // Hide the option with text 'DIVISION'
-                        $('#depot option').each(function() {
-                            if ($(this).text().trim() === 'DIVISION') {
-                                $(this).hide();
-                            }
-                        });
-                    }
-                });
-            });
-        }
-        $(document).ready(function() {
-            fetchBusCategory();
-        });
-    </script>
     <!-- Include SweetAlert2 -->
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <?php
     date_default_timezone_set('Asia/Kolkata'); // Set the time zone to Asia/Kolkata
     $currentDate = date('Y-m-d', strtotime('+1 day')); // Get current date plus 1 day in YYYY-MM-DD format
@@ -202,6 +155,17 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
 
     <script>
         $(document).ready(function() {
+            var depotId = "<?php echo $_SESSION['DEPOT_ID']; ?>"; // Get depot ID from session
+
+            if (depotId) {
+                $('#depot').val(depotId).trigger('change'); // Set and trigger change event
+                fetchScheduleNos(depotId);
+                fetchBusNumbers(depotId);
+                fetchDriverTokens(depotId);
+            }
+
+
+
             // Initialize Select2
             $('#sch_no, #bus_number, #driver_token').select2();
 
@@ -221,17 +185,9 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
 
 
 
-            // Handle depot change and fetch data
-            $('#depot').change(function() {
-                var depotId = $(this).val();
-                $('#sch_no, #bus_number, #driver_token').html('<option value="">Select</option>').trigger('change.select2'); // Reset fields
 
-                if (depotId) {
-                    fetchScheduleNos(depotId);
-                    fetchBusNumbers(depotId);
-                    fetchDriverTokens(depotId);
-                }
-            });
+
+
 
             function fetchScheduleNos(depotId) {
                 $.ajax({
@@ -301,60 +257,73 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
         });
     </script>
     <script>
-        $(document).ready(function() {
-            $('#scheduleForm').on('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
+        $(document).ready(function () {
+    $('#scheduleForm').on('submit', function (e) {
+        e.preventDefault(); // Prevent default form submission
 
-                var from = $('#from').val();
-                var to = $('#to').val();
-                var division = $('#division').val();
-                var depot = $('#depot').val();
-                var sch_no = $('#sch_no').val();
-                var bus_number = $('#bus_number').val();
-                var driver_token = $('#driver_token').val();
+        var from = $('#from').val();
+        var to = $('#to').val();
+        var division = $('#division').val();
+        var depot = $('#depot').val();
+        var sch_no = $('#sch_no').val();
+        var bus_number = $('#bus_number').val();
+        var driver_token = $('#driver_token').val();
 
-                if (!sch_no && !bus_number && !driver_token) {
+        if (!sch_no && !bus_number && !driver_token) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Selection Required!',
+                text: 'Please select any one: Schedule No, Bus Number, or Driver Token.',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Show loading and clear report container
+        $('#reportContainer').html('');
+        $('#loadingIndicator').show();
+
+        $.ajax({
+            type: 'POST',
+            url: '../includes/backend_data.php',
+            dataType: 'json',
+            data: {
+                from: from,
+                to: to,
+                division: division,
+                depot: depot,
+                sch_no: sch_no,
+                bus_number: bus_number,
+                driver_token: driver_token,
+                action: 'fetch_report_of_defect_record'
+            },
+            success: function (response) {
+                $('#loadingIndicator').hide(); // hide loading on success
+                if (response.status === 'success') {
+                    $('#reportContainer').html(response.data);
+                } else {
                     Swal.fire({
-                        icon: 'warning',
-                        title: 'Selection Required!',
-                        text: 'Please select any one: Schedule No, Bus Number, or Driver Token.',
-                        confirmButtonColor: '#d33',
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message,
                         confirmButtonText: 'OK'
                     });
-                    return; // Stop execution
                 }
-
-                console.log('Submitting form with values:', from, to, division, depot, sch_no, bus_number, driver_token);
-
-                $.ajax({
-                    type: 'POST',
-                    url: '../database/monthly_kmpl_report_ft.php',
-                    data: JSON.stringify({
-                        from: from,
-                        to: to,
-                        division: division,
-                        depot: depot,
-                        sch_no: sch_no,
-                        bus_number: bus_number,
-                        driver_token: driver_token
-                    }),
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.error) {
-                            console.error('Error:', response.error);
-                            $('#reportContainer').html('<p>Error: ' + response.error + '</p>');
-                            return;
-                        }
-                        $('#reportContainer').html(response.html);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error:', status, error);
-                        $('#reportContainer').html('<p>Error loading report.</p>');
-                    }
+            },
+            error: function (xhr, status, error) {
+                $('#loadingIndicator').hide(); // hide loading on error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'A Network error occurred: ' + (xhr.responseText || error),
+                    confirmButtonText: 'OK'
                 });
-            });
+            }
         });
+    });
+});
+
     </script>
 
 <?php

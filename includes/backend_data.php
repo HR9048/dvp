@@ -257,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         echo "Crew Successfully Deputed. The receiver depot needs to confirm the deputation.";
     }
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'crewdeputatuiondelete' || $_POST['action'] === 'crewdeputationreceive') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'crewdeputatuiondelete' || $_POST['action'] === 'crewdeputationreceive') {
     // Get the parameters from the POST request
     $action = isset($_POST['action']) ? $_POST['action'] : '';
     $pfNumber = isset($_POST['pfNumber']) ? $_POST['pfNumber'] : '';
@@ -308,7 +308,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'crewdeputatui
         echo "Missing required parameters!";
     }
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'crewdeputationreceivefrom' || $_POST['action'] === 'crewdeputationrelease') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'crewdeputationreceivefrom' || $_POST['action'] === 'crewdeputationrelease') {
     // Get the parameters from the POST request
     $action = isset($_POST['action']) ? $_POST['action'] : '';
     $pfNumber = isset($_POST['pfNumber']) ? $_POST['pfNumber'] : '';
@@ -492,7 +492,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         echo "Vehicle Successfully Deputed. The receiver depot needs to confirm the deputation.";
     }
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'vehicledeputatuiondelete' || $_POST['action'] === 'vehicledeputationreceive') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'vehicledeputatuiondelete' || $_POST['action'] === 'vehicledeputationreceive') {
     // Get the parameters from the POST request
     $action = isset($_POST['action']) ? $_POST['action'] : '';
     $bus_number = isset($_POST['bus_number']) ? $_POST['bus_number'] : '';
@@ -543,7 +543,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'vehicledeputa
         echo "Missing required parameters!";
     }
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'vehicledeputationreceivefrom' || $_POST['action'] === 'vehicledeputationrelease') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'vehicledeputationreceivefrom' || $_POST['action'] === 'vehicledeputationrelease') {
     // Get the parameters from the POST request
     $action = isset($_POST['action']) ? $_POST['action'] : '';
     $bus_number = isset($_POST['bus_number']) ? $_POST['bus_number'] : '';
@@ -605,6 +605,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $result = $stmt->get_result();
 
     echo '<option value="">Select Schedule</option>';
+    echo '<option value="All">All</option>';
     while ($row = $result->fetch_assoc()) {
         echo "<option value='{$row['sch_key_no']}'>{$row['sch_key_no']}</option>";
     }
@@ -619,6 +620,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $result = $stmt->get_result();
 
     echo '<option value="">Select Bus</option>';
+    echo '<option value="All">All</option>';
     while ($row = $result->fetch_assoc()) {
         echo "<option value='{$row['bus_number']}'>{$row['bus_number']}</option>";
     }
@@ -814,7 +816,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 v.driver_1_pf, v.driver_2_pf, l.depot as depot_name, l.kmpl_division, l.kmpl_depot
               FROM vehicle_kmpl v
               LEFT JOIN location l ON v.depot_id = l.depot_id
-              $whereClause AND v.date = '$adjustedDate'
+              $whereClause AND v.date = '$adjustedDate' and deleted != '1'
               order by v.depot_id, v.bus_number";
 
     $result = mysqli_query($db, $query);
@@ -851,7 +853,7 @@ LEFT JOIN sch_veh_out svo
 LEFT JOIN vehicle_kmpl vk 
     ON vk.depot_id = l.depot_id 
     AND vk.date = '$selected_date'
-where l.division_id not in ('0', '10') and l.DEPOT != 'DIVISION'
+where l.division_id not in ('0', '10') and l.DEPOT != 'DIVISION' and vk.deleted != '1'
 GROUP BY l.division_id, l.depot_id
 ORDER BY l.division_id, l.depot_id";
 
@@ -965,7 +967,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'fetchvehiclekmpldataenteredd
                 AND vk.date = '$selected_date'
               WHERE l.division_id NOT IN ('0', '10') 
                 AND l.depot != 'DIVISION' 
-                AND l.division_id = '$division_id'
+                AND l.division_id = '$division_id' and vk.deleted != '1'
               GROUP BY l.division_id, l.depot_id
               ORDER BY l.division_id, l.depot_id";
 
@@ -6536,9 +6538,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $todaydate = date('Y-m-d');
 
     // Step 1: Check if the vehicle is already on operation (status = 1)
-    $check_query = "SELECT vehicle_no FROM sch_veh_out WHERE vehicle_no = ? AND schedule_status = 1 and division_id = ? AND depot_id = ?";
+    /*$check_query = "SELECT vehicle_no FROM sch_veh_out WHERE vehicle_no = ? AND schedule_status = 1";
     $check_stmt = $db->prepare($check_query);
-    $check_stmt->bind_param("sss", $bus_number, $division_id, $depot_id);
+    $check_stmt->bind_param("s", $bus_number);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
 
@@ -6548,12 +6550,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             'message' => 'Selected vehicle is already on Operation. Please select a different vehicle.'
         ]);
         exit;
-    }
+    }*/
 
-    // Step 2: Fetch schedules if the vehicle is not in operation
-    $query = "SELECT sch_key_no, bus_number_1, bus_number_2, additional_bus_number FROM schedule_master WHERE division_id = ? AND depot_id = ? and status = 1 and sch_key_no not in(SELECT `sch_no` FROM `sch_veh_out` WHERE `division_id`= ? and `depot_id` = ? and `departed_date`= ?) ORDER BY sch_dep_time ASC";
+    // Step 2: Fetch schedules if the vehicle is not in operation and sch_key_no not in(SELECT `sch_no` FROM `sch_veh_out` WHERE `division_id`= ? and `depot_id` = ? and `departed_date`= ?)
+    $query = "SELECT sch_key_no, bus_number_1, bus_number_2, additional_bus_number FROM schedule_master WHERE division_id = ? AND depot_id = ? and status = 1  ORDER BY sch_dep_time ASC";
     $stmt = $db->prepare($query);
-    $stmt->bind_param("sssss", $division_id, $depot_id, $division_id, $depot_id, $todaydate);
+    $stmt->bind_param("ss", $division_id, $depot_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -6589,8 +6591,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $sch_no = $_POST['schedule_key_no'];
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
+    $todaydate = date('Y-m-d');
+    $bus_number = $_POST['busnumber'];
+    // Query 1: Check if vehicle is already on operation
+    $query1 = "SELECT COUNT(*) AS vehicle_check 
+           FROM sch_veh_out 
+           WHERE vehicle_no = ? 
+             AND schedule_status = 1";
+    $stmt1 = $db->prepare($query1);
+    $stmt1->bind_param("s", $bus_number);
+    $stmt1->execute();
+    $result1 = $stmt1->get_result();
+    $row1 = $result1->fetch_assoc();
 
-     // Step 1 Query: Fetch rows from sch_veh_out with status 1 and 2
+    // Check vehicle status
+    if ($row1['vehicle_check'] > 0) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Selected vehicle is already on Operation. Please select a different vehicle.'
+        ]);
+        $stmt1->close();
+        exit;
+    }
+    $stmt1->close();
+
+    // Query 2: Check if schedule is already operated today
+    $query2 = "SELECT COUNT(*) AS schedule_check 
+           FROM sch_veh_out 
+           WHERE division_id = ? 
+             AND depot_id = ? 
+             AND sch_no = ? 
+             AND departed_date = ?";
+    $stmt2 = $db->prepare($query2);
+    $stmt2->bind_param("ssss", $division_id, $depot_id, $sch_no, $todaydate);
+    $stmt2->execute();
+    $result2 = $stmt2->get_result();
+    $row2 = $result2->fetch_assoc();
+
+    // Check schedule status
+    if ($row2['schedule_check'] > 0) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Selected Schedule is already on Operation for today. Please select a different Schedule No.'
+        ]);
+        $stmt2->close();
+        exit;
+    }
+    $stmt2->close();
+
+
+
+    // Check if schedule already departed
+    /*$queryforscheduleverify = "SELECT sch_no 
+                           FROM sch_veh_out 
+                           WHERE division_id = ? 
+                             AND depot_id = ? 
+                             AND sch_no = ? 
+                             AND departed_date = ?";
+    $stmt = $db->prepare($queryforscheduleverify);
+    $stmt->bind_param("ssss", $division_id, $depot_id, $sch_no, $todaydate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    // ✅ This will now reliably check
+    if ($result->num_rows > 0) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Selected Schedule is already on Operation on Todays date. Please select a different Schedule No.'
+        ]);
+        $stmt->close();
+        exit;
+    }
+    $stmt->close();*/
+
+    // Step 1 Query: Fetch rows from sch_veh_out with status 1 and 2
     $step1Query = "
         SELECT *
         FROM sch_veh_out
@@ -6768,7 +6842,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     $data['conductor_token_3'] = NULL;
                     $data['conductor_name_3'] = NULL;
                 }
-            } 
+            }
         }
     }
 
@@ -7070,4 +7144,560 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
 
 
     $stmt->close();
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] === 'update_model_type') {
+
+
+    $bus_no = $_POST['bus_number'] ?? '';
+    $model_type = $_POST['model_type'] ?? '';
+
+    if (!$bus_no || !$model_type) {
+        echo json_encode(['status' => 'error', 'message' => 'Bus number or model type missing']);
+        exit;
+    }
+    if (empty($bus_no) || empty($model_type)) {
+        echo json_encode(['status' => 'error', 'message' => 'Bus number or model type missing']);
+        exit;
+    }
+
+    // Prepared statement to avoid SQL injection
+    $stmt = $db->prepare("UPDATE bus_registration SET model_type = ? WHERE bus_number = ?");
+    if (!$stmt) {
+        echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $db->error]);
+        exit;
+    }
+    $stmt->bind_param("ss", $model_type, $bus_no);
+    if ($stmt->execute()) {
+        echo json_encode(['status' => 'success', 'message' => 'Model type updated successfully']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Update failed']);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] === 'fetch_comparison_report') {
+    $date = $_POST['selected_date'];
+    $formateddate = date('d-m-Y', strtotime($date));
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+        $conditionforreport = "l.division_id NOT IN (0, 10) and l.depot NOT IN ('DIVISION')";
+    } else {
+        $conditionforreport = "l.division_id = {$_SESSION['DIVISION_ID']} and l.depot NOT IN ('DIVISION')";
+    }
+    $query = "SELECT 
+    l.division, 
+    l.division_id, 
+    l.depot, 
+    l.depot_id,
+
+    -- From bus_registration (buses held)
+    IFNULL(br_data.buses_held, 0) AS buses_held,
+
+    -- From logsheet (vehicle_kmpl)
+    IFNULL(vk_data.logsheet_entry_count, 0) AS logsheet_entry_count,
+    IFNULL(vk_data.logsheet_km, 0) AS logsheet_km,
+    IFNULL(vk_data.logsheet_hsd, 0) AS logsheet_hsd,
+    IFNULL(vk_data.logsheet_kmpl, 0) AS logsheet_kmpl,
+
+    -- From kmpl_data (already depotwise)
+    IFNULL(kd.total_km, 0) AS manual_km,
+    IFNULL(kd.hsd, 0) AS manual_hsd,
+    IFNULL(kd.kmpl, 0) AS manual_kmpl
+
+FROM location l
+
+-- 🔹 Join bus_registration to count buses held per depot
+LEFT JOIN (
+    SELECT 
+        division_name AS division_id, 
+        depot_name AS depot_id, 
+        COUNT(DISTINCT bus_number) AS buses_held
+    FROM bus_registration
+    GROUP BY division_name, depot_name
+) AS br_data
+ON l.division_id = br_data.division_id AND l.depot_id = br_data.depot_id
+
+-- 🔹 Join vehicle_kmpl for logsheet totals
+LEFT JOIN (
+    SELECT 
+        division_id, 
+        depot_id,
+        COUNT(bus_number) AS logsheet_entry_count,
+        SUM(km_operated) AS logsheet_km,
+        SUM(hsd) AS logsheet_hsd,
+        ROUND(SUM(km_operated)/NULLIF(SUM(hsd), 0), 2) AS logsheet_kmpl
+    FROM vehicle_kmpl
+    WHERE date = '$date' and deleted !=1
+    GROUP BY division_id, depot_id
+) AS vk_data
+ON l.division_id = vk_data.division_id AND l.depot_id = vk_data.depot_id
+
+-- 🔹 Join kmpl_data which is already depotwise
+LEFT JOIN (
+    SELECT 
+        division AS division_id, 
+        depot AS depot_id,
+        total_km,
+        hsd,
+        kmpl
+    FROM kmpl_data
+    WHERE date = '$date'
+) AS kd
+ON l.division_id = kd.division_id AND l.depot_id = kd.depot_id
+
+-- 🔹 Exclude unwanted divisions
+WHERE $conditionforreport
+
+ORDER BY l.division_id, l.depot_id
+
+";
+
+
+
+    echo "<style>
+    .mismatch {
+        background-color: #ffc7c7; /* light red for mismatches */
+    }
+</style>";
+
+    $result = mysqli_query($db, $query);
+    if (!$result) {
+        echo "Error: " . mysqli_error($db);
+        exit;
+    }
+
+    echo "<h3 class=\"text-center\">Depot-wise KMPL Comparison Report $formateddate</h3><table border='1' cellpadding='6' cellspacing='0'>
+<tr>
+    <th rowspan='2'>Division</th>
+    <th rowspan='2'>Depot</th>
+    <th rowspan='2'>Buses Held</th>
+    <th rowspan='2'>Logsheet Entries</th>
+    <th colspan='3'>Depot Manual</th>
+    <th colspan='3'>Vehicle Logsheet</th>
+    <th colspan='2'>Diff</th>
+</tr>
+<tr>
+    <th>KM</th>
+    <th>HSD</th>
+    <th>KMPL</th>
+    <th>KM</th>
+    <th>HSD</th>
+    <th>KMPL</th>
+    <th>KM</th>
+    <th>HSD</th>
+</tr>";
+
+    $current_division = '';
+    $division_totals = [
+        'buses_held' => 0,
+        'logsheet_entry_count' => 0,
+        'manual_km' => 0,
+        'manual_hsd' => 0,
+        'logsheet_km' => 0,
+        'logsheet_hsd' => 0
+    ];
+    $corp_totals = $division_totals;
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        // Detect new division and show total row
+        if ($current_division !== '' && $current_division !== $row['division']) {
+            echo "<tr style='font-weight: bold; background: #f0f0f0;'>
+            <td colspan='2'>{$current_division} Total</td>
+            <td>{$division_totals['buses_held']}</td>
+            <td>{$division_totals['logsheet_entry_count']}</td>
+            <td>{$division_totals['manual_km']}</td>
+            <td>{$division_totals['manual_hsd']}</td>
+            <td>" . round($division_totals['manual_km'] / max($division_totals['manual_hsd'], 1), 2) . "</td>
+            <td>{$division_totals['logsheet_km']}</td>
+            <td>{$division_totals['logsheet_hsd']}</td>
+            <td>" . round($division_totals['logsheet_km'] / max($division_totals['logsheet_hsd'], 1), 2) . "</td>
+            <td>$division_km_diff</td>
+    <td>$division_hsd_diff</td>
+        </tr>";
+
+            $division_totals = array_fill_keys(array_keys($division_totals), 0);
+        }
+
+        $current_division = $row['division'];
+
+        // Update running totals
+        foreach (['buses_held', 'logsheet_entry_count', 'manual_km', 'manual_hsd', 'logsheet_km', 'logsheet_hsd'] as $key) {
+            $division_totals[$key] += $row[$key];
+            $corp_totals[$key] += $row[$key];
+        }
+
+        // Mismatch highlighting
+        $km_class   = ($row['manual_km'] != $row['logsheet_km']) ? 'mismatch' : '';
+        $hsd_class  = ($row['manual_hsd'] != $row['logsheet_hsd']) ? 'mismatch' : '';
+        $kmpl_class = ($row['manual_kmpl'] != $row['logsheet_kmpl']) ? 'mismatch' : '';
+
+        $km_diff = $row['manual_km'] - $row['logsheet_km'];
+        $hsd_diff = $row['manual_hsd'] - $row['logsheet_hsd'];
+
+        $diff_km_class  = ($km_diff != 0) ? 'mismatch' : '';
+        $diff_hsd_class = ($hsd_diff != 0) ? 'mismatch' : '';
+
+        $corp_km_diff = $corp_totals['manual_km'] - $corp_totals['logsheet_km'];
+        $corp_hsd_diff = $corp_totals['manual_hsd'] - $corp_totals['logsheet_hsd'];
+
+        $division_km_diff = $division_totals['manual_km'] - $division_totals['logsheet_km'];
+        $division_hsd_diff = $division_totals['manual_hsd'] - $division_totals['logsheet_hsd'];
+
+        echo "<tr>
+        <td>{$row['division']}</td>
+        <td>{$row['depot']}</td>
+        <td>{$row['buses_held']}</td>
+        <td>{$row['logsheet_entry_count']}</td>
+        <td class='$km_class'>{$row['manual_km']}</td>
+        <td class='$hsd_class'>{$row['manual_hsd']}</td>
+        <td class='$kmpl_class'>{$row['manual_kmpl']}</td>
+        <td class='$km_class'>{$row['logsheet_km']}</td>
+        <td class='$hsd_class'>{$row['logsheet_hsd']}</td>
+        <td class='$kmpl_class'>{$row['logsheet_kmpl']}</td>
+        <td class='$diff_km_class'>$km_diff</td>
+        <td class='$diff_hsd_class'>$hsd_diff</td>
+    
+    </tr>";
+    }
+
+    // Final division total
+    if ($current_division !== '') {
+        echo "<tr style='font-weight: bold; background: #f0f0f0;'>
+        <td colspan='2'>{$current_division} Total</td>
+        <td>{$division_totals['buses_held']}</td>
+        <td>{$division_totals['logsheet_entry_count']}</td>
+        <td>{$division_totals['manual_km']}</td>
+        <td>{$division_totals['manual_hsd']}</td>
+        <td>" . round($division_totals['manual_km'] / max($division_totals['manual_hsd'], 1), 2) . "</td>
+        <td>{$division_totals['logsheet_km']}</td>
+        <td>{$division_totals['logsheet_hsd']}</td>
+        <td>" . round($division_totals['logsheet_km'] / max($division_totals['logsheet_hsd'], 1), 2) . "</td>
+        <td>$division_km_diff</td>
+    <td>$division_hsd_diff</td>
+        
+    </tr>";
+    }
+
+    // Final corporation total
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+
+        echo "<tr style='font-weight: bold; background: #d0ffd0;'>
+    <td colspan='2'>Corporation Total</td>
+    <td>{$corp_totals['buses_held']}</td>
+    <td>{$corp_totals['logsheet_entry_count']}</td>
+    <td>{$corp_totals['manual_km']}</td>
+    <td>{$corp_totals['manual_hsd']}</td>
+    <td>" . round($corp_totals['manual_km'] / max($corp_totals['manual_hsd'], 1), 2) . "</td>
+    <td>{$corp_totals['logsheet_km']}</td>
+    <td>{$corp_totals['logsheet_hsd']}</td>
+    <td>" . round($corp_totals['logsheet_km'] / max($corp_totals['logsheet_hsd'], 1), 2) . "</td>
+    <td>$corp_km_diff</td>
+    <td>$corp_hsd_diff</td>
+
+</tr>";
+    }
+
+    echo "</table>";
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] === 'save_program_data') {
+    $bus_number = $_POST['bus_number'] ?? '';
+    $program_type = $_POST['program_type'] ?? '';
+    $program_completed_km = $_POST['program_completed_km'] ?? '';
+    $program_date = $_POST['program_date'] ?? '';
+    $division_id = $_SESSION['DIVISION_ID'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+
+    if (!$bus_number || !$program_type || !$program_completed_km || !$program_date) {
+        echo "Missing required fields.";
+        exit;
+    }
+
+    $program_completed_km = intval($program_completed_km);
+    $program_date = mysqli_real_escape_string($db, $program_date);
+
+    // before inserting, check if the program already exists for the bus
+    $checkQuery = mysqli_query($db, "SELECT COUNT(*) as count FROM program_data 
+        WHERE bus_number = '$bus_number' AND program_type = '$program_type' AND program_date = '$program_date'");
+
+    //if it has data then update else insert
+    $checkData = mysqli_fetch_assoc($checkQuery);
+    // If the program already exists, update it else insert a new record
+    if ($checkData['count'] > 0) {
+        // Update existing record
+        $update = mysqli_query($db, "UPDATE program_data SET program_completed_km = '$program_completed_km' 
+            WHERE bus_number = '$bus_number' AND program_type = '$program_type' AND program_date = '$program_date'");
+
+        echo $update ? "Program updated successfully." : "Error updating program.";
+        exit;
+    } else {
+
+        // Insert only (no update)
+        $insert = mysqli_query($db, "INSERT INTO program_data (bus_number, program_type, program_completed_km, program_date) 
+        VALUES ('$bus_number', '$program_type', '$program_completed_km', '$program_date')");
+
+        echo $insert ? "Program saved successfully." : "Error saving program.";
+        exit;
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] === 'fetch_report_of_defect_record') {
+
+    $from = $_POST['from'];
+    $to = $_POST['to'];
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+    $sch_no = $_POST['sch_no'];
+    $bus_number = $_POST['bus_number'];
+    $driver_pf = $_POST['driver_token'];
+
+    // Get Division & Depot Names
+    $locationQuery = "SELECT division, depot FROM location WHERE division_id = '$division_id' AND depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    if (!$from || !$to || !$division_id || !$depot_id) {
+        echo json_encode(['error' => 'Missing required parameters']);
+        exit;
+    }
+    function getDriverNameToken($pf_no)
+    {
+        if (!$pf_no || $pf_no == 'NA') return 'NA';
+
+        $api_url = "http://localhost:8880/dvp_test/database/combined_api_data.php?pf_no=" . urlencode($pf_no);
+        $response = @file_get_contents($api_url);
+
+        if ($response === FALSE) return $pf_no; // Fallback
+
+        $data = json_decode($response, true);
+
+        if (!empty($data['data'][0])) {
+            $name = $data['data'][0]['EMP_NAME'] ?? '';
+            $token = $data['data'][0]['token_number'] ?? '';
+            return $name . ' (' . $token . ')';
+        }
+
+        return $pf_no;
+    }
+
+
+    $where = "division_id = '$division_id' AND depot_id = '$depot_id' AND date BETWEEN '$from' AND '$to' AND deleted != 1";
+    $activeFilter = '';
+    $filterText = '';
+
+    if (!empty($sch_no) && $sch_no === 'All') {
+        $where .= " AND 1=1";
+        $activeFilter = 'route number';
+        $filterText = "Routes: All";
+    } elseif (!empty($bus_number) && $bus_number === 'All') {
+        $where .= " AND 1=1";
+        $activeFilter = 'bus number';
+        $filterText = "Buses: All";
+    } elseif (!empty($driver_pf) && $driver_pf === 'All') {
+        $where .= " AND 1=1";
+        $activeFilter = 'driver name';
+        $filterText = "Drivers: All";
+    } elseif (!empty($sch_no) && $sch_no !== 'All') {
+        $where .= " AND route_no = '$sch_no'";
+        $activeFilter = 'route number';
+        $filterText = "Route No: $sch_no";
+    } elseif (!empty($bus_number) && $bus_number !== 'All') {
+        $where .= " AND bus_number = '$bus_number'";
+        $activeFilter = 'bus number';
+        $filterText = "Bus Number: $bus_number";
+    } elseif (!empty($driver_pf) && $driver_pf !== 'All') {
+        $where .= " AND (driver_1_pf = '$driver_pf' OR driver_2_pf = '$driver_pf')";
+        $activeFilter = 'driver name';
+        $filterText = "Driver Name: " . getDriverNameToken($driver_pf);
+    } else {
+        $activeFilter = 'All';
+        $filterText = "All Routes | All Buses | All Drivers";
+    }
+
+    $query = "SELECT route_no, bus_number, driver_1_pf, driver_2_pf, date, remarks 
+          FROM vehicle_kmpl 
+          WHERE $where 
+          ORDER BY date, route_no, bus_number, driver_1_pf";
+
+    $result = mysqli_query($db, $query);
+    $sameDay = ($from === $to);
+
+    $fromFormatted = date("d-m-Y", strtotime($from));
+    $toFormatted = date("d-m-Y", strtotime($to));
+
+    $html = "<h3 class='text-center'>Defect Record Report for $divisionName - $depotName</h3>";
+    $html .= "<h4 class='text-center'>From: $fromFormatted To: $toFormatted</h4>";
+    $html .= "<h4 class='text-center'>$filterText</h4><br>";
+
+    $data = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        if ($sameDay) {
+            $data[] = $row;
+        } else {
+            $key = '';
+            if ($activeFilter === 'route number') $key = $row['route_no'] ?? 'Unknown';
+            elseif ($activeFilter === 'bus number') $key = $row['bus_number'] ?? 'Unknown';
+            elseif ($activeFilter === 'driver name') $key = $row['driver_1_pf'] ?? $row['driver_2_pf'] ?? 'Unknown';
+            else $key = $row['route_no'] ?? 'Unknown'; // default to group by route
+            $data[$key][] = $row;
+        }
+    }
+
+    if (empty($data)) {
+        $html .= "<p style='text-align:center; color:red;'>No defect remarks found in the given date range.</p>";
+    } else {
+        if ($sameDay) {
+            // Single table view
+            $html .= "<table border='1' cellpadding='6' cellspacing='0' style='width:100%; font-size: 12px; margin-bottom: 20px;'>";
+            $html .= "<tr>
+            <th>Date</th>
+            <th>Route No</th>
+            <th>Bus Number</th>
+            <th>Driver 1 Name</th>
+            <th>Driver 2 Name</th>
+            <th>Defect Remarks</th>
+        </tr>";
+            foreach ($data as $entry) {
+                $html .= "<tr>
+                <td>" . date('d-m-Y', strtotime($entry['date'])) . "</td>
+                <td>" . htmlspecialchars($entry['route_no'] ?? 'NA') . "</td>
+                <td>" . htmlspecialchars($entry['bus_number'] ?? 'NA') . "</td>
+                <td>" . getDriverNameToken($entry['driver_1_pf']) . "</td>
+                <td>" . getDriverNameToken($entry['driver_2_pf']) . "</td>
+                <td>" . nl2br(htmlspecialchars($entry['remarks'])) . "</td>
+            </tr>";
+            }
+            $html .= "</table>";
+        } else {
+            if ($activeFilter === 'All') {
+                // Determine if sch_no, bus_number, or driver_pf specifically has "All"
+                if (!empty($sch_no) && $sch_no === 'All') {
+                    // Group by Route No
+                    foreach ($data as $route => $entries) {
+                        $html .= "<h4>Route No: $route</h4>";
+                        $html .= "<table border='1' cellpadding='6' cellspacing='0' style='width:100%; font-size: 12px; margin-bottom: 20px;'>";
+                        $html .= "<tr>
+                <th>Date</th>
+                <th>Bus Number</th>
+                <th>Driver 1 Name</th>
+                <th>Driver 2 Name</th>
+                <th>Defect Remarks</th>
+            </tr>";
+                        foreach ($entries as $entry) {
+                            $html .= "<tr>
+                    <td>" . date('d-m-Y', strtotime($entry['date'])) . "</td>
+                    <td>" . htmlspecialchars($entry['bus_number'] ?? 'NA') . "</td>
+                    <td>" . getDriverNameToken($entry['driver_1_pf']) . "</td>
+                    <td>" . getDriverNameToken($entry['driver_2_pf']) . "</td>
+                    <td>" . nl2br(htmlspecialchars($entry['remarks'])) . "</td>
+                </tr>";
+                        }
+                        $html .= "</table>";
+                    }
+                }
+
+                if (!empty($bus_number) && $bus_number === 'All') {
+                    // Group by Bus Number
+                    $busGroups = [];
+                    foreach ($data as $entries) {
+                        foreach ($entries as $row) {
+                            $busGroups[$row['bus_number'] ?? 'Unknown'][] = $row;
+                        }
+                    }
+
+                    foreach ($busGroups as $bus => $entries) {
+                        $html .= "<h4>Bus Number: $bus</h4>";
+                        $html .= "<table border='1' cellpadding='6' cellspacing='0' style='width:100%; font-size: 12px; margin-bottom: 20px;'>";
+                        $html .= "<tr>
+                <th>Date</th>
+                <th>Route No</th>
+                <th>Driver 1 Name</th>
+                <th>Driver 2 Name</th>
+                <th>Defect Remarks</th>
+            </tr>";
+                        foreach ($entries as $entry) {
+                            $html .= "<tr>
+                    <td>" . date('d-m-Y', strtotime($entry['date'])) . "</td>
+                    <td>" . htmlspecialchars($entry['route_no'] ?? 'NA') . "</td>
+                    <td>" . getDriverNameToken($entry['driver_1_pf']) . "</td>
+                    <td>" . getDriverNameToken($entry['driver_2_pf']) . "</td>
+                    <td>" . nl2br(htmlspecialchars($entry['remarks'])) . "</td>
+                </tr>";
+                        }
+                        $html .= "</table>";
+                    }
+                }
+
+                if (!empty($driver_pf) && $driver_pf === 'All') {
+                    // Group by driver_1_pf and driver_2_pf
+                    $driverGroups = [];
+                    foreach ($data as $entries) {
+                        foreach ($entries as $row) {
+                            $d1 = $row['driver_1_pf'] ?: 'NA';
+                            $d2 = $row['driver_2_pf'] ?: 'NA';
+                            $driverGroups[$d1][] = $row;
+                            if ($d1 !== $d2) $driverGroups[$d2][] = $row;
+                        }
+                    }
+
+                    foreach ($driverGroups as $driver => $entries) {
+                        $html .= "<h4>Driver PF: " . getDriverNameToken($driver) . "</h4>";
+                        $html .= "<table border='1' cellpadding='6' cellspacing='0' style='width:100%; font-size: 12px; margin-bottom: 20px;'>";
+                        $html .= "<tr>
+                <th>Date1</th>
+                <th>Route No</th>
+                <th>Bus Number</th>
+                <th>Defect Remarks</th>
+            </tr>";
+                        foreach ($entries as $entry) {
+                            $html .= "<tr>
+                    <td>" . date('d-m-Y', strtotime($entry['date'])) . "</td>
+                    <td>" . htmlspecialchars($entry['route_no'] ?? 'NA') . "</td>
+                    <td>" . htmlspecialchars($entry['bus_number'] ?? 'NA') . "</td>
+                    <td>" . nl2br(htmlspecialchars($entry['remarks'])) . "</td>
+                </tr>";
+                        }
+                        $html .= "</table>";
+                    }
+                }
+            } else {
+                // Existing filter logic
+                foreach ($data as $group => $entries) {
+                    $label = ucfirst($activeFilter);
+
+                    if ($label == 'Driver name') {
+                        $html .= "<h4>$label: " . getDriverNameToken($group) . "</h4>";
+                    } else {
+                        $html .= "<h4>$label: $group</h4>";
+                    }
+                    $html .= "<table border='1' cellpadding='6' cellspacing='0' style='width:100%; font-size: 12px; margin-bottom: 20px;'>";
+                    $html .= "<tr>
+                    <th>Date</th>";
+                    if ($activeFilter !== 'route number') $html .= "<th>Route No</th>";
+                    if ($activeFilter !== 'bus number') $html .= "<th>Bus Number</th>";
+                    if ($activeFilter !== 'driver name') {
+                        $html .= "<th>Driver 1 Name</th><th>Driver 2 Name</th>";
+                    }
+                    $html .= "<th>Defect Remarks</th></tr>";
+
+                    foreach ($entries as $entry) {
+                        $html .= "<tr>
+                        <td>" . date('d-m-Y', strtotime($entry['date'])) . "</td>";
+                        if ($activeFilter !== 'route number') $html .= "<td>" . htmlspecialchars($entry['route_no'] ?? 'NA') . "</td>";
+                        if ($activeFilter !== 'bus number') $html .= "<td>" . htmlspecialchars($entry['bus_number'] ?? 'NA') . "</td>";
+                        if ($activeFilter !== 'driver name') {
+                            $html .= "<td>" . getDriverNameToken($entry['driver_1_pf']) . "</td>";
+                            $html .= "<td>" . getDriverNameToken($entry['driver_2_pf']) . "</td>";
+                        }
+                        $html .= "<td>" . nl2br(htmlspecialchars($entry['remarks'])) . "</td></tr>";
+                    }
+
+                    $html .= "</table><br>";
+                }
+            }
+        }
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'data' => $html
+    ]);
 }

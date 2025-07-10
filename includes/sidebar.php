@@ -261,7 +261,8 @@ confirm_logged_in();
                           </li>
                           <li><a class="dropdown-item" href="co_vehicle_kmpl.php">kmpl report month</a></li>
                           <li><a class="dropdown-item" href="co_vehicle_kmpl_ft.php">kmpl report Fron-To Date</a></li>
-                          <li><a class="dropdown-item" href="co_kmpl_compare_report.php">KMPL Comparision Report</a>
+                          <li><a class="dropdown-item" href="co_kmpl_compare_report.php">KMPL Comparision Report</a></li>
+                          <li><a class="dropdown-item" href="co_vehicle_kmpl_report.php">Vehicle Kmpl Track Report</a></li>
                         </ul>
                       </div>
                     </li>
@@ -290,7 +291,7 @@ confirm_logged_in();
                           <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
                           <li><a class="dropdown-item" href="co_inventory_report_depotwise.php">Inventory report depotwise</a>
                         </ul>
-                      </div>
+                      </div> 
                     </li>
                   <?php } ?>
                 </ul>

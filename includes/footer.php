@@ -20,7 +20,7 @@
 <script>
    
   function checkSession() {
-    //console.log('Checking session...');
+    console.log('Checking session...');
     fetch('session1.php') // Calls the session checker
       .then(response => response.json())
       .then(data => {
@@ -33,7 +33,7 @@
   }
 
   // Check session every second
-  setInterval(checkSession, 1000);
+  setInterval(checkSession, 60000);
 </script>
 
 <!-- End of Footer -->

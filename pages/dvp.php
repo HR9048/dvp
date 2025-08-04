@@ -67,8 +67,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     $row = mysqli_fetch_assoc($result);
 
     // Assign vehicle count to a variable
-    $vehicleCount = isset($row['vehicle_count']) ? $row['vehicle_count'] : 0;
-
+    $vehicleCount1 = isset($row['vehicle_count']) ? $row['vehicle_count'] : 0;
+    $vehicleCount = $vehicleCount1 - $rwyCount; // Exclude RWY vehicles from the total count
     // Free the result set
     mysqli_free_result($result);
 
@@ -132,7 +132,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 <div class="form-group col-md-6">
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" style="color: red;">Number of Vehicles(RWY Including):</span>
+                            <span class="input-group-text" style="color: red;">Number of Vehicles(RWY Excluding):</span>
                         </div>
                         <input type="number" class="form-control" id="vehicles" name="vehicles"
                             oninput="calculateDifference()" value="<?php echo $vehicleCount; ?>" style="color: red;"
@@ -142,8 +142,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 <div class="form-group col-md-6">
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" style="color: red;">Number of Spare Vehicles(RWY
-                                Including):</span>
+                            <span class="input-group-text" style="color: red;">Number of Spare Vehicles(RWY Excluding):</span>
                         </div>
                         <input type="number" class="form-control" id="spare" name="spare" oninput="calculateDifference()"
                             readonly style="color: red;">
@@ -157,6 +156,15 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         </div>
                         <input type="number" class="form-control" id="spareP" name="spareP" oninput="calculateDifference()"
                             readonly style="color: red;">
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" style="color: red;">Vehicles Off Road At RWY:</span>
+                        </div>
+                        <input type="number" class="form-control" id="ORRWY" name="ORRWY" oninput="calculateDifference()"
+                            value="<?php echo $rwyCount; ?>" readonly style="color: red;">
                     </div>
                 </div>
             </div>
@@ -182,15 +190,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         </div>
                         <input type="number" class="form-control" id="ORDWS" name="ORDWS" oninput="calculateDifference()"
                             value="<?php echo $dwsCount; ?>" readonly style="color: red;">
-                    </div>
-                </div>
-                <div class="form-group col-md-6">
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" style="color: red;">Vehicles Off Road At RWY:</span>
-                        </div>
-                        <input type="number" class="form-control" id="ORRWY" name="ORRWY" oninput="calculateDifference()"
-                            value="<?php echo $rwyCount; ?>" readonly style="color: red;">
                     </div>
                 </div>
                 <div class="form-group col-md-6">
@@ -256,7 +255,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                             value="<?php echo $authorizeddealer; ?>" readonly style="color: red;">
                     </div>
                 </div>
-
                 <div class="form-group col-md-6">
                     <div class="input-group">
                         <div class="input-group-prepend">
@@ -266,6 +264,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                             value="<?php echo $policecount; ?>" readonly style="color: red;">
                     </div>
                 </div>
+
                 <div class="form-group col-md-6">
                     <div class="input-group">
                         <div class="input-group-prepend">
@@ -293,6 +292,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                             readonly style="color: red;">
                     </div>
                 </div>
+                
                 <!-- Add other input groups similarly -->
             </div>
             <div class="center-button">
@@ -354,13 +354,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             document.getElementById("spare").value = spare;
 
             // Calculate the Spare Vehicles Percentage
-            var sparePercentage = ((spare - ORRWY) * 100 / schedules).toFixed(2);
+            var sparePercentage = (spare * 100 / schedules).toFixed(2);
 
             // Update the Spare Vehicles Percentage field
             document.getElementById("spareP").value = sparePercentage;
 
             // Calculate the difference to find the number of Off road total vehicles
-            var ORTotal = (docking + wup + ORDepot + ORDWS + ORRWY + CC + Police + notdepot + Dealer + loan + wup1);
+            var ORTotal = (docking + wup + ORDepot + ORDWS + CC + Police + notdepot + Dealer + loan + wup1);
 
             // Update the Number of off road Vehicles field
             document.getElementById("ORTotal").value = ORTotal;

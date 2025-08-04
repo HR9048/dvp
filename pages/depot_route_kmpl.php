@@ -283,6 +283,8 @@ AND vd.deleted = 0
                         echo '<option value="BD">BD</option>';
                         echo '<option value="Extra Operation">Extra Operation</option>';
                         echo '<option value="Jatra Operation">Jatra Operation</option>';
+                        echo '<option value="DWS">DWS</option>';
+                        echo '<option value="RWY">RWY</option>';
                         echo '<option value="Road Test">Road Test</option>';
                         echo '<option value="Relief">Relief</option>';
 
@@ -617,6 +619,8 @@ AND vd.deleted = 0
                                 <option value="BD">BD</option>
                                 <option value="Extra Operation">Extra Operation</option>
                                 <option value="Jatra Operation">Jatra Operation</option>
+                                <option value="DWS">DWS</option>
+                                <option value="RWY">RWY</option>
                                 <option value="Road Test">Road Test</option>
                                 <option value="Relief">Relief</option>
 
@@ -1153,7 +1157,7 @@ AND vd.deleted = 0
                 options.forEach(option => {
                     if (!isModal) {
                         // Disable options that are already selected in other dropdowns (except for modal)
-                        if (option.value !== "" && !["BD", "CC", "Extra Operation", "Jatra Operation", "Road Test", "Relief", ].includes(option.value) && selectedValues.includes(option.value)) {
+                        if (option.value !== "" && !["BD", "CC", "Extra Operation", "Jatra Operation", "DWS", "RWY", "Road Test", "Relief", ].includes(option.value) && selectedValues.includes(option.value)) {
                             option.disabled = true; // Disable if already selected and not "BD" or "CC"
                         } else {
                             option.disabled = false; // Enable if not selected or is "BD" or "CC"

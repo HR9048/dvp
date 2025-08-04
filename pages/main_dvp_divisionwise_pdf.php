@@ -32,7 +32,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
         $pdf->AddPage();
 
         // Set font
-        $pdf->SetFont('helvetica', '', 8);
+        $pdf->SetFont('helvetica', '', 9);
 
         // Retrieve data from the database based on session variables and selected date
         $sql = "SELECT * FROM dvp_data WHERE date = '$selectedDate' ORDER BY division";
@@ -57,6 +57,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     'schedules' => 'Number of Schedules',
                     'vehicles' => 'Number Of Vehicles (Including RWY)',
                     'spare' => 'Number of Spare Vehicles (Including RWY)',
+                    'ORRWY' => 'Vehicles Off Road at RWY',
                 );
 
                 $customColumnsSecond = array(
@@ -67,7 +68,6 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                     'docking' => 'Vehicles stopped for Docking',
                     'ORDepot' => 'Vehicles Off Road at Depot',
                     'ORDWS' => 'Vehicles Off Road at DWS',
-                    'ORRWY' => 'Vehicles Off Road at RWY',
                     'CC' => 'Vehicles Withdrawn for CC',
                     'wup1' => 'Vehicles Work Under Progress at Depot',
                     'loan' => 'Vehicles loan given to other depot/training center',
@@ -114,13 +114,13 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
 
                 // Start table
                 $html .= '<table border="1" cellpadding="4">';
-                $html .= '<tr><th style="width: 190px;"><b>Particulars</b></th>';
+                $html .= '<tr><th style="width: 200px;"><b>Particulars</b></th>';
 
                 // Output headers based on ordered division names
                 foreach ($divisionNamesOrdered as $divisionId => $divisionName) {
-                    $html .= '<th style="text-align: right; width:33px"><b>' . $divisionName . '</b></th>';
+                    $html .= '<th style="text-align: right; width:34px"><b>' . $divisionName . '</b></th>';
                 }
-                $html .= '<th style="text-align: center;"><b>Total</b></th>';
+                $html .= '<th style="text-align: center;width: 40px;"><b>Total</b></th>';
                 $html .= '</tr>';
 
                 // Function to calculate total for each column
@@ -215,12 +215,10 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
 
                 // Output HTML content to PDF
                 $pdf->writeHTML($html, true, false, true, false, '');
-
             } else {
                 // Handle case where no divisions found
                 $pdf->writeHTML('<p>No divisions found.</p>', true, false, true, false, '');
             }
-
         } else {
             // Handle case where no data found
             $pdf->writeHTML('<p>No data available for the selected date.</p>', true, false, true, false, '');
@@ -313,7 +311,8 @@ ORDER BY location.division_id;";
         $html .= '</tbody></table>';
 
         $pdf->writeHTML($html, true, false, true, false, '');
-
+        $pdf->AddPage();
+        $pdf->SetFont('helvetica', '', 7);
         // Retrieve data for the second table
         $query2 = "SELECT * FROM BUS_REGISTRATION";
         $result2 = $db->query($query2);
@@ -477,7 +476,7 @@ ORDER BY location.division_id;";
         ob_start();
 
         // Output the PDF content
-        ?>
+?>
         <br>
         <!-- Display the data in a table -->
         <h2 style="text-align:center;">MAKE AND EMISSION NORMS WISE VEHICLES AS ON <?php echo date('d-m-Y'); ?></h2>
@@ -543,7 +542,7 @@ ORDER BY location.division_id;";
                 ?>
             </tbody>
         </table>
-        <?php
+<?php
 
         // Get current buffer contents and delete current output buffer
         $html = ob_get_clean();

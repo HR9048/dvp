@@ -53,24 +53,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['user'], $_POST['passwo
             if ($result && $result->num_rows > 0) {
                 $user_details = $result->fetch_assoc();
 
-                $session_token = bin2hex(random_bytes(32));
-                date_default_timezone_set('Asia/Kolkata');
-                $expires_at = date('Y-m-d H:i:s', time() + 7200); // 1 hour
+                // Store user data in session variables
+                $_SESSION['MEMBER_ID'] = $found_user['ID'];
+                $_SESSION['FIRST_NAME'] = $user_details['FIRST_NAME'];
+                $_SESSION['LAST_NAME'] = $user_details['LAST_NAME'];
+                $_SESSION['GENDER'] = $user_details['GENDER'];
+                $_SESSION['EMAIL'] = $user_details['EMAIL'];
+                $_SESSION['PHONE_NUMBER'] = $user_details['PHONE_NUMBER'];
+                $_SESSION['JOB_TITLE'] = $user_details['JOB_TITLE'];
+                $_SESSION['DIVISION'] = $user_details['DIVISION'];
+                $_SESSION['DEPOT'] = $user_details['DEPOT'];
+                $_SESSION['DIVISION_ID'] = $user_details['division_id'];
+                $_SESSION['DEPOT_ID'] = $user_details['depot_id'];
+                $_SESSION['KMPL_DIVISION'] = $user_details['kmpl_division'];
+                $_SESSION['KMPL_DEPOT'] = $user_details['kmpl_depot'];
+                $_SESSION['TYPE'] = $user_details['TYPE'];
+                $_SESSION['USERNAME'] = $users;
+                $_SESSION['PASSWORD'] = $upass;
 
-                // Store session in DB
-                $stmt = $db->prepare("INSERT INTO sessions (session_token, user_id, expires_at) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $session_token, $found_user['ID'], $expires_at);
-                $stmt->execute();
-
-                // Set cookie
-                setcookie("dvp_session_token", $session_token, time() + 7200, "/", "", false, true);
                 // Determine redirect URL
-
-
-                 $redirectUrl = determineRedirect($db, $user_details['TYPE'], $user_details['JOB_TITLE'], $found_user['ID']);
-
+                $redirectUrl = determineRedirect($db, $_SESSION['TYPE'], $_SESSION['JOB_TITLE'], $_SESSION['MEMBER_ID']);
+                
                 // Send JSON response
-                echo json_encode(array("status" => "success", "message" => $user_details['FIRST_NAME'] . " Welcome!", "redirect" => $redirectUrl));
+                echo json_encode(array("status" => "success", "message" => $_SESSION['FIRST_NAME'] . " Welcome!", "redirect" => $redirectUrl));
                 exit();
             } else {
                 echo json_encode(array("status" => "error", "message" => "Error fetching user details."));
@@ -87,6 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['user'], $_POST['passwo
     exit;
 }
 
+// Function to determine redirect URL based on user type, job title, and password
 // Function to determine redirect URL based on user type, job title, and password
 function determineRedirect($db, $type, $jobTitle, $member_id)
 {
@@ -131,3 +137,5 @@ function determineRedirect($db, $type, $jobTitle, $member_id)
     // Default redirect if password fetch fails or doesn't match criteria
     return "index.php";
 }
+
+?>

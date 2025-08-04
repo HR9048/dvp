@@ -59,13 +59,13 @@ if ($_SESSION['TYPE'] == 'DEPOT') {
         // Define custom column headings
         $customHeadings = array(
             'schedules' => 'Number of Schedules',
-            'vehicles' => 'Number Of Vehicles(Including RWY)',
-            'spare' => 'Number of Spare Vehicles(Including RWY)',
+            'vehicles' => 'Number Of Vehicles(Excluding RWY)',
+            'spare' => 'Number of Spare Vehicles(Excluding RWY)',
+            'ORRWY' => 'Vehicles Off Road at RWY',
             'spareP' => 'Percentage of Spare Vehicles(Excluding RWY)',
             'docking' => 'Vehicles stopped for Docking',
             'ORDepot' => 'Vehicles Off Road at Depot',
             'ORDWS' => 'Vehicles Off Road at DWS',
-            'ORRWY' => 'Vehicles Off Road at RWY',
             'CC' => 'Vehicles Withdrawn for CC',
             'wup1' => 'Vehicles Work Under progress at Depot',
             'loan' => 'Vehicles loan given to other Depot/Training Center',
@@ -92,7 +92,7 @@ if ($_SESSION['TYPE'] == 'DEPOT') {
         $depot = $_SESSION['DEPOT_ID'];
 
         // Retrieve data from the database based on session variables and selected date
-        $sql = "SELECT  schedules, vehicles, spare, spareP, docking, ORDepot, ORDWS, ORRWY, CC, wup1, loan, wup, Police, notdepot, ORTotal, available, ES FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$selectedDate'";
+        $sql = "SELECT  schedules, vehicles, spare, ORRWY, spareP, docking, ORDepot, ORDWS, CC, wup1, loan, wup, Police, notdepot, ORTotal, available, ES FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$selectedDate'";
 
         $result = $db->query($sql);
 
@@ -113,6 +113,28 @@ if ($_SESSION['TYPE'] == 'DEPOT') {
             }
 
             echo "</table>";
+            echo "<br>";
+
+            // Display the kmpl details from kmpl_data table
+            //kmpl date should -1 day of selected date
+            $kmpldate = date('Y-m-d', strtotime($selectedDate . ' -1 day'));
+            $formatedkmpldate = date('d/m/Y', strtotime($kmpldate));
+            $kmplSql = "SELECT * FROM kmpl_data WHERE division = '$division' AND depot = '$depot' AND date = '$kmpldate'";
+            $kmplResult = $db->query($kmplSql);
+            if ($kmplResult->num_rows > 0) {
+                echo "<table>";
+                echo "<tr><th colspan='3' style='text-align:center;'>KMPL Details As on $formatedkmpldate</th></tr>";
+                while ($kmplRow = $kmplResult->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td><b>Total KM: </b>" . $kmplRow['total_km'] . "</td>";
+                    echo "<td><b>HSD: </b>" . $kmplRow['hsd'] . "</td>";
+                    echo "<td><b>KMPL: </b>" . $kmplRow['kmpl'] . "</td>";
+                    echo "</tr>";
+                }
+                echo "</table>";
+            } else {
+                echo "No KMPL details found.";
+            }
         } else {
             echo "No results found.";
         }

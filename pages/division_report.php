@@ -18,7 +18,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['selected_date'])) {
 FROM off_road_data ord
 INNER JOIN location loc ON ord.depot = loc.depot_id
 WHERE ord.division = '{$_SESSION['DIVISION_ID']}'
-AND ('$selected_date' BETWEEN ord.off_road_date AND IFNULL(ord.on_road_date, CURDATE()))";
+AND ('$selected_date' BETWEEN ord.off_road_date AND IFNULL(ord.on_road_date, CURDATE()))
+order by ord.off_road_location, loc.depot_id ASC";
 
 
     // Add filter for Like Items in parts required

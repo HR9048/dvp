@@ -184,10 +184,10 @@ echo '</table><br><br>';
             $status = '';
             $action = '';
             if ($firstRow['status'] == 1) {
-                $status = 'Waiting for TI to receive Employee';
+                $status = 'Waiting for Mechanical to receive Vehicle';
                 $action = '<button class="btn btn-warning" onclick="receivefromRows(\'' . $bus_number . '\', \'' . $firstRow['tr_date'] . '\', \'' . $lastRow['tr_date'] . '\')">Receive</button>';
             } elseif ($firstRow['status'] == 2) {
-                $status = 'Employee Received Waiting for Release';
+                $status = 'Vehicle Received Waiting for Release';
                 $action = '<button class="btn btn-success" onclick="releaseRows(\'' . $bus_number . '\', \'' . $firstRow['tr_date'] . '\', \'' . $lastRow['tr_date'] . '\')">Release</button>';
             } 
 

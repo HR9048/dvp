@@ -54,7 +54,7 @@ if (strtolower($sch_no) === 'all' || strtolower($bus_number) === 'all' || strtol
     $whereClause = implode(" AND ", $whereClauses);
 
     // Get Data
-    $query = "SELECT * FROM vehicle_kmpl WHERE $whereClause ORDER BY date, route_no, bus_number";
+    $query = "SELECT * FROM vehicle_kmpl WHERE $whereClause and deleted !='1' ORDER BY date, route_no, bus_number";
     $result = mysqli_query($db, $query);
 
     if (!$result) {

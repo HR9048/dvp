@@ -19,7 +19,8 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESS
     FROM off_road_data ord
     INNER JOIN location loc ON ord.depot = loc.depot_id
     WHERE ord.division = '$division' 
-    AND ord.off_road_date BETWEEN '$from_date' AND '$to_date' order by depot_name";
+    AND ord.off_road_date BETWEEN '$from_date' AND '$to_date'
+    order by ord.off_road_location, loc.depot_id ASC";
         $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
         $bus_number_rowspans = [];

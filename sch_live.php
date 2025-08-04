@@ -306,515 +306,14 @@ include 'includes/connection.php';
                     $current_time1 = date('H:i');
                     ?>
 
-                    <div class="d-flex justify-content-between align-items-center my-3">
-                        <h4 class="mb-0" id="departure-heading">
-                            DEPARTURES AS ON <span id="current-time"><?= $current_time ?></span>
-                            <?php if ($current_date === date('Y-m-d')) : ?>
-                                @ <span id="current-time1"><?= $current_time1 ?></span>
-                            <?php endif; ?>
-                        </h4>
-                        <input style="font-size: 12px;" type="date" id="date-selector" class="form-control w-auto" max="<?= date('Y-m-d'); ?>" value="<?= date('Y-m-d'); ?>">
-                    </div>
-
-                    <div class="table-container">
-                        <table class="table table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Division</th>
-                                    <th style="width:17%">Depot</th>
-                                    <th>Sche Dep</th>
-                                    <th>Act Dep</th>
-                                    <th>Diff</th>
-                                    <th>Late Dep</th>
-                                </tr>
-                            </thead>
-                            <tbody id="report-body">
-                                <!-- Data will be loaded here -->
-                            </tbody>
-                            <tfoot id="overall-total-row">
-                                <!-- Overall total will be added here -->
-                            </tfoot>
-                        </table>
-                    </div>
-                    <!-- Bootstrap Modal for Difference -->
-                    <div class="modal fade" id="difference-modal" tabindex="-1" aria-labelledby="difference-modal-title" aria-hidden="true">
-                        <div class="modal-dialog custom-modal">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="difference-modal-title">Difference Details</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sl.No</th>
-                                                    <th>Sch No</th>
-                                                    <th class="desc-column">Description</th>
-                                                    <th>Service Class</th>
-                                                    <th>Sch Dep Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="difference-modal-body">
-                                                <tr>
-                                                    <td colspan="5" class="text-center">Loading...</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bootstrap Modal for Late Departures -->
-                    <div class="modal fade" id="late-modal" tabindex="-1" aria-labelledby="late-modal-title" aria-hidden="true">
-                        <div class="modal-dialog custom-modal">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="late-modal-title">Late Departures Details</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sl.No</th>
-                                                    <th>Sch No</th>
-                                                    <th style="display:none;">division</th>
-                                                    <th style="display:none;">depot</th>
-                                                    <th class="desc-column">Description</th>
-                                                    <th>Service Class</th>
-                                                    <th>Sch Dep Time</th>
-                                                    <th>Act Dep Time</th>
-                                                    <th>Late By</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="late-modal-body">
-                                                <tr>
-                                                    <td colspan="7" class="text-center">Loading...</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div id="scheduleModal" class="modal fade" tabindex="-1" role="dialog">
-                        <div class="modal-dialog modal-xl" role="document"> <!-- Added modal-xl for large width -->
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title"><span id="modalDepotName"></span> |
-                                        Schedules: <span id="modalScheduleCount">0</span> |
-                                        Departures: <span id="modalDepartureCount">0</span>
-                                    </h5> <!-- Added span -->
-                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <!-- Data will be inserted here via AJAX -->
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Schedule Details Modal -->
-                    <div class="modal fade" id="schedule-details-modal" tabindex="-1" aria-labelledby="schedule-details-modal-title" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-fullscreen-md-down">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="schedule-details-modal-title">
-                                        Sch No: <span id="modal-sch-no"></span> |
-                                        Description: <span id="modal-description"></span> |
-                                        Service Class: <span id="modal-service-class"></span> |
-                                        Sch Dep Time: <span id="modal-sch-dep-time"></span>
-                                    </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <!-- Loading message -->
-                                    <div id="loading-message" class="text-center">
-                                        <p>Loading schedule details...</p>
-                                    </div>
-
-                                    <!-- Data Table (Hidden Initially) -->
-                                    <div class="table-responsive">
-                                        <table class="table table-striped d-none" id="schedule-details-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Date</th>
-                                                    <th>Dep Time</th>
-                                                    <th>Time Diff</th>
-                                                    <th>Driver Fixed</th>
-                                                    <th>Vehicle Fixed</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="schedule-details-modal-body">
-                                                <!-- Data will be injected here -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="offroadModal" class="modal fade" tabindex="-1" role="dialog">
-                        <div class="modal-dialog modal-xl" role="document"> <!-- Full-width modal -->
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Off-Road Vehicles</h5>
-                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <!-- Data will be inserted here via AJAX -->
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <script>
-                        document.getElementById("date-selector").addEventListener("change", function() {
-                            let selectedDate = this.value;
-                            let today = new Date().toISOString().split("T")[0];
-
-                            if (selectedDate > today) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Invalid Date Selection',
-                                    text: 'You cannot select a future date!',
-                                });
-                                this.value = today; // Reset to today's date
-                                return;
-                            }
-
-                            updateDepartureHeading(selectedDate);
-                            fetchLiveDepartures();
-                        });
-
-                        function updateDepartureHeading(selectedDate) {
-                            let today = new Date().toISOString().split("T")[0];
-                            let heading = document.getElementById("departure-heading");
-
-                            if (selectedDate === today) {
-                                heading.innerHTML = `DEPARTURES AS ON <span id="current-time"></span> @ <span id="current-time1"></span>`;
-                            } else {
-                                heading.innerHTML = `DEPARTURES AS ON <span id="current-time"></span>`;
-                            }
-                        }
-
-                        // Set initial heading on page load
-                        updateDepartureHeading(document.getElementById("date-selector").value);
-
-                        function fetchLiveDepartures() {
-                            let selectedDate = $("#date-selector").val(); // Get selected date
-
-                            $.ajax({
-                                url: "database/fetch_live_departures.php",
-                                method: "GET",
-                                data: {
-                                    date: selectedDate
-                                }, // Pass date as a parameter
-                                dataType: "json",
-                                success: function(response) {
-                                    $("#current-time").text(response.time);
-                                    $("#current-time1").text(response.time1);
-
-                                    let tableContent = "";
-                                    let lastDivision = "";
-                                    let divisionData = {
-                                        total_schedules: 0,
-                                        actual_schedules: 0,
-                                        difference: 0,
-                                        late_departures: 0
-                                    };
-                                    let overallTotal = {
-                                        total_schedules: 0,
-                                        actual_schedules: 0,
-                                        difference: 0,
-                                        late_departures: 0
-                                    };
-
-                                    response.data.forEach((row, index) => {
-                                        if (lastDivision && lastDivision !== row.division) {
-                                            tableContent += `<tr class="division-total">
-                        <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division', '${selectedDate}')">${lastDivision} Total</td>
-                        <td>${divisionData.total_schedules}</td>
-                        <td>${divisionData.actual_schedules}</td>
-                        <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
-                        <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
-                    </tr>`;
-
-                                            // Reset division data
-                                            divisionData = {
-                                                total_schedules: 0,
-                                                actual_schedules: 0,
-                                                difference: 0,
-                                                late_departures: 0
-                                            };
-                                        }
-
-                                        tableContent += `<tr>
-                    <td>${row.division}</td>
-                    <td class="clickable" onclick="opendepotschdetails('${row.depot}', 'Depot', '${selectedDate}')">${row.depot}</td>
-                    <td>${row.total_schedules}</td>
-                    <td>${row.actual_schedules}</td>
-                    <td class="clickable" onclick="openModal('${row.depot}', 'difference', 'Depot', '${selectedDate}')">${row.difference}</td>
-                    <td class="clickable" onclick="openModal('${row.depot}', 'late', 'Depot', '${selectedDate}')">${row.late_departures}</td>
-                </tr>`;
-
-                                        // Update division and overall totals
-                                        divisionData.total_schedules += parseInt(row.total_schedules);
-                                        divisionData.actual_schedules += parseInt(row.actual_schedules);
-                                        divisionData.difference += parseInt(row.difference);
-                                        divisionData.late_departures += parseInt(row.late_departures);
-
-                                        overallTotal.total_schedules += parseInt(row.total_schedules);
-                                        overallTotal.actual_schedules += parseInt(row.actual_schedules);
-                                        overallTotal.difference += parseInt(row.difference);
-                                        overallTotal.late_departures += parseInt(row.late_departures);
-
-                                        lastDivision = row.division;
-                                    });
-
-                                    // Add last division total row
-                                    tableContent += `<tr class="division-total">
-                <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division', '${selectedDate}')">${lastDivision} Total</td>
-                <td>${divisionData.total_schedules}</td>
-                <td>${divisionData.actual_schedules}</td>
-                <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
-                <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
-            </tr>`;
-
-                                    // Update overall total row
-                                    $("#overall-total-row").html(`<tr class="overall-total">
-                <td colspan="2" class="clickable" onclick="opendepotschdetails('Corporation', 'Corporation', '${selectedDate}')">Corporation Total</td>
-                <td>${overallTotal.total_schedules}</td>
-                <td>${overallTotal.actual_schedules}</td>
-                <td>${overallTotal.difference}</td>
-                <td>${overallTotal.late_departures}</td>
-            </tr>`);
-
-                                    // Update report body
-                                    $("#report-body").html(tableContent);
-                                }
-                            });
-                        }
-
-
-                        function openModal(id, type, location, selectedDate) {
-                            let modalId = type === 'difference' ? '#difference-modal' : '#late-modal';
-                            let modalBodyId = type === 'difference' ? '#difference-modal-body' : '#late-modal-body';
-
-                            // Convert selectedDate from yyyy-mm-dd to dd-mm-yyyy
-                            let formattedDate = selectedDate.split('-').reverse().join('-');
-
-                            $(modalId + " .modal-title").text(`${type === 'difference' ? "Difference" : "Late Departures"} Details for ${id} on ${formattedDate}`);
-                            $(modalBodyId).html("<tr><td colspan='8' class='text-center'>Loading...</td></tr>");
-                            $.ajax({
-                                url: "database/fetch_schedule_details.php",
-                                method: "POST",
-                                data: {
-                                    id: id,
-                                    type: type,
-                                    location: location,
-                                    date: selectedDate // Pass the selected date
-                                },
-                                dataType: "json",
-                                success: function(data) {
-                                    let content = "";
-                                    if (data.length === 0) {
-                                        content = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
-                                    } else {
-                                        content = data.map((row, index) => {
-                                            if (type === 'difference') {
-                                                return `<tr>
-                            <td>${index + 1}</td>
-                            <td>${row.sch_key_no}</td>
-                            <td>${row.sch_abbr}</td>
-                            <td>${row.name}</td>
-                            <td>${row.sch_dep_time}</td>
-                        </tr>`;
-                                            } else {
-                                                let lateTime = formatLateTime(row.late_by);
-                                                return `<tr>
-                            <td>${index + 1}</td>
-                            <td onclick="fetchScheduleDetails('${row.sch_key_no}', '${row.division_id}', '${row.depot_id}', '${row.sch_abbr}', '${row.name}', '${row.sch_dep_time}')">${row.sch_key_no}</td>
-                            <td style="display:none;">${row.division_id}</td>
-                            <td style="display:none;">${row.depot_id}</td>
-                            <td>${row.sch_abbr}</td>
-                            <td>${row.name}</td>
-                            <td>${row.sch_dep_time}</td>
-                            <td>${row.act_dep_time}</td>
-                            <td>${lateTime}</td>
-                        </tr>`;
-                                            }
-                                        }).join("");
-                                    }
-                                    $(modalBodyId).html(content);
-                                }
-                            });
-
-                            $(modalId).modal("show");
-                        }
-
-                        function fetchScheduleDetails(schNo, divisionId, depotId, description, serviceClass, schDepTime) {
-                            // Open modal immediately and show loading message
-                            $('#modal-sch-no').text(schNo);
-                            $('#modal-description').text(description);
-                            $('#modal-service-class').text(serviceClass);
-                            $('#modal-sch-dep-time').text(schDepTime);
-                            $('#schedule-details-modal').modal('show');
-                            $('#loading-message').show();
-                            $('#schedule-details-table').addClass('d-none');
-
-                            $.ajax({
-                                url: 'database/fetch_late_departure_details.php', // Your PHP script
-                                type: 'POST',
-                                data: {
-                                    sch_no: schNo,
-                                    division_id: divisionId,
-                                    depot_id: depotId
-                                },
-                                dataType: 'json',
-                                success: function(response) {
-                                    if (response.success) {
-                                        let html = '';
-
-                                        response.data.forEach((row) => {
-                                            let dateParts = row.date.split('-'); // Assuming format is YYYY-MM-DD
-                                            let formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-                                            let lateByText = formatLateBy(row.late_by);
-
-                                            html += `<tr>
-                        <td>${formattedDate}</td>
-                        <td>${row.dep_time}</td>
-                        <td>${lateByText}</td>
-                        <td>${row.driver_fixed == 0 ? '✔️' : '❌'}</td>
-                        <td>${row.vehicle_fixed == 0 ? '✔️' : '❌'}</td>
-                    </tr>`;
-                                        });
-
-                                        $('#schedule-details-modal-body').html(html);
-                                        $('#loading-message').hide();
-                                        $('#schedule-details-table').removeClass('d-none');
-                                    } else {
-                                        $('#schedule-details-modal-body').html('<tr><td colspan="5" class="text-center">No records found.</td></tr>');
-                                        $('#loading-message').hide();
-                                        $('#schedule-details-table').removeClass('d-none');
-                                    }
-                                },
-                                error: function() {
-                                    alert('Error fetching schedule details.');
-                                }
-                            });
-                        }
-
-                        function formatLateTime(minutes) {
-                            let h = Math.floor(minutes / 60);
-                            let m = minutes % 60;
-                            return h > 0 ? `${h}h${m}m` : `${m}m`;
-                        }
-
-                        function formatLateBy(minutes) {
-                            let absMinutes = Math.abs(minutes);
-                            let hours = Math.floor(absMinutes / 60);
-                            let mins = absMinutes % 60;
-                            let formattedTime = `${hours}h ${mins}m`;
-
-                            if (minutes > 30) {
-                                return `<span class="late-time">${formattedTime}</span>`; // Late
-                            } else {
-                                return `On Time`;
-                            }
-                        }
-
-                        function opendepotschdetails(name, type) {
-                            let headerLabel = (type === "Depot") ?
-                                "Depot: " + name :
-                                (type === "Division") ?
-                                "Division: " + name :
-                                (type === "Corporation") ?
-                                "Corporation " :
-                                name;
-
-
-                            // Update the modal header and reset counts
-                            $("#modalDepotName").text(headerLabel);
-
-                            $("#modalScheduleCount").text("Loading...");
-                            $("#modalDepartureCount").text("Loading...");
-
-                            // Show the modal first with a loading message
-                            $("#scheduleModal .modal-body").html("<p class='text-center'>Loading Schedules data, please wait...</p>");
-                            $("#scheduleModal").modal("show");
-
-                            $.ajax({
-                                url: "database/sch_live_fetch_all_schedule.php",
-                                type: "POST",
-                                data: {
-                                    name: name,
-                                    type: type
-                                },
-                                dataType: "json",
-                                success: function(response) {
-                                    if (response.status === "success") {
-                                        $("#scheduleModal .modal-body").html(response.html);
-
-                                        // Update the modal header with schedule & departure counts
-                                        $("#modalScheduleCount").text(response.schedule_count);
-                                        $("#modalDepartureCount").text(response.departure_count);
-                                    } else {
-                                        $("#scheduleModal .modal-body").html("<p class='text-center text-danger'>No data found.</p>");
-                                        $("#modalScheduleCount").text(0);
-                                        $("#modalDepartureCount").text(0);
-                                    }
-                                },
-                                error: function() {
-                                    $("#scheduleModal .modal-body").html("<p class='text-center text-danger'>Error fetching data.</p>");
-                                    $("#modalScheduleCount").text(0);
-                                    $("#modalDepartureCount").text(0);
-                                }
-                            });
-                        }
 
 
 
-                        setInterval(fetchLiveDepartures, 5000);
-                        fetchLiveDepartures();
-                        document.getElementById("date-selector").addEventListener("change", function() {
-                            fetchLiveDepartures();
-                        });
-                    </script>
+                    <!-- /.container-fluid -->
 
-
-                </div>
-                <!-- /.container-fluid -->
-
-                <div class="accordion" id="accordionExample">
-                    <!-- Accordion Item 1 -->
-                    <!--<div class="card">
+                    <div class="accordion" id="accordionExample">
+                        <!-- Accordion Item 1 -->
+                        <!--<div class="card">
                         <div class="card-header" id="headingOne">
                             <h2 class="mb-0">
                                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
@@ -837,58 +336,135 @@ include 'includes/connection.php';
                             </div>
                         </div>
                     </div>-->
-                    <!-- Accordion Item 2 -->
-                    <div class="card">
-                        <div class="card-header" id="headingTwo">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                    Off-Road <i class="fas fa-chevron-down float-right"></i>
-                                </button>
-                            </h2>
-                        </div>
-                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
-                            <div class="card-body">
-                                <div id="loadingMessage" style="display: none;">Loading Off-Road data, please wait...</div>
-                                <div id="offRoadDataTable" class="table-responsive"></div>
+                        <!-- Accordion Item 2 -->
+                        <div class="card">
+                            <div class="card-header" id="headingFive">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                        Live Schedule Details <i class="fas fa-chevron-down float-right"></i>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseFive" class="collapse" aria-labelledby="headingFive" data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center my-3">
+                                        <h4 class="mb-0" id="departure-heading">
+                                            DEPARTURES AS ON <span id="current-time"><?= $current_time ?></span>
+                                            <?php if ($current_date === date('Y-m-d')) : ?>
+                                                @ <span id="current-time1"><?= $current_time1 ?></span>
+                                            <?php endif; ?>
+                                        </h4>
+                                        <input style="font-size: 12px;" type="date" id="date-selector" class="form-control w-auto" max="<?= date('Y-m-d'); ?>" value="<?= date('Y-m-d'); ?>">
+                                    </div>
+
+                                    <div class="table-container">
+                                        <table class="table table-bordered">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Division</th>
+                                                    <th style="width:17%">Depot</th>
+                                                    <th>Sche Dep</th>
+                                                    <th>Act Dep</th>
+                                                    <th>Diff</th>
+                                                    <th>Late Dep</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="report-body">
+                                                <!-- Data will be loaded here -->
+                                            </tbody>
+                                            <tfoot id="overall-total-row">
+                                                <!-- Overall total will be added here -->
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                    <!-- Bootstrap Modal for Difference -->
+                                    <div class="modal fade" id="difference-modal" tabindex="-1" aria-labelledby="difference-modal-title" aria-hidden="true">
+                                        <div class="modal-dialog custom-modal">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="difference-modal-title">Difference Details</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Sl.No</th>
+                                                                    <th>Sch No</th>
+                                                                    <th class="desc-column">Description</th>
+                                                                    <th>Service Class</th>
+                                                                    <th>Sch Dep Time</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="difference-modal-body">
+                                                                <tr>
+                                                                    <td colspan="5" class="text-center">Loading...</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Accordion Item 3 -->
-                    <div class="card">
-                        <div class="card-header" id="headingThree">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                    KMPL <i class="fas fa-chevron-down float-right"></i>
-                                </button>
-                            </h2>
-                        </div>
-                        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample" data-loaded="false">
-                            <div class="card-body">
-                                <div id="loadingMessage1" style="display: none;">Loading KMPL data, please wait...</div>
-                                <div id="kmpl-content" class="table-responsive"></div>
+                        <div class="card">
+                            <div class="card-header" id="headingTwo">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        Off-Road <i class="fas fa-chevron-down float-right"></i>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <div id="loadingMessage" style="display: none;">Loading Off-Road data, please wait...</div>
+                                    <div id="offRoadDataTable" class="table-responsive"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-
-                    <div class="card">
-                        <div class="card-header" id="headingFour">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                    Commercial Stall Data <i class="fas fa-chevron-down float-right"></i>
-                                </button>
-                            </h2>
-                        </div>
-                        <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionExample">
-                            <div class="card-body">
-                                <div id="loadingMessagecommerial" style="display: none;">Loading Commertial data, please wait...</div>
-                                <div id="commertialTable" class="table-responsive"></div>
+                        <!-- Accordion Item 3 -->
+                        <div class="card">
+                            <div class="card-header" id="headingThree">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        KMPL <i class="fas fa-chevron-down float-right"></i>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample" data-loaded="false">
+                                <div class="card-body">
+                                    <div id="loadingMessage1" style="display: none;">Loading KMPL data, please wait...</div>
+                                    <div id="kmpl-content" class="table-responsive"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!--<div class="card">
+
+                        <div class="card">
+                            <div class="card-header" id="headingFour">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                        Commercial Stall Data <i class="fas fa-chevron-down float-right"></i>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <div id="loadingMessagecommerial" style="display: none;">Loading Commertial data, please wait...</div>
+                                    <div id="commertialTable" class="table-responsive"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--<div class="card">
                         <div class="card-header" id="headingFive">
                             <h2 class="mb-0">
                                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
@@ -902,55 +478,495 @@ include 'includes/connection.php';
                             </div>
                         </div>
                     </div>-->
+                    </div>
                 </div>
-            </div>
 
 
-            <!-- Include Bootstrap JavaScript -->
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
-                crossorigin="anonymous"></script>
-            <!-- Modal for PDF -->
-            <div class="modal fade" id="operationalStatisticsMod" tabindex="-1" role="dialog" aria-labelledby="modalTitle"
-                aria-hidden="true">
-                <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Operational Statistics</h5>
-                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <iframe id="pdfViewer" src="" width="100%" height="500px"></iframe>
-                            <p id="mobileWarning" style="display: none; text-align: center; color: red;">
-                                PDF preview may not work in some mobile browsers. <a id="openPdfDirectly" href="#" target="_blank">Click here to view</a>.
-                            </p>
-                        </div>
-                        <a id="downloadBtn" href="#" class="btn btn-primary" download>Download PDF</a>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <!-- Include Bootstrap JavaScript -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
+                    crossorigin="anonymous"></script>
+                <!-- Modal for PDF -->
+                <div class="modal fade" id="operationalStatisticsMod" tabindex="-1" role="dialog" aria-labelledby="modalTitle"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Operational Statistics</h5>
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <iframe id="pdfViewer" src="" width="100%" height="500px"></iframe>
+                                <p id="mobileWarning" style="display: none; text-align: center; color: red;">
+                                    PDF preview may not work in some mobile browsers. <a id="openPdfDirectly" href="#" target="_blank">Click here to view</a>.
+                                </p>
+                            </div>
+                            <a id="downloadBtn" href="#" class="btn btn-primary" download>Download PDF</a>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <!-- Vehicle KMPL Details Modal -->
-            <div class="modal fade" id="kmplDetailsModal" tabindex="-1" role="dialog" aria-labelledby="kmplDetailsLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="kmplDetailsLabel">Vehicle KMPL Details</h5>
-                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body" id="kmplDetailsBody">
-                            <!-- Data will be inserted here dynamically -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <!-- Vehicle KMPL Details Modal -->
+                <div class="modal fade" id="kmplDetailsModal" tabindex="-1" role="dialog" aria-labelledby="kmplDetailsLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="kmplDetailsLabel">Vehicle KMPL Details</h5>
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="kmplDetailsBody">
+                                <!-- Data will be inserted here dynamically -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Bootstrap Modal for Late Departures -->
+                <div class="modal fade" id="late-modal" tabindex="-1" aria-labelledby="late-modal-title" aria-hidden="true">
+                    <div class="modal-dialog custom-modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="late-modal-title">Late Departures Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Sl.No</th>
+                                                <th>Sch No</th>
+                                                <th style="display:none;">division</th>
+                                                <th style="display:none;">depot</th>
+                                                <th class="desc-column">Description</th>
+                                                <th>Service Class</th>
+                                                <th>Sch Dep Time</th>
+                                                <th>Act Dep Time</th>
+                                                <th>Late By</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="late-modal-body">
+                                            <tr>
+                                                <td colspan="7" class="text-center">Loading...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="scheduleModal" class="modal fade" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-xl" role="document"> <!-- Added modal-xl for large width -->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><span id="modalDepotName"></span> |
+                                    Schedules: <span id="modalScheduleCount">0</span> |
+                                    Departures: <span id="modalDepartureCount">0</span>
+                                </h5> <!-- Added span -->
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <!-- Data will be inserted here via AJAX -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Details Modal -->
+                <div class="modal fade" id="schedule-details-modal" tabindex="-1" aria-labelledby="schedule-details-modal-title" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="schedule-details-modal-title">
+                                    Sch No: <span id="modal-sch-no"></span> |
+                                    Description: <span id="modal-description"></span> |
+                                    Service Class: <span id="modal-service-class"></span> |
+                                    Sch Dep Time: <span id="modal-sch-dep-time"></span>
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Loading message -->
+                                <div id="loading-message" class="text-center">
+                                    <p>Loading schedule details...</p>
+                                </div>
+
+                                <!-- Data Table (Hidden Initially) -->
+                                <div class="table-responsive">
+                                    <table class="table table-striped d-none" id="schedule-details-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Dep Time</th>
+                                                <th>Time Diff</th>
+                                                <th>Driver Fixed</th>
+                                                <th>Vehicle Fixed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="schedule-details-modal-body">
+                                            <!-- Data will be injected here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="offroadModal" class="modal fade" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-xl" role="document"> <!-- Full-width modal -->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Off-Road Vehicles</h5>
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <!-- Data will be inserted here via AJAX -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    document.getElementById("date-selector").addEventListener("change", function() {
+                        let selectedDate = this.value;
+                        let today = new Date().toISOString().split("T")[0];
+
+                        if (selectedDate > today) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Invalid Date Selection',
+                                text: 'You cannot select a future date!',
+                            });
+                            this.value = today; // Reset to today's date
+                            return;
+                        }
+
+                        updateDepartureHeading(selectedDate);
+                        fetchLiveDepartures();
+                    });
+
+                    function updateDepartureHeading(selectedDate) {
+                        let today = new Date().toISOString().split("T")[0];
+                        let heading = document.getElementById("departure-heading");
+
+                        if (selectedDate === today) {
+                            heading.innerHTML = `DEPARTURES AS ON <span id="current-time"></span> @ <span id="current-time1"></span>`;
+                        } else {
+                            heading.innerHTML = `DEPARTURES AS ON <span id="current-time"></span>`;
+                        }
+                    }
+
+                    // Set initial heading on page load
+                    updateDepartureHeading(document.getElementById("date-selector").value);
+
+                    function fetchLiveDepartures() {
+                        let selectedDate = $("#date-selector").val(); // Get selected date
+
+                        $.ajax({
+                            url: "database/fetch_live_departures.php",
+                            method: "GET",
+                            data: {
+                                date: selectedDate
+                            }, // Pass date as a parameter
+                            dataType: "json",
+                            success: function(response) {
+                                $("#current-time").text(response.time);
+                                $("#current-time1").text(response.time1);
+
+                                let tableContent = "";
+                                let lastDivision = "";
+                                let divisionData = {
+                                    total_schedules: 0,
+                                    actual_schedules: 0,
+                                    difference: 0,
+                                    late_departures: 0
+                                };
+                                let overallTotal = {
+                                    total_schedules: 0,
+                                    actual_schedules: 0,
+                                    difference: 0,
+                                    late_departures: 0
+                                };
+
+                                response.data.forEach((row, index) => {
+                                    if (lastDivision && lastDivision !== row.division) {
+                                        tableContent += `<tr class="division-total">
+                        <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division', '${selectedDate}')">${lastDivision} Total</td>
+                        <td>${divisionData.total_schedules}</td>
+                        <td>${divisionData.actual_schedules}</td>
+                        <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
+                        <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
+                    </tr>`;
+
+                                        // Reset division data
+                                        divisionData = {
+                                            total_schedules: 0,
+                                            actual_schedules: 0,
+                                            difference: 0,
+                                            late_departures: 0
+                                        };
+                                    }
+
+                                    tableContent += `<tr>
+                    <td>${row.division}</td>
+                    <td class="clickable" onclick="opendepotschdetails('${row.depot}', 'Depot', '${selectedDate}')">${row.depot}</td>
+                    <td>${row.total_schedules}</td>
+                    <td>${row.actual_schedules}</td>
+                    <td class="clickable" onclick="openModal('${row.depot}', 'difference', 'Depot', '${selectedDate}')">${row.difference}</td>
+                    <td class="clickable" onclick="openModal('${row.depot}', 'late', 'Depot', '${selectedDate}')">${row.late_departures}</td>
+                </tr>`;
+
+                                    // Update division and overall totals
+                                    divisionData.total_schedules += parseInt(row.total_schedules);
+                                    divisionData.actual_schedules += parseInt(row.actual_schedules);
+                                    divisionData.difference += parseInt(row.difference);
+                                    divisionData.late_departures += parseInt(row.late_departures);
+
+                                    overallTotal.total_schedules += parseInt(row.total_schedules);
+                                    overallTotal.actual_schedules += parseInt(row.actual_schedules);
+                                    overallTotal.difference += parseInt(row.difference);
+                                    overallTotal.late_departures += parseInt(row.late_departures);
+
+                                    lastDivision = row.division;
+                                });
+
+                                // Add last division total row
+                                tableContent += `<tr class="division-total">
+                <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division', '${selectedDate}')">${lastDivision} Total</td>
+                <td>${divisionData.total_schedules}</td>
+                <td>${divisionData.actual_schedules}</td>
+                <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
+                <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
+            </tr>`;
+
+                                // Update overall total row
+                                $("#overall-total-row").html(`<tr class="overall-total">
+                <td colspan="2" class="clickable" onclick="opendepotschdetails('Corporation', 'Corporation', '${selectedDate}')">Corporation Total</td>
+                <td>${overallTotal.total_schedules}</td>
+                <td>${overallTotal.actual_schedules}</td>
+                <td>${overallTotal.difference}</td>
+                <td>${overallTotal.late_departures}</td>
+            </tr>`);
+
+                                // Update report body
+                                $("#report-body").html(tableContent);
+                            }
+                        });
+                    }
+
+
+                    function openModal(id, type, location, selectedDate) {
+                        let modalId = type === 'difference' ? '#difference-modal' : '#late-modal';
+                        let modalBodyId = type === 'difference' ? '#difference-modal-body' : '#late-modal-body';
+
+                        // Convert selectedDate from yyyy-mm-dd to dd-mm-yyyy
+                        let formattedDate = selectedDate.split('-').reverse().join('-');
+
+                        $(modalId + " .modal-title").text(`${type === 'difference' ? "Difference" : "Late Departures"} Details for ${id} on ${formattedDate}`);
+                        $(modalBodyId).html("<tr><td colspan='8' class='text-center'>Loading...</td></tr>");
+                        $.ajax({
+                            url: "database/fetch_schedule_details.php",
+                            method: "POST",
+                            data: {
+                                id: id,
+                                type: type,
+                                location: location,
+                                date: selectedDate // Pass the selected date
+                            },
+                            dataType: "json",
+                            success: function(data) {
+                                let content = "";
+                                if (data.length === 0) {
+                                    content = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
+                                } else {
+                                    content = data.map((row, index) => {
+                                        if (type === 'difference') {
+                                            return `<tr>
+                            <td>${index + 1}</td>
+                            <td>${row.sch_key_no}</td>
+                            <td>${row.sch_abbr}</td>
+                            <td>${row.name}</td>
+                            <td>${row.sch_dep_time}</td>
+                        </tr>`;
+                                        } else {
+                                            let lateTime = formatLateTime(row.late_by);
+                                            return `<tr>
+                            <td>${index + 1}</td>
+                            <td onclick="fetchScheduleDetails('${row.sch_key_no}', '${row.division_id}', '${row.depot_id}', '${row.sch_abbr}', '${row.name}', '${row.sch_dep_time}')">${row.sch_key_no}</td>
+                            <td style="display:none;">${row.division_id}</td>
+                            <td style="display:none;">${row.depot_id}</td>
+                            <td>${row.sch_abbr}</td>
+                            <td>${row.name}</td>
+                            <td>${row.sch_dep_time}</td>
+                            <td>${row.act_dep_time}</td>
+                            <td>${lateTime}</td>
+                        </tr>`;
+                                        }
+                                    }).join("");
+                                }
+                                $(modalBodyId).html(content);
+                            }
+                        });
+
+                        $(modalId).modal("show");
+                    }
+
+                    function fetchScheduleDetails(schNo, divisionId, depotId, description, serviceClass, schDepTime) {
+                        // Open modal immediately and show loading message
+                        $('#modal-sch-no').text(schNo);
+                        $('#modal-description').text(description);
+                        $('#modal-service-class').text(serviceClass);
+                        $('#modal-sch-dep-time').text(schDepTime);
+                        $('#schedule-details-modal').modal('show');
+                        $('#loading-message').show();
+                        $('#schedule-details-table').addClass('d-none');
+
+                        $.ajax({
+                            url: 'database/fetch_late_departure_details.php', // Your PHP script
+                            type: 'POST',
+                            data: {
+                                sch_no: schNo,
+                                division_id: divisionId,
+                                depot_id: depotId
+                            },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    let html = '';
+
+                                    response.data.forEach((row) => {
+                                        let dateParts = row.date.split('-'); // Assuming format is YYYY-MM-DD
+                                        let formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+                                        let lateByText = formatLateBy(row.late_by);
+
+                                        html += `<tr>
+                        <td>${formattedDate}</td>
+                        <td>${row.dep_time}</td>
+                        <td>${lateByText}</td>
+                        <td>${row.driver_fixed == 0 ? '✔️' : '❌'}</td>
+                        <td>${row.vehicle_fixed == 0 ? '✔️' : '❌'}</td>
+                    </tr>`;
+                                    });
+
+                                    $('#schedule-details-modal-body').html(html);
+                                    $('#loading-message').hide();
+                                    $('#schedule-details-table').removeClass('d-none');
+                                } else {
+                                    $('#schedule-details-modal-body').html('<tr><td colspan="5" class="text-center">No records found.</td></tr>');
+                                    $('#loading-message').hide();
+                                    $('#schedule-details-table').removeClass('d-none');
+                                }
+                            },
+                            error: function() {
+                                alert('Error fetching schedule details.');
+                            }
+                        });
+                    }
+
+                    function formatLateTime(minutes) {
+                        let h = Math.floor(minutes / 60);
+                        let m = minutes % 60;
+                        return h > 0 ? `${h}h${m}m` : `${m}m`;
+                    }
+
+                    function formatLateBy(minutes) {
+                        let absMinutes = Math.abs(minutes);
+                        let hours = Math.floor(absMinutes / 60);
+                        let mins = absMinutes % 60;
+                        let formattedTime = `${hours}h ${mins}m`;
+
+                        if (minutes > 30) {
+                            return `<span class="late-time">${formattedTime}</span>`; // Late
+                        } else {
+                            return `On Time`;
+                        }
+                    }
+
+                    function opendepotschdetails(name, type) {
+                        let headerLabel = (type === "Depot") ?
+                            "Depot: " + name :
+                            (type === "Division") ?
+                            "Division: " + name :
+                            (type === "Corporation") ?
+                            "Corporation " :
+                            name;
+
+
+                        // Update the modal header and reset counts
+                        $("#modalDepotName").text(headerLabel);
+
+                        $("#modalScheduleCount").text("Loading...");
+                        $("#modalDepartureCount").text("Loading...");
+
+                        // Show the modal first with a loading message
+                        $("#scheduleModal .modal-body").html("<p class='text-center'>Loading Schedules data, please wait...</p>");
+                        $("#scheduleModal").modal("show");
+
+                        $.ajax({
+                            url: "database/sch_live_fetch_all_schedule.php",
+                            type: "POST",
+                            data: {
+                                name: name,
+                                type: type
+                            },
+                            dataType: "json",
+                            success: function(response) {
+                                if (response.status === "success") {
+                                    $("#scheduleModal .modal-body").html(response.html);
+
+                                    // Update the modal header with schedule & departure counts
+                                    $("#modalScheduleCount").text(response.schedule_count);
+                                    $("#modalDepartureCount").text(response.departure_count);
+                                } else {
+                                    $("#scheduleModal .modal-body").html("<p class='text-center text-danger'>No data found.</p>");
+                                    $("#modalScheduleCount").text(0);
+                                    $("#modalDepartureCount").text(0);
+                                }
+                            },
+                            error: function() {
+                                $("#scheduleModal .modal-body").html("<p class='text-center text-danger'>Error fetching data.</p>");
+                                $("#modalScheduleCount").text(0);
+                                $("#modalDepartureCount").text(0);
+                            }
+                        });
+                    }
+
+
+
+                    setInterval(fetchLiveDepartures, 5000);
+                    fetchLiveDepartures();
+                    document.getElementById("date-selector").addEventListener("change", function() {
+                        fetchLiveDepartures();
+                    });
+                </script>
+
+
             </div>
 
             <script>
@@ -1103,7 +1119,7 @@ include 'includes/connection.php';
                         });
                     }
                 });
-                
+
                 $(document).ready(function() {
                     $('#collapseFour').on('show.bs.collapse', function() {
                         fetchCommercialData();
@@ -1146,7 +1162,7 @@ include 'includes/connection.php';
                     }
                 });
 
-                function fetchoffroadDetails(id, name, type) {
+                function fetchoffroadDetails(id, name, type, subtype) {
                     // Show modal with loading message
                     $("#offroadModal .modal-body").html("<p class='text-center'>Loading...</p>");
                     $("#offroadModal").modal("show");
@@ -1157,7 +1173,8 @@ include 'includes/connection.php';
                         data: {
                             id: id,
                             name: name,
-                            type: type
+                            type: type,
+                            subtype: subtype
                         },
                         dataType: "json",
                         success: function(response) {
@@ -1182,7 +1199,6 @@ include 'includes/connection.php';
                         $("#kmpl-content").html(""); // Clear previous content
 
                         let selectedDate = $("#date-selector").val(); // Get selected date
-                        console.log(selectedDate); // Fixed typo here
 
                         $.ajax({
                             url: 'database/sch_live_fetch_kmpl_data.php', // PHP script to fetch KMPL data
@@ -1205,12 +1221,6 @@ include 'includes/connection.php';
                 });
 
                 function fetchvehiclekmplDetails(id, type, selectedDate) {
-                    console.log("Fetching data for:", {
-                        id,
-                        type,
-                        selectedDate
-                    });
-
                     $.ajax({
                         url: 'includes/backend_data.php', // Ensure the path is correct
                         type: 'POST',
@@ -1222,7 +1232,6 @@ include 'includes/connection.php';
                         },
                         dataType: 'json',
                         success: function(response) {
-                            console.log("Response received:", response);
                             if (response.success) {
                                 displayKMPLData(response.data, type, selectedDate);
                             } else {
@@ -1250,7 +1259,6 @@ include 'includes/connection.php';
                         }
 
                         const data = await response.json();
-                        console.log("API Response:", data); // Debugging log
 
                         // Ensure 'data' contains an array and at least one item
                         if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
@@ -1301,7 +1309,6 @@ include 'includes/connection.php';
 
                         if (row.driver_1_pf) {
                             let token1 = await fetchTokenNumber(row.driver_1_pf);
-                            console.log(`Token for ${row.driver_1_pf}: ${token1}`);
                             crewTokens.push(`${token1}`);
                         }
 

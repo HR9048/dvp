@@ -782,7 +782,7 @@ ORDER BY l.division_id, l.depot_id, r.received_date ASC";
                                 <th>BS-6</th>
                             </tr>
                             <?php
-                            $corporation_totals = array_fill(0, 19, 0); // Initialize array for corporation totals
+                            $corporation_totals = array_fill(0, 20, 0); // Initialize array for corporation totals
                             while ($row = $result->fetch_assoc()) {
                                 echo "<tr>";
                                 echo "<td>" . $row['Division'] . "</td>";

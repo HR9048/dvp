@@ -17,7 +17,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     exit;
 }
 if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
-    ?>
+?>
     <div class="container mt-5">
         <h2 class="mb-4">Select Date Range</h2>
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
@@ -33,7 +33,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         </form>
         <?php
         // Include your database connection file
-    
+
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $startDate = $_POST['startDate'];
             $endDate = $_POST['endDate'];
@@ -47,7 +47,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             $result = mysqli_query($db, $query);
 
             if ($result) {
-                ?>
+        ?>
                 <div class="mt-5">
                     <h2 class="mb-4">KMPL Data from
                         <?php echo $startDate; ?> to
@@ -93,7 +93,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                     </table>
                 </div>
 
-                <?php
+        <?php
                 // Check if delete button is clicked
                 if (isset($_POST['delete_btn'])) {
                     $delete_id = $_POST['delete_id'];
@@ -155,8 +155,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
     <!-- Add your custom JavaScript code -->
     <script>
-        $(document).ready(function () {
-            $('.editBtn').click(function () {
+        $(document).ready(function() {
+            $('.editBtn').click(function() {
                 // Get the data from the selected row
                 var id = $(this).closest('tr').find('td:eq(0)').text();
                 var total_km = $(this).closest('tr').find('td:eq(1)').text();
@@ -173,12 +173,12 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
             });
 
-            $('#editForm').submit(function (e) {
+            $('#editForm').submit(function(e) {
                 e.preventDefault();
                 fetch('update_main_kmpl_data.php', {
-                    method: 'POST',
-                    body: new FormData(this)
-                })
+                        method: 'POST',
+                        body: new FormData(this)
+                    })
                     .then(response => response.text())
                     .then(response => {
                         alert(response);
@@ -188,8 +188,27 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             });
 
         });
+
+        $(document).ready(function() {
+            function calculateKMPL() {
+                var km = parseFloat($('#total_km').val());
+                var hsd = parseFloat($('#hsd').val());
+
+                if (!isNaN(km) && !isNaN(hsd) && hsd !== 0) {
+                    var kmpl = km / hsd;
+                    $('#kmpl').val(kmpl.toFixed(2));
+                } else {
+                    $('#kmpl').val('');
+                }
+            }
+
+            $('#total_km, #hsd').on('input', function() {
+                calculateKMPL();
+            });
+        });
     </script>
-    <?php
+
+<?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
     exit;

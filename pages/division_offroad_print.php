@@ -46,7 +46,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESS
         INNER JOIN location loc ON ord.depot = loc.depot_id
         WHERE ord.status = 'off_road' 
         AND ord.division = '$session_division' 
-        ORDER BY loc.depot_id,off_road_location ASC";
+        ORDER BY off_road_location, loc.depot_id ASC";
     $result = mysqli_query($db, $sql) or die(mysqli_error($db));
 
     // Initialize variables for rowspan logic

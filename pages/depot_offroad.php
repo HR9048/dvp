@@ -12,7 +12,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
     $depot = $_SESSION['DEPOT_ID'];
     $today = date('Y-m-d');
 
-    ?>
+?>
 
 
 
@@ -185,7 +185,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
     <script>
         // Function to handle checkbox selection for partsRequired
-        $(document).on('change', '#edit_partsRequired_group input[type="checkbox"]', function () {
+        $(document).on('change', '#edit_partsRequired_group input[type="checkbox"]', function() {
             var checked = $(this).prop('checked');
             // If this checkbox is checked, deselect all other checkboxes
             if (checked) {
@@ -202,7 +202,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
             // Capture selected checkboxes for partsRequired
             var partsRequired = [];
-            $('#edit_partsRequired_group input[type="checkbox"]:checked').each(function () {
+            $('#edit_partsRequired_group input[type="checkbox"]:checked').each(function() {
                 partsRequired.push($(this).val()); // Add checked checkbox value to array
             });
 
@@ -223,12 +223,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                         partsRequired: partsRequiredString,
                         remarks: remarks
                     },
-                    success: function (response) {
+                    success: function(response) {
                         // Handle success response
                         // For example, reload the page or update UI
                         location.reload(); // Reload the page after successful insertion
                     },
-                    error: function (xhr, status, error) {
+                    error: function(xhr, status, error) {
                         // Handle error
                         console.error(error);
                         alert('Failed to insert new row. Please try again.');
@@ -246,46 +246,73 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
         // Function to edit specific fields
         function editRow(id, busNumber, make, norms, offRoadLocation, partsRequired, remarks) {
             // Fill in the form fields with present data
-            $('#edit_bus_number').val(busNumber);
-            $('#edit_offRoadLocation').val(offRoadLocation);
-            $('#edit_remarks').val(remarks);
-            $('#edit_make').val(make);
-            $('#edit_emission_norms').val(norms);
 
-            // Clear previous options
-            $('#edit_partsRequired_group').empty();
-
-            // Fetch parts required options based on off road location
             $.ajax({
-                url: '../includes/data_fetch.php?action=fetchReason',
+                url: '../includes/backend_data.php',
                 method: 'POST',
-                data: { offRoadLocation: offRoadLocation },
-                success: function (data) {
-                    // Append options with line breaks
-                    $('#edit_partsRequired_group').html(data.replace(/,/g, '<br>'));
-
-                    // Check checkboxes based on partsRequired data
-                    if (partsRequired) {
-                        var partsRequiredArray = partsRequired.split(', ');
-                        partsRequiredArray.forEach(function (part) {
-                            $('#edit_partsRequired_group input[value="' + part + '"]').prop('checked', true);
+                data: {
+                    action: 'checkBusOffroadinrwy',
+                    busNumber: busNumber
+                },
+                success: function(response) {
+                    if (response === 'offroad') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Not Allowed',
+                            text: 'This bus current Status is off-road in RWY. Editing is not allowed. You can update the status once RWY releases the bus.',
                         });
+                    } else {
+                        $('#edit_bus_number').val(busNumber);
+                        $('#edit_offRoadLocation').val(offRoadLocation);
+                        $('#edit_remarks').val(remarks);
+                        $('#edit_make').val(make);
+                        $('#edit_emission_norms').val(norms);
+
+                        // Clear previous options
+                        $('#edit_partsRequired_group').empty();
+
+                        // Fetch parts required options based on off road location
+                        $.ajax({
+                            url: '../includes/data_fetch.php?action=fetchReason',
+                            method: 'POST',
+                            data: {
+                                offRoadLocation: offRoadLocation
+                            },
+                            success: function(data) {
+                                // Append options with line breaks
+                                $('#edit_partsRequired_group').html(data.replace(/,/g, '<br>'));
+
+                                // Check checkboxes based on partsRequired data
+                                if (partsRequired) {
+                                    var partsRequiredArray = partsRequired.split(', ');
+                                    partsRequiredArray.forEach(function(part) {
+                                        $('#edit_partsRequired_group input[value="' + part + '"]').prop('checked', true);
+                                    });
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error fetching parts required:', error);
+                                // Optionally, you can display an error message to the user.
+                            }
+                        });
+
+                        // Show the modal
+                        $('#editModal').modal('show');
                     }
                 },
-                error: function (xhr, status, error) {
-                    console.error('Error fetching parts required:', error);
-                    // Optionally, you can display an error message to the user.
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to verify off-road status. Please try again.',
+                    });
                 }
             });
-
-            // Show the modal
-            $('#editModal').modal('show');
         }
 
         function cancelEdit() {
             $('#editModal').modal('hide'); // Hide the modal using jQuery
         }
-
     </script>
 
     <div class="container-fluid mt-5">
@@ -331,7 +358,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
         </div>
     </div>
     <script>
-        document.getElementById('submitBtn').addEventListener('click', function () {
+        document.getElementById('submitBtn').addEventListener('click', function() {
             // Disable the submit button to prevent multiple clicks
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
@@ -410,29 +437,33 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             $.ajax({
                 url: '../includes/data_fetch.php',
                 type: 'GET',
-                data: { action: 'fetchOffroadLocation' },
-                success: function (response) {
+                data: {
+                    action: 'fetchOffroadLocation'
+                },
+                success: function(response) {
                     var Location = JSON.parse(response);
-                    $.each(Location, function (index, value) {
+                    $.each(Location, function(index, value) {
                         $('#offRoadLocation').append('<option value="' + value + '">' + value + '</option>');
                     });
                 }
             });
 
-            $('#offRoadLocation').change(function () {
+            $('#offRoadLocation').change(function() {
                 var Location = $(this).val();
                 $.ajax({
                     url: '../includes/data_fetch.php?action=fetchReason',
                     method: 'POST',
-                    data: { offRoadLocation: Location },
-                    success: function (data) {
+                    data: {
+                        offRoadLocation: Location
+                    },
+                    success: function(data) {
                         // Clear previous options
                         $('#partsRequired').empty();
                         // Append options with line breaks
                         $('#partsRequired').html(data.replace(/,/g, '<br>'));
                         // Clear previous remarks and generate new ones
                         $('#remarksContainer').empty();
-                        $('input[name="partsRequired[]"]').change(function () {
+                        $('input[name="partsRequired[]"]').change(function() {
                             generateRemarks();
                         });
                     }
@@ -444,7 +475,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
         function generateRemarks() {
             var remarksContainer = $('#remarksContainer');
             remarksContainer.empty();
-            $('input[name="partsRequired[]"]:checked').each(function () {
+            $('input[name="partsRequired[]"]:checked').each(function() {
                 var remark = $(this).val();
                 remarksContainer.append('<textarea class="form-control remark" placeholder="Remark for ' + remark + '"></textarea><br>');
             });
@@ -452,7 +483,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
 
         // Call the function to fetch data on page load
-        $(document).ready(function () {
+        $(document).ready(function() {
             fetchOffroadLocation();
         });
         // Function to search for bus
@@ -463,15 +494,17 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             $.ajax({
                 url: 'dvp_bus_search.php',
                 type: 'POST',
-                data: { busNumber: busNumber },
+                data: {
+                    busNumber: busNumber
+                },
                 dataType: 'json', // Specify the expected data type as JSON
-                success: function (response) {
+                success: function(response) {
                     // Populate form fields with fetched data
                     $('#bus_number').val(response.bus_number);
                     $('#make').val(response.make);
                     $('#emission_norms').val(response.emission_norms);
                 },
-                error: function (xhr, status, error) {
+                error: function(xhr, status, error) {
                     // Display error message
                     if (xhr.status === 403) {
                         alert(xhr.responseJSON.error);
@@ -482,7 +515,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             });
         }
         // Function to handle Enter key press in search input field
-        $('#busSearch').keypress(function (event) {
+        $('#busSearch').keypress(function(event) {
             // Check if the Enter key was pressed
             if (event.which == 13) {
                 // Prevent default form submission behavior
@@ -520,7 +553,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
             // Collect Parts Required data
             var partsRequired = [];
-            $('input[name="partsRequired[]"]:checked').each(function () {
+            $('input[name="partsRequired[]"]:checked').each(function() {
                 partsRequired.push($(this).val());
             });
 
@@ -539,7 +572,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             // Collect remarks from textareas
             var remarks = [];
             var anyEmptyRemarks = false; // Flag to track if any remarks are empty
-            $('.remark').each(function () {
+            $('.remark').each(function() {
                 var remark = $(this).val().trim();
                 if (remark === "") {
                     anyEmptyRemarks = true; // Set flag if any remark is empty
@@ -628,20 +661,25 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
         }
 
         // Function to handle form submission
-        $('#submitBtn').click(function (e) {
+        $('#submitBtn').click(function(e) {
             e.preventDefault();
 
             // Check if there are any rows in the table
             if ($('#busTable tbody tr').length === 0) {
-                alert('Please add data to the table before submitting.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Data Found',
+                    text: 'Please add data to the table before submitting.'
+                });
                 return; // Stop further processing
             }
 
+
             // Collect table data
             var tableData = [];
-            $('#busTable tbody tr').each(function () {
+            $('#busTable tbody tr').each(function() {
                 var rowData = {};
-                $(this).find('td').each(function () {
+                $(this).find('td').each(function() {
                     // Get the column name from the table header
                     var columnName = $(this).closest('table').find('thead th').eq($(this).index()).text();
                     // Store data in the rowData object with the column name as the key
@@ -655,57 +693,97 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             $.ajax({
                 url: 'off_road_submit.php',
                 type: 'POST',
-                data: { tableData: tableData },
-                success: function (response) {
-                    // Parse the JSON response
+                data: {
+                    tableData: tableData
+                },
+                success: function(response) {
                     var res = JSON.parse(response);
 
                     if (res.status === 'success') {
-                        // Handle success
-                        alert(res.message);
-                        // Redirect to the desired page
-                        window.location.href = 'depot_offroad.php';
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = 'depot_offroad.php';
+                        });
                     } else {
-                        // Handle the error message from the server
-                        alert('Error: ' + res.message);
-                        window.location.href = 'depot_offroad.php';
-
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: res.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = 'depot_offroad.php';
+                        });
                     }
                 },
-                error: function (xhr, status, error) {
-                    // General error handling for network errors or other unexpected errors
-                    console.log('Error submitting data:', error);
-                    alert('Error submitting data: ' + error);
-                    window.location.href = 'depot_offroad.php';
+                error: function(xhr, status, error) {
+                    console.error('Error submitting data:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Submission Failed',
+                        text: 'Something went wrong while submitting the data.',
+                        footer: error,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'depot_offroad.php';
+                    });
                 }
             });
+
 
         });
 
         function updateStatus(id, busNumber) {
-            console.log("ID:", id); // Log the ID to verify it
-            var confirmation = confirm("Are you sure you want to mark this bus as On Road?");
-            if (confirmation) {
-                // AJAX request to update status
-                $.ajax({
-                    url: 'update_status.php', // Path to your PHP script
-                    type: 'POST',
-                    data: { id: id }, // Send the ID to identify the bus
-                    success: function (response) {
-                        if (response === 'success') {
-                            alert("Bus status updated successfully.");
-                            // Reload the page to reflect changes
-                            window.location.reload();
-                        } else {
-                            alert("Failed to update bus status.");
+            console.log("ID:", id);
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to mark bus " + busNumber + " as On Road?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, update it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: 'update_status.php',
+                        type: 'POST',
+                        data: {
+                            id: id
+                        },
+                        success: function(response) {
+                            if (response === 'success') {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: 'Bus status updated successfully.',
+                                    icon: 'success'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Not allowed',
+                                    text: 'Failed to update status. ' + response,
+                                    icon: 'warning'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'AJAX request failed.',
+                                icon: 'error'
+                            });
                         }
-                    }
-                });
-            }
+                    });
+                }
+            });
         }
     </script>
 
-    <?php
+<?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
     exit;

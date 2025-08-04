@@ -160,7 +160,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 </style>
 
 <?php
-echo '<h2 style="text-align:center;">Depot-wise KMPL data Date: ' . $formateddate . '</h2>';
+echo '<p style="text-align:center; font-size: 12px;"><b>Depot-wise KMPL data Date: ' . $formateddate . '</b></p>';
 echo "<table class='table table-bordered'>";
 echo "<thead>
     <tr>

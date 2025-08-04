@@ -335,7 +335,7 @@ confirm_logged_in();
                       </div>
                     </li>
                   <?php } ?>
-                  <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $_SESSION['JOB_TITLE'] == 'Bunk') { ?>
+                  <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $_SESSION['JOB_TITLE'] == 'Bunk') { ?>
 
                     <li class="nav-item">
                       <div class="dropdown">
@@ -344,21 +344,25 @@ confirm_logged_in();
                           <b>Report</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Bunk') {
-                            if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') { ?>
-                              <li><a class="dropdown-item" href="depot_offroad_fromto.php">Off-Road From to To date</a></li>
-                              <li><a class="dropdown-item" href="depot_report.php">Off-Road One day report</a></li>
+                          <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Bunk') {
+                            if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') { ?>
+                              <li><a class="dropdown-item" href="depot_offroad_fromto.php">From-To date Off-Road Report</a></li>
+                              <li><a class="dropdown-item" href="depot_report.php">One day Off-Road report</a></li>
                             <?php } ?>
-                            <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Day KMPL Report</a></li>
+                            <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') { ?>
+                            <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Daywise KMPL Report</a></li>
                             <li><a class="dropdown-item" href="depot_kmpl_report.php">Monthly KMPL Report</a></li>
-                            <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft.php">KMPL Report From-To date</a></li>
+                            <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft.php">From-To date KMPL Report</a></li>
                             <li><a class="dropdown-item" href="depot_defect_record.php">KMPL Defect Report</a></li>
-                          <?php }
+                          <?php } }
                           if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
                             <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
                             <li><a class="dropdown-item" href="depot_crew_report_m.php">Route Monthly Crew report</a></li>
                             <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule Monitor</a></li>
-                          <?php } ?>
+                          <?php }
+                          if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') { ?>
+                              <!--<li><a class="dropdown-item" href="depot_w3_report_fromto.php">From-To date W3 Report</a></li>-->
+                            <?php } ?>
                         </ul>
                       </div>
                     </li>
@@ -384,6 +388,7 @@ confirm_logged_in();
                         </ul>
                       </div>
                     </li>
+                    <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' && in_array($_SESSION['DEPOT_ID'], [1, 8])) { ?>
                     <li class="nav-item">
                       <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
@@ -392,12 +397,14 @@ confirm_logged_in();
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="depot_bus_type_update.php">Update Bus Type for Program</a></li>
-                          <li><a class="dropdown-item" href="depot_program_update.php">Last Program date Update</a></li>
-                          <li><a class="dropdown-item" href="depot_vehicle_program.php">Program Updates</a></li>
+                          <li><a class="dropdown-item" href="depot_program_update.php">Last Maintenance KM Update</a></li>
+                          <li><a class="dropdown-item" href="depot_vehicle_program.php">Maintenance Done Date Update</a></li>
+                          <li><a class="dropdown-item" href="depot_w3_chart_data_update.php">ME26 Update</a></li>
                         </ul>
                       </div>
                     </li>
-                  <?php } ?>
+
+                  <?php } } ?>
                 </ul>
                 <ul class="navbar-nav ml-auto">
                   <div class="topbar-divider d-none d-sm-block"></div>

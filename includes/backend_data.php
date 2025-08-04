@@ -7414,7 +7414,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
     // before inserting, check if the program already exists for the bus
     $checkQuery = mysqli_query($db, "SELECT COUNT(*) as count FROM program_data 
-        WHERE bus_number = '$bus_number' AND program_type = '$program_type' AND program_date = '$program_date'");
+        WHERE bus_number = '$bus_number' AND program_type = '$program_type' AND program_date = '$program_date' AND division_id = '$division_id' AND depot_id = '$depot_id'");
 
     //if it has data then update else insert
     $checkData = mysqli_fetch_assoc($checkQuery);
@@ -7429,8 +7429,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     } else {
 
         // Insert only (no update)
-        $insert = mysqli_query($db, "INSERT INTO program_data (bus_number, program_type, program_completed_km, program_date) 
-        VALUES ('$bus_number', '$program_type', '$program_completed_km', '$program_date')");
+        $insert = mysqli_query($db, "INSERT INTO program_data (bus_number, program_type, program_completed_km, program_date, division_id, depot_id) 
+        VALUES ('$bus_number', '$program_type', '$program_completed_km', '$program_date', '$division_id', '$depot_id')");
 
         echo $insert ? "Program saved successfully." : "Error saving program.";
         exit;
@@ -7699,5 +7699,648 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     echo json_encode([
         'status' => 'success',
         'data' => $html
+    ]);
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'checkBusOffroadinrwy') {
+    $busNumber = mysqli_real_escape_string($db, $_POST['busNumber']);
+
+    $query = "SELECT * FROM rwy_offroad WHERE bus_number = '$busNumber' AND status = 'off_road' LIMIT 1";
+    $result = mysqli_query($db, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        echo 'offroad';
+    } else {
+        echo 'not_offroad';
+    }
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['w3_delete_id']) && isset($_POST['action']) && $_POST['action'] == 'delete_w3_single') {
+    $id = $_POST['w3_delete_id'];
+
+    if (!is_numeric($id)) {
+        echo json_encode(["status" => "error", "message" => "Invalid ID provided"]);
+        exit;
+    }
+
+    $deleteQuery = "UPDATE w3_chart_data SET deleted = '1' WHERE id = '$id'";
+    $result = $db->query($deleteQuery);
+
+    if ($result) {
+        echo json_encode(["status" => "success", "message" => "W3 Chart details deleted successfully!"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database update failed: " . $db->error]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "insertupdatesinglevehiclekmpl") {
+    try {
+        $id = $_POST['id'] ?? null;
+        $bus_number = $_POST['bus_number'] ?? '';
+        $operation_type = $_POST['operation_type'] ?? '';
+        $reportdate = $_POST['reportDate'] ?? '';
+        $division_id = $_POST['division_id'] ?? '';
+        $depot_id = $_POST['depot_id'] ?? '';
+
+        if (empty($bus_number) || empty($operation_type) || empty($reportdate) || empty($division_id) || empty($depot_id)) {
+            echo json_encode(["status" => "error", "message" => "Required fields are missing"]);
+            exit;
+        }
+
+        if (!empty($id)) {
+            $stmt = $db->prepare("UPDATE w3_chart_data SET operation_type=? WHERE id=? AND bus_number=? and report_date=?");
+            $stmt->bind_param("ssss", $operation_type, $id, $bus_number, $reportdate);
+        } else {
+            // If no ID is provided, insert a new record
+            //before inserting, check if the record already exists check logsheet no for the report data is exisist then update else insert
+            $checkStmt = $db->prepare("SELECT id FROM w3_chart_data WHERE bus_number=? AND report_date=? AND division_id=? AND depot_id=? and deleted != '1' LIMIT 1");
+            $checkStmt->bind_param("ssss", $bus_number, $reportdate, $division_id, $depot_id);
+            $checkStmt->execute();
+            $checkStmt->store_result();
+            if ($checkStmt->num_rows > 0) {
+                // Record exists, update it
+                // fetch the id of the existing record
+                $checkStmt->bind_result($existing_id);
+                $checkStmt->fetch();
+                $checkStmt->close();
+
+                // Update the existing record
+
+                $stmt = $db->prepare("UPDATE w3_chart_data SET operation_type=? WHERE id=?");
+                $stmt->bind_param("ss", $operation_type, $existing_id);
+            } else {
+                // Record does not exist, insert a new one
+                $stmt = $db->prepare("INSERT INTO w3_chart_data (bus_number, operation_type, report_date, division_id, depot_id) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("sssss", $bus_number, $operation_type, $reportdate, $division_id, $depot_id);
+            }
+        }
+
+        if ($stmt->execute()) {
+            echo json_encode([
+                "status" => "success",
+                "message" => !empty($id) ? "Record updated successfully" : "Record inserted successfully",
+                "id" => $db->insert_id ?: $id
+            ]);
+        } else {
+            echo json_encode(["status" => "error", "message" => "Network Error"]);
+        }
+
+        $stmt->close();
+    } catch (Exception $e) {
+        echo json_encode(["status" => "error", "message" => "Exception: " . $e->getMessage()]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "insertvehiclew3data") {
+    $username = $_SESSION['USERNAME'] ?? '';
+
+    date_default_timezone_set('Asia/Kolkata');
+    $submitted_datetime = date('Y-m-d H:i:s');
+
+    // Convert indexed POST keys back into an array
+    $data = [];
+    foreach ($_POST as $key => $value) {
+        if (is_numeric($key) && is_array($value)) {
+            $data[] = $value;
+        }
+    }
+
+    if (!empty($data)) {
+        $insertSuccess = true;
+        $errorMessage = "";
+
+        foreach ($data as $index => $row) {
+            $id = $row['id'] ?? null;
+
+            if (!empty($id)) {
+                $updateQuery = "UPDATE w3_chart_data SET bus_number = ?, operation_type = ?, report_date = ?, division_id = ?, depot_id = ? WHERE id = ?";
+                $stmt = $db->prepare($updateQuery);
+                $stmt->bind_param(
+                    "ssssss",
+                    $row['bus_number'],
+                    $row['operation_type'],
+                    $row['report_date'],
+                    $row['division_id'],
+                    $row['depot_id'],
+                    $id
+                );
+
+                if (!$stmt->execute()) {
+                    $insertSuccess = false;
+                    $errorMessage = "Failed to update row with ID " . $id;
+                    break;
+                }
+            } else {
+                // Check for existing record
+                $checkQuery = "SELECT id FROM w3_chart_data WHERE bus_number = ? AND report_date = ? AND division_id = ? AND depot_id = ? AND deleted != '1' LIMIT 1";
+                $checkStmt = $db->prepare($checkQuery);
+                $checkStmt->bind_param("ssii", $row['bus_number'], $row['report_date'], $row['division_id'], $row['depot_id']);
+                $checkStmt->execute();
+                $checkStmt->store_result();
+
+                $recordExists = $checkStmt->num_rows > 0;
+                $existing_id = null;
+                $checkStmt->bind_result($existing_id);
+                $checkStmt->fetch();
+                $checkStmt->close();
+
+                if ($recordExists) {
+                    $updateQuery = "UPDATE w3_chart_data SET bus_number = ?, operation_type = ?, division_id = ?, depot_id = ?, report_date = ? WHERE id = ?";
+                    $stmt = $db->prepare($updateQuery);
+                    $stmt->bind_param(
+                        "sssssi",
+                        $row['bus_number'],
+                        $row['operation_type'],
+                        $row['division_id'],
+                        $row['depot_id'],
+                        $row['report_date'],
+                        $existing_id
+                    );
+
+                    if (!$stmt->execute()) {
+                        $insertSuccess = false;
+                        $errorMessage = "Failed to update existing row for bus " . $row['bus_number'];
+                        break;
+                    }
+                } else {
+                    $insertQuery = "INSERT INTO w3_chart_data (bus_number, operation_type, division_id, depot_id, report_date) 
+                                    VALUES (?, ?, ?, ?, ?)";
+                    $stmt = $db->prepare($insertQuery);
+                    $stmt->bind_param(
+                        "sssss",
+                        $row['bus_number'],
+                        $row['operation_type'],
+                        $row['division_id'],
+                        $row['depot_id'],
+                        $row['report_date']
+                    );
+
+                    if (!$stmt->execute()) {
+                        $insertSuccess = false;
+                        $errorMessage = "Failed to insert new row for bus " . $row['bus_number'] . ". Error: " . $stmt->error;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ($insertSuccess) {
+            echo json_encode(["success" => true, "message" => "W3 Chart Data added/updated successfully."]);
+        } else {
+            echo json_encode(["success" => false, "message" => $errorMessage]);
+        }
+    } else {
+        echo json_encode(["success" => false, "message" => "No data received."]);
+    }
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_report_of_w3_from_to") {
+    $from = $_POST['from'];
+    $to = $_POST['to'];
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+    $bus_number = $_POST['bus_number'];
+
+    if (!$from || !$to || !$division_id || !$depot_id) {
+        echo json_encode(['error' => 'Missing required parameters']);
+        exit;
+    }
+
+    // Get depot/division names
+    $locationQuery = "SELECT division, depot FROM location WHERE division_id = '$division_id' AND depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    $sameDay = $from === $to;
+    $busCondition = ($bus_number === 'All') ? "1=1" : "bus_number = '$bus_number'";
+    $from_date = date('Y-m-d', strtotime($from . ' -1 day'));
+    $kmpl_start_date = '2025-08-01';
+
+    $air_suspension_bus_category_array = ['Rajahamsa', 'Corona Sleeper AC', 'Sleeper AC', 'Regular Sleeper Non AC', 'Amoghavarsha Sleeper Non AC', 'Kalyana Ratha'];
+
+    $html = "<h3 class='text-center'>Annexure-H W3 Chart Report for $divisionName - $depotName</h3>";
+    $html .= $sameDay
+        ? "<h4 class='text-center'>Date: " . date('d-m-Y', strtotime($from)) . "</h4>"
+        : "<h4 class='text-center'>From: " . date('d-m-Y', strtotime($from)) . " To: " . date('d-m-Y', strtotime($to)) . "</h4>";
+
+    // Fetch all buses
+    $buses = [];
+    $fromDateTimestamp = strtotime($from_date);
+    $busQuery = "SELECT bus_number, make, emission_norms AS model, model_type, bus_sub_category
+             FROM bus_registration 
+             WHERE $busCondition 
+             AND division_name = '$division_id' 
+             AND depot_name = '$depot_id' 
+             AND deleted != 1";
+    $busResult = mysqli_query($db, $busQuery);
+
+    while ($row = mysqli_fetch_assoc($busResult)) {
+        $buses[$row['bus_number']] = $row;
+    }
+
+    // Prepare list of bus numbers
+    $busKeys = array_map(fn($b) => "'" . mysqli_real_escape_string($db, $b) . "'", array_keys($buses));
+    $busKeyList = implode(',', $busKeys);
+
+    // Fetch all program data for those buses
+    $progDataQuery = "SELECT * FROM program_data WHERE bus_number IN ($busKeyList)";
+    $progDataResult = mysqli_query($db, $progDataQuery);
+
+    // Group program data
+    $allProgramData = [];
+    while ($row = mysqli_fetch_assoc($progDataResult)) {
+        $busNo = $row['bus_number'];
+        $type = $row['program_type'];
+        $programDate = $row['program_date'];
+
+        $timestamp = ($programDate && $programDate !== '0000-00-00') ? strtotime($programDate) : null;
+
+        $allProgramData[$busNo][$type][] = [
+            'row' => $row,
+            'date' => $timestamp,
+            'is_null_date' => is_null($timestamp),
+        ];
+    }
+
+    // Final program data map
+    $programDataMap = [];
+
+    foreach ($allProgramData as $busNo => $programs) {
+        foreach ($programs as $type => $entries) {
+            $chosen = null;
+
+            // Split into categories
+            $nullDates = array_filter($entries, fn($e) => $e['is_null_date']);
+            $validDates = array_filter($entries, fn($e) => !$e['is_null_date']);
+
+            $beforeOrOnFrom = array_filter($validDates, fn($e) => $e['date'] <= $fromDateTimestamp);
+            $afterFrom = array_filter($validDates, fn($e) => $e['date'] > $fromDateTimestamp);
+
+            if (!empty($beforeOrOnFrom)) {
+                // ✅ Use latest before or on from_date
+                usort($beforeOrOnFrom, fn($a, $b) => $b['date'] <=> $a['date']);
+                $chosen = $beforeOrOnFrom[0]['row'];
+            } elseif (!empty($afterFrom)) {
+                if (!empty($nullDates)) {
+                    // ✅ Prefer null-date row over future-dated rows
+                    $chosen = $nullDates[0]['row'];
+                } else {
+                    // ❌ No valid past or null entry, fallback (can also be set to empty values)
+                    $chosen = [
+                        'bus_number' => $busNo,
+                        'program_type' => $type,
+                        'program_date' => null,
+                        'km' => null
+                    ];
+                }
+            } elseif (!empty($nullDates)) {
+                // ✅ Only null-dated row present
+                $chosen = $nullDates[0]['row'];
+            } else {
+                // ❌ No data found at all
+                $chosen = [
+                    'bus_number' => $busNo,
+                    'program_type' => $type,
+                    'program_date' => null,
+                    'km' => null
+                ];
+            }
+
+            $programDataMap[$busNo][$type] = $chosen;
+        }
+    }
+
+
+
+    // Fetch kmpl totals for all buses from 2025-08-01 to $from
+    $kmplQuery = "SELECT bus_number, date as reading_date, km_operated 
+              FROM vehicle_kmpl 
+              WHERE bus_number IN ($busKeyList) 
+              AND date BETWEEN '$kmpl_start_date' AND '$from_date'";
+    $kmplResult = mysqli_query($db, $kmplQuery);
+    $kmplMap = [];
+    while ($row = mysqli_fetch_assoc($kmplResult)) {
+        $busNo = $row['bus_number'];
+        $date = $row['reading_date'];
+        $km = (float) $row['km_operated'];
+        $kmplMap[$busNo][$date] = ($kmplMap[$busNo][$date] ?? 0) + $km;
+    }
+
+    // Helper: sum km from a date range
+    function sumKms($data, $from, $to)
+    {
+        $sum = 0;
+        foreach ($data as $date => $km) {
+            if ($date >= $from && $date <= $to) {
+                $sum += $km;
+            }
+        }
+        return round($sum, 2);
+    }
+
+    $slNo = 1;
+    $progQuery = "SELECT * FROM program_master";
+    $progResult = mysqli_query($db, $progQuery);
+    $programMasterMap = [];
+
+    while ($row = mysqli_fetch_assoc($progResult)) {
+        $key = $row['make'] . '|' . $row['model'] . '|' . $row['model_type'];
+        $programMasterMap[$key] = $row;
+    }
+    function calculateCumulativePerDay($initial_kms, $kmpl_data, $from, $to, $vehicleNo, $programName)
+    {
+        global $db; // use your db connection
+
+        $result = [];
+        $current_kms = $initial_kms;
+        $current = strtotime($from);
+        $end = strtotime($to);
+
+        // Fetch program dates from DB
+        $programDates = [];
+        $query = "SELECT program_date FROM program_data 
+              WHERE bus_number = '$vehicleNo' 
+              AND program_type = '$programName' 
+              AND program_date BETWEEN '$from' AND '$to'";
+        $res = mysqli_query($db, $query);
+        while ($row = mysqli_fetch_assoc($res)) {
+            $programDates[] = $row['program_date'];
+        }
+
+        // Convert to associative for faster lookup
+        $programDateMap = array_flip($programDates);
+        $reset = false;
+
+        while ($current <= $end) {
+            $date = date('Y-m-d', $current);
+            $daily_km = $kmpl_data[$date] ?? null;
+
+            if ($reset) {
+                $current_kms = 0;
+                $reset = false;
+            }
+
+            if (is_numeric($daily_km)) {
+                $current_kms += (float)$daily_km;
+            }
+
+            if (isset($programDateMap[$date])) {
+                $result[$date] = [
+                    'value' => round($current_kms, 2),
+                    'color' => 'green'
+                ];
+                $reset = true; // next day will reset
+            } else {
+                $result[$date] = [
+                    'value' => round($current_kms, 2),
+                    'color' => 'default'
+                ];
+            }
+
+            $current = strtotime('+1 day', $current);
+        }
+
+        return $result;
+    }
+
+    $monthGroups = [];
+
+
+    // Fetch daily vehicle_kmpl data for selected range
+    $dailyKmplQuery = "SELECT bus_number, date, km_operated 
+                   FROM vehicle_kmpl 
+                   WHERE bus_number IN ($busKeyList) 
+                   AND date BETWEEN '$from' AND '$to'";
+    $dailyKmplResult = mysqli_query($db, $dailyKmplQuery);
+    $dailyKmplData = [];
+    while ($row = mysqli_fetch_assoc($dailyKmplResult)) {
+        $dailyKmplData[$row['bus_number']][$row['date']] = $row['km_operated'];
+    }
+
+    // Fetch w3_chart_data only if not present in kmpl
+    $w3Query = "SELECT bus_number, report_date AS date,operation_type as km_operated 
+            FROM w3_chart_data 
+            WHERE bus_number IN ($busKeyList)
+            AND deleted != '1' 
+            AND report_date BETWEEN '$from' AND '$to'";
+    $w3Result = mysqli_query($db, $w3Query);
+    $w3Data = [];
+    while ($row = mysqli_fetch_assoc($w3Result)) {
+        $w3Data[$row['bus_number']][$row['date']] = $row['km_operated'];
+    }
+
+    $start = new DateTime($from);
+    $end = new DateTime($to);
+
+    while ($start <= $end) {
+        $monthKey = strtoupper($start->format('M Y'));
+        $monthGroups[$monthKey][] = clone $start;
+        $start->modify('+1 day');
+    }
+    $formatted_from = date('d-m-y', strtotime($from_date));
+    foreach ($buses as $vehicleNo => $bus) {
+        $make = $bus['make'];
+        $model = $bus['model'];
+        $modelType = $bus['model_type'];
+        $subCategory = $bus['bus_sub_category'];
+
+        // Get program master row
+        $key = $make . '|' . $model . '|' . $modelType;
+        $progRow = $programMasterMap[$key] ?? null;
+        if (!$progRow) continue;
+
+        $programs = [];
+        foreach ($progRow as $key => $targetKms) {
+            if (in_array($key, ['id', 'make', 'model', 'model_type', 'created_at', 'updated_at']) || $targetKms === null || $targetKms === '') continue;
+            if ($key === 'air_suspension_check' && !in_array($subCategory, $air_suspension_bus_category_array)) continue;
+
+            $programName = $key;
+            $progData = $programDataMap[$vehicleNo][$programName] ?? null;
+            $readableName = ucwords(str_replace('_', ' ', $programName));
+            $programs[] = [
+                'realname' => $programName,
+                'name' => $readableName,
+                'value' => $targetKms
+            ];
+        }
+
+        // Generate table for this vehicle
+        $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+        <thead>
+            <tr>
+                <th>SL No</th>
+                <th>Vehicle No</th>
+                <th rowspan='2'>Program Target KMS</th>
+                <th rowspan='2'>Cumm. program <br> kms as on {$formatted_from}</th>";
+
+        foreach ($monthGroups as $monthYear => $dates) {
+            $colspan = count($dates);
+            $html .= "<th style='text-align:center;' colspan='{$colspan}'>$monthYear</th>";
+        }
+        $html .= "</tr>
+            <tr>
+                <td rowspan='2'><b>$slNo</b></td>
+                <td rowspan='2'><b>{$vehicleNo}</b></td>";
+        foreach ($monthGroups as $dates) {
+            foreach ($dates as $dateObj) {
+                $html .= "<th style='text-align:center;'>" . $dateObj->format('j') . "</th>";
+            }
+        }
+
+        $html .= "</tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan='2' style='text-align:center;'><b>Program Name  &#8595;</b></td>
+                <td colspan='2' style='text-align:center;'><b>Daily KMS --></b></td>";
+        foreach ($monthGroups as $dates) {
+            foreach ($dates as $dateObj) {
+                $dateStr = $dateObj->format('Y-m-d');
+                $value = 'NA';
+
+                if (isset($dailyKmplData[$vehicleNo][$dateStr])) {
+                    $value = $dailyKmplData[$vehicleNo][$dateStr];
+                } elseif (isset($w3Data[$vehicleNo][$dateStr])) {
+                    $value = $w3Data[$vehicleNo][$dateStr];
+                }
+
+                $html .= "<td>$value</td>";
+            }
+        }
+        $html .= "</tr>";
+
+        foreach ($programs as $prog) {
+            $programName = strtolower(str_replace(' ', '_', $prog['name']));
+            $progData = $programDataMap[$vehicleNo][$programName] ?? null;
+            $program_date = $progData['program_date'] ?? null;
+            $completed_km = (float)($progData['program_completed_km'] ?? 0);
+            $kmData = $kmplMap[$vehicleNo] ?? [];
+            $start_date = $from;
+            if (empty($program_date) || $program_date == '0000-00-00') {
+                $initial_cumm_kms = $completed_km + sumKms($kmData, $kmpl_start_date, $from_date);
+                $data = 0;
+            } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) > strtotime($from_date)) {
+                $initial_cumm_kms = sumKms($kmData, $kmpl_start_date, $from_date);
+                $data = 1;
+            } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) == strtotime($from_date)) {
+                $initial_cumm_kms = 0;
+                $data = 2;
+            } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) < strtotime($from_date)) {
+                $program_date1 = date('Y-m-d', strtotime($program_date . ' +1 day'));
+                $initial_cumm_kms = sumKms($kmData, $program_date1, $from_date);
+                $data = 3;
+            } else {
+                $start_date1 = date('Y-m-d', strtotime($program_date . ' +1 day'));
+                $initial_cumm_kms = sumKms($kmData, $start_date1, $from_date);
+                $data = 4;
+            }
+
+            $dailyCumm = calculateCumulativePerDay($initial_cumm_kms, $dailyKmplData[$vehicleNo] ?? [], $from, $to, $vehicleNo, $prog['realname']);
+
+
+            $html .= "<tr>
+        <td colspan='2' style='text-align:left;'>{$prog['name']}</td>
+        <td>{$prog['value']} {$program_date}</td>
+        <td>{$initial_cumm_kms}</td>";
+            foreach ($monthGroups as $dates) {
+                foreach ($dates as $dateObj) {
+                    $dateStr = $dateObj->format('Y-m-d');
+
+                    $data = $dailyCumm[$dateStr] ?? ['value' => 'NA', 'color' => 'default'];
+                    $val  = $data['value'];
+                    $color = $data['color'] ?? 'default';
+                    $target  = (float) $prog['value'];
+                    if (is_numeric($val)) {
+                        if ($color === 'green') {
+                            $html .= "<td style='background-color:green;'>$val</td>";
+                        } else {
+                            $numVal = (float) $val;
+
+                            if ($numVal > $target + 500) {                // more than +500
+                                $html .= "<td style='background-color:red;'>$val</td>";
+                            } elseif (abs($numVal - $target) <= 500) {    // within ±500
+                                $html .= "<td style='background-color:yellow;'>$val</td>";
+                            } else {                                      // anything else
+                                $html .= "<td>$val</td>";
+                            }
+                        }
+                    } else {
+                        $html .= "<td>$val</td>";
+                    }
+                }
+            }
+
+
+            $html .= "</tr>";
+        }
+
+
+        $html .= "</tbody></table>";
+        $slNo++;
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'data' => $html
+    ]);
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "get_program_km_for_bus") {
+
+
+    if (!isset($_POST['bus_number'], $_POST['program_type'], $_POST['program_date'])) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Missing required parameters.'
+        ]);
+        exit;
+    }
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+    $program_type = mysqli_real_escape_string($db, $_POST['program_type']);
+    $selected_date = mysqli_real_escape_string($db, $_POST['program_date']); // expected format: Y-m-d
+    $last_km = 0;
+    $last_date = null;
+
+    // Step 1: Get the last program entry (if any)
+    $last_km_query = "
+    SELECT program_completed_km, program_date 
+    FROM program_data 
+    WHERE bus_number = '$bus_number' 
+    AND program_type = '$program_type' 
+    ORDER BY program_date DESC 
+    LIMIT 1
+";
+    $last_km_result = mysqli_query($db, $last_km_query);
+
+    if ($row = mysqli_fetch_assoc($last_km_result)) {
+        $last_km = (float)$row['program_completed_km'];
+        $last_date = $row['program_date'];
+    }
+
+    // Step 2: Calculate KM from vehicle_kmpl
+    $from_date = '2025-08-01';
+
+    if ($last_date && ($last_date !== '0000-00-00' || $last_date !== null)) {
+        $from_date = date('Y-m-d', strtotime($last_date . ' +1 day'));
+    }
+
+    $km_query = "
+    SELECT SUM(km_operated) AS total_km 
+    FROM vehicle_kmpl 
+    WHERE bus_number = '$bus_number' 
+    AND date >= '$from_date' 
+    AND date <= '$selected_date'
+    AND deleted != '1'
+";
+    $km_result = mysqli_query($db, $km_query);
+    $total_km = 0;
+
+    if ($km_row = mysqli_fetch_assoc($km_result)) {
+        $total_km = (float)$km_row['total_km'];
+    }
+
+    $estimated_km = $last_km + $total_km;
+
+    echo json_encode([
+        'success' => true,
+        'program_km' => round($estimated_km)
     ]);
 }

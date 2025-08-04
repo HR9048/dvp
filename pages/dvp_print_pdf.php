@@ -11,7 +11,7 @@ if (isset($_GET['selected_date'])) {
     $division = $_SESSION['DIVISION_ID'];
     $depot = $_SESSION['DEPOT_ID'];
 
-    $sql = "SELECT  schedules, vehicles, spare, spareP, docking, ORDepot, ORDWS, ORRWY, CC, wup1, loan, wup, Police, notdepot, ORTotal, available, ES FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$selectedDate'";
+    $sql = "SELECT  schedules, vehicles, spare, ORRWY, spareP, docking, ORDepot, ORDWS, CC, wup1, loan, wup, Police, notdepot, ORTotal, available, ES FROM dvp_data WHERE division = '$division' AND depot = '$depot' AND date = '$selectedDate'";
 
     $result = $db->query($sql);
 
@@ -38,7 +38,7 @@ if (isset($_GET['selected_date'])) {
         $pdf->AddPage();
 
         // Set font size
-        $pdf->SetFont('helvetica', '', 15);
+        $pdf->SetFont('helvetica', '', 13);
 
         // Header section
         $html = '<h1 style="text-align:center;">Kalyana Karnataka Road Transport Corporation (KKRTC)</h1><br><br><br>
@@ -53,13 +53,13 @@ if (isset($_GET['selected_date'])) {
         // Custom column headings
         $customHeadings = array(
             'schedules' => 'Number of Schedules',
-            'vehicles' => 'Number Of Vehicles (Including RWY)',
-            'spare' => 'Number of Spare Vehicles (Including RWY)',
+            'vehicles' => 'Number Of Vehicles (Excluding RWY)',
+            'spare' => 'Number of Spare Vehicles (Excluding RWY)',
             'spareP' => 'Percentage of Spare Vehicles (Excluding RWY)',
+            'ORRWY' => 'Vehicles Off Road at RWY',
             'docking' => 'Vehicles stopped for Docking',
             'ORDepot' => 'Vehicles Off Road at Depot',
             'ORDWS' => 'Vehicles Off Road at DWS',
-            'ORRWY' => 'Vehicles Off Road at RWY',
             'CC' => 'Vehicles Withdrawn for CC',
             'loan' => 'Vehicles loan given to other Depot/Training Center',
             'wup' => 'Vehicles Withdrawn for Fair',
@@ -93,8 +93,27 @@ if (isset($_GET['selected_date'])) {
 
         $html .= '</table>';
 
+        $kmpldate = date('Y-m-d', strtotime($selectedDate . ' -1 day'));
+        $formatedkmpldate = date('d/m/Y', strtotime($kmpldate));
+        $kmplSql = "SELECT * FROM kmpl_data WHERE division = '$division' AND depot = '$depot' AND date = '$kmpldate'";
+        $kmplResult = $db->query($kmplSql);
+        if ($kmplResult->num_rows > 0) {
+            $kmplRow = $kmplResult->fetch_assoc();
+            $kmplHtml = '<br><br><table style="width: 100%; border-collapse: collapse; border: 2px solid black; margin-top: 20px;">
+                <tr><th colspan="3" style="text-align:center; border: 1px solid black;" ><b>KMPL Details As on ' . $formatedkmpldate . '</b></th></tr>
+                <tr>
+                    <td style="border: 1px solid black;"><b>Total KM: </b>' . $kmplRow['total_km'] . '</td>
+                    <td style="border: 1px solid black;"><b>HSD: </b>' . $kmplRow['hsd'] . '</td>
+                    <td style="border: 1px solid black;"><b>KMPL: </b>' . $kmplRow['kmpl'] . '</td>
+                </tr>
+            </table>';
+            $html .= $kmplHtml;
+        } 
+
+
+
         // Footer section
-        $html .= '<br><br><br><table style="width: 100%; margin-top: 50px;">
+        $html .= '<br><br><br><br><table style="width: 100%; margin-top: 50px;">
                     <tr>
                         <td style="text-align: left;"><b>CW</b></td>
                         <td style="text-align: center;"><b>CM/AWS</b></td>
@@ -111,7 +130,7 @@ if (isset($_GET['selected_date'])) {
         $fileName = $formattedDate . '_' . $divisionName . '_' . $depotName . '_dvp.pdf';
 
         // Close and output PDF document
-        $pdf->Output($fileName, 'D');
+        $pdf->Output($fileName, 'I');
         exit;
     } else {
         // Redirect to login.php if accessed directly without POST data
@@ -122,4 +141,3 @@ if (isset($_GET['selected_date'])) {
 } else {
     header("Location:dvp_print.php");
 }
-?>

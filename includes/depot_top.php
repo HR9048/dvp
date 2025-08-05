@@ -360,8 +360,8 @@ confirm_logged_in();
                             <li><a class="dropdown-item" href="depot_crew_report_m.php">Route Monthly Crew report</a></li>
                             <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule Monitor</a></li>
                           <?php }
-                          if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') { ?>
-                              <!--<li><a class="dropdown-item" href="depot_w3_report_fromto.php">From-To date W3 Report</a></li>-->
+                          if ($_SESSION['TYPE'] == 'DEPOT' && in_array($_SESSION['DEPOT_ID'], ['1', '8']) && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM')) { ?>
+                            <li><a class="dropdown-item" href="depot_w3_report_fromto.php">From-To date W3 Report</a></li>
                             <?php } ?>
                         </ul>
                       </div>

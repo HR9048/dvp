@@ -75,6 +75,22 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     </div>
 
     <script>
+        document.getElementById('reportDate').addEventListener('change', function () {
+    const selectedDate = new Date(this.value);
+    const minDate = new Date('2025-08-01');
+
+    if (selectedDate < minDate) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Invalid Date',
+            text: 'Please select a date on or after 01-08-2025.',
+            confirmButtonColor: '#3085d6'
+        });
+
+        // Optional: Clear the invalid date
+        this.value = '';
+    }
+});
         function validateAndSubmit1() {
             let reportDate = document.getElementById('reportDate').value;
             if (!reportDate) {
@@ -189,7 +205,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                         echo '<select class="operation-select">';
                         echo '<option style="width:100%;" value="">Select</option>'; // Default option
 
-                        $fixedOptions = ['KM Added','Night Out', 'CC', 'Spare', 'Fair/Jatra', 'Police Station', 'Other Depot', 'Not Arrived', 'Others'];
+                        $fixedOptions = ['KM Added','Night Out', 'Off-Road', 'DWS', 'RTO', 'BD', 'CC', 'Spare', 'Fair/Jatra', 'Police Station', 'Other Depot', 'Not Arrived', 'Docking', 'Others'];
                         foreach ($fixedOptions as $opt) {
                             $selected = '';
 

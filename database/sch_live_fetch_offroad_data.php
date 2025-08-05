@@ -157,7 +157,6 @@ $corporation_totals = [
 echo '<br><br><p style="text-align:center;"><b>Division-wise Off-Road Summary</b></p>';
 echo '<table border="1" cellspacing="0" cellpadding="5" style="width:100%; border-collapse: collapse;">
     <tr>
-        <th rowspan="2">Sl. No</th>
         <th rowspan="2">Depot</th>
         <th rowspan="2">Buses</th>
         <th colspan="3">Off-Road</th>
@@ -192,7 +191,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             round(($division_totals[$prev_division]['G_TOTAL'] * 100) / $division_totals[$prev_division]['TOTAL_BUS'], 1) : 0;
         
         echo "<tr style='background-color: #d4edda; font-weight: bold;'>
-            <td colspan='2' onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"All\")'>{$prev_division} Total</td>
+            <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"All\")'>{$prev_division}</td>
             <td>{$division_totals[$prev_division]['TOTAL_BUS']}</td>
             <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordepot\")'>{$division_totals[$prev_division]['DEPOT_COUNT']}</td>
             <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordws\")'>{$division_totals[$prev_division]['DWS']}</td>
@@ -212,7 +211,7 @@ if ($prev_division !== null) {
         round(($division_totals[$prev_division]['G_TOTAL'] * 100) / $division_totals[$prev_division]['TOTAL_BUS'], 1) : 0;
     
     echo "<tr style='background-color: #d4edda; font-weight: bold;'>
-        <td colspan='2' onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"All\")'>{$prev_division} Total</td>
+        <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"All\")'>{$prev_division}</td>
         <td>{$division_totals[$prev_division]['TOTAL_BUS']}</td>
         <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordepot\")'>{$division_totals[$prev_division]['DEPOT_COUNT']}</td>
         <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordws\")'>{$division_totals[$prev_division]['DWS']}</td>
@@ -226,7 +225,7 @@ $corp_off_road_percentage = $corporation_totals['TOTAL_BUS'] > 0 ?
     round(($corporation_totals['G_TOTAL'] * 100) / $corporation_totals['TOTAL_BUS'], 1) : 0;
 
 echo "<tr style='background-color: #f8d7da; font-weight: bold;'>
-    <td colspan='2' onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\", \"All\")'>Corporation Total</td>
+    <td onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\", \"All\")'>Corporation Total</td>
     <td>{$corporation_totals['TOTAL_BUS']}</td>
     <td onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\", \"ordepot\")'>{$corporation_totals['DEPOT_COUNT']}</td>
     <td onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\", \"ordws\")'>{$corporation_totals['DWS']}</td>

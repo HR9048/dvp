@@ -68,6 +68,35 @@ while ($row = mysqli_fetch_assoc($result2)) {
     $actual_schedules[$row['kmpl_division']][$row['depot']] = $row['actual_schedules'];
 }
 
+// Query 2.1: Actual Schedules
+$query21 = "SELECT 
+    l.kmpl_division, 
+    l.depot, 
+    COALESCE(COUNT(svo.sch_no), 0) AS actual_schedules 
+FROM location l
+LEFT JOIN sch_veh_out svo 
+    ON l.division_id = svo.division_id 
+    AND l.depot_id = svo.depot_id 
+    AND DATE(svo.departed_date) = '$selected_date'
+LEFT JOIN schedule_master sm
+    ON svo.sch_no = sm.sch_key_no
+    AND svo.division_id = sm.division_id
+    AND svo.depot_id = sm.depot_id
+    AND sm.sch_dep_time <= '$current_time'
+WHERE 
+    l.division_id NOT IN ('0', '10') 
+    AND l.depot != 'DIVISION'
+    AND sm.sch_dep_time <= '$current_time'
+GROUP BY 
+    l.division_id, l.depot_id;";
+$result21 = mysqli_query($db, $query21);
+if (!$result21) {
+    die("Query 2 failed: " . mysqli_error($db));
+}
+while ($row = mysqli_fetch_assoc($result21)) {
+    $actual_schedules1[$row['kmpl_division']][$row['depot']] = $row['actual_schedules'];
+}
+
 // Query 3: Late Departures
 $query3 = "SELECT l.kmpl_division, l.depot, COALESCE(COUNT(DISTINCT svo.sch_no), 0) AS late_departures 
            FROM location l
@@ -92,8 +121,9 @@ $report = [];
 foreach ($total_schedules as $division => $depots) {
     foreach ($depots as $depot => $total) {
         $actual = isset($actual_schedules[$division][$depot]) ? $actual_schedules[$division][$depot] : 0;
+        $actual1 = isset($actual_schedules1[$division][$depot]) ? $actual_schedules1[$division][$depot] : 0;
         $late = isset($late_departures[$division][$depot]) ? $late_departures[$division][$depot] : 0;
-        $difference = $total - $actual;
+        $difference = $total - $actual1;
 
         $report[] = [
             'division' => $division,

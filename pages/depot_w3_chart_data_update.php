@@ -205,7 +205,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                         echo '<select class="operation-select">';
                         echo '<option style="width:100%;" value="">Select</option>'; // Default option
 
-                        $fixedOptions = ['KM Added','Night Out', 'Off-Road', 'DWS', 'RTO', 'BD', 'CC', 'Spare', 'Fair/Jatra', 'Police Station', 'Other Depot', 'Not Arrived', 'Docking', 'Others'];
+                        $fixedOptions = ['KM Added','Night Out', 'Extra', 'Off-Road', 'DWS', 'RWY', 'RTO', 'BD', 'CC', 'Spare', 'Fair/Jatra', 'Police Station', 'Other Depot', 'Not Arrived', 'Docking', 'Others'];
                         foreach ($fixedOptions as $opt) {
                             $selected = '';
 

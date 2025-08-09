@@ -107,8 +107,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
     <!-- add a print button -->
     <div class="text-center mb-3">
-        <button class="btn btn-secondary" onclick="window.print()">Print</button>
-    </div>
+    <button class="btn btn-secondary" onclick="window.print()">Print</button>
+</div>
+
     <div class="container1">
         <h2 class="text-center text-primary mt-4"><?php echo $_SESSION['KMPL_DEPOT']; ?> Maintenance Program As on Date: <?php echo $today; ?></h2>
         <div class="text-center mb-3">
@@ -199,7 +200,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         $kmpl_data = [];
         $kmpl_result = mysqli_query($db, "
         SELECT bus_number, date, km_operated FROM vehicle_kmpl
-        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '2025-07-30' AND date <= '$today'
+        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '2025-07-31' AND date <= '$today'
     ");
         while ($row = mysqli_fetch_assoc($kmpl_result)) {
             $bus = $row['bus_number'];
@@ -255,7 +256,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
                         if (!empty($kmpl_data[$bus_number])) {
                             foreach ($kmpl_data[$bus_number] as $date => $km) {
-                                if ($date > '2025-07-30') {
+                                if ($date > '2025-07-31') {
                                     $total_km += $km;
                                 }
                             }
@@ -365,7 +366,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
                         if (!empty($kmpl_data[$bus_number])) {
                             foreach ($kmpl_data[$bus_number] as $date => $km) {
-                                if ($date > '2025-07-30') {
+                                if ($date > '2025-07-31') {
                                     $total_km += $km;
                                 }
                             }
@@ -405,6 +406,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             <th>Program KM</th>
             <th>Prescribed KM</th>
             <th>Difference</th>
+            <th>Actions</th>
         </tr></thead><tbody>";
 
                 foreach ($rows as $r) {
@@ -416,7 +418,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 <td>{$r['total_km']}</td>
                 <td>{$r['prescribed_km']}</td>
                 <td>{$r['difference']}</td>
-                
+                <td>";
+                        echo "<button class='btn btn-sm btn-primary' onclick=\"openProgramModal('{$bus}', '{$ptype_raw}', '{$r['program_type']}')\">Update</button>";
+                    
+                    echo "</td>
 
             </tr>";
                 }

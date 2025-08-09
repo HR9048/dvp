@@ -269,28 +269,41 @@ AND vd.deleted = 0
                         echo '<td>' . htmlspecialchars($bus_number) . '</td>';
 
                         // Route number select
+                        // Route number select
                         echo '<td>';
                         echo '<select class="route-select" onchange="handleScheduleChange(this)">';
                         echo '<option style="width:100%;" value="">Select</option>'; // Default option
 
+                        $existingRouteNo = trim(htmlspecialchars_decode($existingData['route_no'] ?? ''));
+
+                        // Database route options
                         if ($routeResult && $routeResult->num_rows > 0) {
                             while ($routeRow = $routeResult->fetch_assoc()) {
-                                $selected = ($existingData['route_no'] ?? '') == $routeRow['sch_key_no'] ? 'selected' : '';
-                                echo '<option value="' . htmlspecialchars($routeRow['sch_key_no']) . '" ' . $selected . '>' . htmlspecialchars($routeRow['sch_key_no']) . '</option>';
+                                $routeKeyNo = trim(htmlspecialchars_decode($routeRow['sch_key_no'] ?? ''));
+                                $selected = ($existingRouteNo === $routeKeyNo) ? 'selected' : '';
+                                echo '<option value="' . htmlspecialchars($routeKeyNo) . '" ' . $selected . '>' . htmlspecialchars($routeKeyNo) . '</option>';
                             }
                         }
-                        echo '<option value="CC">CC</option>';
-                        echo '<option value="BD">BD</option>';
-                        echo '<option value="Extra Operation">Extra Operation</option>';
-                        echo '<option value="Jatra Operation">Jatra Operation</option>';
-                        echo '<option value="DWS">DWS</option>';
-                        echo '<option value="RWY">RWY</option>';
-                        echo '<option value="Road Test">Road Test</option>';
-                        echo '<option value="Relief">Relief</option>';
+
+                        // Hardcoded extra options
+                        $extraOptions = [
+                            "CC",
+                            "BD",
+                            "Extra Operation",
+                            "Jatra Operation",
+                            "DWS",
+                            "RWY",
+                            "Road Test",
+                            "Relief"
+                        ];
+
+                        foreach ($extraOptions as $opt) {
+                            $selected = ($existingRouteNo === $opt) ? 'selected' : '';
+                            echo '<option value="' . htmlspecialchars($opt) . '" ' . $selected . '>' . htmlspecialchars($opt) . '</option>';
+                        }
 
                         echo '</select>';
                         echo '</td>';
-
 
 
                         // Driver Token 1 select
@@ -401,9 +414,17 @@ AND vd.deleted = 0
                             // Route number select with only existing database values
                             echo '<td>';
                             echo '<select style="width:100%;" class="route-select">';
-                            echo '<option value="' . htmlspecialchars($changedRow['route_no']) . '" selected>' . htmlspecialchars($changedRow['route_no']) . '</option>';
+
+                            // Normalize value (remove extra spaces, decode entities)
+                            $routeNo = trim(htmlspecialchars_decode($changedRow['route_no'] ?? ''));
+
+                            // Always wrap in quotes for safety with spaces and special chars
+                            echo '<option value="' . htmlspecialchars($routeNo, ENT_QUOTES) . '" selected>' . htmlspecialchars($routeNo) . '</option>';
+
                             echo '</select>';
                             echo '</td>';
+
+
 
                             // Driver Token 1 select
                             echo '<td>';

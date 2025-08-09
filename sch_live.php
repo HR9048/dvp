@@ -363,9 +363,9 @@ include 'includes/connection.php';
                                                 <tr>
                                                     <th>Division</th>
                                                     <th style="width:17%">Depot</th>
-                                                    <th>Sche Dep</th>
+                                                    <th>Act Sch</th>
                                                     <th>Act Dep</th>
-                                                    <th>Diff</th>
+                                                    <th>Pending</th>
                                                     <th>Late Dep</th>
                                                 </tr>
                                             </thead>

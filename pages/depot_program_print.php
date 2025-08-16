@@ -92,21 +92,30 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 margin: 0 auto;
             }
 
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
             table th,
             table td {
                 color: black !important;
+                border: 1px solid black;
+                padding: 4px;
+                font-size: 12px;
+                text-align: center;
             }
 
             @page {
-                size: auto;
-                margin: 0;
+                size: landscape;
+                margin: 0.5cm;
             }
         }
     </style>
 
     <!-- add a print button -->
     <div class="text-center mb-3">
-        <a href="depot_program_print.php" class="btn btn-secondary" target="_blank">Print</a>
+        <button class="btn btn-secondary" onclick="window.print()">Print</button>
     </div>
 
     <div class="container1">
@@ -127,21 +136,21 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             'fuel_filter_change' => 'Fuel Filter Change',
             'fuel_strainer_change' => 'Fuel Strainer Change',
             'diesel_filter_change' => 'Diesel Filter Change',
-            'def_suction_filter' => 'DEF Suction Filter Change',
-            'def_neck_filter' => 'DEF Neck Filter Change',
-            'def_air_filter' => 'DEF Air Filter Change',
+            'def_suction_filter_change' => 'DEF Suction Filter Change',
+            'def_neck_filter_change' => 'DEF Neck Filter Change',
+            'def_air_filter_change' => 'DEF Air Filter Change',
             'mc_assembely_with_oil_chnage' => 'Clutch M/C, Assembly & Oil Change',
             'air_suspension_check' => 'Air Suspension Check',
-            'alternator_overhaul_check' => 'Alternator Overhaul Check',
+            'alternator_overhauling' => 'Alternator Overhauling',
             'air_compressor_overhaul' => 'Air Compressor Overhaul',
             'Air_compressor_read_calve' => 'Air Compressor Read Calve Change',
-            'fan_belt_change' => 'Fan Belt Change',
-            'tappet_setting_check' => 'Tappet Setting Check',
+            'fan_belt_check_or_change' => 'Fan Belt Check/Change',
+            'tappet_setting' => 'Tappet Setting',
             'spring_cambering_check' => 'Spring Cambering Check',
             'voith_retarder_oil_change' => 'Voith Retarder Oil Change',
-            'tyre_rotation_check' => 'Tyre Rotation Check',
+            'tyre_rotation' => 'Tyre Rotation',
             'error_code_edc_check' => 'Error Code EDC Check',
-            'apda_mesh_cleaning_check' => 'APDA Mesh Cleaning Check',
+            'apda_mesh_cleaning' => 'APDA Mesh Cleaning',
             'apda_major_kit_change' => 'APDA Major Kit Change',
             'fuel_tank_ventilation_filter_change' => 'Fuel Tank Ventilation Filter Change',
             'air_filter_insert_primary_change' => 'Air Filter Insert Primary Change',
@@ -213,142 +222,206 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             $key = $meta['make'] . "|" . $meta['emission_norms'] . "|" . $meta['model_type'];
             $grouped_buses[$key][] = $bus_number;
         }
-        $any_rows_printed = false; // Flag to track if any table rows were printed
-
-        $program_data = [];
-
-        $program_data = [];
-
-        foreach ($grouped_buses as $group_key => $bus_list_group) {
-            list($make, $emission, $model_type) = explode('|', $group_key);
-
-            $pm_result = mysqli_query($db, "SELECT * FROM program_master WHERE make = '$make' AND model = '$emission' AND model_type = '$model_type' LIMIT 1");
-            if (!mysqli_num_rows($pm_result)) continue;
-
-            $pm = mysqli_fetch_assoc($pm_result);
-
-            // Step 1: Extract only valid program fields (skip metadata columns)
-            $programs = [];
-            foreach ($pm as $prog => $km) {
-                if (!in_array($prog, ['id', 'make', 'model', 'model_type', 'created_at', 'updated_at']) && $km !== null && $km !== '') {
-                    $programs[$prog] = $km;
-                }
-            }
-
-            // 🚫 If no applicable programs, skip this group
-            if (empty($programs)) continue;
-
-            // Step 2: Loop each bus in group
-            foreach ($bus_list_group as $bus_number) {
-
-                // Step 3: For each applicable program, check if bus has done it or not
-                foreach ($programs as $ptype => $prescribed_km) {
-
-                    // ✅ Vehicle is eligible for this program (as per program_master)
-                    // Whether or not it has done the program, we'll show it if KM exists
-
-                    $last_entry = $last_program_data[$bus_number][$ptype] ?? null;
-                    $program_date = $last_entry['date'] ?? null;
-                    $total_km = 0;
-
-                    if ($last_entry && $program_date !== '0000-00-00') {
-                        $start_date = date('Y-m-d', strtotime($program_date . ' +1 day'));
-                        if (!empty($kmpl_data[$bus_number])) {
-                            foreach ($kmpl_data[$bus_number] as $date => $km) {
-                                if ($date >= $start_date) {
-                                    $total_km += $km;
-                                }
-                            }
-                        }
-                    } else {
-                        // ❗ Program never done, accumulate from 2025-08-01
-                        if (!empty($kmpl_data[$bus_number])) {
-                            foreach ($kmpl_data[$bus_number] as $date => $km) {
-                                if ($date > '2025-07-31') {
-                                    $total_km += $km;
-                                }
-                            }
-                        }
-                    }
-
-                    // Step 4: Compare with prescribed KM
-                    $deviation = $total_km - $prescribed_km;
-
-                    // Step 5: Set class for table color
-                    if ($deviation > 500) {
-                        $color = 'bg-danger text-white';
-                    } elseif ($deviation >= -500 && $deviation <= 500) {
-                        $color = 'bg-warning';
-                    } else {
-                        continue; // Skip if under-deviation
-                    }
-
-                    // ✅ Add this vehicle under this specific program only
-                    $program_data[$ptype][] = [
-                        'bus_number' => $bus_number,
-                        'total_km' => $total_km,
-                        'class' => $color,
-                        'program_type' => $program_labels[$ptype] ?? ucfirst(str_replace('_', ' ', $ptype)),
-                    ];
-                }
-            }
-        }
-
-        if (!empty($program_data)) {
-            echo "<div class='table-responsive'>";
-            echo "<table class='table table-bordered'>";
-            echo "<thead><tr>";
-
-            foreach ($program_data as $ptype => $entries) {
-                if (empty($entries)) continue;
-                $program_name = $entries[0]['program_type'];
-                echo "<th colspan='2' class='text-center'>$program_name</th>";
-            }
-
-            echo "</tr><tr>";
-            foreach ($program_data as $ptype => $entries) {
-                if (empty($entries)) continue;
-                echo "<th>Vehicle No</th><th>Total KM</th>";
-            }
-            echo "</tr></thead><tbody>";
-
-            $max_rows = max(array_map('count', $program_data));
-
-            for ($i = 0; $i < $max_rows; $i++) {
-                echo "<tr>";
-                foreach ($program_data as $ptype => $entries) {
-                    if (isset($entries[$i])) {
-                        $entry = $entries[$i];
-                        echo "<td class='{$entry['class']}'>{$entry['bus_number']}</td>";
-                        echo "<td class='{$entry['class']}'>{$entry['total_km']}</td>";
-                    } else {
-                        echo "<td></td><td></td>";
-                    }
-                }
-                echo "</tr>";
-            }
-
-            echo "</tbody></table></div>";
-        } else {
-            echo "<div class='alert alert-info text-center mt-4'><strong>None of the vehicle programs are present.</strong></div>";
-        }
-
-
-
 
         ?>
 
+        <style>
+            .mp-wrap {
+                margin-top: 10px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                /* space between tables */
+            }
+
+            .mp-group-title {
+                width: 100%;
+                margin: 16px 0 8px;
+                font-weight: 700;
+                color: black;
+                /* removed blue color for print */
+            }
+
+            .mp-program-table {
+                flex: 1 0 calc(10% - 6px);
+                /* target ~10 per row */
+                max-width: calc(16.66% - 6px);
+                /* min 6 per row if space */
+                box-sizing: border-box;
+            }
+
+            .mp-program-head {
+                font-weight: 700;
+                text-align: center;
+                font-size: 0.9rem;
+                padding: 4px 6px !important;
+                border: 1px solid #dee2e6;
+                background: none !important;
+                /* remove background */
+            }
+
+            .mp-table {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+            }
+
+            .mp-table th,
+            .mp-table td {
+                border: 1px solid #dee2e6;
+                padding: 1px 4px !important;
+                vertical-align: middle;
+                font-size: 0.55rem;
+                word-wrap: break-word;
+                text-align: center;
+            }
+
+            .mp-table thead th {
+                font-weight: 600;
+                text-align: center;
+                background: none !important;
+                /* remove background */
+            }
+        </style>
+
+        <div class="mp-wrap">
+            <?php
+            function compute_total_km($bus_number, $ptype, $last_program_data, $kmpl_data)
+            {
+                $total_km = 0;
+                $last_entry = $last_program_data[$bus_number][$ptype] ?? null;
+                $program_date = $last_entry['date'] ?? null;
+
+                if (!empty($program_date) && $program_date !== '0000-00-00') {
+                    $start_date = date('Y-m-d', strtotime($program_date . ' +1 day'));
+                    if (!empty($kmpl_data[$bus_number])) {
+                        foreach ($kmpl_data[$bus_number] as $date => $km) {
+                            if ($date >= $start_date) {
+                                $total_km += $km;
+                            }
+                        }
+                    }
+                } else {
+                    $last_km = $last_entry['km'] ?? 0;
+                    $total_km = $last_km;
+                    if (!empty($kmpl_data[$bus_number])) {
+                        foreach ($kmpl_data[$bus_number] as $date => $km) {
+                            if ($date > '2025-07-31') {
+                                $total_km += $km;
+                            }
+                        }
+                    }
+                }
+                return $total_km;
+            }
+
+            $tyre_rotation_data = []; // store tyre rotation separately
+
+            foreach ($grouped_buses as $group_key => $bus_list_group) {
+                list($make, $emission, $model_type) = explode('|', $group_key);
+
+                $pm_result = mysqli_query($db, "SELECT * FROM program_master WHERE make = '$make' AND model = '$emission' AND model_type = '$model_type' LIMIT 1");
+                if (!mysqli_num_rows($pm_result)) continue;
+                $pm = mysqli_fetch_assoc($pm_result);
+
+                // keep only numeric km values
+                $programs = [];
+                foreach ($pm as $prog => $km) {
+                    if (in_array($prog, ['id', 'make', 'model', 'model_type', 'created_at', 'updated_at'])) continue;
+                    if ($km !== null && $km !== '') $programs[$prog] = (int)$km;
+                }
+                if (empty($programs)) continue;
+
+                $group_has_data = false;
+                $group_tables_html = "";
+
+                foreach ($program_labels as $ptype => $pname) {
+                    if (!isset($programs[$ptype])) continue;
+
+                    $prescribed_km = $programs[$ptype];
+                    $rows = [];
+                    foreach ($bus_list_group as $bus_number) {
+                        $total_km = compute_total_km($bus_number, $ptype, $last_program_data, $kmpl_data);
+                        $deviation = $total_km - $prescribed_km;
+
+                        if ($deviation > 500 || ($deviation >= -5000 && $deviation <= 500)) {
+                            $rows[] = [
+                                'bus_number' => $bus_number,
+                                'total_km'   => $total_km
+                            ];
+                        }
+                    }
+
+                    // ✅ Handle Tyre Rotation Check separately
+                    if ($pname === "Tyre Rotation Check" && !empty($rows)) {
+                        foreach ($rows as $r) {
+                            $tyre_rotation_data[] = $r; // save for later table
+                        }
+                        continue; // skip normal printing
+                    }
+
+                    if (!empty($rows)) {
+                        $group_has_data = true;
+                        $group_tables_html .= "<div class='mp-program-table'>
+                <table class='mp-table'>
+                    <thead>
+                        <tr><th class='mp-program-head' colspan='2'>" . htmlspecialchars($pname) . "<br>({$prescribed_km})</th></tr>
+                        <tr><th>Vehicle</th><th>KM</th></tr>
+                    </thead>
+                    <tbody>";
+
+                        foreach ($rows as $r) {
+                            $group_tables_html .= "<tr>
+                    <td>" . htmlspecialchars($r['bus_number']) . "</td>
+                    <td>" . (int)$r['total_km'] . "</td>
+                </tr>";
+                        }
+
+                        $group_tables_html .= "</tbody></table></div>";
+                    }
+                }
+
+                if ($group_has_data) {
+                    echo "<div class='mp-group-title'>Make: " . htmlspecialchars($make) . " | Emission: " . htmlspecialchars($emission) . " | Model Type: " . htmlspecialchars($model_type) . "</div>";
+                    echo $group_tables_html;
+                }
+            }
+
+            // ✅ Print Tyre Rotation Check table at the end
+            if (!empty($tyre_rotation_data)) {
+                $vehicle_numbers = array_column($tyre_rotation_data, 'bus_number');
+                $kms = array_column($tyre_rotation_data, 'total_km');
+
+                $total_vehicles = count($vehicle_numbers);
+                $chunked_vehicle_numbers = array_chunk($vehicle_numbers, 18);
+                $chunked_kms = array_chunk($kms, 18);
+
+                foreach ($chunked_vehicle_numbers as $index => $vehicle_chunk) {
+                    echo "<div><table class='mp-table'>";
+                    echo "<thead>";
+                    if ($index === 0) {
+                        echo "<tr><th class='mp-program-head' colspan='" . (count($vehicle_chunk) + 1) . "'><h4><b>Tyre Rotation Check</b></h4></th></tr>";
+                    }
+                    echo "<tr><th>Vehicle No</th>";
+                    foreach ($vehicle_chunk as $v) {
+                        echo "<th>" . htmlspecialchars($v) . "</th>";
+                    }
+                    echo "</tr></thead><tbody>";
+
+                    // KM row
+                    echo "<tr> <th>KM</th>";
+                    foreach ($chunked_kms[$index] as $km_val) {
+                        echo "<td>" . (int)$km_val . "</td>";
+                    }
+                    echo "</tr>";
+
+                    echo "</tbody></table></div>";
+                }
+            }
 
 
-
-
-
-        <script>
-            // window.onload = function () {
-            //     window.print();
-            //};
-        </script>
-
+            ?>
+        </div>
 
     <?php
 } else {

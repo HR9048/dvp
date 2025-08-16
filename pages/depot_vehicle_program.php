@@ -107,8 +107,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
     <!-- add a print button -->
     <div class="text-center mb-3">
-    <button class="btn btn-secondary" onclick="window.print()">Print</button>
-</div>
+    <a href="depot_program_print.php" class="btn btn-secondary">Print</a>
+
+    </div>
 
     <div class="container1">
         <h2 class="text-center text-primary mt-4"><?php echo $_SESSION['KMPL_DEPOT']; ?> Maintenance Program As on Date: <?php echo $today; ?></h2>
@@ -128,21 +129,21 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             'fuel_filter_change' => 'Fuel Filter Change',
             'fuel_strainer_change' => 'Fuel Strainer Change',
             'diesel_filter_change' => 'Diesel Filter Change',
-            'def_suction_filter' => 'DEF Suction Filter Change',
-            'def_neck_filter' => 'DEF Neck Filter Change',
-            'def_air_filter' => 'DEF Air Filter Change',
+            'def_suction_filter_change' => 'DEF Suction Filter Change',
+            'def_neck_filter_change' => 'DEF Neck Filter Change',
+            'def_air_filter_change' => 'DEF Air Filter Change',
             'mc_assembely_with_oil_chnage' => 'Clutch M/C, Assembly & Oil Change',
             'air_suspension_check' => 'Air Suspension Check',
-            'alternator_overhaul_check' => 'Alternator Overhaul Check',
+            'alternator_overhauling' => 'Alternator Overhauling',
             'air_compressor_overhaul' => 'Air Compressor Overhaul',
             'Air_compressor_read_calve' => 'Air Compressor Read Calve Change',
-            'fan_belt_change' => 'Fan Belt Change',
-            'tappet_setting_check' => 'Tappet Setting Check',
+            'fan_belt_check_or_change' => 'Fan Belt Check/Change',
+            'tappet_setting' => 'Tappet Setting',
             'spring_cambering_check' => 'Spring Cambering Check',
             'voith_retarder_oil_change' => 'Voith Retarder Oil Change',
-            'tyre_rotation_check' => 'Tyre Rotation Check',
+            'tyre_rotation' => 'Tyre Rotation',
             'error_code_edc_check' => 'Error Code EDC Check',
-            'apda_mesh_cleaning_check' => 'APDA Mesh Cleaning Check',
+            'apda_mesh_cleaning' => 'APDA Mesh Cleaning',
             'apda_major_kit_change' => 'APDA Major Kit Change',
             'fuel_tank_ventilation_filter_change' => 'Fuel Tank Ventilation Filter Change',
             'air_filter_insert_primary_change' => 'Air Filter Insert Primary Change',
@@ -269,7 +270,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                         $color = 'bg-danger text-white'; // 🚩 Above prescribed km
                     } elseif ($deviation >= -500 && $deviation <= 500) {
                         $color = 'bg-warning'; // ⚠️ Within acceptable tolerance
-                    }  else {
+                    } else {
                         continue; // Filter out others
                     }
 
@@ -419,8 +420,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 <td>{$r['prescribed_km']}</td>
                 <td>{$r['difference']}</td>
                 <td>";
-                        echo "<button class='btn btn-sm btn-primary' onclick=\"openProgramModal('{$bus}', '{$ptype_raw}', '{$r['program_type']}')\">Update</button>";
-                    
+                    echo "<button class='btn btn-sm btn-primary' onclick=\"openProgramModal('{$bus}', '{$ptype_raw}', '{$r['program_type']}')\">Update</button>";
+
                     echo "</td>
 
             </tr>";
@@ -470,7 +471,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         <?php
         $today = new DateTime();
         $fromdate = clone $today;
-        $fromdate->modify('-2 days');
+        $fromdate->modify('-14 days');
 
         // Format dates for JavaScript display (d-m-Y)
         $serverDateFormatted = $today->format('d-m-Y');

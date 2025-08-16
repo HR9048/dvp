@@ -11,7 +11,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
 
-    /*$bus_query1 = "SELECT bus_number FROM bus_registration WHERE depot_name = $depot_id AND division_name = $division_id AND model_type IS NULL";
+    $bus_query1 = "SELECT bus_number FROM bus_registration WHERE depot_name = $depot_id AND division_name = $division_id AND model_type IS NULL";
     $bus_result1 = mysqli_query($db, $bus_query1);
 
     if (mysqli_num_rows($bus_result1) > 1) {
@@ -28,7 +28,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             });
         </script>";
         exit;
-    }*/
+    }
 
     // Fetch program types dynamically
     $program_types = [];

@@ -398,7 +398,8 @@ confirm_logged_in();
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="depot_bus_type_update.php">Update Bus Type for Program</a></li>
                           <li><a class="dropdown-item" href="depot_program_update.php">Last Maintenance KM Update</a></li>
-                          <li><a class="dropdown-item" href="depot_vehicle_program.php">Maintenance Done Date Update</a></li>
+                          <li><a class="dropdown-item" href="depot_program_print.php">Generate Program</a></li>
+                          <li><a class="dropdown-item" href="depot_vehicle_program.php">Update Program Done Date</a></li>
                           <li><a class="dropdown-item" href="depot_w3_chart_data_update.php">ME26 Update</a></li>
                         </ul>
                       </div>

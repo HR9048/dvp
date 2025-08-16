@@ -2,6 +2,7 @@
 // Include the database connection file
 include '../includes/connection.php';
 include 'session.php';
+date_default_timezone_set('Asia/Kolkata');
 confirm_logged_in();
 // Check if the form data is received via POST method
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -32,6 +33,56 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Get session username and division
     $username = $_SESSION['USERNAME'];
+
+    // Null bus_number_1 details if match
+    $update1 = "
+        UPDATE schedule_master
+        SET bus_number_1 = NULL,
+            bus_make_1 = NULL,
+            bus_emission_norms_1 = NULL
+        WHERE bus_number_1 = ?";
+    $stmt1 = mysqli_prepare($db, $update1);
+    mysqli_stmt_bind_param($stmt1, "s", $vehicle_no);
+    mysqli_stmt_execute($stmt1);
+    mysqli_stmt_close($stmt1);
+
+    // Null bus_number_2 details if match
+    $update2 = "
+        UPDATE schedule_master
+        SET bus_number_2 = NULL,
+            bus_make_2 = NULL,
+            bus_emission_norms_2 = NULL
+        WHERE bus_number_2 = ?
+    ";
+    $stmt2 = mysqli_prepare($db, $update2);
+    mysqli_stmt_bind_param($stmt2, "s", $vehicle_no);
+    mysqli_stmt_execute($stmt2);
+    mysqli_stmt_close($stmt2);
+
+    // Null additional_bus_number details if match
+    $update3 = "
+        UPDATE schedule_master
+        SET additional_bus_number = NULL,
+            additional_bus_make = NULL,
+            additional_bus_emission_norms = NULL
+        WHERE additional_bus_number = ?
+    ";
+    $stmt3 = mysqli_prepare($db, $update3);
+    mysqli_stmt_bind_param($stmt3, "s", $vehicle_no);
+    mysqli_stmt_execute($stmt3);
+    mysqli_stmt_close($stmt3);
+
+    //update bus_fix_data table set to_date = current datetime where bus number matches and to_date is null
+    $update_fix_data = "
+        UPDATE bus_fix_data
+        SET to_date = NOW()
+        WHERE bus_number = ? AND to_date IS NULL
+    ";
+    $stmt_fix_data = mysqli_prepare($db, $update_fix_data);
+    mysqli_stmt_bind_param($stmt_fix_data, "s", $vehicle_no);
+    mysqli_stmt_execute($stmt_fix_data);
+    mysqli_stmt_close($stmt_fix_data);
+
 
     // Update the bus_registration table
     $update_query = "UPDATE bus_registration SET depot_name = ?, division_name=? WHERE bus_number = ?";

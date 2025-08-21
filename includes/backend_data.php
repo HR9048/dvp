@@ -1100,115 +1100,115 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         echo "</form>"; // Close form
 
 ?>
-        <script>
-            $(document).ready(function() {
-                // Fetch Engine Type based on Engine Make selection
-                $('#engine_make').change(function() {
-                    var make = $(this).val();
-                    if (make !== "") {
-                        $.ajax({
-                            url: '../includes/backend_data.php',
-                            type: 'POST',
-                            data: {
-                                action: 'fetchenginetypeforinventory',
-                                engine_make: make
-                            },
-                            success: function(response) {
-                                $('#engine_type').html(response);
-                            }
-                        });
-                    } else {
-                        $('#engine_type').html('<option value="">Select Engine Type</option>');
-                    }
-                });
-
-                // Bind event listener for submit button
-                $("#engine_submit").click(function() {
-                    submitEngineForm();
-                });
+<script>
+$(document).ready(function() {
+    // Fetch Engine Type based on Engine Make selection
+    $('#engine_make').change(function() {
+        var make = $(this).val();
+        if (make !== "") {
+            $.ajax({
+                url: '../includes/backend_data.php',
+                type: 'POST',
+                data: {
+                    action: 'fetchenginetypeforinventory',
+                    engine_make: make
+                },
+                success: function(response) {
+                    $('#engine_type').html(response);
+                }
             });
+        } else {
+            $('#engine_type').html('<option value="">Select Engine Type</option>');
+        }
+    });
+
+    // Bind event listener for submit button
+    $("#engine_submit").click(function() {
+        submitEngineForm();
+    });
+});
 
 
-            function submitEngineForm() {
-                let form = $("#engineForm");
-                let isValid = true;
-                let missingFields = [];
+function submitEngineForm() {
+    let form = $("#engineForm");
+    let isValid = true;
+    let missingFields = [];
 
-                // Validate required fields
-                form.find(".form-control").each(function() {
-                    let inputValue = $(this).val();
-                    if (inputValue === null || inputValue.trim() === "") {
-                        let label = $(this).prev("label").text().trim(); // Get label text
-                        missingFields.push(label);
-                        isValid = false;
-                    }
-                });
+    // Validate required fields
+    form.find(".form-control").each(function() {
+        let inputValue = $(this).val();
+        if (inputValue === null || inputValue.trim() === "") {
+            let label = $(this).prev("label").text().trim(); // Get label text
+            missingFields.push(label);
+            isValid = false;
+        }
+    });
 
-                if (!isValid) {
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Fields',
+            html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+        });
+        return;
+    }
+
+    // Prepare form data
+    let formData = new FormData(form[0]);
+    formData.append("action", "submitengineinventoryform");
+
+    // AJAX Submission
+    $.ajax({
+        url: '../includes/backend_data.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            try {
+                let res = JSON.parse(response); // Parse JSON response
+                console.log("Server Response:", res);
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK' // Ensures user clicks OK
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload only after clicking OK
+                        }
+                    });
+                } else if (res.status === "error") {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Missing Fields',
-                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                        title: 'Submission Failed!',
+                        html: res.messages ? res.messages.join("<br>") : res.message,
                     });
-                    return;
                 }
-
-                // Prepare form data
-                let formData = new FormData(form[0]);
-                formData.append("action", "submitengineinventoryform");
-
-                // AJAX Submission
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        try {
-                            let res = JSON.parse(response); // Parse JSON response
-                            console.log("Server Response:", res);
-
-                            if (res.status === "success") {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: res.message,
-                                    confirmButtonText: 'OK' // Ensures user clicks OK
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        location.reload(); // Reload only after clicking OK
-                                    }
-                                });
-                            } else if (res.status === "error") {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Submission Failed!',
-                                    html: res.messages ? res.messages.join("<br>") : res.message,
-                                });
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error:", e, response);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Invalid server response format.',
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while submitting the form.',
-                        });
-                    }
+            } catch (e) {
+                console.error("JSON Parse Error:", e, response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Invalid server response format.',
                 });
-
             }
-        </script>
-    <?php
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while submitting the form.',
+            });
+        }
+    });
+
+}
+</script>
+<?php
     } elseif ($part_name == 'gear_box') {
         echo "<form id='gearBoxForm'>"; // Wrap all fields inside a form
         echo "<div class='mb-3'>
@@ -1274,114 +1274,114 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         echo "</form>"; // Close form
 
     ?>
-        <script>
-            $(document).ready(function() {
-                // Fetch Gear Box Type based on Gear Box Make selection
-                $('#gear_box_make').change(function() {
-                    var make = $(this).val();
-                    if (make !== "") {
-                        $.ajax({
-                            url: '../includes/backend_data.php',
-                            type: 'POST',
-                            data: {
-                                action: 'fetchgearboxtypeforinventory',
-                                gear_box_make: make
-                            },
-                            success: function(response) {
-                                $('#gear_box_type').html(response);
-                            }
-                        });
-                    } else {
-                        $('#gear_box_type').html('<option value="">Select Gear Box Type</option>');
-                    }
-                });
-
-                // Bind event listener for submit button
-                $("#gear_box_submit").click(function() {
-                    submitGearBoxForm();
-                });
+<script>
+$(document).ready(function() {
+    // Fetch Gear Box Type based on Gear Box Make selection
+    $('#gear_box_make').change(function() {
+        var make = $(this).val();
+        if (make !== "") {
+            $.ajax({
+                url: '../includes/backend_data.php',
+                type: 'POST',
+                data: {
+                    action: 'fetchgearboxtypeforinventory',
+                    gear_box_make: make
+                },
+                success: function(response) {
+                    $('#gear_box_type').html(response);
+                }
             });
+        } else {
+            $('#gear_box_type').html('<option value="">Select Gear Box Type</option>');
+        }
+    });
 
-            function submitGearBoxForm() {
-                let form = $("#gearBoxForm");
-                let isValid = true;
-                let missingFields = [];
+    // Bind event listener for submit button
+    $("#gear_box_submit").click(function() {
+        submitGearBoxForm();
+    });
+});
 
-                // Validate required fields
-                form.find(".form-control").each(function() {
-                    let inputValue = $(this).val();
-                    if (inputValue === null || inputValue.trim() === "") {
-                        let label = $(this).prev("label").text().trim(); // Get label text
-                        missingFields.push(label);
-                        isValid = false;
-                    }
-                });
+function submitGearBoxForm() {
+    let form = $("#gearBoxForm");
+    let isValid = true;
+    let missingFields = [];
 
-                if (!isValid) {
+    // Validate required fields
+    form.find(".form-control").each(function() {
+        let inputValue = $(this).val();
+        if (inputValue === null || inputValue.trim() === "") {
+            let label = $(this).prev("label").text().trim(); // Get label text
+            missingFields.push(label);
+            isValid = false;
+        }
+    });
+
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Fields',
+            html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+        });
+        return;
+    }
+
+    // Prepare form data
+    let formData = new FormData(form[0]);
+    formData.append("action", "submitgearboxinventoryform");
+
+    // AJAX Submission
+    $.ajax({
+        url: '../includes/backend_data.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            try {
+                let res = JSON.parse(response); // Parse JSON response
+                console.log("Server Response:", res);
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK' // Ensures user clicks OK
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload only after clicking OK
+                        }
+                    });
+                } else if (res.status === "error") {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Missing Fields',
-                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                        title: 'Submission Failed!',
+                        html: res.messages ? res.messages.join("<br>") : res.message,
                     });
-                    return;
                 }
-
-                // Prepare form data
-                let formData = new FormData(form[0]);
-                formData.append("action", "submitgearboxinventoryform");
-
-                // AJAX Submission
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        try {
-                            let res = JSON.parse(response); // Parse JSON response
-                            console.log("Server Response:", res);
-
-                            if (res.status === "success") {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: res.message,
-                                    confirmButtonText: 'OK' // Ensures user clicks OK
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        location.reload(); // Reload only after clicking OK
-                                    }
-                                });
-                            } else if (res.status === "error") {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Submission Failed!',
-                                    html: res.messages ? res.messages.join("<br>") : res.message,
-                                });
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error:", e, response);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Invalid server response format.',
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while submitting the form.',
-                        });
-                    }
+            } catch (e) {
+                console.error("JSON Parse Error:", e, response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Invalid server response format.',
                 });
-
             }
-        </script>
-    <?php
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while submitting the form.',
+            });
+        }
+    });
+
+}
+</script>
+<?php
 
 
     } elseif ($part_name == 'fip_hpp') {
@@ -1459,113 +1459,113 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         echo "</form>"; // Close form
 
     ?>
-        <script>
-            $(document).ready(function() {
-                // Fetch FIP/HPP Type based on FIP/HPP Make selection
-                $('#fip_hpp_bus_make').change(function() {
-                    var make = $(this).val();
-                    if (make !== "") {
-                        $.ajax({
-                            url: '../includes/backend_data.php',
-                            type: 'POST',
-                            data: {
-                                action: 'fetchfiphtypeforinventory',
-                                fiph_make: make
-                            },
-                            success: function(response) {
-                                $('#fip_hpp_type').html(response);
-                            }
-                        });
-                    } else {
-                        $('#fip_hpp_type').html('<option value="">Select FIP/HPP Type</option>');
-                    }
-                });
-
-                // Bind event listener for submit button
-                $("#fip_hpp_submit").click(function() {
-                    submitFipHppForm();
-                });
+<script>
+$(document).ready(function() {
+    // Fetch FIP/HPP Type based on FIP/HPP Make selection
+    $('#fip_hpp_bus_make').change(function() {
+        var make = $(this).val();
+        if (make !== "") {
+            $.ajax({
+                url: '../includes/backend_data.php',
+                type: 'POST',
+                data: {
+                    action: 'fetchfiphtypeforinventory',
+                    fiph_make: make
+                },
+                success: function(response) {
+                    $('#fip_hpp_type').html(response);
+                }
             });
+        } else {
+            $('#fip_hpp_type').html('<option value="">Select FIP/HPP Type</option>');
+        }
+    });
 
-            function submitFipHppForm() {
-                let form = $("#fipHppForm");
-                let isValid = true;
-                let missingFields = [];
+    // Bind event listener for submit button
+    $("#fip_hpp_submit").click(function() {
+        submitFipHppForm();
+    });
+});
 
-                // Validate required fields
-                form.find(".form-control").each(function() {
-                    let inputValue = $(this).val();
-                    if (inputValue === null || inputValue.trim() === "") {
-                        let label = $(this).prev("label").text().trim(); // Get label text
-                        missingFields.push(label);
-                        isValid = false;
-                    }
-                });
+function submitFipHppForm() {
+    let form = $("#fipHppForm");
+    let isValid = true;
+    let missingFields = [];
 
-                if (!isValid) {
+    // Validate required fields
+    form.find(".form-control").each(function() {
+        let inputValue = $(this).val();
+        if (inputValue === null || inputValue.trim() === "") {
+            let label = $(this).prev("label").text().trim(); // Get label text
+            missingFields.push(label);
+            isValid = false;
+        }
+    });
+
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Fields',
+            html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+        });
+        return;
+    }
+
+    // Prepare form data
+    let formData = new FormData(form[0]);
+    formData.append("action", "submitfiphppinventoryform");
+
+    // AJAX Submission
+    $.ajax({
+        url: '../includes/backend_data.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            try {
+                let res = JSON.parse(response); // Parse JSON response
+                console.log("Server Response:", res);
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK' // Ensures user clicks OK
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload only after clicking OK
+                        }
+                    });
+                } else if (res.status === "error") {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Missing Fields',
-                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                        title: 'Submission Failed!',
+                        html: res.messages ? res.messages.join("<br>") : res.message,
                     });
-                    return;
                 }
-
-                // Prepare form data
-                let formData = new FormData(form[0]);
-                formData.append("action", "submitfiphppinventoryform");
-
-                // AJAX Submission
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        try {
-                            let res = JSON.parse(response); // Parse JSON response
-                            console.log("Server Response:", res);
-
-                            if (res.status === "success") {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: res.message,
-                                    confirmButtonText: 'OK' // Ensures user clicks OK
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        location.reload(); // Reload only after clicking OK
-                                    }
-                                });
-                            } else if (res.status === "error") {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Submission Failed!',
-                                    html: res.messages ? res.messages.join("<br>") : res.message,
-                                });
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error:", e, response);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Invalid server response format.',
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while submitting the form.',
-                        });
-                    }
+            } catch (e) {
+                console.error("JSON Parse Error:", e, response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Invalid server response format.',
                 });
             }
-        </script>
-    <?php
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while submitting the form.',
+            });
+        }
+    });
+}
+</script>
+<?php
     } elseif ($part_name == 'starter') {
         echo "<form id='starterForm'>"; // Wrap all fields inside a form
         echo "<div class='mb-3'>
@@ -1611,94 +1611,94 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
     ?>
 
-        <script>
-            $(document).ready(function() {
-                // Bind event listener for submit button
-                $("#starter_submit").click(function() {
-                    submitStarterForm();
-                });
-            });
+<script>
+$(document).ready(function() {
+    // Bind event listener for submit button
+    $("#starter_submit").click(function() {
+        submitStarterForm();
+    });
+});
 
-            function submitStarterForm() {
-                let form = $("#starterForm");
-                let isValid = true;
-                let missingFields = [];
+function submitStarterForm() {
+    let form = $("#starterForm");
+    let isValid = true;
+    let missingFields = [];
 
-                // Validate required fields
-                form.find(".form-control").each(function() {
-                    let inputValue = $(this).val();
-                    if (inputValue === null || inputValue.trim() === "") {
-                        let label = $(this).prev("label").text().trim(); // Get label text
-                        missingFields.push(label);
-                        isValid = false;
-                    }
-                });
+    // Validate required fields
+    form.find(".form-control").each(function() {
+        let inputValue = $(this).val();
+        if (inputValue === null || inputValue.trim() === "") {
+            let label = $(this).prev("label").text().trim(); // Get label text
+            missingFields.push(label);
+            isValid = false;
+        }
+    });
 
-                if (!isValid) {
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Fields',
+            html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+        });
+        return;
+    }
+
+    // Prepare form data
+    let formData = new FormData(form[0]);
+    formData.append("action", "submitstarterinventoryform");
+
+    // AJAX Submission
+    $.ajax({
+        url: '../includes/backend_data.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            try {
+                let res = JSON.parse(response); // Parse JSON response
+                console.log("Server Response:", res);
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK' // Ensures user clicks OK
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload only after clicking OK
+                        }
+                    });
+                } else if (res.status === "error") {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Missing Fields',
-                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                        title: 'Submission Failed!',
+                        html: res.messages ? res.messages.join("<br>") : res.message,
                     });
-                    return;
                 }
-
-                // Prepare form data
-                let formData = new FormData(form[0]);
-                formData.append("action", "submitstarterinventoryform");
-
-                // AJAX Submission
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        try {
-                            let res = JSON.parse(response); // Parse JSON response
-                            console.log("Server Response:", res);
-
-                            if (res.status === "success") {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: res.message,
-                                    confirmButtonText: 'OK' // Ensures user clicks OK
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        location.reload(); // Reload only after clicking OK
-                                    }
-                                });
-                            } else if (res.status === "error") {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Submission Failed!',
-                                    html: res.messages ? res.messages.join("<br>") : res.message,
-                                });
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error:", e, response);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Invalid server response format.',
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while submitting the form.',
-                        });
-                    }
+            } catch (e) {
+                console.error("JSON Parse Error:", e, response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Invalid server response format.',
                 });
-
             }
-        </script>
-    <?php
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while submitting the form.',
+            });
+        }
+    });
+
+}
+</script>
+<?php
     } elseif ($part_name == 'alternator') {
         echo "<form id='alternatorForm'>"; // Wrap all fields inside a form
         echo "<div class='mb-3'>
@@ -1744,93 +1744,93 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
     ?>
 
-        <script>
-            $(document).ready(function() {
-                // Bind event listener for submit button
-                $("#alternator_submit").click(function() {
-                    submitAlternatorForm();
-                });
-            });
+<script>
+$(document).ready(function() {
+    // Bind event listener for submit button
+    $("#alternator_submit").click(function() {
+        submitAlternatorForm();
+    });
+});
 
-            function submitAlternatorForm() {
-                let form = $("#alternatorForm");
-                let isValid = true;
-                let missingFields = [];
+function submitAlternatorForm() {
+    let form = $("#alternatorForm");
+    let isValid = true;
+    let missingFields = [];
 
-                // Validate required fields
-                form.find(".form-control").each(function() {
-                    let inputValue = $(this).val();
-                    if (inputValue === null || inputValue.trim() === "") {
-                        let label = $(this).prev("label").text().trim(); // Get label text
-                        missingFields.push(label);
-                        isValid = false;
-                    }
-                });
+    // Validate required fields
+    form.find(".form-control").each(function() {
+        let inputValue = $(this).val();
+        if (inputValue === null || inputValue.trim() === "") {
+            let label = $(this).prev("label").text().trim(); // Get label text
+            missingFields.push(label);
+            isValid = false;
+        }
+    });
 
-                if (!isValid) {
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Fields',
+            html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+        });
+        return;
+    }
+
+    // Prepare form data
+    let formData = new FormData(form[0]);
+    formData.append("action", "submitalternatorinventoryform");
+
+    // AJAX Submission
+    $.ajax({
+        url: '../includes/backend_data.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            try {
+                let res = JSON.parse(response); // Parse JSON response
+                console.log("Server Response:", res);
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK' // Ensures user clicks OK
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload only after clicking OK
+                        }
+                    });
+                } else if (res.status === "error") {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Missing Fields',
-                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                        title: 'Submission Failed!',
+                        html: res.messages ? res.messages.join("<br>") : res.message,
                     });
-                    return;
                 }
-
-                // Prepare form data
-                let formData = new FormData(form[0]);
-                formData.append("action", "submitalternatorinventoryform");
-
-                // AJAX Submission
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        try {
-                            let res = JSON.parse(response); // Parse JSON response
-                            console.log("Server Response:", res);
-
-                            if (res.status === "success") {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: res.message,
-                                    confirmButtonText: 'OK' // Ensures user clicks OK
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        location.reload(); // Reload only after clicking OK
-                                    }
-                                });
-                            } else if (res.status === "error") {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Submission Failed!',
-                                    html: res.messages ? res.messages.join("<br>") : res.message,
-                                });
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error:", e, response);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Invalid server response format.',
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while submitting the form.',
-                        });
-                    }
+            } catch (e) {
+                console.error("JSON Parse Error:", e, response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Invalid server response format.',
                 });
             }
-        </script>
-    <?php
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while submitting the form.',
+            });
+        }
+    });
+}
+</script>
+<?php
     } elseif ($part_name == 'rear_axle') {
         echo "<form id='rearAxleForm'>"; // Wrap all fields inside a form
         echo "<div class='mb-3'>
@@ -1874,93 +1874,93 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
     ?>
 
-        <script>
-            $(document).ready(function() {
-                // Bind event listener for submit button
-                $("#rear_axle_submit").click(function() {
-                    submitRearAxleForm();
-                });
-            });
+<script>
+$(document).ready(function() {
+    // Bind event listener for submit button
+    $("#rear_axle_submit").click(function() {
+        submitRearAxleForm();
+    });
+});
 
-            function submitRearAxleForm() {
-                let form = $("#rearAxleForm");
-                let isValid = true;
-                let missingFields = [];
+function submitRearAxleForm() {
+    let form = $("#rearAxleForm");
+    let isValid = true;
+    let missingFields = [];
 
-                // Validate required fields
-                form.find(".form-control").each(function() {
-                    let inputValue = $(this).val();
-                    if (inputValue === null || inputValue.trim() === "") {
-                        let label = $(this).prev("label").text().trim(); // Get label text
-                        missingFields.push(label);
-                        isValid = false;
-                    }
-                });
+    // Validate required fields
+    form.find(".form-control").each(function() {
+        let inputValue = $(this).val();
+        if (inputValue === null || inputValue.trim() === "") {
+            let label = $(this).prev("label").text().trim(); // Get label text
+            missingFields.push(label);
+            isValid = false;
+        }
+    });
 
-                if (!isValid) {
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Fields',
+            html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+        });
+        return;
+    }
+
+    // Prepare form data
+    let formData = new FormData(form[0]);
+    formData.append("action", "submitrearaxleinventoryform");
+
+    // AJAX Submission
+    $.ajax({
+        url: '../includes/backend_data.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            try {
+                let res = JSON.parse(response); // Parse JSON response
+                console.log("Server Response:", res);
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK' // Ensures user clicks OK
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload only after clicking OK
+                        }
+                    });
+                } else if (res.status === "error") {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Missing Fields',
-                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                        title: 'Submission Failed!',
+                        html: res.messages ? res.messages.join("<br>") : res.message,
                     });
-                    return;
                 }
-
-                // Prepare form data
-                let formData = new FormData(form[0]);
-                formData.append("action", "submitrearaxleinventoryform");
-
-                // AJAX Submission
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        try {
-                            let res = JSON.parse(response); // Parse JSON response
-                            console.log("Server Response:", res);
-
-                            if (res.status === "success") {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: res.message,
-                                    confirmButtonText: 'OK' // Ensures user clicks OK
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        location.reload(); // Reload only after clicking OK
-                                    }
-                                });
-                            } else if (res.status === "error") {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Submission Failed!',
-                                    html: res.messages ? res.messages.join("<br>") : res.message,
-                                });
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error:", e, response);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Invalid server response format.',
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while submitting the form.',
-                        });
-                    }
+            } catch (e) {
+                console.error("JSON Parse Error:", e, response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Invalid server response format.',
                 });
             }
-        </script>
-    <?php
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while submitting the form.',
+            });
+        }
+    });
+}
+</script>
+<?php
     } elseif ($part_name == 'battery') {
         echo "<form id='batteryForm'>"; // Wrap all fields inside a form
         echo "<div class='mb-3'>
@@ -1999,93 +1999,93 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
     ?>
 
-        <script>
-            $(document).ready(function() {
-                // Bind event listener for submit button
-                $("#battery_submit").click(function() {
-                    submitBatteryForm();
-                });
-            });
+<script>
+$(document).ready(function() {
+    // Bind event listener for submit button
+    $("#battery_submit").click(function() {
+        submitBatteryForm();
+    });
+});
 
-            function submitBatteryForm() {
-                let form = $("#batteryForm");
-                let isValid = true;
-                let missingFields = [];
+function submitBatteryForm() {
+    let form = $("#batteryForm");
+    let isValid = true;
+    let missingFields = [];
 
-                // Validate required fields
-                form.find(".form-control").each(function() {
-                    let inputValue = $(this).val();
-                    if (inputValue === null || inputValue.trim() === "") {
-                        let label = $(this).prev("label").text().trim(); // Get label text
-                        missingFields.push(label);
-                        isValid = false;
-                    }
-                });
+    // Validate required fields
+    form.find(".form-control").each(function() {
+        let inputValue = $(this).val();
+        if (inputValue === null || inputValue.trim() === "") {
+            let label = $(this).prev("label").text().trim(); // Get label text
+            missingFields.push(label);
+            isValid = false;
+        }
+    });
 
-                if (!isValid) {
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Fields',
+            html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+        });
+        return;
+    }
+
+    // Prepare form data
+    let formData = new FormData(form[0]);
+    formData.append("action", "submitbatteryinventoryform");
+
+    // AJAX Submission
+    $.ajax({
+        url: '../includes/backend_data.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            try {
+                let res = JSON.parse(response); // Parse JSON response
+                console.log("Server Response:", res);
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK' // Ensures user clicks OK
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload only after clicking OK
+                        }
+                    });
+                } else if (res.status === "error") {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Missing Fields',
-                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                        title: 'Submission Failed!',
+                        html: res.messages ? res.messages.join("<br>") : res.message,
                     });
-                    return;
                 }
-
-                // Prepare form data
-                let formData = new FormData(form[0]);
-                formData.append("action", "submitbatteryinventoryform");
-
-                // AJAX Submission
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        try {
-                            let res = JSON.parse(response); // Parse JSON response
-                            console.log("Server Response:", res);
-
-                            if (res.status === "success") {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: res.message,
-                                    confirmButtonText: 'OK' // Ensures user clicks OK
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        location.reload(); // Reload only after clicking OK
-                                    }
-                                });
-                            } else if (res.status === "error") {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Submission Failed!',
-                                    html: res.messages ? res.messages.join("<br>") : res.message,
-                                });
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error:", e, response);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Invalid server response format.',
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while submitting the form.',
-                        });
-                    }
+            } catch (e) {
+                console.error("JSON Parse Error:", e, response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Invalid server response format.',
                 });
             }
-        </script>
-    <?php
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while submitting the form.',
+            });
+        }
+    });
+}
+</script>
+<?php
     } elseif ($part_name == 'tyre') {
         echo "<form id='tyreForm'>"; // Wrap all fields inside a form
         echo "<div class='mb-3'>
@@ -2170,93 +2170,93 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         echo "</form>"; // Close form
 
     ?>
-        <script>
-            $(document).ready(function() {
-                // Bind event listener for submit button
-                $("#tyre_submit").click(function() {
-                    submitTyreForm();
-                });
-            });
+<script>
+$(document).ready(function() {
+    // Bind event listener for submit button
+    $("#tyre_submit").click(function() {
+        submitTyreForm();
+    });
+});
 
-            function submitTyreForm() {
-                let form = $("#tyreForm");
-                let isValid = true;
-                let missingFields = [];
+function submitTyreForm() {
+    let form = $("#tyreForm");
+    let isValid = true;
+    let missingFields = [];
 
-                // Validate required fields
-                form.find(".form-control").each(function() {
-                    let inputValue = $(this).val();
-                    if (inputValue === null || inputValue.trim() === "") {
-                        let label = $(this).prev("label").text().trim(); // Get label text
-                        missingFields.push(label);
-                        isValid = false;
-                    }
-                });
+    // Validate required fields
+    form.find(".form-control").each(function() {
+        let inputValue = $(this).val();
+        if (inputValue === null || inputValue.trim() === "") {
+            let label = $(this).prev("label").text().trim(); // Get label text
+            missingFields.push(label);
+            isValid = false;
+        }
+    });
 
-                if (!isValid) {
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Fields',
+            html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+        });
+        return;
+    }
+
+    // Prepare form data
+    let formData = new FormData(form[0]);
+    formData.append("action", "submittyreinventoryform");
+
+    // AJAX Submission
+    $.ajax({
+        url: '../includes/backend_data.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            try {
+                let res = JSON.parse(response); // Parse JSON response
+                console.log("Server Response:", res);
+
+                if (res.status === "success") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: res.message,
+                        confirmButtonText: 'OK' // Ensures user clicks OK
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload only after clicking OK
+                        }
+                    });
+                } else if (res.status === "error") {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Missing Fields',
-                        html: "<b>Please fill in the following fields:</b><br><br>" + missingFields.join("<br>"),
+                        title: 'Submission Failed!',
+                        html: res.messages ? res.messages.join("<br>") : res.message,
                     });
-                    return;
                 }
-
-                // Prepare form data
-                let formData = new FormData(form[0]);
-                formData.append("action", "submittyreinventoryform");
-
-                // AJAX Submission
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        try {
-                            let res = JSON.parse(response); // Parse JSON response
-                            console.log("Server Response:", res);
-
-                            if (res.status === "success") {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: res.message,
-                                    confirmButtonText: 'OK' // Ensures user clicks OK
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        location.reload(); // Reload only after clicking OK
-                                    }
-                                });
-                            } else if (res.status === "error") {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Submission Failed!',
-                                    html: res.messages ? res.messages.join("<br>") : res.message,
-                                });
-                            }
-                        } catch (e) {
-                            console.error("JSON Parse Error:", e, response);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Invalid server response format.',
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while submitting the form.',
-                        });
-                    }
+            } catch (e) {
+                console.error("JSON Parse Error:", e, response);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Invalid server response format.',
                 });
             }
-        </script>
-    <?php
+        },
+        error: function(xhr, status, error) {
+            console.error("AJAX Error:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'An error occurred while submitting the form.',
+            });
+        }
+    });
+}
+</script>
+<?php
 
     }
 }
@@ -2930,17 +2930,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $depot_id = $_SESSION['DEPOT_ID'];
     $division_id = $_SESSION['DIVISION_ID'];
     ?>
-    <script>
-        $(document).ready(function() {
-            $('#dataTable').DataTable({
-                "paging": true, // Enable pagination
-                "ordering": true, // Enable sorting
-                "searching": true, // Enable search
-                "info": true // Show table info
-            });
-        });
-    </script>
-    <?php
+<script>
+$(document).ready(function() {
+    $('#dataTable').DataTable({
+        "paging": true, // Enable pagination
+        "ordering": true, // Enable sorting
+        "searching": true, // Enable search
+        "info": true // Show table info
+    });
+});
+</script>
+<?php
     if ($category_type == 'engine') {
         $query = "SELECT em.id, em.engine_card_number, em.engine_number, em.engine_make, em.engine_model, et.type as engine_type, em.engine_condition, em.progressive_km
         FROM engine_master em
@@ -3064,177 +3064,179 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
       </div>
     </div>";
     ?>
-        <script>
-            $(document).ready(function() {
-                // Handle Delete
-                $(document).on("click", ".engine-delete-btn", function() {
-                    let id = $(this).data("id");
-                    if (confirm("Are you sure you want to delete this engine?")) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "delete_engine_from_list",
-                                id: id
-                            },
-                            success: function(response) {
-                                alert(response);
-                                location.reload(); // Refresh the page
-                            }
-                        });
-                    }
-                });
-                $(document).on("change", "#edit_engine_make", function() {
-                    let engineMake = $(this).val();
-
-                    if (engineMake !== "") {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "fetchenginetypeforinventory",
-                                engine_make: engineMake
-                            },
-                            success: function(response) {
-                                $("#edit_engine_type").html(response);
-                            }
-                        });
-                    } else {
-                        // Reset engine type dropdown
-                        $("#edit_engine_type").html("<option value=''>Select Engine Type</option>");
-                    }
-                });
-
-                $(document).on("click", ".engine-edit-btn", function() {
-                    let id = $(this).data("id");
-                    $.ajax({
-                        url: "../includes/backend_data.php",
-                        type: "POST",
-                        data: {
-                            action: "get_engine_details_for_edit",
-                            id: id
-                        },
-                        dataType: "json",
-                        success: function(data) {
-                            $("#edit_id").val(data.id);
-                            $("#edit_engine_card_number").val(data.engine_card_number);
-                            $("#edit_engine_number").val(data.engine_number);
-                            $("#edit_engine_make").val(data.engine_make);
-                            $("#edit_engine_model").val(data.engine_model);
-                            $("#edit_engine_condition").val(data.engine_condition);
-                            $("#edit_engine_progressive_km").val(data.progressive_km);
-
-                            // Fetch engine types based on the loaded engine make
-                            $.ajax({
-                                url: "../includes/backend_data.php",
-                                type: "POST",
-                                data: {
-                                    action: "fetchenginetypeforinventory",
-                                    engine_make: data.engine_make
-                                },
-                                success: function(response) {
-                                    $("#edit_engine_type").html(response);
-                                    $("#edit_engine_type").val(data.engine_type_id); // Set the correct engine type
-                                }
-                            });
-
-                            $("#engineeditModel").modal("show");
-                        }
-                    });
-                });
-
-
-                // Handle Update
-                $("#engineeditForm").submit(function(e) {
-                    e.preventDefault(); // Prevent default form submission
-
-                    let id = $("#edit_id").val();
-                    let engine_card_number = $("#edit_engine_card_number").val().trim();
-                    let engine_number = $("#edit_engine_number").val().trim();
-                    let engine_make = $("#edit_engine_make").val().trim();
-                    let engine_model = $("#edit_engine_model").val().trim();
-                    let engine_type = $("#edit_engine_type").val().trim();
-                    let engine_condition = $("#edit_engine_condition").val();
-                    let progressive_km = $("#edit_engine_progressive_km").val().trim();
-
-                    // Validation Checks
-                    if (engine_card_number === "" || engine_number === "" || engine_make === "" || engine_type === "" || engine_model === "" || engine_condition === "") {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "All fields are Required.",
-                        });
-                        return;
-                    }
-
-                    if (progressive_km !== "") {
-                        if (isNaN(progressive_km)) {
-                            Swal.fire({
-                                icon: "warning",
-                                title: "Validation Error",
-                                text: "Progressive KM must be a number.",
-                            });
-                            return;
-                        }
-                        if (parseFloat(progressive_km) <= 0) {
-                            Swal.fire({
-                                icon: "warning",
-                                title: "Validation Error",
-                                text: "Progressive KM must be greater than zero.",
-                            });
-                            return;
-                        }
-                    }
-
-                    // Confirm before update
-                    Swal.fire({
-                        title: "Are you sure?",
-                        text: "You want to update this engine record.",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#3085d6",
-                        cancelButtonColor: "#d33",
-                        confirmButtonText: "Yes, Update it!"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            $.ajax({
-                                url: "../includes/backend_data.php",
-                                type: "POST",
-                                data: {
-                                    action: "update_engine_details",
-                                    id: id,
-                                    engine_card_number: engine_card_number,
-                                    engine_number: engine_number,
-                                    engine_make: engine_make,
-                                    engine_model: engine_model,
-                                    engine_type: engine_type,
-                                    engine_condition: engine_condition,
-                                    progressive_km: progressive_km
-                                },
-                                success: function(response) {
-                                    Swal.fire({
-                                        icon: "success",
-                                        title: "Success",
-                                        text: response,
-                                    }).then(() => {
-                                        $("#engineeditModel").modal("hide");
-                                        location.reload(); // Reload table data
-                                    });
-                                },
-                                error: function() {
-                                    Swal.fire({
-                                        icon: "error",
-                                        title: "Error",
-                                        text: "Something went wrong! Please try again.",
-                                    });
-                                }
-                            });
-                        }
-                    });
-                });
+<script>
+$(document).ready(function() {
+    // Handle Delete
+    $(document).on("click", ".engine-delete-btn", function() {
+        let id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this engine?")) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "delete_engine_from_list",
+                    id: id
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload(); // Refresh the page
+                }
             });
-        </script>
-    <?php
+        }
+    });
+    $(document).on("change", "#edit_engine_make", function() {
+        let engineMake = $(this).val();
+
+        if (engineMake !== "") {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "fetchenginetypeforinventory",
+                    engine_make: engineMake
+                },
+                success: function(response) {
+                    $("#edit_engine_type").html(response);
+                }
+            });
+        } else {
+            // Reset engine type dropdown
+            $("#edit_engine_type").html("<option value=''>Select Engine Type</option>");
+        }
+    });
+
+    $(document).on("click", ".engine-edit-btn", function() {
+        let id = $(this).data("id");
+        $.ajax({
+            url: "../includes/backend_data.php",
+            type: "POST",
+            data: {
+                action: "get_engine_details_for_edit",
+                id: id
+            },
+            dataType: "json",
+            success: function(data) {
+                $("#edit_id").val(data.id);
+                $("#edit_engine_card_number").val(data.engine_card_number);
+                $("#edit_engine_number").val(data.engine_number);
+                $("#edit_engine_make").val(data.engine_make);
+                $("#edit_engine_model").val(data.engine_model);
+                $("#edit_engine_condition").val(data.engine_condition);
+                $("#edit_engine_progressive_km").val(data.progressive_km);
+
+                // Fetch engine types based on the loaded engine make
+                $.ajax({
+                    url: "../includes/backend_data.php",
+                    type: "POST",
+                    data: {
+                        action: "fetchenginetypeforinventory",
+                        engine_make: data.engine_make
+                    },
+                    success: function(response) {
+                        $("#edit_engine_type").html(response);
+                        $("#edit_engine_type").val(data
+                        .engine_type_id); // Set the correct engine type
+                    }
+                });
+
+                $("#engineeditModel").modal("show");
+            }
+        });
+    });
+
+
+    // Handle Update
+    $("#engineeditForm").submit(function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        let id = $("#edit_id").val();
+        let engine_card_number = $("#edit_engine_card_number").val().trim();
+        let engine_number = $("#edit_engine_number").val().trim();
+        let engine_make = $("#edit_engine_make").val().trim();
+        let engine_model = $("#edit_engine_model").val().trim();
+        let engine_type = $("#edit_engine_type").val().trim();
+        let engine_condition = $("#edit_engine_condition").val();
+        let progressive_km = $("#edit_engine_progressive_km").val().trim();
+
+        // Validation Checks
+        if (engine_card_number === "" || engine_number === "" || engine_make === "" || engine_type ===
+            "" || engine_model === "" || engine_condition === "") {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "All fields are Required.",
+            });
+            return;
+        }
+
+        if (progressive_km !== "") {
+            if (isNaN(progressive_km)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validation Error",
+                    text: "Progressive KM must be a number.",
+                });
+                return;
+            }
+            if (parseFloat(progressive_km) <= 0) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validation Error",
+                    text: "Progressive KM must be greater than zero.",
+                });
+                return;
+            }
+        }
+
+        // Confirm before update
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to update this engine record.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, Update it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "../includes/backend_data.php",
+                    type: "POST",
+                    data: {
+                        action: "update_engine_details",
+                        id: id,
+                        engine_card_number: engine_card_number,
+                        engine_number: engine_number,
+                        engine_make: engine_make,
+                        engine_model: engine_model,
+                        engine_type: engine_type,
+                        engine_condition: engine_condition,
+                        progressive_km: progressive_km
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: response,
+                        }).then(() => {
+                            $("#engineeditModel").modal("hide");
+                            location.reload(); // Reload table data
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Something went wrong! Please try again.",
+                        });
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+<?php
     } else if ($category_type == 'gearbox') {
         //return the table of gearbox data
         //join the gearbox_master and gearbox_types table to get the gearbox type
@@ -3358,179 +3360,181 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
       </div>
     </div>";
     ?>
-        <script>
-            $(document).ready(function() {
-                // Handle Delete
-                $(document).on("click", ".gear-box-delete-btn", function() {
-                    let id = $(this).data("id");
-                    if (confirm("Are you sure you want to delete this Gear Box?")) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "delete_gear_box_from_list",
-                                id: id
-                            },
-                            success: function(response) {
-                                alert(response);
-                                location.reload(); // Refresh the page
-                            }
-                        });
-                    }
-                });
-                // Handle change of Gear Box Make to fetch and update Gear Box Type
-                $(document).on("change", "#edit_gear_box_make", function() {
-                    let make = $(this).val();
-
-                    if (make !== "") {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "fetchgearboxtypeforinventory",
-                                gear_box_make: make
-                            },
-                            success: function(response) {
-                                $("#edit_gear_box_type").html(response);
-                            }
-                        });
-                    } else {
-                        $("#edit_gear_box_type").html("<option value=''>Select Gear Box Type</option>");
-                    }
-                });
-
-
-                $(document).on("click", ".gear-box-edit-btn", function() {
-                    let id = $(this).data("id");
-                    $.ajax({
-                        url: "../includes/backend_data.php",
-                        type: "POST",
-                        data: {
-                            action: "get_gear_box_details_for_edit",
-                            id: id
-                        },
-                        dataType: "json",
-                        success: function(data) {
-                            $("#edit_id").val(data.id);
-                            $("#edit_gear_box_card_number").val(data.gear_box_card_number);
-                            $("#edit_gear_box_number").val(data.gear_box_number);
-                            $("#edit_gear_box_make").val(data.gear_box_make);
-                            $("#edit_gear_box_model").val(data.gear_box_model);
-                            //$("#edit_gear_box_type").val(data.gear_box_type_id);
-                            $("#edit_gear_box_condition").val(data.gear_box_condition);
-                            $("#edit_gear_box_progressive_km").val(data.progressive_km);
-
-                            // Fetch gear_box types based on the loaded gear_box make
-                            $.ajax({
-                                url: "../includes/backend_data.php",
-                                type: "POST",
-                                data: {
-                                    action: "fetchgearboxtypeforinventory",
-                                    gear_box_make: data.gear_box_make
-                                },
-                                success: function(response) {
-                                    $("#edit_gear_box_type").html(response);
-                                    $("#edit_gear_box_type").val(data.gear_box_type_id); // Set the correct gear_box type
-                                }
-                            });
-
-                            $("#gear_boxeditModel").modal("show");
-                        }
-                    });
-                });
-
-
-                // Handle Update
-                $("#gear_boxeditForm").submit(function(e) {
-                    e.preventDefault(); // Prevent default form submission
-
-                    let id = $("#edit_id").val();
-                    let gear_box_card_number = $("#edit_gear_box_card_number").val().trim();
-                    let gear_box_number = $("#edit_gear_box_number").val().trim();
-                    let gear_box_make = $("#edit_gear_box_make").val().trim();
-                    let gear_box_model = $("#edit_gear_box_model").val().trim();
-                    let gear_box_type = $("#edit_gear_box_type").val().trim();
-                    let gear_box_condition = $("#edit_gear_box_condition").val();
-                    let progressive_km = $("#edit_gear_box_progressive_km").val().trim();
-
-                    // Validation Checks
-                    if (gear_box_card_number === "" || gear_box_number === "" || gear_box_make === "" || gear_box_type === "" || gear_box_model === "" || gear_box_condition === "") {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "All fields are Required.",
-                        });
-                        return;
-                    }
-
-                    if (progressive_km !== "") {
-                        if (isNaN(progressive_km)) {
-                            Swal.fire({
-                                icon: "warning",
-                                title: "Validation Error",
-                                text: "Progressive KM must be a number.",
-                            });
-                            return;
-                        }
-                        if (parseFloat(progressive_km) <= 0) {
-                            Swal.fire({
-                                icon: "warning",
-                                title: "Validation Error",
-                                text: "Progressive KM must be greater than zero.",
-                            });
-                            return;
-                        }
-                    }
-
-                    // Confirm before update
-                    Swal.fire({
-                        title: "Are you sure?",
-                        text: "You want to update this gear_box record.",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#3085d6",
-                        cancelButtonColor: "#d33",
-                        confirmButtonText: "Yes, Update it!"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            $.ajax({
-                                url: "../includes/backend_data.php",
-                                type: "POST",
-                                data: {
-                                    action: "update_gear_box_details",
-                                    id: id,
-                                    gear_box_card_number: gear_box_card_number,
-                                    gear_box_number: gear_box_number,
-                                    gear_box_make: gear_box_make,
-                                    gear_box_model: gear_box_model,
-                                    gear_box_type: gear_box_type,
-                                    gear_box_condition: gear_box_condition,
-                                    progressive_km: progressive_km
-                                },
-                                success: function(response) {
-                                    Swal.fire({
-                                        icon: "success",
-                                        title: "Success",
-                                        text: response,
-                                    }).then(() => {
-                                        $("#gear_boxeditModel").modal("hide");
-                                        location.reload(); // Reload table data
-                                    });
-                                },
-                                error: function() {
-                                    Swal.fire({
-                                        icon: "error",
-                                        title: "Error",
-                                        text: "Something went wrong! Please try again.",
-                                    });
-                                }
-                            });
-                        }
-                    });
-                });
+<script>
+$(document).ready(function() {
+    // Handle Delete
+    $(document).on("click", ".gear-box-delete-btn", function() {
+        let id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this Gear Box?")) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "delete_gear_box_from_list",
+                    id: id
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload(); // Refresh the page
+                }
             });
-        </script>
-    <?php
+        }
+    });
+    // Handle change of Gear Box Make to fetch and update Gear Box Type
+    $(document).on("change", "#edit_gear_box_make", function() {
+        let make = $(this).val();
+
+        if (make !== "") {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "fetchgearboxtypeforinventory",
+                    gear_box_make: make
+                },
+                success: function(response) {
+                    $("#edit_gear_box_type").html(response);
+                }
+            });
+        } else {
+            $("#edit_gear_box_type").html("<option value=''>Select Gear Box Type</option>");
+        }
+    });
+
+
+    $(document).on("click", ".gear-box-edit-btn", function() {
+        let id = $(this).data("id");
+        $.ajax({
+            url: "../includes/backend_data.php",
+            type: "POST",
+            data: {
+                action: "get_gear_box_details_for_edit",
+                id: id
+            },
+            dataType: "json",
+            success: function(data) {
+                $("#edit_id").val(data.id);
+                $("#edit_gear_box_card_number").val(data.gear_box_card_number);
+                $("#edit_gear_box_number").val(data.gear_box_number);
+                $("#edit_gear_box_make").val(data.gear_box_make);
+                $("#edit_gear_box_model").val(data.gear_box_model);
+                //$("#edit_gear_box_type").val(data.gear_box_type_id);
+                $("#edit_gear_box_condition").val(data.gear_box_condition);
+                $("#edit_gear_box_progressive_km").val(data.progressive_km);
+
+                // Fetch gear_box types based on the loaded gear_box make
+                $.ajax({
+                    url: "../includes/backend_data.php",
+                    type: "POST",
+                    data: {
+                        action: "fetchgearboxtypeforinventory",
+                        gear_box_make: data.gear_box_make
+                    },
+                    success: function(response) {
+                        $("#edit_gear_box_type").html(response);
+                        $("#edit_gear_box_type").val(data
+                        .gear_box_type_id); // Set the correct gear_box type
+                    }
+                });
+
+                $("#gear_boxeditModel").modal("show");
+            }
+        });
+    });
+
+
+    // Handle Update
+    $("#gear_boxeditForm").submit(function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        let id = $("#edit_id").val();
+        let gear_box_card_number = $("#edit_gear_box_card_number").val().trim();
+        let gear_box_number = $("#edit_gear_box_number").val().trim();
+        let gear_box_make = $("#edit_gear_box_make").val().trim();
+        let gear_box_model = $("#edit_gear_box_model").val().trim();
+        let gear_box_type = $("#edit_gear_box_type").val().trim();
+        let gear_box_condition = $("#edit_gear_box_condition").val();
+        let progressive_km = $("#edit_gear_box_progressive_km").val().trim();
+
+        // Validation Checks
+        if (gear_box_card_number === "" || gear_box_number === "" || gear_box_make === "" ||
+            gear_box_type === "" || gear_box_model === "" || gear_box_condition === "") {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "All fields are Required.",
+            });
+            return;
+        }
+
+        if (progressive_km !== "") {
+            if (isNaN(progressive_km)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validation Error",
+                    text: "Progressive KM must be a number.",
+                });
+                return;
+            }
+            if (parseFloat(progressive_km) <= 0) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validation Error",
+                    text: "Progressive KM must be greater than zero.",
+                });
+                return;
+            }
+        }
+
+        // Confirm before update
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You want to update this gear_box record.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, Update it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "../includes/backend_data.php",
+                    type: "POST",
+                    data: {
+                        action: "update_gear_box_details",
+                        id: id,
+                        gear_box_card_number: gear_box_card_number,
+                        gear_box_number: gear_box_number,
+                        gear_box_make: gear_box_make,
+                        gear_box_model: gear_box_model,
+                        gear_box_type: gear_box_type,
+                        gear_box_condition: gear_box_condition,
+                        progressive_km: progressive_km
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: response,
+                        }).then(() => {
+                            $("#gear_boxeditModel").modal("hide");
+                            location.reload(); // Reload table data
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Something went wrong! Please try again.",
+                        });
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+<?php
     } else if ($category_type == 'fiphpp') {
         //return the table of fip/hpp data
         //join the fip_hpp_master and fip_types table to get the fip/hpp type
@@ -3664,178 +3668,180 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     </div>";
 
     ?>
-        <script>
-            $(document).ready(function() {
-                // Handle Delete
-                $(document).on("click", ".fip-hpp-delete-btn", function() {
-                    let id = $(this).data("id");
-                    if (confirm("Are you sure you want to delete this FIP/HPP1?")) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "delete_fip_hpp_from_list",
-                                id: id
-                            },
-                            success: function(response) {
-                                alert(response);
-                                location.reload(); // Refresh the page
-                            }
-                        });
-                    }
-                });
+<script>
+$(document).ready(function() {
+    // Handle Delete
+    $(document).on("click", ".fip-hpp-delete-btn", function() {
+        let id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this FIP/HPP1?")) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "delete_fip_hpp_from_list",
+                    id: id
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload(); // Refresh the page
+                }
             });
-            $(document).on("change", "#edit_fip_hpp_bus_make", function() {
-                let fip_hppMake = $(this).val();
+        }
+    });
+});
+$(document).on("change", "#edit_fip_hpp_bus_make", function() {
+    let fip_hppMake = $(this).val();
 
-                if (fip_hppMake !== "") {
-                    $.ajax({
-                        url: "../includes/backend_data.php",
-                        type: "POST",
-                        data: {
-                            action: "fetchfiphtypeforinventory",
-                            fiph_make: fip_hppMake
-                        },
-                        success: function(response) {
-                            $("#edit_fip_hpp_type").html(response);
-                        }
-                    });
-                } else {
-                    // Reset fip/hpp type dropdown
-                    $("#edit_fip_hpp_type").html("<option value=''>Select FIP/HPP Type</option>");
+    if (fip_hppMake !== "") {
+        $.ajax({
+            url: "../includes/backend_data.php",
+            type: "POST",
+            data: {
+                action: "fetchfiphtypeforinventory",
+                fiph_make: fip_hppMake
+            },
+            success: function(response) {
+                $("#edit_fip_hpp_type").html(response);
+            }
+        });
+    } else {
+        // Reset fip/hpp type dropdown
+        $("#edit_fip_hpp_type").html("<option value=''>Select FIP/HPP Type</option>");
+    }
+});
+
+$(document).on("click", ".fip-hpp-edit-btn", function() {
+    let id = $(this).data("id");
+    $.ajax({
+        url: "../includes/backend_data.php",
+        type: "POST",
+        data: {
+            action: "get_fip_hpp_details_for_edit",
+            id: id
+        },
+        dataType: "json",
+        success: function(data) {
+            $("#edit_fip_hpp_id").val(data.id);
+            $("#edit_fip_hpp_card_number").val(data.fip_hpp_card_number);
+            $("#edit_fip_hpp_number").val(data.fip_hpp_number);
+            $("#edit_fip_hpp_bus_make").val(data.fip_hpp_bus_make);
+            $("#edit_fip_hpp_make").val(data.fip_hpp_make);
+            $("#edit_fip_hpp_model").val(data.fip_hpp_model);
+            $("#edit_fip_hpp_condition").val(data.fip_hpp_condition);
+            $("#edit_fip_hpp_progressive_km").val(data.progressive_km);
+
+            // Fetch fip/hpp types based on the loaded fip/hpp make
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "fetchfiphtypeforinventory",
+                    fiph_make: data.fip_hpp_bus_make
+                },
+                success: function(response) {
+                    $("#edit_fip_hpp_type").html(response);
+                    $("#edit_fip_hpp_type").val(data
+                    .fip_hpp_type_id); // Set the correct fip/hpp type
                 }
             });
 
-            $(document).on("click", ".fip-hpp-edit-btn", function() {
-                let id = $(this).data("id");
-                $.ajax({
-                    url: "../includes/backend_data.php",
-                    type: "POST",
-                    data: {
-                        action: "get_fip_hpp_details_for_edit",
-                        id: id
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        $("#edit_fip_hpp_id").val(data.id);
-                        $("#edit_fip_hpp_card_number").val(data.fip_hpp_card_number);
-                        $("#edit_fip_hpp_number").val(data.fip_hpp_number);
-                        $("#edit_fip_hpp_bus_make").val(data.fip_hpp_bus_make);
-                        $("#edit_fip_hpp_make").val(data.fip_hpp_make);
-                        $("#edit_fip_hpp_model").val(data.fip_hpp_model);
-                        $("#edit_fip_hpp_condition").val(data.fip_hpp_condition);
-                        $("#edit_fip_hpp_progressive_km").val(data.progressive_km);
+            $("#fip_hppeditModel").modal("show");
+        }
+    });
+});
+// Handle Update
+$("#fip_hppeditForm").submit(function(e) {
+    e.preventDefault(); // Prevent default form submission
 
-                        // Fetch fip/hpp types based on the loaded fip/hpp make
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "fetchfiphtypeforinventory",
-                                fiph_make: data.fip_hpp_bus_make
-                            },
-                            success: function(response) {
-                                $("#edit_fip_hpp_type").html(response);
-                                $("#edit_fip_hpp_type").val(data.fip_hpp_type_id); // Set the correct fip/hpp type
-                            }
-                        });
+    let id = $("#edit_fip_hpp_id").val();
+    let fip_hpp_card_number = $("#edit_fip_hpp_card_number").val().trim();
+    let fip_hpp_number = $("#edit_fip_hpp_number").val().trim();
+    let fip_hpp_bus_make = $("#edit_fip_hpp_bus_make").val().trim();
+    let fip_hpp_make = $("#edit_fip_hpp_make").val().trim();
+    let fip_hpp_model = $("#edit_fip_hpp_model").val().trim();
+    let fip_hpp_type = $("#edit_fip_hpp_type").val().trim();
+    let fip_hpp_condition = $("#edit_fip_hpp_condition").val();
+    let progressive_km = $("#edit_fip_hpp_progressive_km").val().trim();
 
-                        $("#fip_hppeditModel").modal("show");
-                    }
-                });
+    // Validation Checks
+    if (fip_hpp_card_number === "" || fip_hpp_number === "" || fip_hpp_bus_make === "" || fip_hpp_make === "" ||
+        fip_hpp_type === "" || fip_hpp_model === "" || fip_hpp_condition === "") {
+        Swal.fire({
+            icon: "warning",
+            title: "Validation Error",
+            text: "All fields are Required.",
+        });
+        return;
+    }
+
+    if (progressive_km !== "") {
+        if (isNaN(progressive_km)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be a number.",
             });
-            // Handle Update
-            $("#fip_hppeditForm").submit(function(e) {
-                e.preventDefault(); // Prevent default form submission
+            return;
+        }
+        if (parseFloat(progressive_km) <= 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be greater than zero.",
+            });
+            return;
+        }
+    }
 
-                let id = $("#edit_fip_hpp_id").val();
-                let fip_hpp_card_number = $("#edit_fip_hpp_card_number").val().trim();
-                let fip_hpp_number = $("#edit_fip_hpp_number").val().trim();
-                let fip_hpp_bus_make = $("#edit_fip_hpp_bus_make").val().trim();
-                let fip_hpp_make = $("#edit_fip_hpp_make").val().trim();
-                let fip_hpp_model = $("#edit_fip_hpp_model").val().trim();
-                let fip_hpp_type = $("#edit_fip_hpp_type").val().trim();
-                let fip_hpp_condition = $("#edit_fip_hpp_condition").val();
-                let progressive_km = $("#edit_fip_hpp_progressive_km").val().trim();
-
-                // Validation Checks
-                if (fip_hpp_card_number === "" || fip_hpp_number === "" || fip_hpp_bus_make === "" || fip_hpp_make === "" || fip_hpp_type === "" || fip_hpp_model === "" || fip_hpp_condition === "") {
+    // Confirm before update
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to update this FIP/HPP record.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Update it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "update_fip_hpp_details",
+                    id: id,
+                    fip_hpp_card_number: fip_hpp_card_number,
+                    fip_hpp_number: fip_hpp_number,
+                    fip_hpp_bus_make: fip_hpp_bus_make,
+                    fip_hpp_make: fip_hpp_make,
+                    fip_hpp_model: fip_hpp_model,
+                    fip_hpp_type: fip_hpp_type,
+                    fip_hpp_condition: fip_hpp_condition,
+                    progressive_km: progressive_km
+                },
+                success: function(response) {
                     Swal.fire({
-                        icon: "warning",
-                        title: "Validation Error",
-                        text: "All fields are Required.",
+                        icon: "success",
+                        title: "Success",
+                        text: response,
+                    }).then(() => {
+                        $("#fip_hppeditModel").modal("hide");
+                        location.reload(); // Reload table data
                     });
-                    return;
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong! Please try again.",
+                    });
                 }
-
-                if (progressive_km !== "") {
-                    if (isNaN(progressive_km)) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be a number.",
-                        });
-                        return;
-                    }
-                    if (parseFloat(progressive_km) <= 0) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be greater than zero.",
-                        });
-                        return;
-                    }
-                }
-
-                // Confirm before update
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "You want to update this FIP/HPP record.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Update it!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "update_fip_hpp_details",
-                                id: id,
-                                fip_hpp_card_number: fip_hpp_card_number,
-                                fip_hpp_number: fip_hpp_number,
-                                fip_hpp_bus_make: fip_hpp_bus_make,
-                                fip_hpp_make: fip_hpp_make,
-                                fip_hpp_model: fip_hpp_model,
-                                fip_hpp_type: fip_hpp_type,
-                                fip_hpp_condition: fip_hpp_condition,
-                                progressive_km: progressive_km
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: "success",
-                                    title: "Success",
-                                    text: response,
-                                }).then(() => {
-                                    $("#fip_hppeditModel").modal("hide");
-                                    location.reload(); // Reload table data
-                                });
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Error",
-                                    text: "Something went wrong! Please try again.",
-                                });
-                            }
-                        });
-                    }
-                });
             });
-        </script>
-    <?php
+        }
+    });
+});
+</script>
+<?php
     } else if ($category_type == 'starter') {
         //return the table of starter data
         $query = "SELECT sm.id, sm.starter_card_number, sm.starter_number, sm.starter_make, sm.starter_condition, sm.progressive_km
@@ -3935,135 +3941,136 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
 
     ?>
-        <script>
-            $(document).ready(function() {
-                // Handle Delete
-                $(document).on("click", ".starter-delete-btn", function() {
-                    let id = $(this).data("id");
-                    if (confirm("Are you sure you want to delete this Starter?")) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "delete_starter_from_list",
-                                id: id
-                            },
-                            success: function(response) {
-                                alert(response);
-                                location.reload(); // Refresh the page
-                            }
-                        });
-                    }
-                });
+<script>
+$(document).ready(function() {
+    // Handle Delete
+    $(document).on("click", ".starter-delete-btn", function() {
+        let id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this Starter?")) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "delete_starter_from_list",
+                    id: id
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload(); // Refresh the page
+                }
             });
-            $(document).on("click", ".starter-edit-btn", function() {
-                let id = $(this).data("id");
-                $.ajax({
-                    url: "../includes/backend_data.php",
-                    type: "POST",
-                    data: {
-                        action: "get_starter_details_for_edit",
-                        id: id
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        $("#edit_starter_id").val(data.id);
-                        $("#edit_starter_card_number").val(data.starter_card_number);
-                        $("#edit_starter_number").val(data.starter_number);
-                        $("#edit_starter_make").val(data.starter_make);
-                        $("#edit_starter_condition").val(data.starter_condition);
-                        $("#edit_starter_progressive_km").val(data.progressive_km);
+        }
+    });
+});
+$(document).on("click", ".starter-edit-btn", function() {
+    let id = $(this).data("id");
+    $.ajax({
+        url: "../includes/backend_data.php",
+        type: "POST",
+        data: {
+            action: "get_starter_details_for_edit",
+            id: id
+        },
+        dataType: "json",
+        success: function(data) {
+            $("#edit_starter_id").val(data.id);
+            $("#edit_starter_card_number").val(data.starter_card_number);
+            $("#edit_starter_number").val(data.starter_number);
+            $("#edit_starter_make").val(data.starter_make);
+            $("#edit_starter_condition").val(data.starter_condition);
+            $("#edit_starter_progressive_km").val(data.progressive_km);
 
-                        $("#startereditModel").modal("show");
-                    }
-                });
+            $("#startereditModel").modal("show");
+        }
+    });
+});
+// Handle Update
+$("#startereditForm").submit(function(e) {
+    e.preventDefault(); // Prevent default form submission
+
+    let id = $("#edit_starter_id").val();
+    let starter_card_number = $("#edit_starter_card_number").val().trim();
+    let starter_number = $("#edit_starter_number").val().trim();
+    let starter_make = $("#edit_starter_make").val().trim();
+    let starter_condition = $("#edit_starter_condition").val();
+    let progressive_km = $("#edit_starter_progressive_km").val().trim();
+
+    // Validation Checks
+    if (starter_card_number === "" || starter_number === "" || starter_make === "" || starter_condition ===
+        "") {
+        Swal.fire({
+            icon: "warning",
+            title: "Validation Error",
+            text: "All fields are Required.",
+        });
+        return;
+    }
+
+    if (progressive_km !== "") {
+        if (isNaN(progressive_km)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be a number.",
             });
-            // Handle Update
-            $("#startereditForm").submit(function(e) {
-                e.preventDefault(); // Prevent default form submission
+            return;
+        }
+        if (parseFloat(progressive_km) <= 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be greater than zero.",
+            });
+            return;
+        }
+    }
 
-                let id = $("#edit_starter_id").val();
-                let starter_card_number = $("#edit_starter_card_number").val().trim();
-                let starter_number = $("#edit_starter_number").val().trim();
-                let starter_make = $("#edit_starter_make").val().trim();
-                let starter_condition = $("#edit_starter_condition").val();
-                let progressive_km = $("#edit_starter_progressive_km").val().trim();
-
-                // Validation Checks
-                if (starter_card_number === "" || starter_number === "" || starter_make === "" || starter_condition === "") {
+    // Confirm before update
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to update this Starter record.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Update it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "update_starter_details",
+                    id: id,
+                    starter_card_number: starter_card_number,
+                    starter_number: starter_number,
+                    starter_make: starter_make,
+                    starter_condition: starter_condition,
+                    progressive_km: progressive_km
+                },
+                success: function(response) {
                     Swal.fire({
-                        icon: "warning",
-                        title: "Validation Error",
-                        text: "All fields are Required.",
+                        icon: "success",
+                        title: "Success",
+                        text: response,
+                    }).then(() => {
+                        $("#startereditModel").modal("hide");
+                        location.reload(); // Reload table data
                     });
-                    return;
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong! Please try again.",
+                    });
                 }
-
-                if (progressive_km !== "") {
-                    if (isNaN(progressive_km)) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be a number.",
-                        });
-                        return;
-                    }
-                    if (parseFloat(progressive_km) <= 0) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be greater than zero.",
-                        });
-                        return;
-                    }
-                }
-
-                // Confirm before update
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "You want to update this Starter record.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Update it!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "update_starter_details",
-                                id: id,
-                                starter_card_number: starter_card_number,
-                                starter_number: starter_number,
-                                starter_make: starter_make,
-                                starter_condition: starter_condition,
-                                progressive_km: progressive_km
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: "success",
-                                    title: "Success",
-                                    text: response,
-                                }).then(() => {
-                                    $("#startereditModel").modal("hide");
-                                    location.reload(); // Reload table data
-                                });
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Error",
-                                    text: "Something went wrong! Please try again.",
-                                });
-                            }
-                        });
-                    }
-                });
             });
-        </script>
-    <?php
+        }
+    });
+});
+</script>
+<?php
     } else if ($category_type == 'alternator') {
         //return the table of alternator data
         $query = "SELECT am.id,am.alternator_card_number, am.alternator_number, am.alternator_make, am.alternator_condition, am.progressive_km
@@ -4159,134 +4166,135 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             </div>
         </div>";
     ?>
-        <script>
-            $(document).ready(function() {
-                // Handle Delete
-                $(document).on("click", ".alternator-delete-btn", function() {
-                    let id = $(this).data("id");
-                    if (confirm("Are you sure you want to delete this Alternator?")) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "delete_alternator_from_list",
-                                id: id
-                            },
-                            success: function(response) {
-                                alert(response);
-                                location.reload(); // Refresh the page
-                            }
-                        });
-                    }
-                });
+<script>
+$(document).ready(function() {
+    // Handle Delete
+    $(document).on("click", ".alternator-delete-btn", function() {
+        let id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this Alternator?")) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "delete_alternator_from_list",
+                    id: id
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload(); // Refresh the page
+                }
             });
-            $(document).on("click", ".alternator-edit-btn", function() {
-                let id = $(this).data("id");
-                $.ajax({
-                    url: "../includes/backend_data.php",
-                    type: "POST",
-                    data: {
-                        action: "get_alternator_details_for_edit",
-                        id: id
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        $("#edit_alternator_id").val(data.id);
-                        $("#edit_alternator_card_number").val(data.alternator_card_number);
-                        $("#edit_alternator_number").val(data.alternator_number);
-                        $("#edit_alternator_make").val(data.alternator_make);
-                        $("#edit_alternator_condition").val(data.alternator_condition);
-                        $("#edit_alternator_progressive_km").val(data.progressive_km);
+        }
+    });
+});
+$(document).on("click", ".alternator-edit-btn", function() {
+    let id = $(this).data("id");
+    $.ajax({
+        url: "../includes/backend_data.php",
+        type: "POST",
+        data: {
+            action: "get_alternator_details_for_edit",
+            id: id
+        },
+        dataType: "json",
+        success: function(data) {
+            $("#edit_alternator_id").val(data.id);
+            $("#edit_alternator_card_number").val(data.alternator_card_number);
+            $("#edit_alternator_number").val(data.alternator_number);
+            $("#edit_alternator_make").val(data.alternator_make);
+            $("#edit_alternator_condition").val(data.alternator_condition);
+            $("#edit_alternator_progressive_km").val(data.progressive_km);
 
-                        $("#alternatoreditModel").modal("show");
-                    }
-                });
+            $("#alternatoreditModel").modal("show");
+        }
+    });
+});
+// Handle Update
+$("#alternatoreditForm").submit(function(e) {
+    e.preventDefault(); // Prevent default form submission
+
+    let id = $("#edit_alternator_id").val();
+    let alternator_card_number = $("#edit_alternator_card_number").val().trim();
+    let alternator_number = $("#edit_alternator_number").val().trim();
+    let alternator_make = $("#edit_alternator_make").val().trim();
+    let alternator_condition = $("#edit_alternator_condition").val();
+    let progressive_km = $("#edit_alternator_progressive_km").val().trim();
+
+
+    // Validation Checks
+    if (alternator_card_number === "" || alternator_number === "" || alternator_make === "" ||
+        alternator_condition === "") {
+        Swal.fire({
+            icon: "warning",
+            title: "Validation Error",
+            text: "All fields are Required.",
+        });
+        return;
+    }
+    if (progressive_km !== "") {
+        if (isNaN(progressive_km)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be a number.",
             });
-            // Handle Update
-            $("#alternatoreditForm").submit(function(e) {
-                e.preventDefault(); // Prevent default form submission
-
-                let id = $("#edit_alternator_id").val();
-                let alternator_card_number = $("#edit_alternator_card_number").val().trim();
-                let alternator_number = $("#edit_alternator_number").val().trim();
-                let alternator_make = $("#edit_alternator_make").val().trim();
-                let alternator_condition = $("#edit_alternator_condition").val();
-                let progressive_km = $("#edit_alternator_progressive_km").val().trim();
-
-
-                // Validation Checks
-                if (alternator_card_number === "" || alternator_number === "" || alternator_make === "" || alternator_condition === "") {
+            return;
+        }
+        if (parseFloat(progressive_km) <= 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be greater than zero.",
+            });
+            return;
+        }
+    }
+    // Confirm before update
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to update this Alternator record.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Update it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "update_alternator_details",
+                    id: id,
+                    alternator_card_number: alternator_card_number,
+                    alternator_number: alternator_number,
+                    alternator_make: alternator_make,
+                    alternator_condition: alternator_condition,
+                    progressive_km: progressive_km
+                },
+                success: function(response) {
                     Swal.fire({
-                        icon: "warning",
-                        title: "Validation Error",
-                        text: "All fields are Required.",
+                        icon: "success",
+                        title: "Success",
+                        text: response,
+                    }).then(() => {
+                        $("#startereditModel").modal("hide");
+                        location.reload(); // Reload table data
                     });
-                    return;
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong! Please try again.",
+                    });
                 }
-                if (progressive_km !== "") {
-                    if (isNaN(progressive_km)) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be a number.",
-                        });
-                        return;
-                    }
-                    if (parseFloat(progressive_km) <= 0) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be greater than zero.",
-                        });
-                        return;
-                    }
-                }
-                // Confirm before update
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "You want to update this Alternator record.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Update it!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "update_alternator_details",
-                                id: id,
-                                alternator_card_number: alternator_card_number,
-                                alternator_number: alternator_number,
-                                alternator_make: alternator_make,
-                                alternator_condition: alternator_condition,
-                                progressive_km: progressive_km
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: "success",
-                                    title: "Success",
-                                    text: response,
-                                }).then(() => {
-                                    $("#startereditModel").modal("hide");
-                                    location.reload(); // Reload table data
-                                });
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Error",
-                                    text: "Something went wrong! Please try again.",
-                                });
-                            }
-                        });
-                    }
-                });
             });
-        </script>
-    <?php
+        }
+    });
+});
+</script>
+<?php
     } else if ($category_type == 'rear_axle') {
         //return the table of rear axle data
         $query = "SELECT ram.id, ram.rear_axle_card_number, ram.rear_axle_number, ram.rear_axle_make, ram.rear_axle_condition, ram.progressive_km
@@ -4383,134 +4391,135 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         </div>";
 
     ?>
-        <script>
-            $(document).ready(function() {
-                // Handle Delete
-                $(document).on("click", ".rear_axle-delete-btn", function() {
-                    let id = $(this).data("id");
-                    if (confirm("Are you sure you want to delete this Rear Axle?")) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "delete_rear_axle_from_list",
-                                id: id
-                            },
-                            success: function(response) {
-                                alert(response);
-                                location.reload(); // Refresh the page
-                            }
-                        });
-                    }
-                });
+<script>
+$(document).ready(function() {
+    // Handle Delete
+    $(document).on("click", ".rear_axle-delete-btn", function() {
+        let id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this Rear Axle?")) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "delete_rear_axle_from_list",
+                    id: id
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload(); // Refresh the page
+                }
             });
-            $(document).on("click", ".rear_axle-edit-btn", function() {
-                let id = $(this).data("id");
-                $.ajax({
-                    url: "../includes/backend_data.php",
-                    type: "POST",
-                    data: {
-                        action: "get_rear_axle_details_for_edit",
-                        id: id
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        $("#edit_rear_axle_id").val(data.id);
-                        $("#edit_rear_axle_card_number").val(data.rear_axle_card_number);
-                        $("#edit_rear_axle_number").val(data.rear_axle_number);
-                        $("#edit_rear_axle_make").val(data.rear_axle_make);
-                        $("#edit_rear_axle_condition").val(data.rear_axle_condition);
-                        $("#edit_rear_axle_progressive_km").val(data.progressive_km);
+        }
+    });
+});
+$(document).on("click", ".rear_axle-edit-btn", function() {
+    let id = $(this).data("id");
+    $.ajax({
+        url: "../includes/backend_data.php",
+        type: "POST",
+        data: {
+            action: "get_rear_axle_details_for_edit",
+            id: id
+        },
+        dataType: "json",
+        success: function(data) {
+            $("#edit_rear_axle_id").val(data.id);
+            $("#edit_rear_axle_card_number").val(data.rear_axle_card_number);
+            $("#edit_rear_axle_number").val(data.rear_axle_number);
+            $("#edit_rear_axle_make").val(data.rear_axle_make);
+            $("#edit_rear_axle_condition").val(data.rear_axle_condition);
+            $("#edit_rear_axle_progressive_km").val(data.progressive_km);
 
-                        $("#rearaxleeditModel").modal("show");
-                    }
-                });
+            $("#rearaxleeditModel").modal("show");
+        }
+    });
+});
+// Handle Update
+$("#rearaxleeditForm").submit(function(e) {
+    e.preventDefault(); // Prevent default form submission
+
+    let id = $("#edit_rear_axle_id").val();
+    let rear_axle_card_number = $("#edit_rear_axle_card_number").val().trim();
+    let rear_axle_number = $("#edit_rear_axle_number").val().trim();
+    let rear_axle_make = $("#edit_rear_axle_make").val().trim();
+    let rear_axle_condition = $("#edit_rear_axle_condition").val();
+    let progressive_km = $("#edit_rear_axle_progressive_km").val().trim();
+
+
+    // Validation Checks
+    if (rear_axle_card_number === "" || rear_axle_number === "" || rear_axle_make === "" ||
+        rear_axle_condition === "") {
+        Swal.fire({
+            icon: "warning",
+            title: "Validation Error",
+            text: "All fields are Required.",
+        });
+        return;
+    }
+    if (progressive_km !== "") {
+        if (isNaN(progressive_km)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be a number.",
             });
-            // Handle Update
-            $("#rearaxleeditForm").submit(function(e) {
-                e.preventDefault(); // Prevent default form submission
-
-                let id = $("#edit_rear_axle_id").val();
-                let rear_axle_card_number = $("#edit_rear_axle_card_number").val().trim();
-                let rear_axle_number = $("#edit_rear_axle_number").val().trim();
-                let rear_axle_make = $("#edit_rear_axle_make").val().trim();
-                let rear_axle_condition = $("#edit_rear_axle_condition").val();
-                let progressive_km = $("#edit_rear_axle_progressive_km").val().trim();
-
-
-                // Validation Checks
-                if (rear_axle_card_number === "" || rear_axle_number === "" || rear_axle_make === "" || rear_axle_condition === "") {
+            return;
+        }
+        if (parseFloat(progressive_km) <= 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be greater than zero.",
+            });
+            return;
+        }
+    }
+    // Confirm before update
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to update this Rear Axle record.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Update it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "update_rear_axle_details",
+                    id: id,
+                    rear_axle_card_number: rear_axle_card_number,
+                    rear_axle_number: rear_axle_number,
+                    rear_axle_make: rear_axle_make,
+                    rear_axle_condition: rear_axle_condition,
+                    progressive_km: progressive_km
+                },
+                success: function(response) {
                     Swal.fire({
-                        icon: "warning",
-                        title: "Validation Error",
-                        text: "All fields are Required.",
+                        icon: "success",
+                        title: "Success",
+                        text: response,
+                    }).then(() => {
+                        $("#rearaxleeditModel").modal("hide");
+                        location.reload(); // Reload table data
                     });
-                    return;
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong! Please try again.",
+                    });
                 }
-                if (progressive_km !== "") {
-                    if (isNaN(progressive_km)) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be a number.",
-                        });
-                        return;
-                    }
-                    if (parseFloat(progressive_km) <= 0) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be greater than zero.",
-                        });
-                        return;
-                    }
-                }
-                // Confirm before update
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "You want to update this Rear Axle record.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Update it!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "update_rear_axle_details",
-                                id: id,
-                                rear_axle_card_number: rear_axle_card_number,
-                                rear_axle_number: rear_axle_number,
-                                rear_axle_make: rear_axle_make,
-                                rear_axle_condition: rear_axle_condition,
-                                progressive_km: progressive_km
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: "success",
-                                    title: "Success",
-                                    text: response,
-                                }).then(() => {
-                                    $("#rearaxleeditModel").modal("hide");
-                                    location.reload(); // Reload table data
-                                });
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Error",
-                                    text: "Something went wrong! Please try again.",
-                                });
-                            }
-                        });
-                    }
-                });
             });
-        </script>
-    <?php
+        }
+    });
+});
+</script>
+<?php
     } elseif ($category_type == 'battery') {
         //return the table of battery data
         $query = "SELECT bm.id, bm.battery_card_number, bm.battery_number, bm.battery_make, bm.progressive_km
@@ -4596,132 +4605,132 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             </div>
         </div>";
     ?>
-        <script>
-            $(document).ready(function() {
-                // Handle Delete
-                $(document).on("click", ".battery-delete-btn", function() {
-                    let id = $(this).data("id");
-                    if (confirm("Are you sure you want to delete this Battery?")) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "delete_battery_from_list",
-                                id: id
-                            },
-                            success: function(response) {
-                                alert(response);
-                                location.reload(); // Refresh the page
-                            }
-                        });
-                    }
-                });
+<script>
+$(document).ready(function() {
+    // Handle Delete
+    $(document).on("click", ".battery-delete-btn", function() {
+        let id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this Battery?")) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "delete_battery_from_list",
+                    id: id
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload(); // Refresh the page
+                }
             });
-            $(document).on("click", ".battery-edit-btn", function() {
-                let id = $(this).data("id");
-                $.ajax({
-                    url: "../includes/backend_data.php",
-                    type: "POST",
-                    data: {
-                        action: "get_battery_details_for_edit",
-                        id: id
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        $("#edit_battery_id").val(data.id);
-                        $("#edit_battery_card_number").val(data.battery_card_number);
-                        $("#edit_battery_number").val(data.battery_number);
-                        $("#edit_battery_make").val(data.battery_make);
-                        $("#edit_battery_progressive_km").val(data.progressive_km);
+        }
+    });
+});
+$(document).on("click", ".battery-edit-btn", function() {
+    let id = $(this).data("id");
+    $.ajax({
+        url: "../includes/backend_data.php",
+        type: "POST",
+        data: {
+            action: "get_battery_details_for_edit",
+            id: id
+        },
+        dataType: "json",
+        success: function(data) {
+            $("#edit_battery_id").val(data.id);
+            $("#edit_battery_card_number").val(data.battery_card_number);
+            $("#edit_battery_number").val(data.battery_number);
+            $("#edit_battery_make").val(data.battery_make);
+            $("#edit_battery_progressive_km").val(data.progressive_km);
 
-                        $("#batteryeditModel").modal("show");
-                    }
-                });
+            $("#batteryeditModel").modal("show");
+        }
+    });
+});
+// Handle Update
+$("#batteryeditForm").submit(function(e) {
+    e.preventDefault(); // Prevent default form submission
+
+    let id = $("#edit_battery_id").val();
+    let battery_card_number = $("#edit_battery_card_number").val().trim();
+    let battery_number = $("#edit_battery_number").val().trim();
+    let battery_make = $("#edit_battery_make").val().trim();
+    let progressive_km = $("#edit_battery_progressive_km").val().trim();
+
+
+    // Validation Checks
+    if (battery_card_number === "" || battery_number === "" || battery_make === "") {
+        Swal.fire({
+            icon: "warning",
+            title: "Validation Error",
+            text: "All fields are Required.",
+        });
+        return;
+    }
+    if (progressive_km !== "") {
+        if (isNaN(progressive_km)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be a number.",
             });
-            // Handle Update
-            $("#batteryeditForm").submit(function(e) {
-                e.preventDefault(); // Prevent default form submission
-
-                let id = $("#edit_battery_id").val();
-                let battery_card_number = $("#edit_battery_card_number").val().trim();
-                let battery_number = $("#edit_battery_number").val().trim();
-                let battery_make = $("#edit_battery_make").val().trim();
-                let progressive_km = $("#edit_battery_progressive_km").val().trim();
-
-
-                // Validation Checks
-                if (battery_card_number === "" || battery_number === "" || battery_make === "") {
+            return;
+        }
+        if (parseFloat(progressive_km) <= 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be greater than zero.",
+            });
+            return;
+        }
+    }
+    // Confirm before update
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to update this Battery record.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Update it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "update_battery_details",
+                    id: id,
+                    battery_card_number: battery_card_number,
+                    battery_number: battery_number,
+                    battery_make: battery_make,
+                    progressive_km: progressive_km
+                },
+                success: function(response) {
                     Swal.fire({
-                        icon: "warning",
-                        title: "Validation Error",
-                        text: "All fields are Required.",
+                        icon: "success",
+                        title: "Success",
+                        text: response,
+                    }).then(() => {
+                        $("#batteryeditModel").modal("hide");
+                        location.reload(); // Reload table data
                     });
-                    return;
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong! Please try again.",
+                    });
                 }
-                if (progressive_km !== "") {
-                    if (isNaN(progressive_km)) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be a number.",
-                        });
-                        return;
-                    }
-                    if (parseFloat(progressive_km) <= 0) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be greater than zero.",
-                        });
-                        return;
-                    }
-                }
-                // Confirm before update
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "You want to update this Battery record.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Update it!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "update_battery_details",
-                                id: id,
-                                battery_card_number: battery_card_number,
-                                battery_number: battery_number,
-                                battery_make: battery_make,
-                                progressive_km: progressive_km
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: "success",
-                                    title: "Success",
-                                    text: response,
-                                }).then(() => {
-                                    $("#batteryeditModel").modal("hide");
-                                    location.reload(); // Reload table data
-                                });
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Error",
-                                    text: "Something went wrong! Please try again.",
-                                });
-                            }
-                        });
-                    }
-                });
             });
-        </script>
+        }
+    });
+});
+</script>
 
-    <?php
+<?php
     } elseif ($category_type == 'tyre') {
         //return the table of tyre data
         $query = "SELECT tm.id, tm.tyre_card_number, tm.tyre_number, tm.tyre_make, tm.tyre_size, tm.tyre_brand, tm.tyre_condition, tm.progressive_km
@@ -4862,140 +4871,141 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             </div>
         </div>";
     ?>
-        <script>
-            $(document).ready(function() {
-                // Handle Delete
-                $(document).on("click", ".tyre-delete-btn", function() {
-                    let id = $(this).data("id");
-                    if (confirm("Are you sure you want to delete this Tyre?")) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "delete_tyre_from_list",
-                                id: id
-                            },
-                            success: function(response) {
-                                alert(response);
-                                location.reload(); // Refresh the page
-                            }
-                        });
-                    }
-                });
+<script>
+$(document).ready(function() {
+    // Handle Delete
+    $(document).on("click", ".tyre-delete-btn", function() {
+        let id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this Tyre?")) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "delete_tyre_from_list",
+                    id: id
+                },
+                success: function(response) {
+                    alert(response);
+                    location.reload(); // Refresh the page
+                }
             });
-            $(document).on("click", ".tyre-edit-btn", function() {
-                let id = $(this).data("id");
-                $.ajax({
-                    url: "../includes/backend_data.php",
-                    type: "POST",
-                    data: {
-                        action: "get_tyre_details_for_edit",
-                        id: id
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        $("#edit_tyre_id").val(data.id);
-                        $("#edit_tyre_card_number").val(data.tyre_card_number);
-                        $("#edit_tyre_number").val(data.tyre_number);
-                        $("#edit_tyre_make").val(data.tyre_make);
-                        $("#edit_tyre_size").val(data.tyre_size);
-                        $("#edit_tyre_brand").val(data.tyre_brand);
-                        $("#edit_tyre_condition").val(data.tyre_condition);
-                        $("#edit_tyre_progressive_km").val(data.progressive_km);
+        }
+    });
+});
+$(document).on("click", ".tyre-edit-btn", function() {
+    let id = $(this).data("id");
+    $.ajax({
+        url: "../includes/backend_data.php",
+        type: "POST",
+        data: {
+            action: "get_tyre_details_for_edit",
+            id: id
+        },
+        dataType: "json",
+        success: function(data) {
+            $("#edit_tyre_id").val(data.id);
+            $("#edit_tyre_card_number").val(data.tyre_card_number);
+            $("#edit_tyre_number").val(data.tyre_number);
+            $("#edit_tyre_make").val(data.tyre_make);
+            $("#edit_tyre_size").val(data.tyre_size);
+            $("#edit_tyre_brand").val(data.tyre_brand);
+            $("#edit_tyre_condition").val(data.tyre_condition);
+            $("#edit_tyre_progressive_km").val(data.progressive_km);
 
-                        $("#tyreeditModel").modal("show");
-                    }
-                });
+            $("#tyreeditModel").modal("show");
+        }
+    });
+});
+// Handle Update
+$("#tyreeditForm").submit(function(e) {
+    e.preventDefault(); // Prevent default form submission
+
+    let id = $("#edit_tyre_id").val();
+    let tyre_card_number = $("#edit_tyre_card_number").val().trim();
+    let tyre_number = $("#edit_tyre_number").val().trim();
+    let tyre_make = $("#edit_tyre_make").val().trim();
+    let tyre_size = $("#edit_tyre_size").val().trim();
+    let tyre_brand = $("#edit_tyre_brand").val().trim();
+    let tyre_condition = $("#edit_tyre_condition").val();
+    let progressive_km = $("#edit_tyre_progressive_km").val().trim();
+
+
+    // Validation Checks
+    if (tyre_card_number === "" ||
+        tyre_number === "" || tyre_make === "" || tyre_size === "" || tyre_brand === "" || tyre_condition === ""
+        ) {
+        Swal.fire({
+            icon: "warning",
+            title: "Validation Error",
+            text: "All fields are Required.",
+        });
+        return;
+    }
+    if (progressive_km !== "") {
+        if (isNaN(progressive_km)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be a number.",
             });
-            // Handle Update
-            $("#tyreeditForm").submit(function(e) {
-                e.preventDefault(); // Prevent default form submission
-
-                let id = $("#edit_tyre_id").val();
-                let tyre_card_number = $("#edit_tyre_card_number").val().trim();
-                let tyre_number = $("#edit_tyre_number").val().trim();
-                let tyre_make = $("#edit_tyre_make").val().trim();
-                let tyre_size = $("#edit_tyre_size").val().trim();
-                let tyre_brand = $("#edit_tyre_brand").val().trim();
-                let tyre_condition = $("#edit_tyre_condition").val();
-                let progressive_km = $("#edit_tyre_progressive_km").val().trim();
-
-
-                // Validation Checks
-                if (tyre_card_number === "" ||
-                    tyre_number === "" || tyre_make === "" || tyre_size === "" || tyre_brand === "" || tyre_condition === "") {
+            return;
+        }
+        if (parseFloat(progressive_km) <= 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: "Progressive KM must be greater than zero.",
+            });
+            return;
+        }
+    }
+    // Confirm before update
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to update this Tyre record.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Update it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "../includes/backend_data.php",
+                type: "POST",
+                data: {
+                    action: "update_tyre_details",
+                    id: id,
+                    tyre_card_number: tyre_card_number,
+                    tyre_number: tyre_number,
+                    tyre_make: tyre_make,
+                    tyre_size: tyre_size,
+                    tyre_brand: tyre_brand,
+                    tyre_condition: tyre_condition,
+                    progressive_km: progressive_km
+                },
+                success: function(response) {
                     Swal.fire({
-                        icon: "warning",
-                        title: "Validation Error",
-                        text: "All fields are Required.",
+                        icon: "success",
+                        title: "Success",
+                        text: response,
+                    }).then(() => {
+                        $("#tyreeditModel").modal("hide");
+                        location.reload(); // Reload table data
                     });
-                    return;
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong! Please try again.",
+                    });
                 }
-                if (progressive_km !== "") {
-                    if (isNaN(progressive_km)) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be a number.",
-                        });
-                        return;
-                    }
-                    if (parseFloat(progressive_km) <= 0) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Validation Error",
-                            text: "Progressive KM must be greater than zero.",
-                        });
-                        return;
-                    }
-                }
-                // Confirm before update
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "You want to update this Tyre record.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Update it!"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "../includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "update_tyre_details",
-                                id: id,
-                                tyre_card_number: tyre_card_number,
-                                tyre_number: tyre_number,
-                                tyre_make: tyre_make,
-                                tyre_size: tyre_size,
-                                tyre_brand: tyre_brand,
-                                tyre_condition: tyre_condition,
-                                progressive_km: progressive_km
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: "success",
-                                    title: "Success",
-                                    text: response,
-                                }).then(() => {
-                                    $("#tyreeditModel").modal("hide");
-                                    location.reload(); // Reload table data
-                                });
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Error",
-                                    text: "Something went wrong! Please try again.",
-                                });
-                            }
-                        });
-                    }
-                });
             });
-        </script>
+        }
+    });
+});
+</script>
 <?php
     }
 }
@@ -7902,7 +7912,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         echo json_encode(['error' => 'Missing required parameters']);
         exit;
     }
-
+if (in_array($_SESSION['DEPOT_ID'], ['1', '8', '12', '13', '14', '15'])){
+            $programstart_date = '2025-08-01';
+            $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+        }elseif(in_array($_SESSION['DEPOT_ID'], ['111'])){
+            $programstart_date = '2025-08-01';
+            $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+        }else {
+            $programstart_date = '2025-08-01';
+            $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+        }
     // Get depot/division names
     $locationQuery = "SELECT division, depot FROM location WHERE division_id = '$division_id' AND depot_id = '$depot_id'";
     $locationResult = mysqli_query($db, $locationQuery);
@@ -7913,7 +7932,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     $sameDay = $from === $to;
     $busCondition = ($bus_number === 'All') ? "1=1" : "bus_number = '$bus_number'";
     $from_date = date('Y-m-d', strtotime($from . ' -1 day'));
-    $kmpl_start_date = '2025-08-01';
+    $kmpl_start_date = $programstart_date;
 
     $air_suspension_bus_category_array = ['Rajahamsa', 'Corona Sleeper AC', 'Sleeper AC', 'Regular Sleeper Non AC', 'Amoghavarsha Sleeper Non AC', 'Kalyana Ratha'];
 
@@ -8285,7 +8304,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 }
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "get_program_km_for_bus") {
 
-
     if (!isset($_POST['bus_number'], $_POST['program_type'], $_POST['program_date'])) {
         echo json_encode([
             'success' => false,
@@ -8293,6 +8311,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         ]);
         exit;
     }
+    if (in_array($_SESSION['DEPOT_ID'], ['1', '8', '12', '13', '14', '15'])){
+            $programstart_date = '2025-08-01';
+            $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+        }elseif(in_array($_SESSION['DEPOT_ID'], ['111'])){
+            $programstart_date = '2025-08-01';
+            $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+        }else {
+            $programstart_date = '2025-08-01';
+            $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+        }
+
     $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
     $program_type = mysqli_real_escape_string($db, $_POST['program_type']);
     $selected_date = mysqli_real_escape_string($db, $_POST['program_date']); // expected format: Y-m-d
@@ -8316,7 +8345,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     }
 
     // Step 2: Calculate KM from vehicle_kmpl
-    $from_date = '2025-08-01';
+    $from_date = $programstart_date;
 
     if ($last_date && ($last_date !== '0000-00-00' || $last_date !== null)) {
         $from_date = date('Y-m-d', strtotime($last_date . ' +1 day'));
@@ -8342,5 +8371,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     echo json_encode([
         'success' => true,
         'program_km' => round($estimated_km)
+    ]);
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_report_of_program_day") {
+    $from = $_POST['from'];
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+
+    if (!$from || !$division_id || !$depot_id) {
+        echo json_encode(['error' => 'Missing required parameters']);
+        exit;
+    }
+
+    $html = "hello";
+
+ echo json_encode([
+        'status' => 'success',
+        'data' => $html
     ]);
 }

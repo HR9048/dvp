@@ -12,27 +12,17 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     $depot_id = $_SESSION['DEPOT_ID'];
 ?>
 
-<h6>Select details for W3 Report</h6>
+<h6>Select details for Program Report</h6>
 <form id="scheduleForm">
 
-    <label for="from">From:</label>
+    <label for="from">Date:</label>
     <input id="from" type="date" name="from" required>
 
-    <label for="to">To:</label>
-    <input id="to" type="date" name="to" required>
     <input type="hidden" id="division" name="division" value="<?php echo $division_id; ?>">
     <input type="hidden" id="depot" name="depot" value="<?php echo $depot_id; ?>">
 
-    <label for="bus_number">Bus Number:</label>
-    <select id="bus_number" name="bus_number">
-        <option value="">Select Bus</option>
-    </select>
-
-
     <button class="btn btn-primary" type="submit">Submit</button>
     <button type="button" class="btn btn-success" onclick="window.print()">Print</button>
-    <!-- button to download pdf on click call a function -->
-    <button type="button" class="btn btn-info" onclick="downloadw3PDF()">Download PDF</button>
 
 </form>
 <div id="loadingIndicator" style="display:none; text-align:center; margin: 10px;">
@@ -53,16 +43,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 <script>
 $(document).ready(function() {
     // Get current date from PHP
-    var todayDate = "<?php echo $currentDate; ?>"; 
-    var reportstartDate = "<?php echo $reportstart_date; ?>"; 
-    var formatted_reportstartDate = "<?php echo $formated_reportstart_date; ?>";
+    var todayDate = "<?php echo $currentDate; ?>"; // Date in 'YYYY-MM-DD' format
+
     // Date Validation: Ensure 'From' is not greater than 'To' and not greater than today
-    $('#from, #to').on('change', function() {
+    $('#from').on('change', function() {
         var fromDate = new Date($('#from').val());
-        var toDate = new Date($('#to').val());
         var today = new Date(todayDate); // Use PHP's provided current date
         today.setHours(0, 0, 0, 0); // Reset hours to compare only dates
-
 
         // Validate the 'From' date
         if ($('#from').val()) {
@@ -79,43 +66,13 @@ $(document).ready(function() {
             }
         }
 
-        // Validate the 'To' date
-        if ($('#to').val()) {
-            if (toDate > today) { // Allow today but not future dates
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid To Date!',
-                    text: 'To date cannot be in the future. Please select today or a past date.',
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'OK'
-                });
-                $('#to').val(''); // Clear the invalid date
-                return;
-            }
-        }
-
-        // Validate that 'From' date is not greater than 'To' date
-        if ($('#from').val() && $('#to').val()) {
-            if (fromDate > toDate) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid Date Selection!',
-                    text: 'From date cannot be greater than To date. Please select valid dates.',
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'OK'
-                });
-
-                // Clear the date fields
-                $('#from').val('');
-                $('#to').val('');
-            }
-        }
-        // if form or to date is less then reportstartDate then show alert
-        if (fromDate < new Date(reportstartDate) || toDate < new Date(reportstartDate)) {
+        
+        // if form or to date is less then 01-08-2025 then show alert
+        if (fromDate < new Date('2025-08-01')) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Date Limit Exceeded!',
-                text: 'Please select dates from ' + formatted_reportstartDate + '.',
+                text: 'Please select dates after 01-08-2025.',
                 confirmButtonColor: '#d33',
                 confirmButtonText: 'OK'
             });
@@ -127,9 +84,8 @@ $(document).ready(function() {
     // Form Submission Validation
     $('#scheduleForm').submit(function(e) {
         var fromDate = $('#from').val();
-        var toDate = $('#to').val();
 
-        if (!fromDate || !toDate) {
+        if (!fromDate) {
             e.preventDefault(); // Prevent form submission
 
             Swal.fire({
@@ -143,11 +99,10 @@ $(document).ready(function() {
         }
 
         var from = new Date(fromDate);
-        var to = new Date(toDate);
         var today = new Date(todayDate); // Use PHP's provided current date
         today.setHours(0, 0, 0, 0); // Reset hours to compare only dates
 
-        if (from > today || to > today) {
+        if (from > today) {
             e.preventDefault();
             Swal.fire({
                 icon: 'warning',
@@ -190,21 +145,9 @@ $(document).ready(function() {
         e.preventDefault(); // Prevent default form submission
 
         var from = $('#from').val();
-        var to = $('#to').val();
         var division = $('#division').val();
         var depot = $('#depot').val();
-        var bus_number = $('#bus_number').val();
 
-        if (!bus_number) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Selection Required!',
-                text: 'Please select a Bus Number.',
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
 
         // Show loading and clear report container
         $('#reportContainer').html('');
@@ -216,11 +159,9 @@ $(document).ready(function() {
             dataType: 'json',
             data: {
                 from: from,
-                to: to,
                 division: division,
                 depot: depot,
-                bus_number: bus_number,
-                action: 'fetch_report_of_w3_from_to'
+                action: 'fetch_report_of_program_day'
             },
             success: function(response) {
                 $('#loadingIndicator').hide(); // hide loading on success
@@ -248,37 +189,7 @@ $(document).ready(function() {
         });
     });
 });
-//on downloadw3PDF function call check from date, to date and bus number is seleted or not if not show sweet alert else call page w3_pdf_dowmload.php
-function downloadw3PDF() {
-    var from = $('#from').val();
-    var to = $('#to').val();
-    var bus_number = $('#bus_number').val();
-    var division = $('#division').val();
-    var depot = $('#depot').val();
 
-    let missingFields = [];
-
-    if (!from) missingFields.push("From Date");
-    if (!to) missingFields.push("To Date");
-    if (!bus_number) missingFields.push("Bus Number");
-    if (!division) missingFields.push("Division");
-    if (!depot) missingFields.push("Depot");
-
-    if (missingFields.length > 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Required Fields Missing!',
-            text: 'Please fill the following: ' + missingFields.join(', '),
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'OK'
-        });
-        return;
-    }
-
-    // If all fields are filled, proceed to download
-    window.location.href = 'w3_pdf_download.php?from=' + from + '&to=' + to + '&bus_number=' + bus_number +
-        '&division=' + division + '&depot=' + depot;
-}
 </script>
 
 <?php

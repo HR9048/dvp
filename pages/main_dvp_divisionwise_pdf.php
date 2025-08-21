@@ -55,8 +55,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 // Define custom column headings
                 $customColumnsFirst = array(
                     'schedules' => 'Number of Schedules',
-                    'vehicles' => 'Number Of Vehicles (Including RWY)',
-                    'spare' => 'Number of Spare Vehicles (Including RWY)',
+                    'vehicles' => 'Number Of Vehicles (Excluding RWY)',
+                    'spare' => 'Number of Spare Vehicles (Excluding RWY)',
                     'ORRWY' => 'Vehicles Off Road at RWY',
                 );
 

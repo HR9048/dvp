@@ -165,7 +165,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             white-space: nowrap;
         }
     </style>
-    <h2>Bus Program KM as on 31-07-2025</h2>
+    <h2>Bus Program KM as on <?= $formated_programstart_date ?></h2>
     <div class="table-wrapper">
         <div class="container1">
             <table class="sticky-header-table">
@@ -204,7 +204,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                                     if (!$prog_val_row || is_null($prog_val_row[$type])) {
                                         echo "<td>NA</td>";
                                     } elseif (isset($program_data[$type])) {
-                                        echo "<td>" . htmlspecialchars($program_data[$type]) . "</td>";
+                                        echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' value='" . htmlspecialchars($program_data[$type]) . "'></td>";
                                     } else {
                                         echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' placeholder='KM'></td>";
                                     }
@@ -217,7 +217,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                                 if (!$prog_val_row || is_null($prog_val_row[$type])) {
                                     echo "<td>NA</td>";
                                 } elseif (isset($program_data[$type])) {
-                                    echo "<td>" . htmlspecialchars($program_data[$type]) . "</td>";
+                                    echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' value='" . htmlspecialchars($program_data[$type]) . "'></td>";
                                 } else {
                                     echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' placeholder='KM'></td>";
                                 }

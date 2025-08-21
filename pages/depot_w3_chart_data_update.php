@@ -77,13 +77,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     <script>
         document.getElementById('reportDate').addEventListener('change', function () {
     const selectedDate = new Date(this.value);
-    const minDate = new Date('2025-08-01');
+    const minDate = new Date("<?php echo $reportstart_date; ?>");
 
     if (selectedDate < minDate) {
         Swal.fire({
             icon: 'warning',
             title: 'Invalid Date',
-            text: 'Please select a date on or after 01-08-2025.',
+            text: 'Please select a date on or after ' + minDate.toLocaleDateString('en-GB') + '.',
             confirmButtonColor: '#3085d6'
         });
 

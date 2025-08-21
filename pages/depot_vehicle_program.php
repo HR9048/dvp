@@ -201,7 +201,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         $kmpl_data = [];
         $kmpl_result = mysqli_query($db, "
         SELECT bus_number, date, km_operated FROM vehicle_kmpl
-        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '2025-07-31' AND date <= '$today'
+        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '$programstart_date' AND date <= '$today'
     ");
         while ($row = mysqli_fetch_assoc($kmpl_result)) {
             $bus = $row['bus_number'];
@@ -257,7 +257,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
                         if (!empty($kmpl_data[$bus_number])) {
                             foreach ($kmpl_data[$bus_number] as $date => $km) {
-                                if ($date > '2025-07-31') {
+                                if ($date > $programstart_date) {
                                     $total_km += $km;
                                 }
                             }
@@ -367,7 +367,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
                         if (!empty($kmpl_data[$bus_number])) {
                             foreach ($kmpl_data[$bus_number] as $date => $km) {
-                                if ($date > '2025-07-31') {
+                                if ($date > $programstart_date) {
                                     $total_km += $km;
                                 }
                             }
@@ -470,8 +470,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         </div>
         <?php
         $today = new DateTime();
-        $fromdate = clone $today;
-        $fromdate->modify('-14 days');
+        //$fromdate = clone $today;
+        //$fromdate->modify('-2 days');
+        $fromdate = new DateTime('2025-08-01');
 
         // Format dates for JavaScript display (d-m-Y)
         $serverDateFormatted = $today->format('d-m-Y');

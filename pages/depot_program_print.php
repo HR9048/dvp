@@ -102,7 +102,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 color: black !important;
                 border: 1px solid black;
                 padding: 4px;
-                font-size: 12px;
+                font-size: 11px;
                 text-align: center;
             }
 
@@ -126,6 +126,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
         <?php
         $today = date('Y-m-d');
+        
         $program_labels = [
             'docking' => 'Docking',
             'engine_oil_and_main_filter_change' => 'Engine Oil And Main Filter Change',
@@ -166,7 +167,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
 
         $buses = [];
-        $bus_result = mysqli_query($db, "SELECT bus_number, make, emission_norms, model_type FROM bus_registration WHERE division_name = '$division_id' AND depot_name = '$depot_id'");
+        $bus_result = mysqli_query($db, "SELECT br.bus_number, br.make, br.emission_norms, br.model_type FROM bus_registration br LEFT JOIN makes m ON br.make = m.make WHERE br.division_name = '$division_id' AND br.depot_name = '$depot_id' ORDER BY m.id, br.emission_norms");
         while ($row = mysqli_fetch_assoc($bus_result)) {
             $buses[$row['bus_number']] = [
                 'make' => $row['make'],
@@ -208,7 +209,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         $kmpl_data = [];
         $kmpl_result = mysqli_query($db, "
         SELECT bus_number, date, km_operated FROM vehicle_kmpl
-        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '2025-07-31' AND date <= '$today'
+        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '$programstart_date' AND date <= '$today'
     ");
         while ($row = mysqli_fetch_assoc($kmpl_result)) {
             $bus = $row['bus_number'];
@@ -268,10 +269,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
             .mp-table th,
             .mp-table td {
-                border: 1px solid #dee2e6;
+                border: 1px solid #000000ff;
                 padding: 1px 4px !important;
                 vertical-align: middle;
-                font-size: 0.55rem;
+                font-size: 0.42rem;
                 word-wrap: break-word;
                 text-align: center;
             }
@@ -286,7 +287,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
         <div class="mp-wrap">
             <?php
-            function compute_total_km($bus_number, $ptype, $last_program_data, $kmpl_data)
+            function compute_total_km($bus_number, $ptype, $last_program_data, $kmpl_data, $programstart_date)
             {
                 $total_km = 0;
                 $last_entry = $last_program_data[$bus_number][$ptype] ?? null;
@@ -306,7 +307,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                     $total_km = $last_km;
                     if (!empty($kmpl_data[$bus_number])) {
                         foreach ($kmpl_data[$bus_number] as $date => $km) {
-                            if ($date > '2025-07-31') {
+                            if ($date > $programstart_date) {
                                 $total_km += $km;
                             }
                         }
@@ -341,7 +342,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                     $prescribed_km = $programs[$ptype];
                     $rows = [];
                     foreach ($bus_list_group as $bus_number) {
-                        $total_km = compute_total_km($bus_number, $ptype, $last_program_data, $kmpl_data);
+                        $total_km = compute_total_km($bus_number, $ptype, $last_program_data, $kmpl_data, $programstart_date);
                         $deviation = $total_km - $prescribed_km;
 
                         if ($deviation > 500 || ($deviation >= -5000 && $deviation <= 500)) {
@@ -353,7 +354,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                     }
 
                     // ✅ Handle Tyre Rotation Check separately
-                    if ($pname === "Tyre Rotation Check" && !empty($rows)) {
+                    if ($pname === "Tyre Rotation" && !empty($rows)) {
                         foreach ($rows as $r) {
                             $tyre_rotation_data[] = $r; // save for later table
                         }
@@ -400,7 +401,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                     echo "<div><table class='mp-table'>";
                     echo "<thead>";
                     if ($index === 0) {
-                        echo "<tr><th class='mp-program-head' colspan='" . (count($vehicle_chunk) + 1) . "'><h4><b>Tyre Rotation Check</b></h4></th></tr>";
+                        echo "<tr><th class='mp-program-head' colspan='" . (count($vehicle_chunk) + 1) . "'><h4><b>Tyre Rotation</b></h4></th></tr>";
                     }
                     echo "<tr><th>Vehicle No</th>";
                     foreach ($vehicle_chunk as $v) {

@@ -10,7 +10,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
-    ?>
+?>
     <style>
         /* Custom styles to ensure content fits within viewport */
         .container-fluid {
@@ -170,41 +170,42 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
         </div>
     </div>
     </div>
-    <h2 class="text-center">Kalyana Karnataka Road Transport Corporation (KKRTC)</h2>
-    <br>
-    <div class="row">
-        <div class="col-12">
-            <table class="table2">
-                <h2 class="text-center"><?php echo $_SESSION['DEPOT']; ?> Depot KMPL</h2>
-                <thead>
-                    <tr>
-                        <th rowspan="2">Date</th>
-                        <th colspan="3" class="text-center">DAILY KMPL</th>
-                        <th colspan="3" class="text-center">CUMULATIVE KMPL</th>
-                    </tr>
-                    <tr>
-                        <th>Gross KM</th>
-                        <th>HSD</th>
-                        <th>KMPL</th>
-                        <th>Gross KM</th>
-                        <th>HSD</th>
-                        <th>KMPL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    if (isset($_GET['year']) && isset($_GET['month'])) {
-                        $selected_month = intval($_GET['month']);
-                        $selected_year = intval($_GET['year']);
+    <div class="container1">
+        <h2 class="text-center">Kalyana Karnataka Road Transport Corporation (KKRTC)</h2>
+        <br>
+        <div class="row">
+            <div class="col-12">
+                <table class="table2">
+                    <h2 class="text-center"><?php echo $_SESSION['DEPOT']; ?> Depot KMPL</h2>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Date</th>
+                            <th colspan="3" class="text-center">DAILY KMPL</th>
+                            <th colspan="3" class="text-center">CUMULATIVE KMPL</th>
+                        </tr>
+                        <tr>
+                            <th>Gross KM</th>
+                            <th>HSD</th>
+                            <th>KMPL</th>
+                            <th>Gross KM</th>
+                            <th>HSD</th>
+                            <th>KMPL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        if (isset($_GET['year']) && isset($_GET['month'])) {
+                            $selected_month = intval($_GET['month']);
+                            $selected_year = intval($_GET['year']);
 
-                        $start_date = date('Y-m-01', mktime(0, 0, 0, $selected_month, 1, $selected_year));
-                        $end_date = date('Y-m-t', mktime(0, 0, 0, $selected_month, 1, $selected_year));
+                            $start_date = date('Y-m-01', mktime(0, 0, 0, $selected_month, 1, $selected_year));
+                            $end_date = date('Y-m-t', mktime(0, 0, 0, $selected_month, 1, $selected_year));
 
-                        if ($selected_year == date('Y') && $selected_month == date('m')) {
-                            $end_date = date('Y-m-d', strtotime('-1 day'));
-                        }
+                            if ($selected_year == date('Y') && $selected_month == date('m')) {
+                                $end_date = date('Y-m-d', strtotime('-1 day'));
+                            }
 
-                        $sql = "SELECT 
+                            $sql = "SELECT 
                                             DATE_FORMAT(date, '%Y-%m-%d') AS date,
                                             total_km,
                                             hsd,
@@ -216,14 +217,14 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                                             AND division = '{$_SESSION['DIVISION_ID']}' AND depot = '{$_SESSION['DEPOT_ID']}'
                                         ORDER BY 
                                             date ASC";
-                    } else {
-                        date_default_timezone_set('Asia/Kolkata');
+                        } else {
+                            date_default_timezone_set('Asia/Kolkata');
 
-                        $start_date = date('Y-m-01');
-                        $end_date = date('Y-m-d', strtotime('-1 day'));
+                            $start_date = date('Y-m-01');
+                            $end_date = date('Y-m-d', strtotime('-1 day'));
 
-                        if ($db) {
-                            $sql = "SELECT 
+                            if ($db) {
+                                $sql = "SELECT 
                                                 DATE_FORMAT(date, '%Y-%m-%d') AS date,
                                                 total_km,
                                                 hsd, kmpl
@@ -234,55 +235,56 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                                                 AND division = '{$_SESSION['DIVISION_ID']}' AND depot = '{$_SESSION['DEPOT_ID']}'
                                             ORDER BY 
                                                 date ASC";
-                        }
-                    }
-                    $result = mysqli_query($db, $sql);
-                    $cumulative_total_km_sum = 0;
-                    $cumulative_hsd_sum = 0;
-
-                    for ($date = $start_date; $date <= $end_date; $date = date('Y-m-d', strtotime($date . ' +1 day'))) {
-                        echo "<tr>";
-                        echo "<td>" . date('d/m/Y', strtotime($date)) . "</td>";
-
-                        $found = false;
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            if ($row['date'] === $date) {
-                                $found = true;
-                                echo "<td>" . $row['total_km'] . "</td>";
-                                echo "<td>" . $row['hsd'] . "</td>";
-                                echo "<td>" . $row['kmpl'] . "</td>";
-
-                                $cumulative_total_km_sum += $row['total_km'];
-                                $cumulative_hsd_sum += $row['hsd'];
-
-                                if ($date === date('Y-m-d')) {
-                                    break 2;
-                                }
                             }
                         }
+                        $result = mysqli_query($db, $sql);
+                        $cumulative_total_km_sum = 0;
+                        $cumulative_hsd_sum = 0;
 
-                        if (!$found) {
-                            echo "<td>0</td>";
-                            echo "<td>0</td>";
-                            echo "<td>0</td>";
+                        for ($date = $start_date; $date <= $end_date; $date = date('Y-m-d', strtotime($date . ' +1 day'))) {
+                            echo "<tr>";
+                            echo "<td>" . date('d/m/Y', strtotime($date)) . "</td>";
+
+                            $found = false;
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                if ($row['date'] === $date) {
+                                    $found = true;
+                                    echo "<td>" . $row['total_km'] . "</td>";
+                                    echo "<td>" . $row['hsd'] . "</td>";
+                                    echo "<td>" . $row['kmpl'] . "</td>";
+
+                                    $cumulative_total_km_sum += $row['total_km'];
+                                    $cumulative_hsd_sum += $row['hsd'];
+
+                                    if ($date === date('Y-m-d')) {
+                                        break 2;
+                                    }
+                                }
+                            }
+
+                            if (!$found) {
+                                echo "<td>0</td>";
+                                echo "<td>0</td>";
+                                echo "<td>0</td>";
+                            }
+
+                            echo "<td>" . $cumulative_total_km_sum . "</td>";
+                            echo "<td>" . $cumulative_hsd_sum . "</td>";
+                            if ($cumulative_hsd_sum != 0) {
+                                echo "<td>" . number_format(($cumulative_total_km_sum / $cumulative_hsd_sum), 2) . "</td>";
+                            } else {
+                                echo "<td>0</td>";
+                            }
+                            echo "</tr>";
+
+                            mysqli_data_seek($result, 0);
                         }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
 
-                        echo "<td>" . $cumulative_total_km_sum . "</td>";
-                        echo "<td>" . $cumulative_hsd_sum . "</td>";
-                        if ($cumulative_hsd_sum != 0) {
-                            echo "<td>" . number_format(($cumulative_total_km_sum / $cumulative_hsd_sum), 2) . "</td>";
-                        } else {
-                            echo "<td>0</td>";
-                        }
-                        echo "</tr>";
-
-                        mysqli_data_seek($result, 0);
-                    }
-                    ?>
-                </tbody>
-            </table>
         </div>
-
     </div>
     <div class="text-center mt-3">
         <button class="btn btn-primary" onclick="window.print()">Print</button>
@@ -332,7 +334,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                                 entryDateInput.max = maxDate;
 
                                 // Add event listener to handle manual date input
-                                entryDateInput.addEventListener('change', function () {
+                                entryDateInput.addEventListener('change', function() {
                                     var selectedDate = new Date(this.value);
                                     var minDate = new Date(this.min);
                                     var maxDate = new Date(this.max);
@@ -373,23 +375,22 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
         </div>
     </div>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // Close modal when close button or cancel button is clicked
-            $('.modal .close, .modal .modal-footer .btn-secondary').click(function () {
+            $('.modal .close, .modal .modal-footer .btn-secondary').click(function() {
                 $(this).closest('.modal').modal('hide');
             });
         });
-        document.getElementById('addDataButton').addEventListener('click', function () {
+        document.getElementById('addDataButton').addEventListener('click', function() {
             document.getElementById('dataEntryModal').style.display = 'block'; // Remove this line
         });
-
     </script>
 
 
     </div>
 
 
-    <?php
+<?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
     exit;
@@ -398,7 +399,7 @@ include '../includes/footer.php';
 ?>
 
 <script>
-    document.getElementById('addDataButton').addEventListener('click', function () {
+    document.getElementById('addDataButton').addEventListener('click', function() {
         document.getElementById('dataEntryModal').style.display = 'block'; // Show the modal
     });
     // Function to calculate total KM and KMPL
@@ -425,7 +426,7 @@ include '../includes/footer.php';
         location.reload();
     }
 
-    document.getElementById('saveDataButton').addEventListener('click', function () {
+    document.getElementById('saveDataButton').addEventListener('click', function() {
         // Validate the form
         if (!validateForm()) {
             return; // Prevent further execution if validation fails
@@ -444,7 +445,7 @@ include '../includes/footer.php';
         let xhr = new XMLHttpRequest();
         xhr.open('POST', 'depot_kmpl_save.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onreadystatechange = function () {
+        xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     // Handle the response here
@@ -493,7 +494,7 @@ include '../includes/footer.php';
 
 
     // Add event listener to entry form for input fields
-    document.getElementById('entryForm').addEventListener('input', function () {
+    document.getElementById('entryForm').addEventListener('input', function() {
         // Calculate total KM and KMPL when any input field changes
         calculateTotals();
     });
@@ -506,7 +507,7 @@ include '../includes/footer.php';
     }
 </script>
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         // Remove month and year parameters from the URL when the page loads
         window.history.replaceState({}, document.title, window.location.pathname);
     });

@@ -91,6 +91,7 @@ ORDER BY
     sm.sch_dep_time,
     svo.dep_time AS act_dep_time, 
     svo.dep_time_diff AS late_by,
+    svo.reason_for_late_departure AS reason,
     sm.division_id,
     sm.depot_id
 FROM schedule_master sm

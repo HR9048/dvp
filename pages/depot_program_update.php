@@ -204,7 +204,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                                     if (!$prog_val_row || is_null($prog_val_row[$type])) {
                                         echo "<td>NA</td>";
                                     } elseif (isset($program_data[$type])) {
-                                        echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' value='" . htmlspecialchars($program_data[$type]) . "'></td>";
+                                        //echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' value='" . htmlspecialchars($program_data[$type]) . "'></td>";
+                                        echo "<td> " . htmlspecialchars($program_data[$type]) . "</td>";
                                     } else {
                                         echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' placeholder='KM'></td>";
                                     }
@@ -217,7 +218,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                                 if (!$prog_val_row || is_null($prog_val_row[$type])) {
                                     echo "<td>NA</td>";
                                 } elseif (isset($program_data[$type])) {
-                                    echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' value='" . htmlspecialchars($program_data[$type]) . "'></td>";
+                                    echo "<td>" . htmlspecialchars($program_data[$type]) . "</td>";
                                 } else {
                                     echo "<td><input type='number' class='km-input' name='{$type}_km[{$bus_number}]' placeholder='KM'></td>";
                                 }

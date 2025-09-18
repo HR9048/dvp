@@ -226,6 +226,39 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESS
                     return;
                 }
 
+                var programstart_date = '';
+                var formated_programstart_date = '';
+                var depots_1 = ['1', '8', '12', '13', '14', '15'];
+                var depots_2 = ['111'];
+
+                if (depots_1.includes(depot)) {
+                    programstart_date = '2025-07-31';
+                    formated_programstart_date = '31-07-2025';
+                } else if (depots_2.includes(depot)) {
+                    programstart_date = '2025-09-30';
+                    formated_programstart_date = '30-09-2025';
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Depot Not Valid!',
+                        text: 'Program not yet started for the selected depot. Please select a different depot.',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                if (from < programstart_date || to < programstart_date) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Date Not Valid!',
+                        text: 'Please select another date because the program start date for the selected depot is ' + formated_programstart_date + '.',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
                 // Show loading and clear report container
                 $('#reportContainer').html('');
                 $('#loadingIndicator').show();

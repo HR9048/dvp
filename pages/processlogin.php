@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['user'], $_POST['passwo
                        l.DIVISION, l.DEPOT, l.division_id, l.depot_id, l.kmpl_division, l.kmpl_depot, 
                        t.TYPE, u.PASSWORD
                 FROM `users` u
-                JOIN `employee` e ON e.PF_ID = u.PF_ID
+                JOIN `employee` e ON e.pf_number = u.PF_ID
                 JOIN `location` l ON e.LOCATION_ID = l.LOCATION_ID
                 JOIN `job` j ON e.JOB_ID = j.JOB_ID
                 JOIN `type` t ON t.TYPE_ID = u.TYPE_ID

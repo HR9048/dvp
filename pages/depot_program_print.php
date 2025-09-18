@@ -136,7 +136,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             'power_steering_oil_and_filter_change' => 'Power Steering Oil And Filter Change',
             'fuel_filter_change' => 'Fuel Filter Change',
             'fuel_strainer_change' => 'Fuel Strainer Change',
-            'diesel_filter_change' => 'Diesel Filter Change',
+            'fuel_filter_cum_water_seprator' => 'Fuel Filter Cum Water Seprator Change',
             'def_suction_filter_change' => 'DEF Suction Filter Change',
             'def_neck_filter_change' => 'DEF Neck Filter Change',
             'def_air_filter_change' => 'DEF Air Filter Change',

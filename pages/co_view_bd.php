@@ -12,7 +12,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
     $depot_id = $_SESSION['DEPOT_ID'];
 ?>
 
-    <h6>Select details for W3 Report</h6>
+    <h6>Select details for Break Down Report</h6>
     <form id="scheduleForm">
 
         <label for="from">From:</label>
@@ -29,10 +29,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
         <select id="depot" name="depot" required>
             <option value="">select</option>
         </select>
-        <label for="bus_number">Bus Number:</label>
-        <select id="bus_number" name="bus_number">
-            <option value="">First-select-depot</option>
-        </select>
+        
 
 
         <button class="btn btn-primary" type="submit">Submit</button>
@@ -113,11 +110,11 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                     }
                 }
                 // if form or to date is less then 01-08-2025 then show alert
-                if (fromDate < new Date('2025-08-01') || toDate < new Date('2025-08-01')) {
+                if (fromDate < new Date('2025-04-01') || toDate < new Date('2025-04-01')) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Date Limit Exceeded!',
-                        text: 'Please select dates after 01-08-2025.',
+                        text: 'Please select dates after 01-04-2025.',
                         confirmButtonColor: '#d33',
                         confirmButtonText: 'OK'
                     });
@@ -161,7 +158,6 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 }
             });
         });
-
         function fetchBusCategory() {
             $.ajax({
                 url: '../includes/data_fetch.php',
@@ -171,6 +167,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 },
                 success: function(response) {
                     var divisions = JSON.parse(response);
+                    // add All option
+                    $('#division').append('<option value="All">ALL</option>');
                     $.each(divisions, function(index, division) {
                         if (division.DIVISION !== 'HEAD-OFFICE' && division.DIVISION !== 'RWY') {
                             $('#division').append('<option value="' + division.division_id + '">' + division
@@ -193,8 +191,9 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                         $('#depot').html(data);
 
                         // Hide the option with text 'DIVISION'
+                        $('#depot').prepend('<option value="All">ALL</option>');
                         $('#depot option').each(function() {
-                            if ($(this).text().trim() === 'DIVISION') {
+                            if ($(this).text().trim() === 'DIVISION' || $(this).text().trim() === 'KALABURAGI') {
                                 $(this).hide();
                             }
                         });
@@ -206,46 +205,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             fetchBusCategory();
         });
 
-        $(document).ready(function() {
-            // Initialize Select2 for bus_number select
-
-
-            $('#bus_number').select2();
-
-            // Fetch buses when depot changes
-            $('#depot').on('change', function() {
-                var depotId = $(this).val();
-                if (depotId) {
-                    fetchBusNumbers(depotId);
-                } else {
-                    $('#bus_number').html('<option value="">Select a depot first</option>');
-                }
-            });
-
-            // If there's a pre-selected depot, trigger change
-            var depotId = $('#depot').val();
-            if (depotId) {
-                $('#depot').trigger('change');
-            }
-
-            // AJAX function to fetch bus numbers
-            function fetchBusNumbers(depotId) {
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: {
-                        action: 'fetchBusNumbers',
-                        depot_id: depotId
-                    },
-                    success: function(response) {
-                        $('#bus_number').html(response);
-                    },
-                    error: function() {
-                        $('#bus_number').html('<option value="">Failed to load buses</option>');
-                    }
-                });
-            }
-        });
+        
 
 
         $(document).ready(function() {
@@ -256,51 +216,19 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 var to = $('#to').val();
                 var division = $('#division').val();
                 var depot = $('#depot').val();
-                var bus_number = $('#bus_number').val();
 
-                if (!bus_number) {
+                if (!from || !to || !division || !depot) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Selection Required!',
-                        text: 'Please select a Bus Number.',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'OK'
-                    });
-                    return;
-                }
-                var programstart_date = '';
-                var formated_programstart_date = '';
-                var depots_1 = ['1', '8', '12', '13', '14', '15'];
-                var depots_2 = ['111'];
-
-                if (depots_1.includes(depot)) {
-                    programstart_date = '2025-07-31';
-                    formated_programstart_date = '31-07-2025';
-                } else if (depots_2.includes(depot)) {
-                    programstart_date = '2025-09-30';
-                    formated_programstart_date = '30-09-2025';
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Depot Not Valid!',
-                        text: 'Program not yet started for the selected depot. Please select a different depot.',
+                        title: 'All Fields Required!',
+                        text: 'Please fill all the fields before submitting.',
                         confirmButtonColor: '#d33',
                         confirmButtonText: 'OK'
                     });
                     return;
                 }
 
-                if (from < programstart_date || to < programstart_date) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Date Not Valid!',
-                        text: 'Please select another date because the program start date for the selected depot is ' + formated_programstart_date + '.',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'OK'
-                    });
-                    return;
-                }
-
+                
 
                 // Show loading and clear report container
                 $('#reportContainer').html('');
@@ -315,8 +243,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                         to: to,
                         division: division,
                         depot: depot,
-                        bus_number: bus_number,
-                        action: 'fetch_report_of_w3_from_to'
+                        action: 'fetch_report_for_bd_from_to'
                     },
                     success: function(response) {
                         $('#loadingIndicator').hide(); // hide loading on success

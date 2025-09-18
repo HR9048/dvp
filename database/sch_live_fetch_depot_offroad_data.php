@@ -30,6 +30,7 @@ if (isset($_POST['id'], $_POST['name'], $_POST['type'], $_POST['subtype'])) {
     o.make, 
     o.emission_norms, 
     o.depot, 
+    o.parts_required,
     l.depot AS depot_name, 
     MAX(o.off_road_location) AS off_road_location, 
     MIN(o.off_road_date) AS off_road_date,
@@ -37,7 +38,7 @@ if (isset($_POST['id'], $_POST['name'], $_POST['type'], $_POST['subtype'])) {
 FROM off_road_data o
 INNER JOIN location l ON o.depot = l.depot_id
 WHERE o.depot = ? 
-    AND o.status = 'off_road' 
+    AND o.status = 'off_road' and o.off_road_location not in ('Authorized Dealer', 'Police Station')
     AND NOT EXISTS (
         SELECT 1 
         FROM off_road_data sub 
@@ -54,6 +55,7 @@ ORDER BY o.off_road_date ASC;";
     o.make, 
     o.emission_norms, 
     o.depot, 
+    o.parts_required,
     l.depot AS depot_name, 
     MAX(o.off_road_location) AS off_road_location, 
     MIN(o.off_road_date) AS off_road_date,
@@ -61,7 +63,7 @@ ORDER BY o.off_road_date ASC;";
 FROM off_road_data o
 INNER JOIN location l ON o.depot = l.depot_id
 WHERE o.division = ? 
-    AND o.status = 'off_road' 
+    AND o.status = 'off_road' and o.off_road_location not in ('Authorized Dealer', 'Police Station')
     AND NOT EXISTS (
         SELECT 1 
         FROM off_road_data sub 
@@ -77,6 +79,7 @@ ORDER BY o.depot,o.off_road_date ASC";
     o.make, 
     o.emission_norms, 
     o.depot, 
+    o.parts_required,
     l.depot AS depot_name, 
     MAX(o.off_road_location) AS off_road_location, 
     MIN(o.off_road_date) AS off_road_date,
@@ -100,6 +103,7 @@ ORDER BY o.depot,o.off_road_date ASC";
     o.make, 
     o.emission_norms, 
     o.depot, 
+    o.parts_required,
     l.depot AS depot_name, 
     MAX(o.off_road_location) AS off_road_location, 
     MIN(o.off_road_date) AS off_road_date,
@@ -126,6 +130,7 @@ ORDER BY o.depot,o.off_road_date ASC";
     m.make_abbr,
     o.emission_norms, 
     o.depot, 
+    o.parts_required,
     l.depot AS depot_name, 
     MAX(o.off_road_location) AS off_road_location, 
     orl.location_abbr,
@@ -135,7 +140,7 @@ FROM off_road_data o
 INNER JOIN location l ON o.depot = l.depot_id
 LEFT JOIN makes m ON o.make = m.make
 LEFT JOIN off_road_location orl ON o.off_road_location = orl.location_name
-WHERE o.status = 'off_road'
+WHERE o.status = 'off_road'  and o.off_road_location not in ('Authorized Dealer', 'Police Station')
     AND o.off_road_date < DATE_SUB(CURDATE(), INTERVAL 5 DAY) 
     AND NOT EXISTS (
         SELECT 1 
@@ -155,6 +160,7 @@ ORDER BY l.depot_id, o.off_road_date ASC;
     m.make_abbr,
     o.emission_norms, 
     o.depot, 
+    o.parts_required,
     l.depot AS depot_name, 
     MAX(o.off_road_location) AS off_road_location, 
     orl.location_abbr,
@@ -182,6 +188,7 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
     m.make_abbr,
     o.emission_norms, 
     o.depot, 
+    o.parts_required,
     l.depot AS depot_name, 
     MAX(o.off_road_location) AS off_road_location, 
     orl.location_abbr,
@@ -272,6 +279,7 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
                         <th style='width:12%;'>Make</th>
                         <th>BS</th>
                         <th>Days</th>
+                        <th>Reason</th>
                         <th> @ </th>
                         <th style='width:18%;'>Offroad Date</th>
                     </tr>";
@@ -285,6 +293,7 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
                         <td>{$row['make']}</td>
                         <td>{$row['emission_norms']}</td>
                         <td>{$row['no_of_days_offroad']}</td>
+                        <td>{$row['parts_required']}</td>
                         <td>{$row['off_road_location']}</td>
                         <td>{$formatted_date}</td>
                       </tr>";
@@ -300,6 +309,7 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
             <th style='width:12%;'>Make</th>
             <th>BS</th>
             <th>Days</th>
+            <th>Reason</th>
             <th> @ </th>
         </tr>";
             $serial_number = 1;
@@ -312,6 +322,7 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
             <td>{$row['make_abbr']}</td>
             <td>{$row['emission_norms']}</td>
             <td>{$row['no_of_days_offroad']}</td>
+            <td>{$row['parts_required']}</td>
             <td>{$row['location_abbr']}</td>
           </tr>";
                 $serial_number++;

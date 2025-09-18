@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($data['action']) && $data['ac
         $date = null;
 
         // Check if entry exists
-        $check_sql = "SELECT id FROM program_data WHERE bus_number = ? AND program_type = ?";
+        $check_sql = "SELECT id FROM program_data WHERE bus_number = ? AND program_type = ? and program_date is null";
         $stmt = $db->prepare($check_sql);
         if (!$stmt) {
             echo json_encode("Prepare failed: " . $db->error);
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($data['action']) && $data['ac
             // Update existing
             $update_sql = "UPDATE program_data 
                            SET program_completed_km = ?, program_date = ?, updated_at = NOW() 
-                           WHERE bus_number = ? AND program_type = ?";
+                           WHERE bus_number = ? AND program_type = ? and program_date is null";
             $update_stmt = $db->prepare($update_sql);
             if (!$update_stmt) {
                 echo json_encode("Update Prepare failed: " . $db->error);

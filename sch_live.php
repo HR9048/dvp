@@ -41,14 +41,16 @@ include 'includes/connection.php';
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
         integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-<!-- Load Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Custom fonts for this template -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
+    <!-- custom script.js file -->
+    
 </head>
 </head>
 
@@ -77,23 +79,23 @@ include 'includes/connection.php';
                 <br><br>
                 <!-- End of Topbar -->
                 <script>
-                $(document).ready(function() {
-                    // Close dropdown when clicking outside
-                    $(document).click(function(e) {
-                        var target = e.target;
-                        if (!$(target).is('.dropdown-toggle') && !$(target).parents().is(
-                                '.dropdown-menu')) {
-                            $('.dropdown-menu').removeClass('show');
-                        }
-                    });
+                    $(document).ready(function() {
+                        // Close dropdown when clicking outside
+                        $(document).click(function(e) {
+                            var target = e.target;
+                            if (!$(target).is('.dropdown-toggle') && !$(target).parents().is(
+                                    '.dropdown-menu')) {
+                                $('.dropdown-menu').removeClass('show');
+                            }
+                        });
 
-                    // Open dropdown when clicking dropdown toggle
-                    $('.dropdown-toggle').click(function() {
-                        var dropdownMenu = $(this).next('.dropdown-menu');
-                        $('.dropdown-menu').not(dropdownMenu).removeClass('show');
-                        dropdownMenu.toggleClass('show');
+                        // Open dropdown when clicking dropdown toggle
+                        $('.dropdown-toggle').click(function() {
+                            var dropdownMenu = $(this).next('.dropdown-menu');
+                            $('.dropdown-menu').not(dropdownMenu).removeClass('show');
+                            dropdownMenu.toggleClass('show');
+                        });
                     });
-                });
                 </script>
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
@@ -103,204 +105,204 @@ include 'includes/connection.php';
                         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
                     <style>
-                    /* Default Table Styling */
-                    .table-container {
-                        overflow-x: auto;
-                        max-width: 100%;
-                        width: 100%;
-                    }
-
-                    th,
-                    td {
-                        border: 1px solid black;
-                        padding: 0px;
-                        text-align: center;
-                        cursor: pointer;
-                        word-break: break-word;
-                        white-space: normal;
-                        font-size: 16px;
-                        /* Default font size for desktop */
-                    }
-
-                    th {
-                        background-color: #f2f2f2;
-                    }
-
-                    /* Highlight Division & Overall Total Rows */
-                    .division-total {
-                        font-weight: bold;
-                        background-color: #dff0d8;
-                    }
-
-                    .overall-total {
-                        font-weight: bold;
-                        background-color: #f7c6c7;
-                    }
-
-                    /* Full-Screen Modal */
-                    .custom-modal {
-                        max-width: 90vw !important;
-                        /* 90% width on desktop */
-                        margin: auto;
-                    }
-
-                    /* Ensure table inside modal is scrollable */
-                    .table-responsive {
-                        overflow-x: auto;
-                        -webkit-overflow-scrolling: touch;
-                    }
-
-                    /* Mobile View Adjustments */
-                    @media (max-width: 768px) {
-
-                        /* Full-Screen Modal on Mobile */
-                        .custom-modal {
-                            width: 100vw !important;
-                            /* Full width */
-                            height: 100vh !important;
-                            /* Full height */
-                            margin: 0;
+                        /* Default Table Styling */
+                        .table-container {
+                            overflow-x: auto;
+                            max-width: 100%;
+                            width: 100%;
                         }
 
-                        /* Make modal content fill the screen */
-                        .modal-content {
-                            height: 100vh;
-                            display: flex;
-                            flex-direction: column;
-                        }
-
-                        /* Allow body to scroll */
-                        .modal-body {
-                            flex-grow: 1;
-                            overflow-y: auto;
-                        }
-
-                        .my-3 {
-                            margin-top: 0rem !important;
-                            margin-bottom: 0rem !important;
-                        }
-
-                        /* Reduce font size for mobile */
                         th,
                         td {
-                            font-size: 10px;
-                            /* Smaller font on mobile */
-                            padding: 0px !important;
-                            margin-top: 0px !important;
+                            border: 1px solid black;
+                            padding: 0px;
+                            text-align: center;
+                            cursor: pointer;
+                            word-break: break-word;
+                            white-space: normal;
+                            font-size: 16px;
+                            /* Default font size for desktop */
                         }
 
-                        h4 {
-                            font-size: 10px;
-                            /* Smaller font on mobile */
+                        th {
+                            background-color: #f2f2f2;
                         }
 
-                        /* Adjust modal title font size */
-                        .modal-title {
-                            font-size: 14px;
+                        /* Highlight Division & Overall Total Rows */
+                        .division-total {
+                            font-weight: bold;
+                            background-color: #dff0d8;
                         }
 
-                        /* Reduce padding for better spacing */
-                        .modal-body {
-                            padding: 8px;
+                        .overall-total {
+                            font-weight: bold;
+                            background-color: #f7c6c7;
                         }
 
-                        .modal-footer {
-                            padding: 8px;
-                        }
-
-                        .desc-column {
-                            width: 25%;
-                            word-wrap: break-word;
-                        }
-                    }
-
-
-                    /* Desktop View - Modal Covers 90% Width */
-                    .custom-modal {
-                        max-width: 100vw !important;
-                        /* 90% of viewport width */
-                        margin: auto;
-                    }
-
-                    /* Fix Description Column Width (20% of Modal) */
-                    .desc-column {
-                        width: 20%;
-                        word-wrap: break-word;
-                    }
-
-                    /* Ensure Table Stays Inside Modal */
-                    .table-responsive {
-                        overflow-x: auto;
-                        -webkit-overflow-scrolling: touch;
-                    }
-
-                    /* Center the modal and make it Full-Screen on Mobile */
-                    @media (max-width: 768px) {
+                        /* Full-Screen Modal */
                         .custom-modal {
-                            width: 100vw !important;
-                            /* Full screen width */
-                            height: 100vh !important;
-                            /* Full screen height */
-                            margin: 0;
+                            max-width: 90vw !important;
+                            /* 90% width on desktop */
+                            margin: auto;
                         }
 
-                        /* Adjust modal content */
-                        .modal-content {
-                            height: auto;
-                            /* Full height */
-                            display: flex;
-                            flex-direction: column;
+                        /* Ensure table inside modal is scrollable */
+                        .table-responsive {
+                            overflow-x: auto;
+                            -webkit-overflow-scrolling: touch;
                         }
 
-                        /* Ensure the modal body scrolls instead of cutting off content */
-                        .modal-body {
-                            flex-grow: 1;
-                            overflow-y: auto;
+                        /* Mobile View Adjustments */
+                        @media (max-width: 768px) {
+
+                            /* Full-Screen Modal on Mobile */
+                            .custom-modal {
+                                width: 100vw !important;
+                                /* Full width */
+                                height: 100vh !important;
+                                /* Full height */
+                                margin: 0;
+                            }
+
+                            /* Make modal content fill the screen */
+                            .modal-content {
+                                height: 100vh;
+                                display: flex;
+                                flex-direction: column;
+                            }
+
+                            /* Allow body to scroll */
+                            .modal-body {
+                                flex-grow: 1;
+                                overflow-y: auto;
+                            }
+
+                            .my-3 {
+                                margin-top: 0rem !important;
+                                margin-bottom: 0rem !important;
+                            }
+
+                            /* Reduce font size for mobile */
+                            th,
+                            td {
+                                font-size: 10px;
+                                /* Smaller font on mobile */
+                                padding: 0px !important;
+                                margin-top: 0px !important;
+                            }
+
+                            h4 {
+                                font-size: 10px;
+                                /* Smaller font on mobile */
+                            }
+
+                            /* Adjust modal title font size */
+                            .modal-title {
+                                font-size: 14px;
+                            }
+
+                            /* Reduce padding for better spacing */
+                            .modal-body {
+                                padding: 8px;
+                            }
+
+                            .modal-footer {
+                                padding: 8px;
+                            }
+
+                            .desc-column {
+                                width: 25%;
+                                word-wrap: break-word;
+                            }
                         }
 
-                        /* Table is fully responsive */
-                        .table {
-                            width: 100%;
-                            table-layout: auto;
+
+                        /* Desktop View - Modal Covers 90% Width */
+                        .custom-modal {
+                            max-width: 100vw !important;
+                            /* 90% of viewport width */
+                            margin: auto;
+                        }
+
+                        /* Fix Description Column Width (20% of Modal) */
+                        .desc-column {
+                            width: 20%;
                             word-wrap: break-word;
                         }
-                    }
 
-                    .late-time {
-                        color: red;
-                        font-weight: bold;
-                    }
+                        /* Ensure Table Stays Inside Modal */
+                        .table-responsive {
+                            overflow-x: auto;
+                            -webkit-overflow-scrolling: touch;
+                        }
 
-                    /* Light Green Background for Division Total Row */
-                    .division-total td {
-                        background-color: #d4edda !important;
-                        /* Light Green */
-                        font-weight: bold;
-                        color: #155724;
-                        /* Dark Green Text */
-                    }
+                        /* Center the modal and make it Full-Screen on Mobile */
+                        @media (max-width: 768px) {
+                            .custom-modal {
+                                width: 100vw !important;
+                                /* Full screen width */
+                                height: 100vh !important;
+                                /* Full screen height */
+                                margin: 0;
+                            }
 
-                    /* Light Red Background for Corporation Total Row */
-                    .overall-total td {
-                        background-color: #f8d7da !important;
-                        /* Light Red */
-                        font-weight: bold;
-                        color: #721c24;
-                        /* Dark Red Text */
-                    }
+                            /* Adjust modal content */
+                            .modal-content {
+                                height: auto;
+                                /* Full height */
+                                display: flex;
+                                flex-direction: column;
+                            }
 
-                    /* Clickable Fields Styling */
-                    .clickable {
-                        cursor: pointer;
-                        text-decoration: underline;
-                        color: #007bff;
-                        /* Blue */
-                    }
+                            /* Ensure the modal body scrolls instead of cutting off content */
+                            .modal-body {
+                                flex-grow: 1;
+                                overflow-y: auto;
+                            }
 
-                    .clickable:hover {
-                        color: #0056b3;
-                        /* Darker Blue */
-                    }
+                            /* Table is fully responsive */
+                            .table {
+                                width: 100%;
+                                table-layout: auto;
+                                word-wrap: break-word;
+                            }
+                        }
+
+                        .late-time {
+                            color: red;
+                            font-weight: bold;
+                        }
+
+                        /* Light Green Background for Division Total Row */
+                        .division-total td {
+                            background-color: #d4edda !important;
+                            /* Light Green */
+                            font-weight: bold;
+                            color: #155724;
+                            /* Dark Green Text */
+                        }
+
+                        /* Light Red Background for Corporation Total Row */
+                        .overall-total td {
+                            background-color: #f8d7da !important;
+                            /* Light Red */
+                            font-weight: bold;
+                            color: #721c24;
+                            /* Dark Red Text */
+                        }
+
+                        /* Clickable Fields Styling */
+                        .clickable {
+                            cursor: pointer;
+                            text-decoration: underline;
+                            color: #007bff;
+                            /* Blue */
+                        }
+
+                        .clickable:hover {
+                            color: #0056b3;
+                            /* Darker Blue */
+                        }
                     </style>
 
                     <?php
@@ -308,6 +310,7 @@ include 'includes/connection.php';
                     $current_date = date('Y-m-d');
                     $current_time = date('d-m-Y');
                     $current_time1 = date('H:i');
+                    $selected_date_month = date('M', strtotime($current_date));
                     ?>
 
 
@@ -358,7 +361,7 @@ include 'includes/connection.php';
                                         <h4 class="mb-0" id="departure-heading">
                                             DEPARTURES AS ON <span id="current-time"><?= $current_time ?></span>
                                             <?php if ($current_date === date('Y-m-d')) : ?>
-                                            @ <span id="current-time1"><?= $current_time1 ?></span>
+                                                @ <span id="current-time1"><?= $current_time1 ?></span>
                                             <?php endif; ?>
                                         </h4>
                                         <input style="font-size: 12px;" type="date" id="date-selector"
@@ -427,6 +430,7 @@ include 'includes/connection.php';
                                 </div>
                             </div>
                         </div>
+                        <!-- Accordion Item 2 -->
                         <div class="card">
                             <div class="card-header" id="headingTwo">
                                 <h2 class="mb-0">
@@ -446,8 +450,57 @@ include 'includes/connection.php';
                                 </div>
                             </div>
                         </div>
-
                         <!-- Accordion Item 3 -->
+                        <div class="card">
+                            <div class="card-header" id="headingSeven">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left collapsed" type="button"
+                                        data-toggle="collapse" data-target="#collapseSeven" aria-expanded="false"
+                                        aria-controls="collapseSeven">
+                                        Break Down Details <i class="fas fa-chevron-down float-right"></i>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseSeven" class="collapse" aria-labelledby="headingSeven"
+                                data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center my-3">
+                                        <h4 class="mb-0" id="bd-heading">
+                                            Break Down As on <span id="current-datetime"><?= $current_time ?></span>
+
+                                        </h4>
+                                        <input style="font-size: 12px;" type="date" id="bd-date-selector"
+                                            class="form-control w-auto" max="<?= date('Y-m-d'); ?>"
+                                            value="<?= date('Y-m-d'); ?>">
+                                    </div>
+
+                                    <div class="table-container">
+                                        <table class="table table-bordered">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>Division</th>
+                                                    <th style="width:17%">Depot</th>
+                                                    <th>Break Down</th>
+                                                    <th id="bd-date-month"><?= $selected_date_month ?> BD</th>
+                                                    <th>Cumulative BD</th>
+                                                </tr>
+                                            </thead>
+                                            
+                                            <tbody id="bd-report-body">
+                                                <!-- Data will be loaded here -->
+                                            </tbody>
+                                            <tfoot id="bd-overall-total-row">
+                                                <!-- Overall total will be added here -->
+                                            </tfoot>
+                                        </table>
+                                        <div id="loadingMessagebd" style="display: none;">Loading Off-Road data, please
+                                        wait...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accordion Item 4 -->
                         <div class="card">
                             <div class="card-header" id="headingThree">
                                 <h2 class="mb-0">
@@ -489,7 +542,8 @@ include 'includes/connection.php';
                             </div>
                         </div>
 
-                        <div class="card">
+
+                        <!--<div class="card">
                             <div class="card-header" id="headingSix">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link btn-block text-left collapsed" type="button"
@@ -502,20 +556,17 @@ include 'includes/connection.php';
                             <div id="collapseSix" class="collapse" aria-labelledby="headingSix"
                                 data-parent="#accordionExample">
                                 <div class="card-body">
-                                    <!-- form to select date range,division and depot AND clear filter button -->
                                     <form id="overallDashboardForm">
                                         <label for="startDate">Date</label>
                                         <input type="date" id="startDate" name="startDate">
                                         <label for="division_id">Division</label>
                                         <select id="division_id" name="division_id">
                                             <option value="All">All</option>
-                                            <!-- Populate divisions dynamically -->
                                         </select>
 
                                         <label for="depot_id">Depot</label>
                                         <select id="depot_id" name="depot_id">
                                             <option value="All">All</option>
-                                            <!-- Populate depots dynamically -->
                                         </select>
                                         <button type="button" class="btn btn-primary">Fetch Data</button>
 
@@ -525,60 +576,12 @@ include 'includes/connection.php';
                                     <div id="overallDashboard" class="table-responsive"></div>
                                 </div>
                             </div>
-                        </div>
+                        </div>-->
                     </div>
                 </div>
-<script>
-$(document).ready(function () {
-    // ✅ Fetch Data button click
-    $("#overallDashboardForm button.btn-primary").on("click", function () {
-        var startDate = $("#startDate").val();
-        var division  = $("#division_id").val();
-        var depot     = $("#depot_id").val();
-
-        let missingFields = [];
-
-        if (!startDate) missingFields.push("Start Date");
-        if (!division) missingFields.push("Division");
-        if (!depot) missingFields.push("Depot");
-
-        if (missingFields.length > 0) {
-            Swal.fire({
-                icon: "warning",
-                title: "Required Fields Missing!",
-                text: "Please fill: " + missingFields.join(", "),
-                confirmButtonColor: "#d33"
-            });
-            return; // stop execution if missing fields
-        }
-
-        var formData = $("#overallDashboardForm").serialize();
-
-        $.ajax({
-            url: "database/fetch_overalldashboard_data.php",
-            type: "POST",
-            data: formData,
-            beforeSend: function () {
-                $("#overallDashboard").html("<p><b>Loading data...</b></p>");
-            },
-            success: function (response) {
-                $("#overallDashboard").html(response);
-            },
-            error: function (xhr, status, error) {
-                $("#overallDashboard").html(
-                    "<p style='color:red;'>Error fetching data: " + error + "</p>"
-                );
-            }
-        });
-    });
-
-    // ✅ Clear Filters button click
-    $("#clearFilters").on("click", function () {
-        $("#overallDashboardForm")[0].reset(); // reset form fields
-        $("#overallDashboard").empty();        // clear the results div
-    });
-});
-</script>
+                <script>
+                   
+                </script>
 
                 <!-- Include Bootstrap JavaScript -->
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
@@ -653,6 +656,7 @@ $(document).ready(function () {
                                                 <th>Sch Dep Time</th>
                                                 <th>Act Dep Time</th>
                                                 <th>Late By</th>
+                                                <th>Reason</th>
                                             </tr>
                                         </thead>
                                         <tbody id="late-modal-body">
@@ -759,762 +763,21 @@ $(document).ready(function () {
                     </div>
                 </div>
                 <script>
-                document.getElementById("date-selector").addEventListener("change", function() {
-                    let selectedDate = this.value;
-                    let today = new Date().toISOString().split("T")[0];
-
-                    if (selectedDate > today) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Invalid Date Selection',
-                            text: 'You cannot select a future date!',
-                        });
-                        this.value = today; // Reset to today's date
-                        return;
-                    }
-
-                    updateDepartureHeading(selectedDate);
-                    fetchLiveDepartures();
-                });
-
-                function updateDepartureHeading(selectedDate) {
-                    let today = new Date().toISOString().split("T")[0];
-                    let heading = document.getElementById("departure-heading");
-
-                    if (selectedDate === today) {
-                        heading.innerHTML =
-                            `DEPARTURES AS ON <span id="current-time"></span> @ <span id="current-time1"></span>`;
-                    } else {
-                        heading.innerHTML = `DEPARTURES AS ON <span id="current-time"></span>`;
-                    }
-                }
-
-                // Set initial heading on page load
-                updateDepartureHeading(document.getElementById("date-selector").value);
-
-                function fetchLiveDepartures() {
-                    let selectedDate = $("#date-selector").val(); // Get selected date
-
-                    $.ajax({
-                        url: "database/fetch_live_departures.php",
-                        method: "GET",
-                        data: {
-                            date: selectedDate
-                        }, // Pass date as a parameter
-                        dataType: "json",
-                        success: function(response) {
-                            $("#current-time").text(response.time);
-                            $("#current-time1").text(response.time1);
-
-                            let tableContent = "";
-                            let lastDivision = "";
-                            let divisionData = {
-                                total_schedules: 0,
-                                actual_schedules: 0,
-                                difference: 0,
-                                late_departures: 0
-                            };
-                            let overallTotal = {
-                                total_schedules: 0,
-                                actual_schedules: 0,
-                                difference: 0,
-                                late_departures: 0
-                            };
-
-                            response.data.forEach((row, index) => {
-                                if (lastDivision && lastDivision !== row.division) {
-                                    tableContent += `<tr class="division-total">
-                        <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division', '${selectedDate}')">${lastDivision} Total</td>
-                        <td>${divisionData.total_schedules}</td>
-                        <td>${divisionData.actual_schedules}</td>
-                        <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
-                        <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
-                    </tr>`;
-
-                                    // Reset division data
-                                    divisionData = {
-                                        total_schedules: 0,
-                                        actual_schedules: 0,
-                                        difference: 0,
-                                        late_departures: 0
-                                    };
-                                }
-
-                                tableContent += `<tr>
-                    <td>${row.division}</td>
-                    <td class="clickable" onclick="opendepotschdetails('${row.depot}', 'Depot', '${selectedDate}')">${row.depot}</td>
-                    <td>${row.total_schedules}</td>
-                    <td>${row.actual_schedules}</td>
-                    <td class="clickable" onclick="openModal('${row.depot}', 'difference', 'Depot', '${selectedDate}')">${row.difference}</td>
-                    <td class="clickable" onclick="openModal('${row.depot}', 'late', 'Depot', '${selectedDate}')">${row.late_departures}</td>
-                </tr>`;
-
-                                // Update division and overall totals
-                                divisionData.total_schedules += parseInt(row.total_schedules);
-                                divisionData.actual_schedules += parseInt(row.actual_schedules);
-                                divisionData.difference += parseInt(row.difference);
-                                divisionData.late_departures += parseInt(row.late_departures);
-
-                                overallTotal.total_schedules += parseInt(row.total_schedules);
-                                overallTotal.actual_schedules += parseInt(row.actual_schedules);
-                                overallTotal.difference += parseInt(row.difference);
-                                overallTotal.late_departures += parseInt(row.late_departures);
-
-                                lastDivision = row.division;
-                            });
-
-                            // Add last division total row
-                            tableContent += `<tr class="division-total">
-                <td colspan="2" class="clickable" onclick="opendepotschdetails('${lastDivision}', 'Division', '${selectedDate}')">${lastDivision} Total</td>
-                <td>${divisionData.total_schedules}</td>
-                <td>${divisionData.actual_schedules}</td>
-                <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
-                <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
-            </tr>`;
-
-                            // Update overall total row
-                            $("#overall-total-row").html(`<tr class="overall-total">
-                <td colspan="2" class="clickable" onclick="opendepotschdetails('Corporation', 'Corporation', '${selectedDate}')">Corporation Total</td>
-                <td>${overallTotal.total_schedules}</td>
-                <td>${overallTotal.actual_schedules}</td>
-                <td>${overallTotal.difference}</td>
-                <td>${overallTotal.late_departures}</td>
-            </tr>`);
-
-                            // Update report body
-                            $("#report-body").html(tableContent);
-                        }
-                    });
-                }
-
-
-                function openModal(id, type, location, selectedDate) {
-                    let modalId = type === 'difference' ? '#difference-modal' : '#late-modal';
-                    let modalBodyId = type === 'difference' ? '#difference-modal-body' : '#late-modal-body';
-
-                    // Convert selectedDate from yyyy-mm-dd to dd-mm-yyyy
-                    let formattedDate = selectedDate.split('-').reverse().join('-');
-
-                    $(modalId + " .modal-title").text(
-                        `${type === 'difference' ? "Difference" : "Late Departures"} Details for ${id} on ${formattedDate}`
-                    );
-                    $(modalBodyId).html("<tr><td colspan='8' class='text-center'>Loading...</td></tr>");
-                    $.ajax({
-                        url: "database/fetch_schedule_details.php",
-                        method: "POST",
-                        data: {
-                            id: id,
-                            type: type,
-                            location: location,
-                            date: selectedDate // Pass the selected date
-                        },
-                        dataType: "json",
-                        success: function(data) {
-                            let content = "";
-                            if (data.length === 0) {
-                                content =
-                                    "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
-                            } else {
-                                content = data.map((row, index) => {
-                                    if (type === 'difference') {
-                                        return `<tr>
-                            <td>${index + 1}</td>
-                            <td>${row.sch_key_no}</td>
-                            <td>${row.sch_abbr}</td>
-                            <td>${row.name}</td>
-                            <td>${row.sch_dep_time}</td>
-                        </tr>`;
-                                    } else {
-                                        let lateTime = formatLateTime(row.late_by);
-                                        return `<tr>
-                            <td>${index + 1}</td>
-                            <td onclick="fetchScheduleDetails('${row.sch_key_no}', '${row.division_id}', '${row.depot_id}', '${row.sch_abbr}', '${row.name}', '${row.sch_dep_time}')">${row.sch_key_no}</td>
-                            <td style="display:none;">${row.division_id}</td>
-                            <td style="display:none;">${row.depot_id}</td>
-                            <td>${row.sch_abbr}</td>
-                            <td>${row.name}</td>
-                            <td>${row.sch_dep_time}</td>
-                            <td>${row.act_dep_time}</td>
-                            <td>${lateTime}</td>
-                        </tr>`;
-                                    }
-                                }).join("");
-                            }
-                            $(modalBodyId).html(content);
-                        }
-                    });
-
-                    $(modalId).modal("show");
-                }
-
-                function fetchScheduleDetails(schNo, divisionId, depotId, description, serviceClass, schDepTime) {
-                    // Open modal immediately and show loading message
-                    $('#modal-sch-no').text(schNo);
-                    $('#modal-description').text(description);
-                    $('#modal-service-class').text(serviceClass);
-                    $('#modal-sch-dep-time').text(schDepTime);
-                    $('#schedule-details-modal').modal('show');
-                    $('#loading-message').show();
-                    $('#schedule-details-table').addClass('d-none');
-
-                    $.ajax({
-                        url: 'database/fetch_late_departure_details.php', // Your PHP script
-                        type: 'POST',
-                        data: {
-                            sch_no: schNo,
-                            division_id: divisionId,
-                            depot_id: depotId
-                        },
-                        dataType: 'json',
-                        success: function(response) {
-                            if (response.success) {
-                                let html = '';
-
-                                response.data.forEach((row) => {
-                                    let dateParts = row.date.split(
-                                        '-'); // Assuming format is YYYY-MM-DD
-                                    let formattedDate =
-                                        `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-                                    let lateByText = formatLateBy(row.late_by);
-
-                                    html += `<tr>
-                        <td>${formattedDate}</td>
-                        <td>${row.dep_time}</td>
-                        <td>${lateByText}</td>
-                        <td>${row.driver_fixed == 0 ? '✔️' : '❌'}</td>
-                        <td>${row.vehicle_fixed == 0 ? '✔️' : '❌'}</td>
-                    </tr>`;
-                                });
-
-                                $('#schedule-details-modal-body').html(html);
-                                $('#loading-message').hide();
-                                $('#schedule-details-table').removeClass('d-none');
-                            } else {
-                                $('#schedule-details-modal-body').html(
-                                    '<tr><td colspan="5" class="text-center">No records found.</td></tr>'
-                                    );
-                                $('#loading-message').hide();
-                                $('#schedule-details-table').removeClass('d-none');
-                            }
-                        },
-                        error: function() {
-                            alert('Error fetching schedule details.');
-                        }
-                    });
-                }
-
-                function formatLateTime(minutes) {
-                    let h = Math.floor(minutes / 60);
-                    let m = minutes % 60;
-                    return h > 0 ? `${h}h${m}m` : `${m}m`;
-                }
-
-                function formatLateBy(minutes) {
-                    let absMinutes = Math.abs(minutes);
-                    let hours = Math.floor(absMinutes / 60);
-                    let mins = absMinutes % 60;
-                    let formattedTime = `${hours}h ${mins}m`;
-
-                    if (minutes > 30) {
-                        return `<span class="late-time">${formattedTime}</span>`; // Late
-                    } else {
-                        return `On Time`;
-                    }
-                }
-
-                function opendepotschdetails(name, type) {
-                    let headerLabel = (type === "Depot") ?
-                        "Depot: " + name :
-                        (type === "Division") ?
-                        "Division: " + name :
-                        (type === "Corporation") ?
-                        "Corporation " :
-                        name;
-
-
-                    // Update the modal header and reset counts
-                    $("#modalDepotName").text(headerLabel);
-
-                    $("#modalScheduleCount").text("Loading...");
-                    $("#modalDepartureCount").text("Loading...");
-
-                    // Show the modal first with a loading message
-                    $("#scheduleModal .modal-body").html(
-                        "<p class='text-center'>Loading Schedules data, please wait...</p>");
-                    $("#scheduleModal").modal("show");
-
-                    $.ajax({
-                        url: "database/sch_live_fetch_all_schedule.php",
-                        type: "POST",
-                        data: {
-                            name: name,
-                            type: type
-                        },
-                        dataType: "json",
-                        success: function(response) {
-                            if (response.status === "success") {
-                                $("#scheduleModal .modal-body").html(response.html);
-
-                                // Update the modal header with schedule & departure counts
-                                $("#modalScheduleCount").text(response.schedule_count);
-                                $("#modalDepartureCount").text(response.departure_count);
-                            } else {
-                                $("#scheduleModal .modal-body").html(
-                                    "<p class='text-center text-danger'>No data found.</p>");
-                                $("#modalScheduleCount").text(0);
-                                $("#modalDepartureCount").text(0);
-                            }
-                        },
-                        error: function() {
-                            $("#scheduleModal .modal-body").html(
-                                "<p class='text-center text-danger'>Error fetching data.</p>");
-                            $("#modalScheduleCount").text(0);
-                            $("#modalDepartureCount").text(0);
-                        }
-                    });
-                }
-
-
-
-                setInterval(fetchLiveDepartures, 5000);
-                fetchLiveDepartures();
-                document.getElementById("date-selector").addEventListener("change", function() {
-                    fetchLiveDepartures();
-                });
+                    
                 </script>
 
 
             </div>
 
             <script>
-            $(document).ready(function() {
-                function fetchOperationalStatistics() {
-                    var divisionId = $("#division").val();
-                    var depotId = $("#depot").val();
-
-                    if (divisionId !== "" && depotId !== "") {
-                        $.ajax({
-                            url: "includes/backend_data.php",
-                            type: "POST",
-                            data: {
-                                action: "fetchLatestFile",
-                                division: divisionId,
-                                depot: depotId
-                            },
-                            dataType: "json", // Ensure the response is treated as JSON
-                            success: function(response) {
-                                if (!response || response.file === "no_file") {
-                                    Swal.fire({
-                                        icon: "error",
-                                        title: "No File Found",
-                                        text: "No operational statistics file found for this selection."
-                                    });
-                                    // Reset division and depot selection
-                                    $("#division").val("");
-                                    $("#depot").html('<option value="">Depot</option>');
-                                    return;
-                                }
-
-                                let fileName = response.file.trim();
-                                let reportDate = response.date || "";
-                                let formattedDate = "";
-
-                                if (reportDate) {
-                                    let dateParts = reportDate.split("-");
-                                    formattedDate =
-                                        `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-                                }
-
-                                let filePath = "../uploads/" + fileName;
-                                let filePath2 = "uploads/" + fileName;
-                                let googleDocsUrl =
-                                    "https://docs.google.com/gview?embedded=true&url=http://117.251.26.11:8880/" +
-                                    encodeURIComponent(filePath2);
-
-                                let divisionText = $("#division option:selected").text();
-                                let depotText = $("#depot option:selected").text();
-
-                                $(".modal-title").text(
-                                    `Operational Statistics Details for Division: ${divisionText}, Depot: ${depotText} on Date: ${formattedDate}`
-                                );
-
-                                if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                                    $("#pdfViewer").attr("src", googleDocsUrl);
-                                } else {
-                                    $("#pdfViewer").attr("src", filePath);
-                                }
-
-                                $("#downloadBtn").attr("href", filePath);
-                                $("#operationalStatisticsMod").modal("show");
-                            },
-                            error: function(xhr, status, error) {
-                                console.error("AJAX Error:", error);
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Error",
-                                    text: "Something went wrong. Please try again!"
-                                });
-                            }
-                        });
-                    }
-                }
-
-                $("#division, #depot").change(fetchOperationalStatistics);
-
-                $("#operationalStatisticsMod").on("hidden.bs.modal", function() {
-                    $("#division").val("");
-                    $("#depot").html('<option value="">Depot</option>');
-                    $("#pdfViewer").attr("src", "");
-                    $("#downloadBtn").attr("href", "#");
-                    $("#mobileWarning").hide();
-                });
-            });
+               
             </script>
 
             <script>
-            function fetchBusCategory() {
-                $.ajax({
-                    url: 'includes/data_fetch.php',
-                    type: 'GET',
-                    data: {
-                        action: 'fetchDivision'
-                    },
-                    success: function(response) {
-                        var divisions = JSON.parse(response);
-                        $.each(divisions, function(index, division) {
-                            if (division.DIVISION !== 'HEAD-OFFICE' && division.DIVISION !==
-                                'RWY') {
-                                $('#division').append('<option value="' + division.division_id +
-                                    '">' +
-                                    division
-                                    .DIVISION + '</option>');
-                            }
-                        });
-                    }
-                });
-
-                $('#division').change(function() {
-                    var Division = $(this).val();
-                    $.ajax({
-                        url: 'includes/data_fetch.php?action=fetchDepot',
-                        method: 'POST',
-                        data: {
-                            division: Division
-                        },
-                        success: function(data) {
-                            // Update the depot dropdown with fetched data
-                            $('#depot').html(data);
-
-                            // Hide the option with text 'DIVISION'
-                            $('#depot option').each(function() {
-                                if ($(this).text().trim() === 'DIVISION') {
-                                    $(this).hide();
-                                }
-                            });
-                        }
-                    });
-                });
-            }
-
-            function fetchBusCategory1() {
-                $.ajax({
-                    url: 'includes/data_fetch.php',
-                    type: 'GET',
-                    data: {
-                        action: 'fetchDivision'
-                    },
-                    success: function(response) {
-                        var divisions = JSON.parse(response);
-                        $.each(divisions, function(index, division) {
-                            if (division.DIVISION !== 'HEAD-OFFICE' && division.DIVISION !==
-                                'RWY') {
-                                $('#division_id').append('<option value="' + division.division_id +
-                                    '">' +
-                                    division
-                                    .DIVISION + '</option>');
-                            }
-                        });
-                    }
-                });
-
-                $('#division_id').change(function() {
-                    var Division = $(this).val();
-                    $.ajax({
-                        url: 'includes/data_fetch.php?action=fetchDepot',
-                        method: 'POST',
-                        data: {
-                            division: Division
-                        },
-                        success: function(data) {
-                            // Update the depot dropdown with fetched data
-                            $('#depot_id').html(data);
-
-                            // Hide the option with text 'DIVISION'
-                            $('#depot_id').html('<option value="All">All</option>');
-                            $('#depot_id').append(data);
-                            $('#depot_id option').each(function() {
-                                if ($(this).text().trim() === 'DIVISION' || $(this).text()
-                                    .trim() === 'KALABURAGI') {
-                                    $(this).hide();
-                                }
-                            });
-                        }
-                    });
-                });
-            }
-            $(document).ready(function() {
-                fetchBusCategory();
-                fetchBusCategory1();
-            });
+               
             </script>
             <script>
-            $(document).ready(function() {
-                $('#collapseTwo').on('show.bs.collapse', function() {
-                    fetchOffRoadData();
-                });
-
-                function fetchOffRoadData() {
-                    $("#loadingMessage").show();
-                    $("#offRoadDataTable").html(""); // Clear previous content
-
-                    $.ajax({
-                        url: "database/sch_live_fetch_offroad_data.php", // PHP script to fetch depot-wise data
-                        type: "GET",
-                        dataType: "html",
-                        success: function(response) {
-                            $("#loadingMessage").hide();
-                            $("#offRoadDataTable").html(response);
-                        },
-                        error: function() {
-                            $("#loadingMessage").hide();
-                            $("#offRoadDataTable").html("<p>Error loading data.</p>");
-                        }
-                    });
-                }
-            });
-
-            $(document).ready(function() {
-                $('#collapseFour').on('show.bs.collapse', function() {
-                    fetchCommercialData();
-                });
-
-                function fetchCommercialData() {
-                    $("#loadingMessagecommerial").show();
-                    $("#commertialTable").html(""); // Clear previous content
-
-                    let urls = [
-                        "http://117.203.105.106:50/transfer/commercial/csms_live_fetch_stalls.php"
-                    ];
-
-                    let attempt = 0;
-
-                    function tryFetch() {
-                        if (attempt >= urls.length) {
-                            $("#loadingMessagecommerial").hide();
-                            $("#commertialTable").html("<p>Error loading data from all sources.</p>");
-                            return;
-                        }
-
-                        $.ajax({
-                            url: urls[attempt],
-                            type: "GET",
-                            dataType: "html",
-                            timeout: 100000, // Wait 100 seconds before failing
-                            success: function(response) {
-                                $("#loadingMessagecommerial").hide();
-                                $("#commertialTable").html(response);
-                            },
-                            error: function() {
-                                attempt++;
-                                tryFetch(); // Try the next URL
-                            }
-                        });
-                    }
-
-                    tryFetch(); // Start the first request
-                }
-            });
-
-            function fetchoffroadDetails(id, name, type, subtype) {
-                // Show modal with loading message
-                $("#offroadModal .modal-body").html("<p class='text-center'>Loading...</p>");
-                $("#offroadModal").modal("show");
-
-                $.ajax({
-                    url: "database/sch_live_fetch_depot_offroad_data.php", // PHP script to fetch data
-                    type: "POST",
-                    data: {
-                        id: id,
-                        name: name,
-                        type: type,
-                        subtype: subtype
-                    },
-                    dataType: "json",
-                    success: function(response) {
-                        if (response.status === "success") {
-                            $("#offroadModal .modal-body").html(response.html);
-                        } else {
-                            $("#offroadModal .modal-body").html(
-                                "<p class='text-center text-danger'>No off-road data found.</p>");
-                        }
-                    },
-                    error: function() {
-                        $("#offroadModal .modal-body").html(
-                            "<p class='text-center text-danger'>Error fetching data.</p>");
-                    }
-                });
-            }
-            $(document).ready(function() {
-                $('#collapseThree').on('show.bs.collapse', function() {
-                    fetchKMPLData();
-                });
-
-                function fetchKMPLData() {
-                    $("#loadingMessage1").show();
-                    $("#kmpl-content").html(""); // Clear previous content
-
-                    let selectedDate = $("#date-selector").val(); // Get selected date
-
-                    $.ajax({
-                        url: 'database/sch_live_fetch_kmpl_data.php', // PHP script to fetch KMPL data
-                        type: 'POST',
-                        data: {
-                            date: selectedDate // Send selected date
-                        },
-                        dataType: 'html',
-                        success: function(response) {
-                            $("#loadingMessage1").hide();
-                            $("#kmpl-content").html(response);
-                        },
-                        error: function() {
-                            $("#loadingMessage1").hide();
-                            $("#kmpl-content").html("<p>Error loading data.</p>");
-                        }
-                    });
-
-                }
-            });
-
-            function fetchvehiclekmplDetails(id, type, selectedDate) {
-                $.ajax({
-                    url: 'includes/backend_data.php', // Ensure the path is correct
-                    type: 'POST',
-                    data: {
-                        action: 'fetch_vehicle_kmpl',
-                        id: id,
-                        type: type,
-                        date: selectedDate
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            displayKMPLData(response.data, type, selectedDate);
-                        } else {
-                            console.error("Server Response Error:", response.message);
-                            alert('Error: ' + response.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error: ", status, error);
-                        console.error("Response Text:", xhr.responseText);
-                        alert('AJAX Request Failed: ' + error + '\nCheck the console for more details.');
-                    }
-                });
-            }
-
-
-            async function fetchTokenNumber(pfNumber) {
-                const apiUrl = `http://localhost:8880/dvp_test/database/combined_api_data.php?pf_no=${pfNumber}`;
-
-                try {
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) {
-                        console.error(`Error: HTTP status ${response.status}`);
-                        return "Other";
-                    }
-
-                    const data = await response.json();
-
-                    // Ensure 'data' contains an array and at least one item
-                    if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
-                        return data.data[0].token_number || "Other"; // Return token_number from first record
-                    } else {
-                        console.warn(`Token number not found for PF: ${pfNumber}`);
-                    }
-                } catch (error) {
-                    console.error(`Error fetching token number for PF: ${pfNumber}`, error);
-                }
-
-                return "Other"; // Default value if not found or API fails
-            }
-
-
-            async function displayKMPLData(data, type, selectedDate) {
-                // Show modal and set loading text
-                $('#kmplDetailsBody').html('<p class="text-center">Loading data...</p>');
-                $('#kmplDetailsModal').modal('show');
-
-                // Check if data is available
-                if (data.length === 0) {
-                    $('#kmplDetailsBody').html('<p class="text-center">No data available.</p>');
-                    return;
-                }
-
-                let tableHtml = `<table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Sl. No</th>`;
-
-                if (type === "Division") {
-                    tableHtml += `<th>Depot Name</th>`;
-                }
-
-                tableHtml += `<th>Bus Number</th>
-                  <th>Route No</th>
-                  <th>Crew Token</th>
-                  <th>Km Operated</th>
-                  <th>HSD</th>
-                  <th>KMPL</th>
-            </tr>
-        </thead>
-        <tbody>`;
-
-                for (const [index, row] of data.entries()) {
-                    let crewTokens = [];
-
-                    if (row.driver_1_pf) {
-                        let token1 = await fetchTokenNumber(row.driver_1_pf);
-                        crewTokens.push(`${token1}`);
-                    }
-
-                    if (row.driver_2_pf) {
-                        let token2 = await fetchTokenNumber(row.driver_2_pf);
-                        crewTokens.push(`${token2}`);
-                    }
-
-                    let crewTokenString = crewTokens.length > 0 ? crewTokens.join(', ') : 'N/A';
-
-                    tableHtml += `<tr>
-            <td>${index + 1}</td>`;
-
-                    if (type === "Division") {
-                        tableHtml += `<td>${row.depot_name}</td>`;
-                    }
-
-                    tableHtml += `<td>${row.bus_number}</td>
-                      <td>${row.route_no}</td>
-                      <td>${crewTokenString}</td>
-                      <td>${row.km_operated}</td>
-                      <td>${row.hsd}</td>
-                      <td>${row.kmpl}</td>
-                  </tr>`;
-                }
-
-                tableHtml += `</tbody></table>`;
-
-                // Insert final table into modal body
-                $('#kmplDetailsBody').html(tableHtml);
-            }
+               
             </script>
 
             <footer id="sticky-footer" class="flex-shrink-0 py-4">
@@ -1551,7 +814,7 @@ $(document).ready(function () {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-
+<script src="script.js"></script>
 </body>
 
 </html>

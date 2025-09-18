@@ -154,7 +154,7 @@ confirm_logged_in();
             <div class="container-fluid ">
 
               <!--<h4>KKRTC</h4>&nbsp;&nbsp;-->
-              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
                 aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fa-duotone fa-solid fa-sliders"></i>
               </button>
@@ -275,16 +275,18 @@ confirm_logged_in();
 
                             <li><a class="dropdown-item" href="division_report.php">One day Off-Road Report</a></li>
                             <li><a class="dropdown-item" href="division_offroad.php">From - To days Off-Road Report</a></li>
-                            <li><a class="dropdown-item" href="division_mkmpl_report.php">Monthly KMPL Report</a></li>
-                            <li><a class="dropdown-item" href="division_vehicle_kmpl_ft.php">kmpl report Fron-To Date</a></li>
-                            <li><a class="dropdown-item" href="division_kmpl_entry_details.php">KMPL Entered Report</a></li>
-                            <li><a class="dropdown-item" href="division_vehicle_kmpl_report.php">Vehicle Kmpl Track Report</a></li>
-                          <?php } ?>
+                            <li><a class="dropdown-item" href="division_mkmpl_report.php">Vehicle wise Monthly KMPL Report</a></li>
+                            <li><a class="dropdown-item" href="division_vehicle_kmpl_ft.php">Vehicle wise From-To Date KMPL report </a></li>
+                            <li><a class="dropdown-item" href="division_vehicle_kmpl_report.php">Manual/Logsheet KMPL Comparison Report</a></li>
+                            <li><a class="dropdown-item" href="division_view_bd.php">Break Down Report</a></li>
+                            <?php if (in_array($_SESSION['DIVISION_ID'], [1, 2, 3])) { ?>
+                            <li><a class="dropdown-item" href="division_w3_report_fromto.php">W3 Chart Report</a></li>
+                          <?php } } ?>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
-                            <li><a class="dropdown-item" href="division_schedule_report_day.php">Daily Schedule reports</a></li>
-                            <li><a class="dropdown-item" href="division_schedule_report_month.php">Monthly Schedule reports</a></li>
-                            <li><a class="dropdown-item" href="division_schedule_monitor.php">Schedule Monitor</a></li>
-                            <li><a class="dropdown-item" href="division_departure_report.php">Departure Report</a></li>
+                            <li><a class="dropdown-item" href="division_schedule_report_day.php">Day wise Schedule reports</a></li>
+                            <li><a class="dropdown-item" href="division_schedule_report_month.php">Month wise Schedule reports</a></li>
+                            <li><a class="dropdown-item" href="division_schedule_monitor.php">Schedule Not returned Report</a></li>
+                            <li><a class="dropdown-item" href="division_departure_report.php">Departure/Arrival Count Report</a></li>
                           <?php } ?>
                         </ul>
                       </div>

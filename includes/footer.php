@@ -303,7 +303,7 @@ $opt .= "</select>";
 
 $query = "SELECT ID, e.PF_ID, e.FIRST_NAME, e.LAST_NAME, e.GENDER, USERNAME, PASSWORD, e.EMAIL, PHONE_NUMBER, j.JOB_TITLE, t.TYPE, l.DIVISION, l.DEPOT
                       FROM users u
-                      join employee e on u.PF_ID = e.PF_ID
+                      join employee e on u.PF_ID = e.pf_number
                       join job j on e.JOB_ID=j.JOB_ID
                       join location l on e.LOCATION_ID=l.LOCATION_ID
                       join type t on u.TYPE_ID=t.TYPE_ID

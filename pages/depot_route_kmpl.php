@@ -345,7 +345,7 @@ AND vd.deleted = 0
                         echo '</td>';
 
 
-                        echo '<td><input style="width:100%;" type="text" name="logsheet_no[]" value="' . ($existingData['logsheet_no'] ?? '') . '"></td>';
+                        echo '<td><input style="width:100%;" type="text" class="logsheet-input" name="logsheet_no[]" value="' . ($existingData['logsheet_no'] ?? '') . '"></td>';
                         echo '<td><input style="width:100%;" type="number" name="km_operated[]" class="km_operated" value="' . ($existingData['km_operated'] ?? '') . '" oninput="calculateKMPL(this)"></td>';
                         echo '<td><input style="width:90px;" type="number" name="hsd[]" class="hsd" value="' . ($existingData['hsd'] ?? '') . '" oninput="calculateKMPL(this)"></td>';
                         echo '<td><input style="width:90px;" type="number" name="kmpl[]" class="kmpl" value="' . ($existingData['kmpl'] ?? '') . '" readonly></td>';
@@ -440,7 +440,7 @@ AND vd.deleted = 0
                             echo '</select>';
                             echo '</td>';
 
-                            echo '<td><input style="width:100%;" type="text" name="logsheet_no[]" value="' . ($changedRow['logsheet_no'] ?? '') . '"></td>';
+                            echo '<td><input style="width:100%;" type="text" class="logsheet-input" name="logsheet_no[]" value="' . ($changedRow['logsheet_no'] ?? '') . '"></td>';
                             echo '<td><input style="width:100%;" type="number" name="km_operated[]" class="km_operated" value="' . ($changedRow['km_operated'] ?? '') . '" oninput="calculateKMPL(this)"></td>';
                             echo '<td><input style="width:90px;" type="number" name="hsd[]" class="hsd" value="' . ($changedRow['hsd'] ?? '') . '" oninput="calculateKMPL(this)"></td>';
                             echo '<td><input style="width:90px;" type="number" name="kmpl[]" class="kmpl" value="' . ($changedRow['kmpl'] ?? '') . '" readonly></td>';
@@ -577,7 +577,8 @@ AND vd.deleted = 0
     }
     ?>
 
-    <div class="modal fade" id="repeatVehicleModal" tabindex="-1" aria-labelledby="repeatVehicleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="repeatVehicleModal" tabindex="-1" aria-labelledby="repeatVehicleModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -619,8 +620,10 @@ AND vd.deleted = 0
 
                             <div id="otherBusInput" style="display: none; margin-top: 10px;">
                                 <label for="otherBusNumber" class="form-label">Enter Bus Number:</label>
-                                <input type="text" id="otherBusNumber" class="form-control" oninput="validateBusNumber()" placeholder="KA32F0001" style="text-transform: uppercase;">
-                                <small id="error-msg" style="color: red; display: none;">Invalid format! Use KA32F0001.</small>
+                                <input type="text" id="otherBusNumber" class="form-control" oninput="validateBusNumber()"
+                                    placeholder="KA32F0001" style="text-transform: uppercase;">
+                                <small id="error-msg" style="color: red; display: none;">Invalid format! Use
+                                    KA32F0001.</small>
                             </div>
                         </div>
                         <input type="hidden" id="make" name="make">
@@ -689,6 +692,47 @@ AND vd.deleted = 0
 
     <!-- Select2 Initialization -->
     <script>
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        function checkForDuplicates(currentInput) {
+            const currentVal = currentInput.value.trim();
+            if (currentVal === '') return; // Skip empty inputs
+
+            let duplicateFound = false;
+
+            document.querySelectorAll('.logsheet-input').forEach(otherInput => {
+                if (otherInput !== currentInput && otherInput.value.trim() === currentVal) {
+                    duplicateFound = true;
+                }
+            });
+
+            if (duplicateFound) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Duplicate Logsheet Number!',
+                    text: `The logsheet number "${currentVal}" is already used. Please enter a unique logsheet number.`,
+                });
+                currentInput.value = ''; // Clear the duplicate entry
+                currentInput.focus();
+            }
+        }
+
+        // Attach event listener on each input
+        document.querySelectorAll('.logsheet-input').forEach(input => {
+            input.addEventListener('input', function() {
+                checkForDuplicates(this);
+            });
+        });
+        document.getElementById('kmpl_table').addEventListener('input', function(e) {
+            if (e.target && e.target.classList.contains('logsheet-input')) {
+                checkForDuplicates(e.target);
+            }
+        });
         document.getElementById("otherBusNumber").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault(); // Prevent form submission
@@ -933,7 +977,7 @@ AND vd.deleted = 0
     <td>
         <select class="driver-selects" name="driver2[]" style="width:100%;"><option value="${driver2}">${driver2}</option></select>
     </td>
-        <td><input style="width:100%;" type="text" name="logsheet_no[]"></td>
+        <td><input style="width:100%;" type="text" class="logsheet-input" name="logsheet_no[]"></td>
         <td><input style="width:100%;" type="number" name="km_operated[]" class="km_operated" oninput="calculateKMPL(this)"></td>
         <td><input style="width:90px;" type="number" name="hsd[]" class="hsd" oninput="calculateKMPL(this)"></td>
         <td><input style="width:90px;" type="number" name="kmpl[]" class="kmpl" readonly></td>
@@ -1047,7 +1091,8 @@ AND vd.deleted = 0
             if (selectedValue === "Road Test" || selectedValue === "Relief") {
                 openModal(selectElement);
             } else {
-                updateSelectOptions(document.querySelectorAll('.route-select'), getSelectedValues(), false); // Update table selects
+                updateSelectOptions(document.querySelectorAll('.route-select'), getSelectedValues(),
+                    false); // Update table selects
             }
         }
 
@@ -1178,7 +1223,9 @@ AND vd.deleted = 0
                 options.forEach(option => {
                     if (!isModal) {
                         // Disable options that are already selected in other dropdowns (except for modal)
-                        if (option.value !== "" && !["BD", "CC", "Extra Operation", "Jatra Operation", "DWS", "RWY", "Road Test", "Relief", ].includes(option.value) && selectedValues.includes(option.value)) {
+                        if (option.value !== "" && !["BD", "CC", "Extra Operation", "Jatra Operation", "DWS",
+                                "RWY", "Road Test", "Relief",
+                            ].includes(option.value) && selectedValues.includes(option.value)) {
                             option.disabled = true; // Disable if already selected and not "BD" or "CC"
                         } else {
                             option.disabled = false; // Enable if not selected or is "BD" or "CC"
@@ -1197,7 +1244,8 @@ AND vd.deleted = 0
                 options.forEach(option => {
                     if (!isModal) {
                         // Disable already selected driver options in the main table
-                        if (option.value !== "" && (selectedDriverValues.includes(option.value) || otherDriverValues.includes(option.value))) {
+                        if (option.value !== "" && (selectedDriverValues.includes(option.value) ||
+                                otherDriverValues.includes(option.value))) {
                             option.disabled = true;
                         } else {
                             option.disabled = false;

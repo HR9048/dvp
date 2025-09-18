@@ -26,7 +26,7 @@ if (isset($_COOKIE['dvp_session_token'])) {
                l.kmpl_division, l.kmpl_depot
         FROM sessions s
         JOIN users u ON s.user_id = u.ID
-        JOIN employee e ON e.PF_ID = u.PF_ID
+        JOIN employee e ON e.pf_number = u.PF_ID
         JOIN job j ON e.JOB_ID = j.JOB_ID
         JOIN location l ON e.LOCATION_ID = l.LOCATION_ID
         JOIN type t ON u.TYPE_ID = t.TYPE_ID

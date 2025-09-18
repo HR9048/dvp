@@ -1,6 +1,7 @@
 <?php
 require('session.php');
 confirm_logged_in();
+date_default_timezone_set('Asia/Kolkata');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -155,7 +156,7 @@ confirm_logged_in();
             <div class="container-fluid ">
 
               <!--<h4>KKRTC</h4>&nbsp;&nbsp;-->
-              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
                 aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fa-duotone fa-solid fa-sliders"></i>
               </button>
@@ -177,6 +178,8 @@ confirm_logged_in();
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <li><a class="dropdown-item" href="main_off_road.php">DEPOT DWS Off-Road</a></li>
                           <li><a class="dropdown-item" href="main_rwy_offroad.php">RWY Offroad</a></li>
+                          <li><a class="dropdown-item" href="co_add_bd.php">Add BreakDown</a></li>
+                          <li><a class="dropdown-item" href="co_view_bd.php">View BreakDown</a></li>
                         </ul>
                       </div>
                     </li>
@@ -267,6 +270,8 @@ confirm_logged_in();
                           <li><a class="dropdown-item" href="co_vehicle_kmpl_ft.php">kmpl report Fron-To Date</a></li>
                           <li><a class="dropdown-item" href="co_kmpl_compare_report.php">KMPL Comparision Report</a></li>
                           <li><a class="dropdown-item" href="co_vehicle_kmpl_report.php">Vehicle Kmpl Track Report</a></li>
+                          <li><a class="dropdown-item" href="co_defect_report.php">Defect Report</a></li>
+                          <li><a class="dropdown-item" href="co_w3_report_fromto.php">W3 Chart Report</a></li>
                         </ul>
                       </div>
                     </li>

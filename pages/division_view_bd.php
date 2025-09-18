@@ -1,18 +1,18 @@
 <?php
 include '../includes/connection.php';
-include '../includes/sidebar.php';
+include '../includes/division_sidebar.php';
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
+if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
 ?>
 
-    <h6>Select details for W3 Report</h6>
+    <h6>Select details for Break Down Report</h6>
     <form id="scheduleForm">
 
         <label for="from">From:</label>
@@ -20,19 +20,21 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
         <label for="to">To:</label>
         <input id="to" type="date" name="to" required>
-        <label for="division">Division:</label>
-        <select id="division" name="division" required>
-            <option value="">select</option>
-        </select>
+        <input type="text" id="division" name="division" value="<?php echo $division_id; ?>" readonly hidden>
 
         <label for="depot">Depot:</label>
         <select id="depot" name="depot" required>
             <option value="">select</option>
+            <option value="All">All</option>
+            <?php
+            $depot_query = "SELECT depot_id, depot FROM location WHERE division_id = '$division_id' and depot != 'DIVISION' ORDER BY depot_id ASC";
+            $depot_result = $db->query($depot_query);
+            while ($depot = $depot_result->fetch_assoc()) {
+                echo '<option value="' . $depot['depot_id'] . '">' . $depot['depot'] . '</option>';
+            }
+            ?>
         </select>
-        <label for="bus_number">Bus Number:</label>
-        <select id="bus_number" name="bus_number">
-            <option value="">First-select-depot</option>
-        </select>
+
 
 
         <button class="btn btn-primary" type="submit">Submit</button>
@@ -113,11 +115,11 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                     }
                 }
                 // if form or to date is less then 01-08-2025 then show alert
-                if (fromDate < new Date('2025-08-01') || toDate < new Date('2025-08-01')) {
+                if (fromDate < new Date('2025-04-01') || toDate < new Date('2025-04-01')) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Date Limit Exceeded!',
-                        text: 'Please select dates after 01-08-2025.',
+                        text: 'Please select dates after 01-04-2025.',
                         confirmButtonColor: '#d33',
                         confirmButtonText: 'OK'
                     });
@@ -162,90 +164,6 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             });
         });
 
-        function fetchBusCategory() {
-            $.ajax({
-                url: '../includes/data_fetch.php',
-                type: 'GET',
-                data: {
-                    action: 'fetchDivision'
-                },
-                success: function(response) {
-                    var divisions = JSON.parse(response);
-                    $.each(divisions, function(index, division) {
-                        if (division.DIVISION !== 'HEAD-OFFICE' && division.DIVISION !== 'RWY') {
-                            $('#division').append('<option value="' + division.division_id + '">' + division
-                                .DIVISION + '</option>');
-                        }
-                    });
-                }
-            });
-
-            $('#division').change(function() {
-                var Division = $(this).val();
-                $.ajax({
-                    url: '../includes/data_fetch.php?action=fetchDepot',
-                    method: 'POST',
-                    data: {
-                        division: Division
-                    },
-                    success: function(data) {
-                        // Update the depot dropdown with fetched data
-                        $('#depot').html(data);
-
-                        // Hide the option with text 'DIVISION'
-                        $('#depot option').each(function() {
-                            if ($(this).text().trim() === 'DIVISION') {
-                                $(this).hide();
-                            }
-                        });
-                    }
-                });
-            });
-        }
-        $(document).ready(function() {
-            fetchBusCategory();
-        });
-
-        $(document).ready(function() {
-            // Initialize Select2 for bus_number select
-
-
-            $('#bus_number').select2();
-
-            // Fetch buses when depot changes
-            $('#depot').on('change', function() {
-                var depotId = $(this).val();
-                if (depotId) {
-                    fetchBusNumbers(depotId);
-                } else {
-                    $('#bus_number').html('<option value="">Select a depot first</option>');
-                }
-            });
-
-            // If there's a pre-selected depot, trigger change
-            var depotId = $('#depot').val();
-            if (depotId) {
-                $('#depot').trigger('change');
-            }
-
-            // AJAX function to fetch bus numbers
-            function fetchBusNumbers(depotId) {
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: {
-                        action: 'fetchBusNumbers',
-                        depot_id: depotId
-                    },
-                    success: function(response) {
-                        $('#bus_number').html(response);
-                    },
-                    error: function() {
-                        $('#bus_number').html('<option value="">Failed to load buses</option>');
-                    }
-                });
-            }
-        });
 
 
         $(document).ready(function() {
@@ -256,50 +174,18 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 var to = $('#to').val();
                 var division = $('#division').val();
                 var depot = $('#depot').val();
-                var bus_number = $('#bus_number').val();
 
-                if (!bus_number) {
+                if (!from || !to || !division || !depot) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Selection Required!',
-                        text: 'Please select a Bus Number.',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'OK'
-                    });
-                    return;
-                }
-                var programstart_date = '';
-                var formated_programstart_date = '';
-                var depots_1 = ['1', '8', '12', '13', '14', '15'];
-                var depots_2 = ['111'];
-
-                if (depots_1.includes(depot)) {
-                    programstart_date = '2025-07-31';
-                    formated_programstart_date = '31-07-2025';
-                } else if (depots_2.includes(depot)) {
-                    programstart_date = '2025-09-30';
-                    formated_programstart_date = '30-09-2025';
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Depot Not Valid!',
-                        text: 'Program not yet started for the selected depot. Please select a different depot.',
+                        title: 'All Fields Required!',
+                        text: 'Please fill all the fields before submitting.',
                         confirmButtonColor: '#d33',
                         confirmButtonText: 'OK'
                     });
                     return;
                 }
 
-                if (from < programstart_date || to < programstart_date) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Date Not Valid!',
-                        text: 'Please select another date because the program start date for the selected depot is ' + formated_programstart_date + '.',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'OK'
-                    });
-                    return;
-                }
 
 
                 // Show loading and clear report container
@@ -315,8 +201,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                         to: to,
                         division: division,
                         depot: depot,
-                        bus_number: bus_number,
-                        action: 'fetch_report_of_w3_from_to'
+                        action: 'fetch_report_for_bd_from_to'
                     },
                     success: function(response) {
                         $('#loadingIndicator').hide(); // hide loading on success

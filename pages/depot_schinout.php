@@ -552,7 +552,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                     if (timeDiff > 30) {
                         document.getElementById('reason_for_late_departure').parentElement.style.display = 'block';
                         document.getElementById('reason_early_departure').parentElement.style.display = 'none';
-                    } else if (timeDiff < -60) {
+                    } else if (timeDiff < -30) {
                         document.getElementById('reason_early_departure').parentElement.style.display = 'block';
                         document.getElementById('reason_for_late_departure').parentElement.style.display = 'none';
                     } else {
@@ -762,52 +762,100 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         });
         $(document).ready(function() {
             $('#sch_out_form').on('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
-                document.getElementById('submitBtnvehicleout').addEventListener('click', function() {
-                    document.getElementById('submitBtnvehicleout').disabled = true;
-                });
-                // Serialize form data
-                var formData = $(this).serialize();
+                e.preventDefault();
+
+                const submitBtn = document.getElementById('submitBtnvehicleout');
+                submitBtn.disabled = true;
+
+                const schDepTime = document.getElementById('sch_dep_time').value;
+                const actDepTime = document.getElementById('act_dep_time').value;
+                const timeDiffInput = document.getElementById('time_diff');
+                const reasonLate = document.getElementById('reason_for_late_departure');
+                const reasonEarly = document.getElementById('reason_early_departure');
+
+                const [schHours, schMinutes] = schDepTime.split(':').map(Number);
+                const [actHours, actMinutes] = actDepTime.split(':').map(Number);
+
+                const schTotalMinutes = schHours * 60 + schMinutes;
+                const actTotalMinutes = actHours * 60 + actMinutes;
+
+                const timeDiff = actTotalMinutes - schTotalMinutes;
+                timeDiffInput.value = timeDiff;
+
+                if (timeDiff >= 30 && reasonLate.value.trim() === '') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Late Departure Detected',
+                        text: 'Please provide a reason for being late by 30 minutes or more.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        reasonLate.focus();
+                        submitBtn.disabled = false;
+                    });
+                    return;
+                }
+
+                if (timeDiff <= -30 && reasonEarly.value.trim() === '') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Early Departure Detected',
+                        text: 'Please provide a reason for early departure by 30 minutes or more.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        reasonEarly.focus();
+                        submitBtn.disabled = false;
+                    });
+                    return;
+                }
+
+                if (timeDiff >= 30) {
+                    reasonLate.parentElement.style.display = 'block';
+                }
+
+                if (timeDiff <= -30) {
+                    reasonEarly.parentElement.style.display = 'block';
+                }
+
+                const formData = $(this).serialize();
 
                 $.ajax({
                     type: 'POST',
-                    url: '../database/depot_submit_schedule_out.php', // URL of the PHP script
+                    url: '../database/depot_submit_schedule_out.php',
                     data: formData,
-                    dataType: 'json', // Expect a JSON response
+                    dataType: 'json',
                     success: function(response) {
                         if (response.status === 'success') {
-                            // Display SweetAlert on success
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Success',
                                 text: response.message,
                                 confirmButtonText: 'OK'
                             }).then(() => {
-                                // Reload the page after the alert is closed
                                 window.location.reload();
                             });
                         } else {
-                            // Display SweetAlert on error
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
                                 text: response.message,
                                 confirmButtonText: 'OK'
+                            }).then(() => {
+                                submitBtn.disabled = false;
                             });
                         }
                     },
                     error: function(xhr, status, error) {
-                        // Display detailed error message from the server
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
-                            text: 'An Network error occurred Please refresh page and try once again: ' + (xhr.responseText || error),
+                            title: 'Network Error',
+                            text: 'An unexpected network error occurred. Please refresh page and try again: ' + (xhr.responseText || error),
                             confirmButtonText: 'OK'
+                        }).then(() => {
+                            submitBtn.disabled = false;
                         });
                     }
                 });
             });
-
         });
     </script>
     <!-- Schedule In script -->

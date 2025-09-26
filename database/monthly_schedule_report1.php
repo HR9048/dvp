@@ -12,8 +12,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     // Get first and last date of the selected month
     $month_start_date = "$year-$month-01";
-    $month_end_date = date("Y-m-t", strtotime($month_start_date));
-
+    if ($year == date("Y") && $month == date("m")) {
+        // Use today's date as end date
+        $month_end_date = date("Y-m-d");
+    } else {
+        // Use last day of the selected month
+        $month_end_date = date("Y-m-t", strtotime($month_start_date));
+    }
     // Generate all dates in the selected month
     $all_dates = [];
     $current = new DateTime($month_start_date);
@@ -25,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     // Fetch all schedules from schedule_master
     $inactive_schedules = [];
-    $query = "SELECT sch_key_no, depot_id FROM schedule_master WHERE division_id = ? AND depot_id = ?";
+    $query = "SELECT sch_key_no, depot_id FROM schedule_master WHERE division_id = ? AND depot_id = ? order by sch_dep_time";
     $stmt = $db->prepare($query);
     $stmt->bind_param("ii", $division_id, $depot_id);
     $stmt->execute();
@@ -143,6 +148,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Process each active schedule
     foreach ($active_schedules as &$schedule) {
         $sch_key_no = $schedule['sch_key_no'];
+        //take dep and arr time from schedule_master
+        $sch_dep_time = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['sch_dep_time'] : 'N/A';
+        $sch_arr_time = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['sch_arr_time'] : 'N/A';
+        $bus_number_1 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['bus_number_1'] : 'N/A';
+        $bus_number_2 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['bus_number_2'] : 'N/A';
+        $additional_bus_number = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['additional_bus_number'] : 'N/A';
+
+        // merge bus numbers if available (ignore 'N/A')
+        $bus_numbers_array = array_filter([$bus_number_1, $bus_number_2, $additional_bus_number], function ($num) {
+            return !empty($num) && $num !== 'N/A';
+        });
+
+        // convert array into string (comma separated)
+        $bus_numbers = !empty($bus_numbers_array) ? implode(", ", $bus_numbers_array) : 'NA';
+        $driver_token_1 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['driver_token_1'] : 'N/A';
+        $driver_token_2 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['driver_token_2'] : 'N/A';
+        $driver_token_3 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['driver_token_3'] : 'N/A';
+        $driver_token_4 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['driver_token_4'] : 'N/A';
+        $driver_token_5 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['driver_token_5'] : 'N/A';
+        $driver_token_6 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['driver_token_6'] : 'N/A';
+        $offreliverdriver_token_1 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['offreliverdriver_token_1'] : 'N/A';
+        $offreliverdriver_token_2 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['offreliverdriver_token_2'] : 'N/A';
+        $conductor_token_1 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['conductor_token_1'] : 'N/A';
+        $conductor_token_2 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['conductor_token_2'] : 'N/A';
+        $conductor_token_3 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['conductor_token_3'] : 'N/A';
+        $offreliverconductor_token_1 = isset($schedule_data[$sch_key_no]) ? $schedule_data[$sch_key_no][array_key_first($schedule_data[$sch_key_no])]['offreliverconductor_token_1'] : 'N/A';
+
+        $driver_token_array = array_filter([$driver_token_1, $driver_token_2, $driver_token_3, $driver_token_4, $driver_token_5, $driver_token_6, $offreliverdriver_token_1, $offreliverdriver_token_2], function ($token) {
+            return !empty($token) && $token !== 'N/A';
+        });
+        $driver_tokens = !empty($driver_token_array) ? implode(", ", $driver_token_array) : 'NA';
+        $conductor_token_array = array_filter([$conductor_token_1, $conductor_token_2, $conductor_token_3, $offreliverconductor_token_1], function ($token) {
+            return !empty($token) && $token !== 'N/A';
+        });
+        $conductor_tokens = !empty($conductor_token_array) ? implode(", ", $conductor_token_array) : 'NA';
         $depot_id = $schedule['depot_id'];
         $inactive_dates = $schedule['inactive_dates'];
         $active_dates = array_diff($all_dates, $inactive_dates);
@@ -171,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ? $schedule_data[$sch_key_no][$first_available_date]['single_crew']
                 : null;
         }
-        echo "<h3>Schedule No: {$sch_key_no} {$service_type_id} {$single_crew} </h3>";
+        echo "<h3>Schedule No: {$sch_key_no}</h3>";
         echo "<table border='1'>";
         echo "<tr><th>Content</th>";
 
@@ -180,12 +220,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
         echo "</tr>";
 
-        
+
 
         // Define row order
         $status_fields = [
-            'Departure: sch_dep_time' => 'dep_time_diff',
-            'Bus Status' => 'bus_allotted_status',
+            "Departure: {$sch_dep_time}" => 'dep_time_diff',
+            "{$bus_numbers}" => 'bus_allotted_status',
         ];
 
         // Special case: If `service_type_id == 4`, merge Driver 1 and Driver 2 under one row using rowspan
@@ -197,12 +237,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         // Add conductor row if `single_crew == 'no'`
-        if ($single_crew != 'yes' ) {
+        if ($single_crew != 'yes') {
             $status_fields['Conductor Status'] = 'conductor_alloted_status';
         }
 
         // Add Arrival row at the end
-        $status_fields['Arrival: sch_arr_time'] = 'arr_time_diff';
+        $status_fields["Arrival: {$sch_arr_time}"] = 'arr_time_diff';
 
         // Generate table rows
         foreach ($status_fields as $label => $field) {

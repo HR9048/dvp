@@ -1,3 +1,146 @@
+ .dropdown:hover > .dropdown-menu {
+    display: block;
+    margin-top: 0;
+}
+
+/* Submenu container */
+.dropdown-submenu {
+    position: relative;
+}
+
+/* Hide submenus by default (appear to the right) */
+.dropdown-submenu > .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+    z-index: 1000;
+}
+
+/* Show submenu only when hovering parent */
+.dropdown-submenu:hover > .dropdown-menu,
+.dropdown-submenu:focus-within > .dropdown-menu {
+    display: block;
+}
+
+/* ===== Link spacing & look ===== */
+.dropdown-menu li a {
+    padding: 10px 15px;
+    display: block;
+    width: 100%;
+    color: #000;
+    text-decoration: none;
+    line-height: 1.2;
+    position: relative;
+    font-weight: 500;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Navbar reset */
+nav.navbar {
+    padding: 0 !important;
+}
+
+nav.navbar ul {
+    padding: 0;
+    margin: 0;
+}
+
+nav.navbar ul li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+nav.navbar ul li a {
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+}
+
+/* Submenu inside dropdown */
+nav.navbar ul li .dropdown-menu li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+nav.navbar ul li .dropdown-menu li a {
+    padding: 10px 20px;
+    display: block;
+    width: 100%;
+}
+
+/* Font sizing */
+.dropdown-toggle {
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.nav-link {
+    font-size: 18px;
+}
+
+.dropdown-menu {
+    font-size: 15px;
+    min-width: 180px;
+}
+
+/* ===========================
+   SUBMENU ARROW STYLE
+   =========================== */
+
+/* Reserve space for arrow */
+.dropdown-submenu > a {
+    position: relative;
+    padding-right: 28px; /* space for arrow */
+    display: block;
+    color: inherit;
+}
+
+/* Default arrow: ">" (bold, dark black) */
+.dropdown-submenu > a::after {
+    content: "\276F"; /* Unicode heavy right-pointing angle quote › */
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: bold;
+    color: #000;
+    transition: transform 0.2s ease, content 0.2s ease;
+    pointer-events: none;
+}
+
+/* When submenu is open (hover/focus), show "v" */
+.dropdown-submenu:hover > a::after,
+.dropdown-submenu:focus-within > a::after {
+    content: "\25BC"; /* ▼ black down-pointing triangle */
+    font-size: 13px;
+    font-weight: bold;
+    color: #000;
+}
+
+/* ===========================
+   MOBILE VIEW
+   =========================== */
+@media (max-width: 600px) {
+    .dropdown-submenu > .dropdown-menu {
+        left: 0;
+        top: 100%;
+        margin-top: 0;
+    }
+
+    /* Down arrow by default in mobile */
+    .dropdown-submenu > a::after {
+        content: "\25BC"; /* ▼ */
+        right: 12px;
+    }
+}
  /* Container styles */
  .container1 {
     width: 100%;

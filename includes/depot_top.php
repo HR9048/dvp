@@ -66,79 +66,7 @@ date_default_timezone_set('Asia/Kolkata');
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom styles for this page -->
     <style>
-        .dropdown:hover .dropdown-menu {
-            display: block;
-            margin-top: 0;
-        }
 
-        .dropdown-toggle {
-            font-size: 12px;
-        }
-
-        .nav-link {
-            font-size: 18px;
-        }
-
-        .dropdown-menu {
-            font-size: 15px;
-        }
-
-        nav.navbar {
-            padding: 0 !important;
-        }
-
-        /* Remove padding from the navbar items (links and list items) */
-        nav.navbar ul {
-            padding: 0;
-            margin: 0;
-        }
-
-        nav.navbar ul li {
-            padding: 0;
-            margin: 0;
-            list-style: none;
-            /* optional, to remove bullets if it's a list */
-        }
-
-        nav.navbar ul li a {
-            padding: 0;
-            margin: 0;
-            display: inline-block;
-            /* To ensure links behave like inline elements */
-
-        }
-
-        nav.navbar ul li .dropdown-menu li {
-            padding: 0;
-            margin: 0;
-            list-style: none;
-            /* Optional: remove bullets */
-        }
-
-        nav.navbar ul li .dropdown-menu li a {
-            padding: 10px 20px;
-            /* Add padding around the links for better spacing */
-            display: block;
-            /* Ensure the anchor tags take up full width */
-            width: 100%;
-            /* Ensure the anchor fills the width of the dropdown */
-        }
-
-        /* Media query for mobile view */
-        @media (max-width: 600px) {
-            .navcenter h5 {
-                font-size: 0.8em;
-                /* Adjust font size for mobile */
-            }
-
-            .navcenter h6 {
-                font-size: 0.55em;
-                /* Adjust font size for mobile */
-                word-wrap: break-word;
-                /* Ensure long words wrap */
-            }
-
-        }
     </style>
 </head>
 
@@ -185,33 +113,40 @@ date_default_timezone_set('Asia/Kolkata');
                                             <div class="dropdown">
                                                 <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
                                                     aria-expanded="false" style="font-size: 15px;">
-                                                    <b>Off-road</b>
-                                                </button>
-                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                    <li><a class="dropdown-item" href="depot_offroad.php">Add Off-Road</a>
-                                                    </li>
-                                                    <li><a class="dropdown-item" href="depot_offroad_print.php">Print
-                                                            Offroad</a></li>
-                                                    <li><a class="dropdown-item" href="depot_add_bd.php">Add BreakDown</a>
-                                                    </li>
-                                                    <li><a class="dropdown-item" href="depot_view_bd.php">View/print
-                                                            BreakDown</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li class="nav-item">
-                                            <div class="dropdown">
-                                                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                                    aria-expanded="false" style="font-size: 15px;">
                                                     <b>DVP</b>
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                    <li><a class="dropdown-item" href="dvp.php">Add DVP</a></li>
-                                                    <li><a class="dropdown-item" href="dvp_print.php">Print DVP</a></li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">Off-Road</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="depot_offroad.php">Add Off-Road</a></li>
+                                                            <li><a class="dropdown-item" href="depot_offroad_print.php">Print Offroad</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">Break Down</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="depot_add_bd.php">Add BreakDown</a></li>
+                                                            <li><a class="dropdown-item" href="depot_view_bd.php">View/print BreakDown</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">DVP</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="dvp.php">Add DVP</a></li>
+                                                            <li><a class="dropdown-item" href="dvp_print.php">Print DVP</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">Defect Records</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="depot_camera_defect.php">Add/view camera/VLTS/PIS Defect</a></li>
+                                                        </ul>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li class="nav-item">
+                                        <!--<li class="nav-item">
                                             <div class="dropdown">
                                                 <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
                                                     aria-expanded="false" style="font-size: 15px;">
@@ -224,7 +159,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                             Attend</a></li>
                                                 </ul>
                                             </div>
-                                        </li>
+                                        </li>-->
                                         <li class="nav-item">
                                             <div class="dropdown">
                                                 <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
@@ -237,7 +172,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li class="nav-item">
+                                        <!--<li class="nav-item">
                                             <div class="dropdown">
                                                 <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
                                                     aria-expanded="false" style="font-size: 15px;">
@@ -247,20 +182,8 @@ date_default_timezone_set('Asia/Kolkata');
                                                     <li><a class="dropdown-item" href="depot_bd.php">Add BD</a></li>
                                                 </ul>
                                             </div>
-                                        </li>
-                                        <li class="nav-item">
-                                            <div class="dropdown">
-                                                <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                                    aria-expanded="false" style="font-size: 15px;">
-                                                    <b>Defect records</b>
-                                                </button>
-                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                    <li><a class="dropdown-item" href="depot_camera_defect.php">Add/view
-                                                            camera/VLTS/PIS Defect</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </li>
+                                        </li>-->
+
                                     <?php } ?>
                                     <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') { ?>
                                         <li class="nav-item">
@@ -380,7 +303,6 @@ date_default_timezone_set('Asia/Kolkata');
                                         </li>
                                     <?php } ?>
                                     <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR' || $_SESSION['JOB_TITLE'] == 'Bunk') { ?>
-
                                         <li class="nav-item">
                                             <div class="dropdown">
                                                 <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
@@ -390,42 +312,50 @@ date_default_timezone_set('Asia/Kolkata');
                                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                                                     <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Bunk') {
                                                         if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') { ?>
-                                                            <li><a class="dropdown-item" href="depot_offroad_fromto.php">From-To
-                                                                    date Off-Road Report</a></li>
-                                                            <li><a class="dropdown-item" href="depot_report.php">One day Off-Road
-                                                                    report</a></li>
+                                                            <li class="dropdown-submenu">
+                                                                <a class="dropdown-item dropdown-toggle" href="#">Off-Road</a>
+                                                                <ul class="dropdown-menu">
+                                                                    <li><a class="dropdown-item" href="depot_offroad_fromto.php">From-To date Off-Road Report</a></li>
+                                                                    <li><a class="dropdown-item" href="depot_report.php">One day Off-Road Report</a></li>
+                                                                </ul>
+                                                            </li>
                                                         <?php } ?>
                                                         <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') { ?>
-                                                            <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Daywise
-                                                                    KMPL Report</a></li>
-                                                            <li><a class="dropdown-item" href="depot_kmpl_report.php">Monthly KMPL
-                                                                    Report</a></li>
-                                                            <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft.php">From-To
-                                                                    date KMPL Report</a></li>
-                                                            <li><a class="dropdown-item" href="depot_defect_record.php">KMPL Defect
-                                                                    Report</a></li>
+                                                            <li class="dropdown-submenu">
+                                                                <a class="dropdown-item dropdown-toggle" href="#">KMPL</a>
+                                                                <ul class="dropdown-menu">
+                                                                    <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Daywise KMPL Report</a></li>
+                                                                    <li><a class="dropdown-item" href="depot_kmpl_report.php">Monthly KMPL Report</a></li>
+                                                                    <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft.php">From-To date KMPL Report</a></li>
+                                                                    <li><a class="dropdown-item" href="depot_defect_record.php">KMPL Defect Report</a></li>
+                                                                </ul>
+                                                            </li>
                                                         <?php }
                                                     }
                                                     if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') { ?>
-                                                        <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily
-                                                                Crew report</a></li>
-                                                        <li><a class="dropdown-item" href="depot_crew_report_m.php">Route
-                                                                Monthly Crew report</a></li>
-                                                        <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule
-                                                                Monitor</a></li>
+                                                        <li class="dropdown-submenu">
+                                                            <a class="dropdown-item dropdown-toggle" href="#">Schedule</a>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
+                                                                <li><a class="dropdown-item" href="depot_crew_report_m.php">Route Monthly Crew report</a></li>
+                                                                <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule Monitor</a></li>
+                                                            </ul>
+                                                        </li>
                                                     <?php }
                                                     if ($_SESSION['TYPE'] == 'DEPOT' && in_array($_SESSION['DEPOT_ID'], ['1', '8', '12', '13', '14', '15']) && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM')) { ?>
-                                                        <li><a class="dropdown-item" href="depot_w3_report_fromto.php">From-To
-                                                                date W3 Report</a></li>
-                                                        <li><a class="dropdown-item" href="depot_program_day_report.php">Program
-                                                                Date updation Report Daywise</a></li>
+                                                        <li class="dropdown-submenu">
+                                                            <a class="dropdown-item dropdown-toggle" href="#">Program</a>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item" href="depot_w3_report_fromto.php">W3 Chart Report</a></li>
+                                                                <li><a class="dropdown-item" href="depot_program_report_fromto.php">Program Completion Report</a></li>
+                                                            </ul>
+                                                        </li>
                                                     <?php } ?>
                                                 </ul>
                                             </div>
                                         </li>
                                     <?php } ?>
                                     <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') { ?>
-
                                         <li class="nav-item">
                                             <div class="dropdown">
                                                 <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
@@ -433,28 +363,28 @@ date_default_timezone_set('Asia/Kolkata');
                                                     <b>Inventory</b>
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                    <li><a class="dropdown-item" href="depot_inventory_parts.php">Add
-                                                            Assemblies</a></li>
-                                                    <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View
-                                                            Assemblies</a></li>
-                                                    <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus
-                                                            Inventory</a></li>
-                                                    <li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add
-                                                            Scraped Bus Inventory</a></li>
-                                                    <li><a class="dropdown-item" href="depot_bus_inventory_view.php">View
-                                                            Bus Inventory</a></li>
-                                                    <li><a class="dropdown-item" href="depot_fc_date_update.php">Update FC
-                                                            Date</a></li>
-                                                    <li><a class="dropdown-item" href="co_inventory_print.php">Print
-                                                            Inventory Details</a></li>
-                                                    <li><a class="dropdown-item" href="co_inventory_pdf.php">Download
-                                                            Inventory Report PDF</a></li>
-                                                    <li><a class="dropdown-item" href="co_inventory_excel.php">Download
-                                                            Inventory Report EXCEL</a></li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">Basic Details</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
+                                                            <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">2024-25</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
+                                                            <li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>
+                                                            <li><a class="dropdown-item" href="depot_bus_inventory_view.php">View Bus Inventory</a></li>
+                                                            <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
+                                                            <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
+                                                            <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
+                                                        </ul>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' && in_array($_SESSION['DEPOT_ID'], ['1', '8', '12', '13', '14', '15'])) { ?>
+                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') && in_array($_SESSION['DEPOT_ID'], ['1', '8', '12', '13', '14', '15'])) { ?>
                                             <li class="nav-item">
                                                 <div class="dropdown">
                                                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"

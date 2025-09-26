@@ -272,6 +272,7 @@ date_default_timezone_set('Asia/Kolkata');
                           <li><a class="dropdown-item" href="co_vehicle_kmpl_report.php">Vehicle Kmpl Track Report</a></li>
                           <li><a class="dropdown-item" href="co_defect_report.php">Defect Report</a></li>
                           <li><a class="dropdown-item" href="co_w3_report_fromto.php">W3 Chart Report</a></li>
+                          <li><a class="dropdown-item" href="co_program_report_fromto.php">Program Completion Report</a></li>
                         </ul>
                       </div>
                     </li>

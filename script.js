@@ -83,7 +83,6 @@ updateDepartureHeading(document.getElementById("date-selector").value);
 
 function fetchLiveDepartures() {
     let selectedDate = $("#date-selector").val(); // Get selected date
-
     $.ajax({
         url: "database/fetch_live_departures.php",
         method: "GET",
@@ -118,6 +117,7 @@ function fetchLiveDepartures() {
                         <td>${divisionData.actual_schedules}</td>
                         <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
                         <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
+                        <td>${(divisionData.actual_schedules - divisionData.late_departures > 0) ? ((divisionData.actual_schedules - divisionData.late_departures) / divisionData.total_schedules * 100).toFixed(0) + '%' : '0%'}</td>
                     </tr>`;
 
                     // Reset division data
@@ -136,6 +136,7 @@ function fetchLiveDepartures() {
                     <td>${row.actual_schedules}</td>
                     <td class="clickable" onclick="openModal('${row.depot}', 'difference', 'Depot', '${selectedDate}')">${row.difference}</td>
                     <td class="clickable" onclick="openModal('${row.depot}', 'late', 'Depot', '${selectedDate}')">${row.late_departures}</td>
+                    <td>${(row.actual_schedules - row.late_departures > 0) ? ((row.actual_schedules - row.late_departures) / row.total_schedules * 100).toFixed(0) + '%' : '0%'}</td>
                 </tr>`;
 
                 // Update division and overall totals
@@ -159,6 +160,7 @@ function fetchLiveDepartures() {
                 <td>${divisionData.actual_schedules}</td>
                 <td class="clickable" onclick="openModal('${lastDivision}', 'difference', 'Division', '${selectedDate}')">${divisionData.difference}</td>
                 <td class="clickable" onclick="openModal('${lastDivision}', 'late', 'Division', '${selectedDate}')">${divisionData.late_departures}</td>
+                <td>${(divisionData.actual_schedules - divisionData.late_departures > 0) ? ((divisionData.actual_schedules - divisionData.late_departures) / divisionData.total_schedules * 100).toFixed(0) + '%' : '0%'}</td>
             </tr>`;
 
             // Update overall total row
@@ -168,6 +170,7 @@ function fetchLiveDepartures() {
                 <td>${overallTotal.actual_schedules}</td>
                 <td>${overallTotal.difference}</td>
                 <td>${overallTotal.late_departures}</td>
+                <td>${(overallTotal.actual_schedules - overallTotal.late_departures > 0) ? ((overallTotal.actual_schedules - overallTotal.late_departures) / overallTotal.total_schedules * 100).toFixed(0) + '%' : '0%'}</td>
             </tr>`);
 
             // Update report body
@@ -820,7 +823,7 @@ function updateBDHeading(selectedDate) {
     let today = new Date().toISOString().split("T")[0];
     let heading = document.getElementById("bd-heading");
 
-   heading.innerHTML = `Break Down AS ON <span id="current-datetime"></span>`;
+    heading.innerHTML = `Break Down AS ON <span id="current-datetime"></span>`;
 }
 
 // Set initial heading on page load
@@ -860,9 +863,9 @@ function fetchLiveBD() {
                 if (lastDivision && lastDivision !== row.division) {
                     tableContent += `<tr class="division-total">
                         <td colspan="2">${lastDivision} Total</td>
-                        <td>${divisionData.daily_bd_count}</td>
-                        <td>${divisionData.monthly_bd_count}</td>
-                        <td>${divisionData.yearly_bd_count}</td>
+                        <td class="clickable" onclick="opendepotBDDetails('${lastDivision}', 'Division', 'dayBD', '${selectedDate}')">${divisionData.daily_bd_count}</td>
+                        <td class="clickable" onclick="opendepotBDDetails('${lastDivision}', 'Division', 'monthBD', '${selectedDate}')">${divisionData.monthly_bd_count}</td>
+                        <td class="clickable" onclick="opendepotBDDetails('${lastDivision}', 'Division', 'cummBD', '${selectedDate}')">${divisionData.yearly_bd_count}</td>
                     </tr>`;
 
                     divisionData = {
@@ -875,9 +878,9 @@ function fetchLiveBD() {
                 tableContent += `<tr>
                     <td>${row.division}</td>
                     <td>${row.depot}</td>
-                    <td>${row.daily_bd_count}</td>
-                    <td>${row.monthly_bd_count}</td>
-                    <td>${row.yearly_bd_count}</td>
+                    <td class="clickable" onclick="opendepotBDDetails('${row.depot}', 'Depot', 'dayBD', '${selectedDate}')">${row.daily_bd_count}</td>
+                    <td class="clickable" onclick="opendepotBDDetails('${row.depot}', 'Depot', 'monthBD', '${selectedDate}')">${row.monthly_bd_count}</td>
+                    <td class="clickable" onclick="opendepotBDDetails('${row.depot}', 'Depot', 'cummBD', '${selectedDate}')">${row.yearly_bd_count}</td>
                 </tr>`;
 
                 divisionData.daily_bd_count += parseInt(row.daily_bd_count) || 0;
@@ -895,18 +898,18 @@ function fetchLiveBD() {
             if (lastDivision) {
                 tableContent += `<tr class="division-total">
                     <td colspan="2">${lastDivision} Total</td>
-                    <td>${divisionData.daily_bd_count}</td>
-                    <td>${divisionData.monthly_bd_count}</td>
-                    <td>${divisionData.yearly_bd_count}</td>
+                    <td class="clickable" onclick="opendepotBDDetails('${lastDivision}', 'Division', 'dayBD', '${selectedDate}')">${divisionData.daily_bd_count}</td>
+                    <td class="clickable" onclick="opendepotBDDetails('${lastDivision}', 'Division', 'monthBD', '${selectedDate}')">${divisionData.monthly_bd_count}</td>
+                    <td class="clickable" onclick="opendepotBDDetails('${lastDivision}', 'Division', 'cummBD', '${selectedDate}')">${divisionData.yearly_bd_count}</td>
                 </tr>`;
             }
 
             // Always render overall total row
             $("#bd-overall-total-row").html(`<tr class="overall-total">
                 <td colspan="2">Corporation Total</td>
-                <td>${overallTotal.daily_bd_count}</td>
-                <td>${overallTotal.monthly_bd_count}</td>
-                <td>${overallTotal.yearly_bd_count}</td>
+                <td class="clickable" onclick="opendepotBDDetails('Corporation', 'Overall', 'dayBD', '${selectedDate}')">${overallTotal.daily_bd_count}</td>
+                <td class="clickable" onclick="opendepotBDDetails('Corporation', 'Overall', 'monthBD', '${selectedDate}')">${overallTotal.monthly_bd_count}</td>
+                <td class="clickable" onclick="opendepotBDDetails('Corporation', 'Overall', 'cummBD', '${selectedDate}')">${overallTotal.yearly_bd_count}</td>
             </tr>`);
 
             $("#bd-report-body").html(tableContent);
@@ -922,5 +925,43 @@ document.getElementById("bd-date-selector").addEventListener("change", function 
     fetchLiveBD();
 });
 $('#collapseSeven').on('show.bs.collapse', function () {
-        fetchLiveBD();
+    fetchLiveBD();
+});
+
+function opendepotBDDetails(name, type, subtype, selectedDate) {
+    let headerLabel = "Break Down Details - ";
+
+    // Update the modal header and reset counts
+    $("#modalBDDepotName").text(headerLabel);
+
+    // Show the modal first with a loading message
+    $("#BDModal .modal-body").html(
+        "<p class='text-center'>Loading BD data, please wait...</p>");
+    $("#BDModal").modal("show");
+    console.log("Fetching BD details for", name, type, subtype, selectedDate);
+
+    $.ajax({
+        url: "database/live_backend_data.php",
+        type: "POST",
+        data: {
+            name: name,
+            type: type,
+            subtype: subtype,
+            date: selectedDate,
+            action: 'fetch_bd_detailed_data'
+        },
+        dataType: "json",
+        success: function (response) {
+            if (response.status === "success") {
+                $("#BDModal .modal-body").html(response.html);
+            } else {
+                $("#BDModal .modal-body").html(
+                    "<p class='text-center text-danger'>No data found.</p>");
+            }
+        },
+        error: function () {
+            $("#BDModal .modal-body").html(
+                "<p class='text-center text-danger'>Error fetching data.</p>");
+        }
     });
+}

@@ -50,7 +50,7 @@ include 'includes/connection.php';
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
     <!-- custom script.js file -->
-    
+
 </head>
 </head>
 
@@ -375,10 +375,11 @@ include 'includes/connection.php';
                                                 <tr>
                                                     <th>Division</th>
                                                     <th style="width:17%">Depot</th>
-                                                    <th>Act Sch</th>
+                                                    <th>Sch Dep</th>
                                                     <th>Act Dep</th>
                                                     <th>Pending</th>
                                                     <th>Late Dep</th>
+                                                    <th>Reg %</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="report-body">
@@ -480,12 +481,12 @@ include 'includes/connection.php';
                                                 <tr>
                                                     <th>Division</th>
                                                     <th style="width:17%">Depot</th>
-                                                    <th>Break Down</th>
+                                                    <th>Day BD</th>
                                                     <th id="bd-date-month"><?= $selected_date_month ?> BD</th>
-                                                    <th>Cumulative BD</th>
+                                                    <th>Cum BD</th>
                                                 </tr>
                                             </thead>
-                                            
+
                                             <tbody id="bd-report-body">
                                                 <!-- Data will be loaded here -->
                                             </tbody>
@@ -494,7 +495,7 @@ include 'includes/connection.php';
                                             </tfoot>
                                         </table>
                                         <div id="loadingMessagebd" style="display: none;">Loading Off-Road data, please
-                                        wait...</div>
+                                            wait...</div>
                                     </div>
                                 </div>
                             </div>
@@ -580,7 +581,7 @@ include 'includes/connection.php';
                     </div>
                 </div>
                 <script>
-                   
+
                 </script>
 
                 <!-- Include Bootstrap JavaScript -->
@@ -697,6 +698,25 @@ include 'includes/connection.php';
                         </div>
                     </div>
                 </div>
+                <div id="BDModal" class="modal fade" tabindex="-1" role="dialog">
+                    <div class="modal-dialog modal-xl" role="document">
+                        <!-- Added modal-xl for large width -->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><span id="modalBDDepotName"></span></h5> <!-- Added span -->
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <!-- Data will be inserted here via AJAX -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Schedule Details Modal -->
                 <div class="modal fade" id="schedule-details-modal" tabindex="-1"
@@ -763,23 +783,11 @@ include 'includes/connection.php';
                     </div>
                 </div>
                 <script>
-                    
+
                 </script>
 
 
             </div>
-
-            <script>
-               
-            </script>
-
-            <script>
-               
-            </script>
-            <script>
-               
-            </script>
-
             <footer id="sticky-footer" class="flex-shrink-0 py-4">
                 <div class="text-center">
                     <span>© Copyright 2024 KKRTC | All Rights Reserved</span>
@@ -795,26 +803,17 @@ include 'includes/connection.php';
         <i class="fas fa-angle-up"></i>
     </a>
 
-
-
-
-
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js">
     </script>
 
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
-
-
-
-
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>

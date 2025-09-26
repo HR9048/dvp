@@ -514,7 +514,7 @@ WHERE division_id = ? AND depot_id = ? and status='1'";
                 <div class="col">
                     <div class="form-group">
                         <label for="bus_number${i}">Bus ${i} Number</label>
-                        <input type="text" id="bus_number_${i}" name="bus_number_${i}" class="form-control" value="${details['bus_number_' + i] || ''}" required oninput="this.value = this.value.toUpperCase()" onChange="searchBus(${i})">
+                        <input type="text" id="bus_number_${i}" name="bus_number_${i}" class="form-control" value="${details['bus_number_' + i] || ''}" oninput="this.value = this.value.toUpperCase()" onChange="searchBus(${i})">
                     </div>
                 </div>
                 <div class="col">

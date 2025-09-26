@@ -176,7 +176,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         // Set cURL options
                                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
                                         curl_setopt($ch, CURLOPT_HTTPGET, true);        // Use GET method
-                                
+
                                         // Execute cURL request
                                         $response = curl_exec($ch);
 
@@ -207,7 +207,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         <?php
                                         $session_division = $_SESSION['DIVISION_ID']; // Assuming you're getting this from a session variable
                                         $session_depot = $_SESSION['DEPOT_ID']; // Assuming you're getting this from a session variable
-                                
+
                                         // Prepare the SQL query to count registered accounts based on division and depot names
                                         $query2 = "SELECT COUNT(*)
                                         FROM private_employee
@@ -257,7 +257,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         // Set cURL options
                                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
                                         curl_setopt($ch, CURLOPT_HTTPGET, true);        // Use GET method
-                                
+
                                         // Execute cURL request
                                         $response = curl_exec($ch);
 
@@ -284,28 +284,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                         // Output the count
                                         echo 'Conductors: ' . $totalOffRoadCount;
                                         ?>Record(s)
-                                        <?php
-                                        $session_division = $_SESSION['DIVISION_ID']; // Assuming you're getting this from a session variable
-                                        $session_depot = $_SESSION['DEPOT_ID']; // Assuming you're getting this from a session variable
-                                
-                                        // Prepare the SQL query to count registered accounts based on division and depot names
-                                        $query2 = "SELECT COUNT(*)
-                                        FROM private_employee
-                                        INNER JOIN location ON private_employee.division_id = location.division_id and private_employee.depot_id = location.depot_id
-                                        WHERE private_employee.status = '1' and EMP_DESGN_AT_APPOINTMENT='CONDUCTOR'
-                                        AND location.division_id = '$session_division' 
-                                        AND location.depot_id = '$session_depot'";
-
-                                        // Execute the query
-                                        $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
-
-                                        // Fetch the count
-                                        $row2 = mysqli_fetch_array($result2);
-
-                                        // Output the count
-                                        echo "Private Conductor: $row2[0]";
-                                        ?>
-                                        Record(s)
                                     </div>
                                 </div>
                                 <div class="col-auto">
@@ -338,7 +316,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                                 // Set cURL options
                                                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Return response as a string
                                                 curl_setopt($ch, CURLOPT_HTTPGET, true);        // Use GET method
-                                        
+
                                                 // Execute cURL request
                                                 $response = curl_exec($ch);
 
@@ -366,27 +344,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                                 echo 'DCC: ' . $totalOffRoadCount;
                                                 ?>
                                                 Record(s)
-                                                <?php
-                                                $session_division = $_SESSION['DIVISION_ID']; // Assuming you're getting this from a session variable
-                                                $session_depot = $_SESSION['DEPOT_ID']; // Assuming you're getting this from a session variable
-                                        
-                                                // Prepare the SQL query to count registered accounts based on division and depot names
-                                                $query2 = "SELECT COUNT(*)
-                                        FROM private_employee
-                                        INNER JOIN location ON private_employee.division_id = location.division_id and private_employee.depot_id = location.depot_id
-                                        WHERE private_employee.status = '1' and EMP_DESGN_AT_APPOINTMENT='DRIVER-CUM-CONDUCTOR'
-                                        AND location.division_id = '$session_division' 
-                                        AND location.depot_id = '$session_depot'";
-                                                // Execute the query
-                                                $result2 = mysqli_query($db, $query2) or die(mysqli_error($db));
-
-                                                // Fetch the count
-                                                $row2 = mysqli_fetch_array($result2);
-
-                                                // Output the count
-                                                echo "Private DCC: $row2[0]";
-                                                ?>
-                                                Record(s)
                                             </div>
                                         </div>
                                     </div>
@@ -395,7 +352,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                                 <div class="col-auto">
                                     <i class="fa-solid fa-id-card fa-beat fa-2xl"></i>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -527,80 +483,81 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
     </script>-->
     <?php
     if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
-    // Query for Deputation Requests (status = 1)
-    $sql_deputation = "SELECT * FROM `crew_deputation` 
+        // Query for Deputation Requests (status = 1)
+        $sql_deputation = "SELECT * FROM `crew_deputation` 
                        WHERE `status` = '1' and deleted != '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                        GROUP BY `token_number`";
-    $result_deputation = mysqli_query($db, $sql_deputation);
-    $count_deputation = mysqli_num_rows($result_deputation);
+        $result_deputation = mysqli_query($db, $sql_deputation);
+        $count_deputation = mysqli_num_rows($result_deputation);
 
-    // Query for Deputed Vehicles Returned (status = 3)
-    $sql_returned = "SELECT * FROM `crew_deputation` 
+        // Query for Deputed Vehicles Returned (status = 3)
+        $sql_returned = "SELECT * FROM `crew_deputation` 
                      WHERE `status` = '3' and deleted != '1' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                      GROUP BY `token_number`";
-    $result_returned = mysqli_query($db, $sql_returned);
-    $count_returned = mysqli_num_rows($result_returned);
+        $result_returned = mysqli_query($db, $sql_returned);
+        $count_returned = mysqli_num_rows($result_returned);
 
-    // Total count for notification
-    $total_count = $count_deputation + $count_returned;
-}
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech') {
-    // Query for Deputation Requests (status = 1)
-    $sql_deputation = "SELECT * FROM `vehicle_deputation` 
+        // Total count for notification
+        $total_count = $count_deputation + $count_returned;
+    }
+    if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech') {
+        // Query for Deputation Requests (status = 1)
+        $sql_deputation = "SELECT * FROM `vehicle_deputation` 
                        WHERE `status` = '1' and deleted != '1' AND `t_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                        GROUP BY `bus_number`";
-    $result_deputation = mysqli_query($db, $sql_deputation);
-    $count_deputation = mysqli_num_rows($result_deputation);
+        $result_deputation = mysqli_query($db, $sql_deputation);
+        $count_deputation = mysqli_num_rows($result_deputation);
 
-    // Query for Deputed Vehicles Returned (status = 3)
-    $sql_returned = "SELECT * FROM `vehicle_deputation` 
+        // Query for Deputed Vehicles Returned (status = 3)
+        $sql_returned = "SELECT * FROM `vehicle_deputation` 
                      WHERE `status` = '3' and deleted != '1' AND `f_depot_id` = '" . $_SESSION['DEPOT_ID'] . "' 
                      GROUP BY `bus_number`";
-    $result_returned = mysqli_query($db, $sql_returned);
-    $count_returned = mysqli_num_rows($result_returned);
+        $result_returned = mysqli_query($db, $sql_returned);
+        $count_returned = mysqli_num_rows($result_returned);
 
-    // Total count for notification
-    $total_count = $count_deputation + $count_returned;
-}
-?>
-<!-- Notification Popup -->
+        // Total count for notification
+        $total_count = $count_deputation + $count_returned;
+    }
+    ?>
+    <!-- Notification Popup -->
 
-<?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
-     if ($total_count > 0) { ?>
-    <div id="notificationPopup" class="notification-popup">
-        <i class="fas fa-bell"></i>
-        <span>You have <b><?php echo $total_count; ?></b> new notifications</span>
-        <span class="close-btn">&times;</span>
-    </div>
-<?php } } ?>
+    <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'T_INSPECTOR') {
+        if ($total_count > 0) { ?>
+            <div id="notificationPopup" class="notification-popup">
+                <i class="fas fa-bell"></i>
+                <span>You have <b><?php echo $total_count; ?></b> new notifications</span>
+                <span class="close-btn">&times;</span>
+            </div>
+    <?php }
+    } ?>
 
-<script>
-    $(document).ready(function () {
-        var popup = $("#notificationPopup");
+    <script>
+        $(document).ready(function() {
+            var popup = $("#notificationPopup");
 
-        if (popup.length > 0) {
-            // Slide in and show popup
-            setTimeout(function () {
-                popup.css({
-                    "right": "20px",
-                    "animation": "slideIn 0.7s ease-out"
-                });
-            }, 500);
+            if (popup.length > 0) {
+                // Slide in and show popup
+                setTimeout(function() {
+                    popup.css({
+                        "right": "20px",
+                        "animation": "slideIn 0.7s ease-out"
+                    });
+                }, 500);
 
-            // Auto-hide after 5 seconds
-            setTimeout(function () {
-                popup.fadeOut(1000);
-            }, 5000);
-        }
+                // Auto-hide after 5 seconds
+                setTimeout(function() {
+                    popup.fadeOut(1000);
+                }, 5000);
+            }
 
-        // Close on click
-        $(".close-btn").click(function () {
-            popup.fadeOut(500);
+            // Close on click
+            $(".close-btn").click(function() {
+                popup.fadeOut(500);
+            });
         });
-    });
-</script>
+    </script>
 
-    <?php
+<?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
     exit;

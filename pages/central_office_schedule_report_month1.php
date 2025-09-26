@@ -168,7 +168,7 @@ $(document).ready(function() {
 
         // Show loading overlay when form is submitted
         $('#loadingOverlay').fadeIn();
-
+        console.log("Fetching report for", month, year, division_id, depot_id);
         $.ajax({
             type: 'POST',
             url: '../database/monthly_schedule_report1.php',

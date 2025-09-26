@@ -28,6 +28,7 @@ if (isset($_POST['id'], $_POST['name'], $_POST['type'], $_POST['subtype'])) {
         $query = "SELECT 
     o.bus_number, 
     o.make, 
+    m.make_abbr,
     o.emission_norms, 
     o.depot, 
     o.parts_required,
@@ -37,6 +38,7 @@ if (isset($_POST['id'], $_POST['name'], $_POST['type'], $_POST['subtype'])) {
     DATEDIFF(CURDATE(), MIN(o.off_road_date)) AS no_of_days_offroad
 FROM off_road_data o
 INNER JOIN location l ON o.depot = l.depot_id
+LEFT JOIN makes m ON o.make = m.make
 WHERE o.depot = ? 
     AND o.status = 'off_road' and o.off_road_location not in ('Authorized Dealer', 'Police Station')
     AND NOT EXISTS (
@@ -53,6 +55,7 @@ ORDER BY o.off_road_date ASC;";
             $query = "SELECT 
     o.bus_number, 
     o.make, 
+    m.make_abbr,
     o.emission_norms, 
     o.depot, 
     o.parts_required,
@@ -62,6 +65,7 @@ ORDER BY o.off_road_date ASC;";
     DATEDIFF(CURDATE(), MIN(o.off_road_date)) AS no_of_days_offroad
 FROM off_road_data o
 INNER JOIN location l ON o.depot = l.depot_id
+LEFT JOIN makes m ON o.make = m.make
 WHERE o.division = ? 
     AND o.status = 'off_road' and o.off_road_location not in ('Authorized Dealer', 'Police Station')
     AND NOT EXISTS (
@@ -77,6 +81,7 @@ ORDER BY o.depot,o.off_road_date ASC";
             $query = "SELECT 
     o.bus_number, 
     o.make, 
+    m.make_abbr,
     o.emission_norms, 
     o.depot, 
     o.parts_required,
@@ -86,6 +91,7 @@ ORDER BY o.depot,o.off_road_date ASC";
     DATEDIFF(CURDATE(), MIN(o.off_road_date)) AS no_of_days_offroad
 FROM off_road_data o
 INNER JOIN location l ON o.depot = l.depot_id
+LEFT JOIN makes m ON o.make = m.make
 WHERE o.division = ? 
     AND o.status = 'off_road' and o.off_road_location = 'depot'
     AND NOT EXISTS (
@@ -101,6 +107,7 @@ ORDER BY o.depot,o.off_road_date ASC";
             $query = "SELECT 
     o.bus_number, 
     o.make, 
+    m.make_abbr,
     o.emission_norms, 
     o.depot, 
     o.parts_required,
@@ -110,6 +117,7 @@ ORDER BY o.depot,o.off_road_date ASC";
     DATEDIFF(CURDATE(), MIN(o.off_road_date)) AS no_of_days_offroad
 FROM off_road_data o
 INNER JOIN location l ON o.depot = l.depot_id
+LEFT JOIN makes m ON o.make = m.make
 WHERE o.division = ? 
     AND o.status = 'off_road' and o.off_road_location = 'DWS'
     AND NOT EXISTS (
@@ -269,9 +277,58 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
     }
     // Generate the table if data is found
     if ($result->num_rows > 0) {
-        if ($type == "Depot" || $type == "Division") {
-
+        if ($type == "Depot"){
             $html = "<p> $headername</p><table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
+                    <tr>
+                        <th>Sl. No</th>
+                        <th style='width:18%;'>Vehicle No.</th>
+                        <th style='width:12%;'>Make</th>
+                        <th>BS</th>
+                        <th>Days</th>
+                        <th>Reason</th>
+                    </tr>";
+                $serial_number = 1;
+                while ($row = $result->fetch_assoc()) {
+                    $html .= "<tr>
+                        <td>{$serial_number}</td>
+                        <td>{$row['bus_number']}</td>
+                        <td>{$row['make_abbr']}</td>
+                        <td>{$row['emission_norms']}</td>
+                        <td>{$row['no_of_days_offroad']}</td>
+                        <td>{$row['parts_required']}</td>
+                      </tr>";
+                    $serial_number++;
+                }
+                $html .= "</table>";
+        } elseif ($type == "Division") {
+            if ($subtype == "ordepot" || $subtype == "ordws"){
+
+                $html = "<p> $headername</p><table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
+                    <tr>
+                        <th>Sl. No</th>
+                        <th style='width:15%;'>Depot</th>
+                        <th style='width:18%;'>Vehicle No.</th>
+                        <th style='width:12%;'>Make</th>
+                        <th>BS</th>
+                        <th>Days</th>
+                        <th>Reason</th>
+                    </tr>";
+                $serial_number = 1;
+                while ($row = $result->fetch_assoc()) {
+                    $html .= "<tr>
+                        <td>{$serial_number}</td>
+                        <td>{$row['depot_name']}</td>
+                        <td>{$row['bus_number']}</td>
+                        <td>{$row['make_abbr']}</td>
+                        <td>{$row['emission_norms']}</td>
+                        <td>{$row['no_of_days_offroad']}</td>
+                        <td>{$row['parts_required']}</td>
+                      </tr>";
+                    $serial_number++;
+                }
+                $html .= "</table>";
+            }else{
+                $html = "<p> $headername</p><table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
                     <tr>
                         <th>Sl. No</th>
                         <th style='width:15%;'>Depot</th>
@@ -281,26 +338,49 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
                         <th>Days</th>
                         <th>Reason</th>
                         <th> @ </th>
-                        <th style='width:18%;'>Offroad Date</th>
                     </tr>";
-            $serial_number = 1;
-            while ($row = $result->fetch_assoc()) {
-                $formatted_date = date('d-m-Y', strtotime($row['off_road_date'])); // Format the date
-                $html .= "<tr>
+                $serial_number = 1;
+                while ($row = $result->fetch_assoc()) {
+                    $html .= "<tr>
                         <td>{$serial_number}</td>
                         <td>{$row['depot_name']}</td>
                         <td>{$row['bus_number']}</td>
-                        <td>{$row['make']}</td>
+                        <td>{$row['make_abbr']}</td>
                         <td>{$row['emission_norms']}</td>
                         <td>{$row['no_of_days_offroad']}</td>
                         <td>{$row['parts_required']}</td>
                         <td>{$row['off_road_location']}</td>
-                        <td>{$formatted_date}</td>
                       </tr>";
+                    $serial_number++;
+                }
+                $html .= "</table>";
+            }
+        } elseif ($type == "Corporation") {
+            if ($subtype == "ordepot" || $subtype == "ordws"){
+            $html = "<p> $headername</p><table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
+        <tr>
+            <th>Sl. No</th>
+            <th style='width:15%;'>Depot</th>
+            <th style='width:18%;'>Vehicle No.</th>
+            <th style='width:12%;'>Make</th>
+            <th>BS</th>
+            <th>Days</th>
+            <th>Reason</th>
+        </tr>";
+            $serial_number = 1;
+            while ($row = $result->fetch_assoc()) {
+                $html .= "<tr>
+            <td>{$serial_number}</td>
+            <td>{$row['depot_name']}</td>
+            <td>{$row['bus_number']}</td>
+            <td>{$row['make_abbr']}</td>
+            <td>{$row['emission_norms']}</td>
+            <td>{$row['no_of_days_offroad']}</td>
+            <td>{$row['parts_required']}</td>
+          </tr>";
                 $serial_number++;
             }
-            $html .= "</table>";
-        } elseif ($type == "Corporation") {
+        }else{
             $html = "<p> $headername</p><table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
         <tr>
             <th>Sl. No</th>
@@ -314,7 +394,6 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
         </tr>";
             $serial_number = 1;
             while ($row = $result->fetch_assoc()) {
-                $formatted_date = date('d-m-Y', strtotime($row['off_road_date'])); // Format the date
                 $html .= "<tr>
             <td>{$serial_number}</td>
             <td>{$row['depot_name']}</td>
@@ -327,6 +406,8 @@ ORDER BY l.depot_id, o.off_road_date ASC;";
           </tr>";
                 $serial_number++;
             }
+        }
+        $html .= "</table>";
         }
         echo json_encode(["status" => "success", "html" => $html]);
     } else {

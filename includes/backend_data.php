@@ -8295,17 +8295,260 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         'program_km' => round($estimated_km)
     ]);
 }
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_report_of_program_day") {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_report_of_program_fromto") {
     $from = $_POST['from'];
+    $to = $_POST['to'];
     $division_id = $_POST['division'];
     $depot_id = $_POST['depot'];
+    $program_type = $_POST['program_type'];
 
-    if (!$from || !$division_id || !$depot_id) {
+    if (!$from || !$to || !$division_id || !$depot_id || !$program_type) {
         echo json_encode(['error' => 'Missing required parameters']);
         exit;
     }
+    // Get depot/division names
+    $locationQuery = "SELECT division FROM location WHERE division_id = '$division_id' limit 1";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
 
-    $html = "hello";
+    $locationQuery = "SELECT depot FROM location WHERE depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    $sameDay = $from === $to;
+    $prpgram_type_condition = ($program_type === 'All') ? "1=1" : "pd.program_type = '$program_type'";
+    $division_condition = ($division_id === 'All') ? "1=1" : "br.division_name = '$division_id'";
+    $depot_condition = ($depot_id === 'All') ? "1=1" : "br.depot_name = '$depot_id'";
+
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+        if ($division_id == 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Program Report for Central Office - $depotName</h3>";
+        } elseif ($division_id != 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Program Report for $divisionName - All Depots</h3>";
+        } elseif ($division_id != 'All' && $depot_id != 'All') {
+            $html = "<h3 class='text-center'>Program Report for $divisionName - $depotName</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DIVISION') {
+        if ($depot_id != 'All') {
+            $html = "<h3 class='text-center'>Program Report for $divisionName - $depotName</h3>";
+        } else {
+            $html = "<h3 class='text-center'>Program Report for $divisionName - All Depots</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DEPOT') {
+        $html = "<h3 class='text-center'>Program Report for $divisionName - $depotName</h3>";
+    }
+    $html .= $sameDay
+        ? "<h4 class='text-center'>Date: " . date('d-m-Y', strtotime($from)) . "</h4>"
+        : "<h4 class='text-center'>From: " . date('d-m-Y', strtotime($from)) . " To: " . date('d-m-Y', strtotime($to)) . "</h4>";
+    $html .= "<h4 class='text-center'>Program Type: " . ($program_type === 'All' ? 'All Programs' : ucwords(str_replace('_', ' ', $program_type))) . "</h4>";
+
+
+    // Fetch program data
+    if ($from === $to) {
+        if($program_type === 'All'){
+        $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
+              FROM program_data pd
+              JOIN bus_registration br ON pd.bus_number = br.bus_number
+              WHERE $division_condition
+              AND $depot_condition
+              AND pd.program_date BETWEEN '$from' AND '$to'
+              AND br.deleted != '1'
+              AND $prpgram_type_condition
+              ORDER BY pd.program_date ASC, pd.program_type ASC";
+        $result = mysqli_query($db, $query);
+        if (mysqli_num_rows($result) > 0) {
+            $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+        <thead>
+            <tr>
+                <th>SL No</th>
+                <th>Vehicle No</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Model Type</th>
+                <th>Program Type</th>
+                <th>Program Date</th>
+                <th>Program Completed KMS</th>
+            </tr>
+        </thead>
+        <tbody>";
+            $slNo = 1;
+            while ($row = mysqli_fetch_assoc($result)) {
+                $programDate = $row['program_date'] ? date('d-m-Y', strtotime($row['program_date'])) : 'N/A';
+                $html .= "<tr>
+                <td>{$slNo}</td>
+                <td>{$row['bus_number']}</td>
+                <td>{$row['make']}</td>
+                <td>{$row['model']}</td>
+                <td>{$row['model_type']}</td>
+                <td>" . ucwords(str_replace('_', ' ', $row['program_type'])) . "</td>
+                <td>{$programDate}</td>
+                <td>{$row['program_completed_km']}</td>
+            </tr>";
+                $slNo++;
+            }
+            $html .= "</tbody></table>";
+        } else {
+            $html .= "<p class='text-center'>No program data found for the selected criteria.</p>";
+        }
+    }else{
+        $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
+              FROM program_data pd
+              JOIN bus_registration br ON pd.bus_number = br.bus_number
+              WHERE $division_condition
+              AND $depot_condition
+              AND pd.program_date BETWEEN '$from' AND '$to'
+              AND br.deleted != '1'
+              AND $prpgram_type_condition
+              ORDER BY pd.program_date ASC, pd.program_type ASC";
+        $result = mysqli_query($db, $query);
+        if (mysqli_num_rows($result) > 0) {
+            $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+        <thead>
+            <tr>
+                <th>SL No</th>
+                <th>Vehicle No</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Model Type</th>
+                <th>Program Date</th>
+                <th>Program Completed KMS</th>
+            </tr>
+        </thead>
+        <tbody>";
+            $slNo = 1;
+            while ($row = mysqli_fetch_assoc($result)) {
+                $programDate = $row['program_date'] ? date('d-m-Y', strtotime($row['program_date'])) : 'N/A';
+                $html .= "<tr>
+                <td>{$slNo}</td>
+                <td>{$row['bus_number']}</td>
+                <td>{$row['make']}</td>
+                <td>{$row['model']}</td>
+                <td>{$row['model_type']}</td>
+                <td>{$programDate}</td>
+                <td>{$row['program_completed_km']}</td>
+            </tr>";
+                $slNo++;
+            }
+            $html .= "</tbody></table>";
+        } else {
+            $html .= "<p class='text-center'>No program data found for the selected criteria.</p>";
+        }
+    }
+    } else {
+        if ($program_type === 'All') {
+            $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
+          FROM program_data pd
+          JOIN bus_registration br ON pd.bus_number = br.bus_number
+          WHERE $division_condition
+          AND $depot_condition
+          AND pd.program_date BETWEEN '$from' AND '$to'
+          AND br.deleted != '1'
+          AND $prpgram_type_condition
+          ORDER BY pd.program_type ASC, pd.program_date ASC, pd.bus_number ASC";
+
+            $result = mysqli_query($db, $query);
+
+            if (mysqli_num_rows($result) > 0) {
+                $currentProgram = "";
+                $slNo = 1;
+
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $programName = ucwords(str_replace('_', ' ', $row['program_type']));
+                    $programDate = $row['program_date'] ? date('d-m-Y', strtotime($row['program_date'])) : 'N/A';
+
+                    // Start new program table when program type changes
+                    if ($currentProgram != $programName) {
+                        // Close previous table if exists
+                        if ($currentProgram != "") {
+                            $html .= "</tbody></table><br>";
+                        }
+
+                        // Start new program table
+                        $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+                <thead>
+                    <tr><th colspan='7' style='text-align:center;'>$programName</th></tr>
+                    <tr>
+                        <th>SL No</th>
+                        <th>Bus Number</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th>Model Type</th>
+                        <th>Program Date</th>
+                        <th>Program KM</th>
+                    </tr>
+                </thead>
+                <tbody>";
+                        $slNo = 1; // reset counter for new table
+                    }
+
+                    // Add row to current program table
+                    $html .= "<tr>
+            <td>{$slNo}</td>
+            <td>{$row['bus_number']}</td>
+            <td>{$row['make']}</td>
+            <td>{$row['model']}</td>
+            <td>{$row['model_type']}</td>
+            <td>{$programDate}</td>
+            <td>{$row['program_completed_km']}</td>
+        </tr>";
+
+                    $slNo++;
+                    $currentProgram = $programName;
+                }
+
+                // Close last table
+                $html .= "</tbody></table>";
+            } else {
+                $html .= "<p class='text-center'>No program data found for the selected criteria.</p>";
+            }
+        } else {
+            $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
+              FROM program_data pd
+              JOIN bus_registration br ON pd.bus_number = br.bus_number
+              WHERE $division_condition
+              AND $depot_condition
+              AND pd.program_date BETWEEN '$from' AND '$to'
+              AND br.deleted != '1'
+              AND $prpgram_type_condition
+              ORDER BY pd.program_date ASC, pd.bus_number ASC";
+            $result = mysqli_query($db, $query);
+            if (mysqli_num_rows($result) > 0) {
+                $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+        <thead>
+            <tr>
+                <th>SL No</th>
+                <th>Vehicle No</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Model Type</th>
+                <th>Program Date</th>
+                <th>Program Completed KMS</th>
+            </tr>
+        </thead>
+        <tbody>";
+                $slNo = 1;
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $programDate = $row['program_date'] ? date('d-m-Y', strtotime($row['program_date'])) : 'N/A';
+                    $html .= "<tr>
+                <td>{$slNo}</td>
+                <td>{$row['bus_number']}</td>
+                <td>{$row['make']}</td>
+                <td>{$row['model']}</td>
+                <td>{$row['model_type']}</td>
+                <td>{$programDate}</td>
+                <td>{$row['program_completed_km']}</td>
+            </tr>";
+                    $slNo++;
+                }
+                $html .= "</tbody></table>";
+            } else {
+                $html .= "<p class='text-center'>No program data found for the selected criteria.</p>";
+            }
+        }
+    }
+
 
     echo json_encode([
         'status' => 'success',
@@ -8445,7 +8688,7 @@ ORDER BY l.division_id ASC, bc.cause ASC;
             $causes = [];
             $totalCorporationCount = 0;
 
-            // Build data and calculate total corporation count
+            // Build data and calculate total corporation count 
             while ($row = mysqli_fetch_assoc($summaryResult)) {
                 $division = $row['kmpl_division'] ?? 'Unknown';
                 $cause = $row['cause'] ?? 'Unknown';

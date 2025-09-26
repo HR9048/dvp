@@ -1,18 +1,18 @@
 <?php
 include '../includes/connection.php';
-include '../includes/depot_top.php';
+include '../includes/sidebar.php';
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') {
+if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
 ?>
 
-    <h6>Select details for Break Down Report</h6>
+    <h6>Select details for W3 Report</h6>
     <form id="scheduleForm">
 
         <label for="from">From:</label>
@@ -20,13 +20,35 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
         <label for="to">To:</label>
         <input id="to" type="date" name="to" required>
-        <input type="hidden" id="division" name="division" value="<?php echo $division_id; ?>">
-        <input type="hidden" id="depot" name="depot" value="<?php echo $depot_id; ?>">
+        <label for="division">Division:</label>
+        <select id="division" name="division" required>
+            <option value="">select</option>
+        </select>
 
+        <label for="depot">Depot:</label>
+        <select id="depot" name="depot" required>
+            <option value="">select</option>
+        </select>
+
+        <label for="program_type">Program Type:</label>
+        <select id="program_type" name="program_type" required>
+            <option value="">select</option>
+            <option value="All">All</option>
+            <?php
+            $programtype_sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'program_master'  AND TABLE_SCHEMA = 'kkrtcdvp_data'  AND ORDINAL_POSITION > 4  AND ORDINAL_POSITION < (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'program_master' AND TABLE_SCHEMA = 'kkrtcdvp_data') - 1 ORDER BY ORDINAL_POSITION;";
+            $programtype_result = mysqli_query($db, $programtype_sql);
+
+            while ($row = mysqli_fetch_assoc($programtype_result)) {
+                $column_name = $row['COLUMN_NAME'];
+                // Format for display: replace _ with space and capitalize first letters
+                $display_name = ucwords(str_replace('_', ' ', $column_name));
+                echo "<option value='$column_name'>$display_name</option>";
+            }
+            ?>
+        </select>
 
         <button class="btn btn-primary" type="submit">Submit</button>
-        <button type="button" class="btn btn-success" onclick="window.print()">Print</button>
-        <!-- button to download pdf on click call a function -->
+        <button class="btn btn-success" onclick="window.print()">Print</button>
 
     </form>
     <div id="loadingIndicator" style="display:none; text-align:center; margin: 10px;">
@@ -45,21 +67,21 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     ?>
 
     <script>
+        //add select2 for program type
+        $('#program_type').select2({
+            placeholder: "Select Program Type",
+            allowClear: true
+        });
         $(document).ready(function() {
             // Get current date from PHP
-            var todayDate = "<?php echo $currentDate; ?>";
-            var reportstartDate = "2025-04-01";
-            var formatted_reportstartDate = "01-04-2025"; // DD-MM-YYYY format
+            var todayDate = "<?php echo $currentDate; ?>"; // Date in 'YYYY-MM-DD' format
 
-            // Initialize date inputs with max attribute
-            $('#from, #to').attr('max', todayDate);
             // Date Validation: Ensure 'From' is not greater than 'To' and not greater than today
             $('#from, #to').on('change', function() {
                 var fromDate = new Date($('#from').val());
                 var toDate = new Date($('#to').val());
                 var today = new Date(todayDate); // Use PHP's provided current date
                 today.setHours(0, 0, 0, 0); // Reset hours to compare only dates
-
 
                 // Validate the 'From' date
                 if ($('#from').val()) {
@@ -107,12 +129,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         $('#to').val('');
                     }
                 }
-                // if form or to date is less then reportstartDate then show alert
-                if (fromDate < new Date(reportstartDate) || toDate < new Date(reportstartDate)) {
+                // if form or to date is less then 01-08-2025 then show alert
+                if (fromDate < new Date('2025-08-01') || toDate < new Date('2025-08-01')) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Date Limit Exceeded!',
-                        text: 'Please select dates from ' + formatted_reportstartDate + '.',
+                        text: 'Please select dates after 01-08-2025.',
                         confirmButtonColor: '#d33',
                         confirmButtonText: 'OK'
                     });
@@ -157,6 +179,51 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             });
         });
 
+        function fetchBusCategory() {
+            $.ajax({
+                url: '../includes/data_fetch.php',
+                type: 'GET',
+                data: {
+                    action: 'fetchDivision'
+                },
+                success: function(response) {
+                    var divisions = JSON.parse(response);
+                    //add All option
+                    $('#division').append('<option value="All">All</option>');
+                    $.each(divisions, function(index, division) {
+                        if (division.DIVISION !== 'HEAD-OFFICE' && division.DIVISION !== 'RWY') {
+                            $('#division').append('<option value="' + division.division_id + '">' + division
+                                .DIVISION + '</option>');
+                        }
+                    });
+                }
+            });
+
+            $('#division').change(function() {
+                var Division = $(this).val();
+                $.ajax({
+                    url: '../includes/data_fetch.php?action=fetchDepot',
+                    method: 'POST',
+                    data: {
+                        division: Division
+                    },
+                    success: function(data) {
+                        // Update the depot dropdown with fetched data
+                        $('#depot').html(data);
+                        $('#depot').prepend('<option value="All">All</option>');
+                        // Hide the option with text 'DIVISION'
+                        $('#depot option').each(function() {
+                            if ($(this).text().trim() === 'DIVISION' || $(this).text().trim() === 'KALABURAGI') {
+                                $(this).hide();
+                            }
+                        });
+                    }
+                });
+            });
+        }
+        $(document).ready(function() {
+            fetchBusCategory();
+        });
 
 
         $(document).ready(function() {
@@ -167,12 +234,48 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 var to = $('#to').val();
                 var division = $('#division').val();
                 var depot = $('#depot').val();
+                var program_type = $('#program_type').val();
 
+                var programstart_date = '';
+                var formated_programstart_date = '';
+                var depots_1 = ['1', '8', '12', '13', '14', '15'];
+                var depots_2 = ['111'];
+
+                if (depots_1.includes(depot)) {
+                    programstart_date = '2025-07-31';
+                    formated_programstart_date = '31-07-2025';
+                } else if (depots_2.includes(depot)) {
+                    programstart_date = '2025-09-30';
+                    formated_programstart_date = '30-09-2025';
+                } else {
+                    if (depot != 'All') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Depot Not Valid!',
+                            text: 'Program not yet started for the selected depot. Please select a different depot.',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'OK'
+                        });
+                        return;
+                    }
+                }
+
+                if (from < programstart_date || to < programstart_date) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Date Not Valid!',
+                        text: 'Please select another date because the program start date for the selected depot is ' + formated_programstart_date + '.',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
 
 
                 // Show loading and clear report container
                 $('#reportContainer').html('');
                 $('#loadingIndicator').show();
+                console.log("from: " + from + ", to: " + to + ", division: " + division + ", depot: " + depot + ", program_type: " + program_type);
 
                 $.ajax({
                     type: 'POST',
@@ -183,7 +286,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         to: to,
                         division: division,
                         depot: depot,
-                        action: 'fetch_report_for_bd_from_to'
+                        program_type: program_type,
+                        action: 'fetch_report_of_program_fromto'
                     },
                     success: function(response) {
                         $('#loadingIndicator').hide(); // hide loading on success
@@ -203,8 +307,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'A Network error occurred: ' + (xhr.responseText ||
-                                error),
+                            text: 'A Network error occurred: ' + (xhr.responseText || error),
                             confirmButtonText: 'OK'
                         });
                     }

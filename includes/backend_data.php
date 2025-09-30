@@ -7837,13 +7837,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     if (in_array($depot_id, ['1', '8', '12', '13', '14', '15'])) {
         $programstart_date = '2025-08-01';
         $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    } elseif (in_array($depot_id, ['111'])) {
-        $programstart_date = '2025-08-01';
+    } elseif (in_array($depot_id, ['2','3','4','5','6','7','9','10','11','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40','41','42','43','44','45','46','47','48','49','50','51','52','53'])) {
+        $programstart_date = '2025-10-01';
         $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    } else {
-        $programstart_date = '2025-08-01';
-        $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    }
+    } 
     // Get depot/division names
     $locationQuery = "SELECT division, depot FROM location WHERE division_id = '$division_id' AND depot_id = '$depot_id'";
     $locationResult = mysqli_query($db, $locationQuery);
@@ -8236,13 +8233,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     if (in_array($_SESSION['DEPOT_ID'], ['1', '8', '12', '13', '14', '15'])) {
         $programstart_date = '2025-08-01';
         $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    } elseif (in_array($_SESSION['DEPOT_ID'], ['111'])) {
-        $programstart_date = '2025-08-01';
+    } elseif (in_array($_SESSION['DEPOT_ID'], ['2','3','4','5','6','7','9','10','11','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40','41','42','43','44','45','46','47','48','49','50','51','52','53'])) {
+        $programstart_date = '2025-10-01';
         $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    } else {
-        $programstart_date = '2025-08-01';
-        $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    }
+    } 
 
     $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
     $program_type = mysqli_real_escape_string($db, $_POST['program_type']);
@@ -8347,8 +8341,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 
     // Fetch program data
     if ($from === $to) {
-        if($program_type === 'All'){
-        $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
+        if ($program_type === 'All') {
+            $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
               FROM program_data pd
               JOIN bus_registration br ON pd.bus_number = br.bus_number
               WHERE $division_condition
@@ -8357,9 +8351,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
               AND br.deleted != '1'
               AND $prpgram_type_condition
               ORDER BY pd.program_date ASC, pd.program_type ASC";
-        $result = mysqli_query($db, $query);
-        if (mysqli_num_rows($result) > 0) {
-            $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+            $result = mysqli_query($db, $query);
+            if (mysqli_num_rows($result) > 0) {
+                $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
         <thead>
             <tr>
                 <th>SL No</th>
@@ -8373,10 +8367,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
             </tr>
         </thead>
         <tbody>";
-            $slNo = 1;
-            while ($row = mysqli_fetch_assoc($result)) {
-                $programDate = $row['program_date'] ? date('d-m-Y', strtotime($row['program_date'])) : 'N/A';
-                $html .= "<tr>
+                $slNo = 1;
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $programDate = $row['program_date'] ? date('d-m-Y', strtotime($row['program_date'])) : 'N/A';
+                    $html .= "<tr>
                 <td>{$slNo}</td>
                 <td>{$row['bus_number']}</td>
                 <td>{$row['make']}</td>
@@ -8386,14 +8380,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
                 <td>{$programDate}</td>
                 <td>{$row['program_completed_km']}</td>
             </tr>";
-                $slNo++;
+                    $slNo++;
+                }
+                $html .= "</tbody></table>";
+            } else {
+                $html .= "<p class='text-center'>No program data found for the selected criteria.</p>";
             }
-            $html .= "</tbody></table>";
         } else {
-            $html .= "<p class='text-center'>No program data found for the selected criteria.</p>";
-        }
-    }else{
-        $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
+            $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
               FROM program_data pd
               JOIN bus_registration br ON pd.bus_number = br.bus_number
               WHERE $division_condition
@@ -8402,9 +8396,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
               AND br.deleted != '1'
               AND $prpgram_type_condition
               ORDER BY pd.program_date ASC, pd.program_type ASC";
-        $result = mysqli_query($db, $query);
-        if (mysqli_num_rows($result) > 0) {
-            $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+            $result = mysqli_query($db, $query);
+            if (mysqli_num_rows($result) > 0) {
+                $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
         <thead>
             <tr>
                 <th>SL No</th>
@@ -8417,10 +8411,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
             </tr>
         </thead>
         <tbody>";
-            $slNo = 1;
-            while ($row = mysqli_fetch_assoc($result)) {
-                $programDate = $row['program_date'] ? date('d-m-Y', strtotime($row['program_date'])) : 'N/A';
-                $html .= "<tr>
+                $slNo = 1;
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $programDate = $row['program_date'] ? date('d-m-Y', strtotime($row['program_date'])) : 'N/A';
+                    $html .= "<tr>
                 <td>{$slNo}</td>
                 <td>{$row['bus_number']}</td>
                 <td>{$row['make']}</td>
@@ -8429,13 +8423,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
                 <td>{$programDate}</td>
                 <td>{$row['program_completed_km']}</td>
             </tr>";
-                $slNo++;
+                    $slNo++;
+                }
+                $html .= "</tbody></table>";
+            } else {
+                $html .= "<p class='text-center'>No program data found for the selected criteria.</p>";
             }
-            $html .= "</tbody></table>";
-        } else {
-            $html .= "<p class='text-center'>No program data found for the selected criteria.</p>";
         }
-    }
     } else {
         if ($program_type === 'All') {
             $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
@@ -9004,4 +8998,59 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         http_response_code(500);
         echo json_encode(['error' => 'Database error: ' . $db->error]);
     }
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetchBDDataById") {
+    $bd_id = $db->real_escape_string($_POST['id']);
+
+    if (!$bd_id) {
+        echo json_encode(['error' => 'Missing required parameters']);
+        exit;
+    }
+
+    // Fetch breakdown data by ID
+    $query = "SELECT bd.*, bc.cause, bc.reason, l.division, l.depot
+              FROM bd_datas bd
+              LEFT JOIN bd_cause bc ON bd.cause = bc.cause_id AND bd.reason = bc.reason_id
+              LEFT JOIN location l ON bd.depot_id = l.depot_id AND bd.division_id = l.division_id
+              WHERE bd.id = '$bd_id'
+              LIMIT 1";
+    $result = mysqli_query($db, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $data = mysqli_fetch_assoc($result);
+        if (!empty($data['bd_date'])) {
+            $data['bd_date'] = date('d-m-Y', strtotime($data['bd_date']));
+        }
+        echo json_encode(['status' => 'success', 'data' => $data]);
+    } else {
+        echo json_encode(['error' => 'No breakdown data found for the given ID']);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "updateBDData") {
+    $id = $db->real_escape_string($_POST['id']);
+    $bd_location = $db->real_escape_string($_POST['bd_location']);
+    $route_number = $db->real_escape_string($_POST['route_number']);
+    $km_after_docking = $db->real_escape_string($_POST['km_after_docking']);
+
+    if (!$id || $bd_location === '' || $route_number === '' || $km_after_docking === '') {
+        echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
+        exit;
+    }
+
+    $query = "
+        UPDATE bd_datas 
+        SET 
+            bd_location = '$bd_location',
+            route_number = '$route_number',
+            km_after_docking = '$km_after_docking'
+        WHERE id = '$id'
+        LIMIT 1
+    ";
+
+    if (mysqli_query($db, $query)) {
+        echo json_encode(['status' => 'success']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => mysqli_error($db)]);
+    }
+    exit;
 }

@@ -28,7 +28,7 @@ $pdf->SetHeaderMargin(0);
 $pdf->SetFooterMargin(5);
 $pdf->SetAutoPageBreak(TRUE, 15);
 $pdf->AddPage();
-
+$pdf->SetY(25);
 // Custom styles (since bootstrap is not supported)
 $style = "
 <style>
@@ -289,6 +289,11 @@ while ($start <= $end) {
     $monthGroups[$monthKey][] = clone $start;
     $start->modify('+1 day');
 }
+$totalDays = 0;
+foreach ($monthGroups as $dates) {
+    $totalDays += count($dates);
+}
+$dayWidth = 80 / $totalDays;
 $formatted_from = date('d-m-y', strtotime($from_date));
 foreach ($buses as $vehicleNo => $bus) {
     $make = $bus['make'];
@@ -317,141 +322,143 @@ foreach ($buses as $vehicleNo => $bus) {
     }
 
     // Generate table for this vehicle
-   // -------------------------------------------
-// TCPDF-safe table (fixed header + inline CSS)
-// -------------------------------------------
-$html .= '<table border="1" cellspacing="0" cellpadding="5" style="font-size:9pt; margin-bottom:30px; width:100%;">';
-$html .= '<thead>';
+    // -------------------------------------------
+    // TCPDF-safe table (fixed header + inline CSS)
+    // -------------------------------------------
+    $html .= '<table border="1" cellspacing="0" cellpadding="5" style="font-size:9pt; margin-bottom:30px; width:100%;">';
+    $html .= '<thead>';
 
-// Header row 1: fixed columns + months
-$html .= '<tr bgcolor="#d9d9d9">';
-$html .= '  <th align="center" style="font-weight:bold; width: 3%;">SL No</th>';
-$html .= '  <th align="center" style="font-weight:bold; width: 7%">Vehicle No</th>';
-$html .= '  <th rowspan="2" align="center" style="font-weight:bold; width: 5%">Program Target KMS</th>';
-$html .= '  <th rowspan="2" align="center" style="font-weight:bold; width: 5%">Cumm. program <br/> kms as on ' . $formatted_from . '</th>';
+    // Header row 1: fixed columns + months
+    $html .= '<tr bgcolor="#d9d9d9">';
+    $html .= '  <th align="center" style="font-weight:bold; width: 3%;">SL No</th>';
+    $html .= '  <th align="center" style="font-weight:bold; width: 7%">Vehicle No</th>';
+    $html .= '  <th rowspan="2" align="center" style="font-weight:bold; width: 5%">Program Target KMS</th>';
+    $html .= '  <th rowspan="2" align="center" style="font-weight:bold; width: 5%">Cumm. program <br/> kms as on ' . $formatted_from . '</th>';
 
-foreach ($monthGroups as $monthYear => $dates) {
-    $colspan = count($dates);
-    $html .= '  <th colspan="' . $colspan . '" align="center" style="font-weight:bold; width: 80%">' . $monthYear . '</th>';
-}
-$html .= '</tr>';
-
-// Header row 2: day numbers
-$html .= '<tr bgcolor="#efefef">';
-$html .= "  <td rowspan='2'><b>$slNo</b></td>";
-$html .= "  <td rowspan='2'><b>{$vehicleNo}</b></td>";
-foreach ($monthGroups as $dates) {
-    foreach ($dates as $dateObj) {
-        $html .= '  <th align="center" style="font-weight:bold;">' . $dateObj->format('j') . '</th>';
-    }
-}
-$html .= '</tr>';
-
-$html .= '</thead>';
-
-$html .= '<tbody>';
-$totalDays = 0;
-foreach ($monthGroups as $dates) {
-    $totalDays += count($dates);
-}
-
-// First data row: labels "Program Name" and "Daily KMS"
-$html .= '<tr bgcolor="#f9f9f9" style="max-width: 100%;">';
-$html .= '  <td colspan="2" align="center" style="font-weight:bold; width: 10%">Program Name</td>';
-$html .= '  <td colspan="2" align="center" style="font-weight:bold; width: 10%">Daily KMS</td>';
-$dayWidth = ($totalDays > 0) ? (80 / $totalDays) : 0;
-
-foreach ($monthGroups as $dates) {
-    foreach ($dates as $dateObj) {
-        $dateStr = $dateObj->format('Y-m-d');
-        $value = 'NA';
-        if (isset($dailyKmplData[$vehicleNo][$dateStr])) {
-            $value = $dailyKmplData[$vehicleNo][$dateStr];
-        } elseif (isset($w3Data[$vehicleNo][$dateStr])) {
-            $value = $w3Data[$vehicleNo][$dateStr];
-        }
-        $html .= '  <td align="center" style="width:' . number_format($dayWidth, 2) . '%;">' . $value . '</td>';
-    }
-}
-$html .= '</tr>';
-
-// Program rows
-foreach ($programs as $prog) {
-    $programName = strtolower(str_replace(' ', '_', $prog['name']));
-    $progData    = $programDataMap[$vehicleNo][$programName] ?? null;
-    $program_date = $progData['program_date'] ?? null;
-    $completed_km = (float)($progData['program_completed_km'] ?? 0);
-    $kmData       = $kmplMap[$vehicleNo] ?? [];
-
-    if (empty($program_date) || $program_date == '0000-00-00') {
-        $initial_cumm_kms = $completed_km + sumKms($kmData, $kmpl_start_date, $from_date);
-    } elseif (strtotime($program_date) > strtotime($from_date)) {
-        $initial_cumm_kms = sumKms($kmData, $kmpl_start_date, $from_date);
-    } elseif (strtotime($program_date) == strtotime($from_date)) {
-        $initial_cumm_kms = 0;
-    } elseif (strtotime($program_date) < strtotime($from_date)) {
-        $program_date1    = date('Y-m-d', strtotime($program_date . ' +1 day'));
-        $initial_cumm_kms = sumKms($kmData, $program_date1, $from_date);
-    } else {
-        $start_date1      = date('Y-m-d', strtotime($program_date . ' +1 day'));
-        $initial_cumm_kms = sumKms($kmData, $start_date1, $from_date);
-    }
-
-    $dailyCumm = calculateCumulativePerDay(
-        $initial_cumm_kms,
-        $dailyKmplData[$vehicleNo] ?? [],
-        $from,
-        $to,
-        $vehicleNo,
-        $prog['realname']
-    );
-
-    // Row start
-    $html .= '<tr>';
-
-    // Program name spans "SL No" + "Vehicle No" columns
-    $html .= '  <td colspan="2" align="left" bgcolor="#f4f6f7" style="font-weight:bold;">' . $prog['name'] . '</td>';
-
-    // Target + initial cumm kms
-    $html .= '  <td align="center">' . $prog['value'] . ' ' . ($program_date ?? '') . '</td>';
-    $html .= '  <td align="center">' . $initial_cumm_kms . '</td>';
-
-    // Day-wise values
-    $target = (float)$prog['value'];
-    foreach ($monthGroups as $dates) {
-        foreach ($dates as $dateObj) {
-            $dateStr = $dateObj->format('Y-m-d');
-            $d = $dailyCumm[$dateStr] ?? ['value' => 'NA', 'color' => 'default'];
-            $val   = $d['value'];
-            $color = $d['color'] ?? 'default';
-
-            $cellAttr = ' align="center"';
-            $bg = '';
-
-            if (is_numeric($val)) {
-                if ($color === 'green') {
-                    $bg = ' bgcolor="#27ae60" style="color:#ffffff;"';
-                } else {
-                    $numVal = (float)$val;
-                    if ($numVal > $target + 500) {
-                        $bg = ' bgcolor="#e74c3c" style="color:#ffffff;"';
-                    } elseif (abs($numVal - $target) <= 500) {
-                        $bg = ' bgcolor="#f1c40f"';
-                    }
-                }
-            }
-
-            $html .= '  <td' . $cellAttr . $bg . '>' . $val . '</td>';
-        }
+    foreach ($monthGroups as $monthYear => $dates) {
+        $colspan = count($dates);
+        $monthWidth = $colspan * $dayWidth;
+        $html .= '<th colspan="' . $colspan . '" align="center" 
+                     style="font-weight:bold; width:' . number_format($monthWidth, 2) . '%;">'
+            . $monthYear . '</th>';
     }
 
     $html .= '</tr>';
-}
 
-$html .= '</tbody>';
-$html .= '</table><br><br><br>';
+    // Header row 2: day numbers
+    $html .= '<tr bgcolor="#efefef">';
+    $html .= "  <td rowspan='2'><b>$slNo</b></td>";
+    $html .= "  <td rowspan='2'><b>{$vehicleNo}</b></td>";
+    foreach ($monthGroups as $dates) {
+        foreach ($dates as $dateObj) {
+            $html .= '  <th align="center" style="font-weight:bold;">' . $dateObj->format('j') . '</th>';
+        }
+    }
+    $html .= '</tr>';
 
+    $html .= '</thead>';
 
+    $html .= '<tbody>';
+    $totalDays = 0;
+    foreach ($monthGroups as $dates) {
+        $totalDays += count($dates);
+    }
+
+    // First data row: labels "Program Name" and "Daily KMS"
+    $html .= '<tr bgcolor="#f9f9f9" style="max-width: 100%;">';
+    $html .= '  <td colspan="2" align="center" style="font-weight:bold; width: 10%">Program Name</td>';
+    $html .= '  <td colspan="2" align="center" style="font-weight:bold; width: 10%">Daily KMS</td>';
+    $dayWidth = ($totalDays > 0) ? (80 / $totalDays) : 0;
+
+    foreach ($monthGroups as $dates) {
+        foreach ($dates as $dateObj) {
+            $dateStr = $dateObj->format('Y-m-d');
+            $value = 'NA';
+            if (isset($dailyKmplData[$vehicleNo][$dateStr])) {
+                $value = $dailyKmplData[$vehicleNo][$dateStr];
+            } elseif (isset($w3Data[$vehicleNo][$dateStr])) {
+                $value = $w3Data[$vehicleNo][$dateStr];
+            }
+            $html .= '  <td align="center" style="width:' . number_format($dayWidth, 2) . '%;">' . $value . '</td>';
+        }
+    }
+    $html .= '</tr>';
+
+    // Program rows
+    foreach ($programs as $prog) {
+        $programName = strtolower(str_replace(' ', '_', $prog['name']));
+        $progData    = $programDataMap[$vehicleNo][$programName] ?? null;
+        $program_date = $progData['program_date'] ?? null;
+        $completed_km = (float)($progData['program_completed_km'] ?? 0);
+        $kmData       = $kmplMap[$vehicleNo] ?? [];
+
+        if (empty($program_date) || $program_date == '0000-00-00') {
+            $initial_cumm_kms = $completed_km + sumKms($kmData, $kmpl_start_date, $from_date);
+        } elseif (strtotime($program_date) > strtotime($from_date)) {
+            $initial_cumm_kms = sumKms($kmData, $kmpl_start_date, $from_date);
+        } elseif (strtotime($program_date) == strtotime($from_date)) {
+            $initial_cumm_kms = 0;
+        } elseif (strtotime($program_date) < strtotime($from_date)) {
+            $program_date1    = date('Y-m-d', strtotime($program_date . ' +1 day'));
+            $initial_cumm_kms = sumKms($kmData, $program_date1, $from_date);
+        } else {
+            $start_date1      = date('Y-m-d', strtotime($program_date . ' +1 day'));
+            $initial_cumm_kms = sumKms($kmData, $start_date1, $from_date);
+        }
+
+        $dailyCumm = calculateCumulativePerDay(
+            $initial_cumm_kms,
+            $dailyKmplData[$vehicleNo] ?? [],
+            $from,
+            $to,
+            $vehicleNo,
+            $prog['realname']
+        );
+
+        // Row start
+        $html .= '<tr>';
+
+        // Program name spans "SL No" + "Vehicle No" columns
+        $html .= '  <td colspan="2" align="left" bgcolor="#f4f6f7" style="font-weight:bold;">' . $prog['name'] . '</td>';
+
+        // Target + initial cumm kms
+        $html .= '  <td align="center">' . $prog['value'] . ' ' . ($program_date ?? '') . '</td>';
+        $html .= '  <td align="center">' . $initial_cumm_kms . '</td>';
+
+        // Day-wise values
+        $target = (float)$prog['value'];
+        foreach ($monthGroups as $dates) {
+            foreach ($dates as $dateObj) {
+                $dateStr = $dateObj->format('Y-m-d');
+                $d = $dailyCumm[$dateStr] ?? ['value' => 'NA', 'color' => 'default'];
+                $val   = $d['value'];
+                $color = $d['color'] ?? 'default';
+
+                $cellAttr = ' align="center"';
+                $bg = '';
+
+                if (is_numeric($val)) {
+                    if ($color === 'green') {
+                        $bg = ' bgcolor="#27ae60" style="color:#ffffff;"';
+                    } else {
+                        $numVal = (float)$val;
+                        if ($numVal > $target + 500) {
+                            $bg = ' bgcolor="#e74c3c" style="color:#ffffff;"';
+                        } elseif (abs($numVal - $target) <= 500) {
+                            $bg = ' bgcolor="#f1c40f"';
+                        }
+                    }
+                }
+
+                $html .= '  <td' . $cellAttr . $bg . '>' . $val . '</td>';
+            }
+        }
+
+        $html .= '</tr>';
+    }
+
+    $html .= '</tbody>';
+    $html .= '</table><br><br>';
     $slNo++;
 }
 
@@ -459,5 +466,5 @@ $html .= '</table><br><br><br>';
 $pdf->writeHTML($html, true, false, true, false, '');
 
 // Output file
-$pdf->Output("W3_Report_{$divisionName}_{$depotName}.pdf", 'D');
+$pdf->Output("W3_Report_{$divisionName}_{$depotName}.pdf", 'I');
 exit;

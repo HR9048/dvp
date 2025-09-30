@@ -279,10 +279,9 @@ confirm_logged_in();
                             <li><a class="dropdown-item" href="division_vehicle_kmpl_ft.php">Vehicle wise From-To Date KMPL report </a></li>
                             <li><a class="dropdown-item" href="division_vehicle_kmpl_report.php">Manual/Logsheet KMPL Comparison Report</a></li>
                             <li><a class="dropdown-item" href="division_view_bd.php">Break Down Report</a></li>
-                            <?php if (in_array($_SESSION['DIVISION_ID'], [1, 2, 3])) { ?>
                             <li><a class="dropdown-item" href="division_w3_report_fromto.php">W3 Chart Report</a></li>
                             <li><a class="dropdown-item" href="division_program_report_fromto.php">Program Completion Report</a></li>
-                          <?php } } ?>
+                          <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
                             <li><a class="dropdown-item" href="division_schedule_report_day.php">Day wise Schedule reports</a></li>
                             <li><a class="dropdown-item" href="division_schedule_report_month.php">Month wise Schedule reports</a></li>

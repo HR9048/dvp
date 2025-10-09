@@ -25,7 +25,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
     $air_suspension_bus_category_array = ['Rajahamsa', 'Corona Sleeper AC', 'Sleeper AC', 'Regular Sleeper Non AC', 'Amoghavarsha Sleeper Non AC', 'Kalyana Ratha'];
     // 2. Fetch all buses for this depot/division
-    $bus_query = "SELECT br.bus_number, br.make, br.emission_norms, br.bus_progressive_km_31032025, br.model_type, bs.bus_type, bs.bus_category, br.bus_sub_category FROM bus_registration br left join bus_seat_category bs on bs.bus_sub_category= br.bus_sub_category WHERE br.depot_name = $depot_id AND br.division_name = $division_id";
+    $bus_query = "SELECT br.bus_number, br.make, br.emission_norms, br.bus_progressive_km_31032025, br.model_type, bs.bus_type, bs.bus_category, br.bus_sub_category FROM bus_registration br left join bus_seat_category bs on bs.bus_sub_category= br.bus_sub_category WHERE br.depot_name = $depot_id AND br.division_name = $division_id  and br.doc <= '2025-09-30'";
     $bus_result = mysqli_query($db, $bus_query);
 
     $incomplete = false;

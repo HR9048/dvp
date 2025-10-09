@@ -26,7 +26,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
     $air_suspension_bus_category_array = ['Rajahamsa', 'Corona Sleeper AC', 'Sleeper AC', 'Regular Sleeper Non AC', 'Amoghavarsha Sleeper Non AC', 'Kalyana Ratha'];
     // 2. Fetch all buses for this depot/division
-    $bus_query = "SELECT br.bus_number, br.make, br.emission_norms, br.bus_progressive_km_31032025, br.model_type, bs.bus_type, bs.bus_category, br.bus_sub_category FROM bus_registration br left join bus_seat_category bs on bs.bus_sub_category= br.bus_sub_category WHERE br.depot_name = $depot_id AND br.division_name = $division_id";
+    $bus_query = "SELECT br.bus_number, br.make, br.emission_norms, br.bus_progressive_km_31032025, br.model_type, bs.bus_type, bs.bus_category, br.bus_sub_category FROM bus_registration br left join bus_seat_category bs on bs.bus_sub_category= br.bus_sub_category WHERE br.depot_name = $depot_id AND br.division_name = $division_id  and br.doc <= '2025-09-30'";
     $bus_result = mysqli_query($db, $bus_query);
 
     $incomplete = false;
@@ -82,40 +82,22 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     $today = date('d-m-Y');
 ?>
     <style>
-        @media print {
-            body {
-                color: black !important;
-                transform-origin: top left;
-            }
+        
 
-            .container1 {
-                width: 100%;
-                margin: 0 auto;
-            }
-
-            table th,
-            table td {
-                color: black !important;
-            }
-
-            @page {
-                size: auto;
-                margin: 0;
-            }
+        .modal-95 {
+            max-width: 95% !important;
         }
     </style>
 
-    <!-- add a print button -->
+    <!-- add a print button 
     <div class="text-center mb-3">
-    <a href="depot_program_print.php" class="btn btn-secondary">Print</a>
+        <a href="depot_program_print.php" class="btn btn-secondary">Print</a>
 
-    </div>
+    </div>-->
 
-    <div class="container1">
+    <div class="container3">
         <h2 class="text-center text-primary mt-4"><?php echo $_SESSION['KMPL_DEPOT']; ?> Maintenance Program As on Date: <?php echo $today; ?></h2>
-        <div class="text-center mb-3">
 
-        </div>
 
         <?php
         $today = date('Y-m-d');
@@ -313,8 +295,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 <td>{$r['difference']}</td>
                 <td>";
                     if ($r['class'] !== 'bg-success text-white') {
-                        echo "<button class='btn btn-sm btn-primary' onclick=\"openProgramModal('{$bus}', '{$ptype_raw}', '{$r['program_type']}')\">Update</button>";
+                        echo "<button class='btn btn-sm btn-primary' onclick=\"openProgramModal('{$bus}', '{$ptype_raw}', '{$r['program_type']}')\">Update</button>  ";
                     }
+                    if ($r['program_type'] == 'Docking') {
+                        //echo "<button class='btn btn-sm btn-success' onclick=\"openDockingProgramModal('{$bus}')\">Print Report</button>";
+                        echo "<button class='btn btn-sm btn-success' onclick=\"openPrintPage('{$bus}')\">Print Report</button>";
+                    }
+
                     echo "</td>
 
             </tr>";
@@ -420,8 +407,11 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 <td>{$r['prescribed_km']}</td>
                 <td>{$r['difference']}</td>
                 <td>";
-                    echo "<button class='btn btn-sm btn-primary' onclick=\"openProgramModal('{$bus}', '{$ptype_raw}', '{$r['program_type']}')\">Update</button>";
-
+                    echo "<button class='btn btn-sm btn-primary' onclick=\"openProgramModal('{$bus}', '{$ptype_raw}', '{$r['program_type']}')\">Update</button>   ";
+                    if ($r['program_type'] == 'Docking') {
+                        //echo "<button class='btn btn-sm btn-warning' onclick=\"openDockingProgramModal('{$bus}')\">Print Report</button>";
+                        echo "<button class='btn btn-sm btn-warning' onclick=\"openPrintPage('{$bus}')\">Print Report</button>";
+                    }
                     echo "</td>
 
             </tr>";
@@ -429,202 +419,270 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
                 echo "</tbody></table></div>";
             }
-        }
-        echo "</div>"; // Close the container1 div
+        } ?>
+    </div>
+    <?php
+    // ✅ Final fallback message if no rows were printed
+    if (!$any_rows_printed) {
+        echo "<div class='alert alert-info text-center mt-4'><strong>None of the vehicle programs are present.</strong></div>";
+    }
 
-        // ✅ Final fallback message if no rows were printed
-        if (!$any_rows_printed) {
-            echo "<div class='alert alert-info text-center mt-4'><strong>None of the vehicle programs are present.</strong></div>";
-        }
+    ?>
+    <!-- Program Update Modal -->
+    <div class="modal fade" id="programModal" tabindex="-1" aria-labelledby="programModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="programForm" onsubmit="submitProgramUpdate(event)">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update Program</h5>
+                        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="modalBusNumber">
+                        <input type="hidden" id="modalProgramType">
 
-        ?>
-        <!-- Program Update Modal -->
-        <div class="modal fade" id="programModal" tabindex="-1" aria-labelledby="programModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <form id="programForm" onsubmit="submitProgramUpdate(event)">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Update Program</h5>
-                            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" id="modalBusNumber">
-                            <input type="hidden" id="modalProgramType">
-
-                            <p><strong>Bus Number:</strong> <span id="modalBusDisplay"></span></p>
-                            <p><strong>Program:</strong> <span id="modalProgramLabel"></span></p>
+                        <p><strong>Bus Number:</strong> <span id="modalBusDisplay"></span></p>
+                        <p><strong>Program:</strong> <span id="modalProgramLabel"></span></p>
 
 
-                            <div class="mb-3">
-                                <label for="program_date" class="form-label">Maintenance Done Date</label>
-                                <input type="date" class="form-control" id="program_date" required>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-success">Submit</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <div class="mb-3">
+                            <label for="program_date" class="form-label">Maintenance Done Date</label>
+                            <input type="date" class="form-control" id="program_date" required>
                         </div>
                     </div>
-                </form>
-            </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Submit</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </form>
         </div>
-        <?php
-        $today = new DateTime();
-        //$fromdate = clone $today;
-        //$fromdate->modify('-2 days');
-        $fromdate = new DateTime('2025-08-01');
-
-        // Format dates for JavaScript display (d-m-Y)
-        $serverDateFormatted = $today->format('d-m-Y');
-        $fromDateFormatted = $fromdate->format('d-m-Y');
-
-        // Also keep machine-readable format (Y-m-d) for comparison
-        $serverDate = $today->format('Y-m-d');
-        $fromDate = $fromdate->format('Y-m-d');
-        ?>
-        <script>
-            let programModal = new bootstrap.Modal(document.getElementById('programModal'));
-
-            function openProgramModal(bus_number, program_type, program_label) {
-                document.getElementById("modalBusNumber").value = bus_number;
-                document.getElementById("modalProgramType").value = program_type;
-                document.getElementById("modalBusDisplay").innerText = bus_number;
-                document.getElementById("modalProgramLabel").innerText = program_label;
-                document.getElementById("program_date").value = new Date().toISOString().split('T')[0];
-                programModal.show();
-            }
-
-            function submitProgramUpdate(event) {
-                event.preventDefault();
-
-                const bus_number = $("#modalBusNumber").val();
-                const program_type = $("#modalProgramType").val();
-                const program_date = $("#program_date").val();
-                const program_label = $("#modalProgramLabel").text();
-                const $submitBtn = $("#programForm button[type='submit']");
-                const format_program_date = new Date(program_date).toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
-
-                if (!bus_number || !program_type || !program_date) {
-                    Swal.fire("Error", "Please fill all fields.", "error");
-                    return;
-                }
-
-                // Disable the submit button
-                $submitBtn.prop("disabled", true).text("Submitting...");
-
-                // Step 1: Fetch program KM via AJAX
-                $.ajax({
-                    url: "../includes/backend_data.php",
-                    method: "POST",
-                    data: {
-                        action: "get_program_km_for_bus",
-                        bus_number: bus_number,
-                        program_type: program_type,
-                        program_date: program_date
-                    },
-                    dataType: "json",
-                    success: function(response) {
-                        if (!response.success) {
-                            Swal.fire("Error", response.message || "Failed to fetch KM data.", "error");
-                            $submitBtn.prop("disabled", false).text("Submit");
-                            return;
-                        }
-
-                        const program_completed_km = response.program_km;
-
-                        // Step 2: Show confirmation dialog
-                        Swal.fire({
-                            title: 'Confirm Update',
-                            html: `Do you want to save <strong>${program_completed_km} KM</strong> for <strong>${program_label}</strong> on Date: <strong>${format_program_date}</strong> For<br>Bus Number: <strong>${bus_number}</strong>`,
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: 'Yes, Save it!',
-                            cancelButtonText: 'Cancel'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Step 3: Submit final data
-                                $.ajax({
-                                    url: "../includes/backend_data.php",
-                                    method: "POST",
-                                    data: {
-                                        action: "save_program_data",
-                                        bus_number: bus_number,
-                                        program_type: program_type,
-                                        program_completed_km: program_completed_km,
-                                        program_date: program_date
-                                    },
-                                    success: function(response) {
-                                        Swal.fire("Success", response, "success").then(() => {
-                                            programModal.hide();
-                                            location.reload();
-                                        });
-                                    },
-                                    error: function() {
-                                        Swal.fire("Error", "An error occurred while saving data.", "error");
-                                    },
-                                    complete: function() {
-                                        $submitBtn.prop("disabled", false).text("Submit");
-                                    }
-                                });
-                            } else {
-                                $submitBtn.prop("disabled", false).text("Submit");
-                            }
-                        });
-                    },
-                    error: function() {
-                        Swal.fire("Error", "Failed to fetch program KM.", "error");
-                        $submitBtn.prop("disabled", false).text("Submit");
-                    }
-                });
-            }
-
-
-
-
-
-            const serverDate = '<?= $serverDate ?>'; // For comparisons
-            const allowedFromDate = '<?= $fromDate ?>';
-            const serverDateDisplay = '<?= $serverDateFormatted ?>'; // For display
-            const allowedFromDateDisplay = '<?= $fromDateFormatted ?>';
-
-            document.getElementById('program_date').addEventListener('change', function() {
-                const selectedDate = new Date(this.value);
-                const today = new Date(serverDate);
-                const fromdate = new Date(allowedFromDate);
-
-                selectedDate.setHours(0, 0, 0, 0);
-                today.setHours(0, 0, 0, 0);
-                fromdate.setHours(0, 0, 0, 0);
-
-                if (selectedDate > today) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Date',
-                        text: 'Future dates are not allowed.',
-                    });
-                    this.value = '';
-                    return;
-                }
-
-                if (selectedDate < fromdate) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Invalid Date',
-                        text: `Allowed date range is ${allowedFromDateDisplay} to ${serverDateDisplay}.`,
-                        confirmButtonText: 'OK'
-                    });
-                    this.value = '';
-                    return;
-                }
-            });
-        </script>
-
+    </div>
 
     <?php
+    $today = new DateTime();
+    //$fromdate = clone $today;
+    //$fromdate->modify('-2 days');
+    $fromdate = new DateTime('2025-08-01');
+
+    // Format dates for JavaScript display (d-m-Y)
+    $serverDateFormatted = $today->format('d-m-Y');
+    $fromDateFormatted = $fromdate->format('d-m-Y');
+
+    // Also keep machine-readable format (Y-m-d) for comparison
+    $serverDate = $today->format('Y-m-d');
+    $fromDate = $fromdate->format('Y-m-d');
+    ?>
+    <script>
+        let programModal = new bootstrap.Modal(document.getElementById('programModal'));
+
+        function openProgramModal(bus_number, program_type, program_label) {
+            document.getElementById("modalBusNumber").value = bus_number;
+            document.getElementById("modalProgramType").value = program_type;
+            document.getElementById("modalBusDisplay").innerText = bus_number;
+            document.getElementById("modalProgramLabel").innerText = program_label;
+            document.getElementById("program_date").value = new Date().toISOString().split('T')[0];
+            programModal.show();
+        }
+
+
+
+
+        function submitProgramUpdate(event) {
+            event.preventDefault();
+
+            const bus_number = $("#modalBusNumber").val();
+            const program_type = $("#modalProgramType").val();
+            const program_date = $("#program_date").val();
+            const program_label = $("#modalProgramLabel").text();
+            const $submitBtn = $("#programForm button[type='submit']");
+            const format_program_date = new Date(program_date).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            if (!bus_number || !program_type || !program_date) {
+                Swal.fire("Error", "Please fill all fields.", "error");
+                return;
+            }
+
+            // Disable the submit button
+            $submitBtn.prop("disabled", true).text("Submitting...");
+
+            // Step 1: Fetch program KM via AJAX
+            $.ajax({
+                url: "../includes/backend_data.php",
+                method: "POST",
+                data: {
+                    action: "get_program_km_for_bus",
+                    bus_number: bus_number,
+                    program_type: program_type,
+                    program_date: program_date
+                },
+                dataType: "json",
+                success: function(response) {
+                    if (!response.success) {
+                        Swal.fire("Error", response.message || "Failed to fetch KM data.", "error");
+                        $submitBtn.prop("disabled", false).text("Submit");
+                        return;
+                    }
+
+                    const program_completed_km = response.program_km;
+
+                    // Step 2: Show confirmation dialog
+                    Swal.fire({
+                        title: 'Confirm Update',
+                        html: `Do you want to save <strong>${program_completed_km} KM</strong> for <strong>${program_label}</strong> on Date: <strong>${format_program_date}</strong> For<br>Bus Number: <strong>${bus_number}</strong>`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, Save it!',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Step 3: Submit final data
+                            $.ajax({
+                                url: "../includes/backend_data.php",
+                                method: "POST",
+                                data: {
+                                    action: "save_program_data",
+                                    bus_number: bus_number,
+                                    program_type: program_type,
+                                    program_completed_km: program_completed_km,
+                                    program_date: program_date
+                                },
+                                success: function(response) {
+                                    Swal.fire("Success", response, "success").then(() => {
+                                        programModal.hide();
+                                        location.reload();
+                                    });
+                                },
+                                error: function() {
+                                    Swal.fire("Error", "An error occurred while saving data.", "error");
+                                },
+                                complete: function() {
+                                    $submitBtn.prop("disabled", false).text("Submit");
+                                }
+                            });
+                        } else {
+                            $submitBtn.prop("disabled", false).text("Submit");
+                        }
+                    });
+                },
+                error: function() {
+                    Swal.fire("Error", "Failed to fetch program KM.", "error");
+                    $submitBtn.prop("disabled", false).text("Submit");
+                }
+            });
+        }
+
+        const serverDate = '<?= $serverDate ?>'; // For comparisons
+        const allowedFromDate = '<?= $fromDate ?>';
+        const serverDateDisplay = '<?= $serverDateFormatted ?>'; // For display
+        const allowedFromDateDisplay = '<?= $fromDateFormatted ?>';
+
+        document.getElementById('program_date').addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const today = new Date(serverDate);
+            const fromdate = new Date(allowedFromDate);
+
+            selectedDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            fromdate.setHours(0, 0, 0, 0);
+
+            if (selectedDate > today) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Date',
+                    text: 'Future dates are not allowed.',
+                });
+                this.value = '';
+                return;
+            }
+
+            if (selectedDate < fromdate) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Date',
+                    text: `Allowed date range is ${allowedFromDateDisplay} to ${serverDateDisplay}.`,
+                    confirmButtonText: 'OK'
+                });
+                this.value = '';
+                return;
+            }
+        });
+    </script>
+    <!-- Modal -->
+    <div class="modal fade" id="dockingProgramModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xm modal-95">
+            <div class="modal-content">
+                <div class="container1">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Docking Program Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body" id="dockingProgramContent">
+                        Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openDockingProgramModal(bus_number) {
+            $("#dockingProgramContent").html("");
+            // Show loading before AJAX request
+            $("#dockingProgramContent").html("Loading...");
+
+            $.ajax({
+                url: "../includes/backend_Data.php",
+                type: "POST",
+                data: {
+                    bus_number: bus_number,
+                    action: 'dockingvehicledetails'
+                },
+                success: function(response) {
+                    // Insert backend response into modal body
+                    $("#dockingProgramContent").html(response);
+
+                    // Show the modal
+                    $("#dockingProgramModal").modal("show");
+                },
+                error: function(xhr, status, error) {
+                    $("#dockingProgramContent").html(
+                        "<div class='text-danger'>Error: " + error + "</div>"
+                    );
+                }
+            });
+        }
+
+        function openPrintPage(busNumber) {
+            console.log("Sending bus:", busNumber);
+
+            let form = document.createElement("form");
+            form.method = "POST";
+            form.action = "depot_docking_print.php";
+
+            // ensure only one hidden input
+            let input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "bus_number";
+            input.value = busNumber;
+
+            form.appendChild(input);
+            document.body.appendChild(form);
+
+            form.submit();
+
+            // clean up
+            setTimeout(() => {
+                document.body.removeChild(form);
+            }, 1000);
+        }
+    </script>
+
+<?php
 } else {
     echo "<script>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
     exit;

@@ -1,155 +1,160 @@
- .dropdown:hover > .dropdown-menu {
-    display: block;
-    margin-top: 0;
-}
+ .dropdown:hover>.dropdown-menu {
+     display: block;
+     margin-top: 0;
+ }
 
-/* Submenu container */
-.dropdown-submenu {
-    position: relative;
-}
+ /* Submenu container */
+ .dropdown-submenu {
+     position: relative;
+ }
 
-/* Hide submenus by default (appear to the right) */
-.dropdown-submenu > .dropdown-menu {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 100%;
-    margin-top: -1px;
-    z-index: 1000;
-}
+ /* Hide submenus by default (appear to the right) */
+ .dropdown-submenu>.dropdown-menu {
+     display: none;
+     position: absolute;
+     top: 0;
+     left: 100%;
+     margin-top: -1px;
+     z-index: 1000;
+ }
 
-/* Show submenu only when hovering parent */
-.dropdown-submenu:hover > .dropdown-menu,
-.dropdown-submenu:focus-within > .dropdown-menu {
-    display: block;
-}
+ /* Show submenu only when hovering parent */
+ .dropdown-submenu:hover>.dropdown-menu,
+ .dropdown-submenu:focus-within>.dropdown-menu {
+     display: block;
+ }
 
-/* ===== Link spacing & look ===== */
-.dropdown-menu li a {
-    padding: 10px 15px;
-    display: block;
-    width: 100%;
-    color: #000;
-    text-decoration: none;
-    line-height: 1.2;
-    position: relative;
-    font-weight: 500;
-}
+ /* ===== Link spacing & look ===== */
+ .dropdown-menu li a {
+     padding: 10px 15px;
+     display: block;
+     width: 100%;
+     color: #000;
+     text-decoration: none;
+     line-height: 1.2;
+     position: relative;
+     font-weight: 500;
+ }
 
-.dropdown-menu li a:hover {
-    background-color: #f1f1f1;
-}
+ .dropdown-menu li a:hover {
+     background-color: #f1f1f1;
+ }
 
-/* Navbar reset */
-nav.navbar {
-    padding: 0 !important;
-}
+ /* Navbar reset */
+ nav.navbar {
+     padding: 0 !important;
+ }
 
-nav.navbar ul {
-    padding: 0;
-    margin: 0;
-}
+ nav.navbar ul {
+     padding: 0;
+     margin: 0;
+ }
 
-nav.navbar ul li {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
+ nav.navbar ul li {
+     padding: 0;
+     margin: 0;
+     list-style: none;
+ }
 
-nav.navbar ul li a {
-    padding: 0;
-    margin: 0;
-    display: inline-block;
-}
+ nav.navbar ul li a {
+     padding: 0;
+     margin: 0;
+     display: inline-block;
+ }
 
-/* Submenu inside dropdown */
-nav.navbar ul li .dropdown-menu li {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
+ /* Submenu inside dropdown */
+ nav.navbar ul li .dropdown-menu li {
+     padding: 0;
+     margin: 0;
+     list-style: none;
+ }
 
-nav.navbar ul li .dropdown-menu li a {
-    padding: 10px 20px;
-    display: block;
-    width: 100%;
-}
+ nav.navbar ul li .dropdown-menu li a {
+     padding: 10px 20px;
+     display: block;
+     width: 100%;
+ }
 
-/* Font sizing */
-.dropdown-toggle {
-    font-size: 14px;
-    cursor: pointer;
-}
+ /* Font sizing */
+ .dropdown-toggle {
+     font-size: 14px;
+     cursor: pointer;
+ }
 
-.nav-link {
-    font-size: 18px;
-}
+ .nav-link {
+     font-size: 18px;
+ }
 
-.dropdown-menu {
-    font-size: 15px;
-    min-width: 180px;
-}
+ .dropdown-menu {
+     font-size: 15px;
+     min-width: 180px;
+ }
 
-/* ===========================
+ /* ===========================
    SUBMENU ARROW STYLE
    =========================== */
 
-/* Reserve space for arrow */
-.dropdown-submenu > a {
-    position: relative;
-    padding-right: 28px; /* space for arrow */
-    display: block;
-    color: inherit;
-}
+ /* Reserve space for arrow */
+ .dropdown-submenu>a {
+     position: relative;
+     padding-right: 28px;
+     /* space for arrow */
+     display: block;
+     color: inherit;
+ }
 
-/* Default arrow: ">" (bold, dark black) */
-.dropdown-submenu > a::after {
-    content: "\276F"; /* Unicode heavy right-pointing angle quote › */
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 14px;
-    font-weight: bold;
-    color: #000;
-    transition: transform 0.2s ease, content 0.2s ease;
-    pointer-events: none;
-}
+ /* Default arrow: ">" (bold, dark black) */
+ .dropdown-submenu>a::after {
+     content: "\276F";
+     /* Unicode heavy right-pointing angle quote › */
+     position: absolute;
+     right: 10px;
+     top: 50%;
+     transform: translateY(-50%);
+     font-size: 14px;
+     font-weight: bold;
+     color: #000;
+     transition: transform 0.2s ease, content 0.2s ease;
+     pointer-events: none;
+ }
 
-/* When submenu is open (hover/focus), show "v" */
-.dropdown-submenu:hover > a::after,
-.dropdown-submenu:focus-within > a::after {
-    content: "\25BC"; /* ▼ black down-pointing triangle */
-    font-size: 13px;
-    font-weight: bold;
-    color: #000;
-}
+ /* When submenu is open (hover/focus), show "v" */
+ .dropdown-submenu:hover>a::after,
+ .dropdown-submenu:focus-within>a::after {
+     content: "\25BC";
+     /* ▼ black down-pointing triangle */
+     font-size: 13px;
+     font-weight: bold;
+     color: #000;
+ }
 
-/* ===========================
+ /* ===========================
    MOBILE VIEW
    =========================== */
-@media (max-width: 600px) {
-    .dropdown-submenu > .dropdown-menu {
-        left: 0;
-        top: 100%;
-        margin-top: 0;
-    }
+ @media (max-width: 600px) {
+     .dropdown-submenu>.dropdown-menu {
+         left: 0;
+         top: 100%;
+         margin-top: 0;
+     }
 
-    /* Down arrow by default in mobile */
-    .dropdown-submenu > a::after {
-        content: "\25BC"; /* ▼ */
-        right: 12px;
-    }
-}
+     /* Down arrow by default in mobile */
+     .dropdown-submenu>a::after {
+         content: "\25BC";
+         /* ▼ */
+         right: 12px;
+     }
+ }
+
  /* Container styles */
  .container1 {
-    width: 100%;
-    padding-right: 15px;
-    padding-left: 15px;
-    margin-right: auto;
-    margin-left: auto;
+     width: 100%;
+     padding-right: 15px;
+     padding-left: 15px;
+     margin-right: auto;
+     margin-left: auto;
  }
- 
+
 
  /* Table styles */
  table {
@@ -159,13 +164,15 @@ nav.navbar ul li .dropdown-menu li a {
      /* Add some space above the table */
  }
 
- th,td {
+ th,
+ td {
      border: 2px solid black;
      /* Apply border to table cells */
      padding: 2%;
      text-align: left;
      font-size: 20px;
-     padding: 8px; /* Add padding to table cells */
+     padding: 8px;
+     /* Add padding to table cells */
  }
 
  th {
@@ -195,7 +202,7 @@ nav.navbar ul li .dropdown-menu li a {
      text-align: center;
  }
 
- 
+
 
  @media print {
      body * {
@@ -214,7 +221,7 @@ nav.navbar ul li .dropdown-menu li a {
          top: 0;
          left: 0;
      }
-     
+
 
  }
 
@@ -364,163 +371,216 @@ nav.navbar ul li .dropdown-menu li a {
      /* Allow vertical resizing */
  }
 
- 
+
  #partsRequired {
-    text-align: left;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  border: 1px solid #ccc; /* Add border */
-  padding: 10px; /* Add padding */
-  border-radius: 5px; /* Add border-radius for rounded corners */
-  background-color: #fff; /* Add background color */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add box shadow for paper-like effect */
-}
-.scroll-to-top {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: block; /* Ensure the button is initially visible */
-    width: 40px;
-    height: 40px;
-    background-color: #007bff;
-    color: #fff;
-    border-radius: 50%;
-    text-align: center;
-    line-height: 40px;
-    font-size: 18px;
-    z-index: 999;
-    transition: background-color 0.3s ease-in-out;
-  }
+     text-align: left;
+     display: flex;
+     flex-wrap: wrap;
+     justify-content: space-between;
+     border: 1px solid #ccc;
+     /* Add border */
+     padding: 10px;
+     /* Add padding */
+     border-radius: 5px;
+     /* Add border-radius for rounded corners */
+     background-color: #fff;
+     /* Add background color */
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+     /* Add box shadow for paper-like effect */
+ }
 
-  .scroll-to-top:hover {
-    background-color: #0056b3;
-    cursor: pointer;
-  }
+ .scroll-to-top {
+     position: fixed;
+     bottom: 20px;
+     right: 20px;
+     display: block;
+     /* Ensure the button is initially visible */
+     width: 40px;
+     height: 40px;
+     background-color: #007bff;
+     color: #fff;
+     border-radius: 50%;
+     text-align: center;
+     line-height: 40px;
+     font-size: 18px;
+     z-index: 999;
+     transition: background-color 0.3s ease-in-out;
+ }
 
-  .container {
-    max-width: 100%;
-    text-align: center;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-  }
-  @keyframes slideIn {
-    0% { right: -300px; opacity: 0; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1.05); }
-    100% { right: 20px; transform: scale(1); }
-}
+ .scroll-to-top:hover {
+     background-color: #0056b3;
+     cursor: pointer;
+ }
 
-@keyframes glowEffect {
-    0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
-    100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
-}
+ .container {
+     max-width: 100%;
+     text-align: center;
+     margin: 0 auto;
+     padding: 20px;
+     border: 1px solid #ccc;
+     border-radius: 5px;
+     background-color: #f9f9f9;
+ }
 
-.notification-popup {
-    position: fixed;
-    top: 50%;
-    right: -300px;
-    transform: translateY(-50%);
-    width: 280px;
-    background: linear-gradient(135deg, #2ecc71, #27ae60);
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    font-family: Arial, sans-serif;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    z-index: 1000;
-    animation: glowEffect 1.5s infinite;
-}
+ @keyframes slideIn {
+     0% {
+         right: -300px;
+         opacity: 0;
+         transform: scale(0.8);
+     }
 
-.notification-popup i {
-    margin-right: 12px;
-    font-size: 22px;
-    animation: shakeBell 1s infinite alternate;
-}
+     50% {
+         opacity: 1;
+         transform: scale(1.05);
+     }
 
-.close-btn {
-    margin-left: auto;
-    cursor: pointer;
-    font-weight: bold;
-    padding: 5px;
-    transition: color 0.3s ease;
-}
+     100% {
+         right: 20px;
+         transform: scale(1);
+     }
+ }
 
-.close-btn:hover {
-    color: #ffdddd;
-}
+ @keyframes glowEffect {
+     0% {
+         box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+     }
 
-/* Bell Shake Animation */
-@keyframes shakeBell {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(-15deg); }
-    50% { transform: rotate(15deg); }
-    75% { transform: rotate(-10deg); }
-    100% { transform: rotate(10deg); }
-}
-#loadingOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: white;
-    font-size: 18px;
-}
+     50% {
+         box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+     }
 
-/* Spinner Animation */
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid white;
-    border-top: 5px solid transparent;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
+     100% {
+         box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+     }
+ }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-#loader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,255,255,0.9);
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.loader-icon {
-    border: 6px solid #f3f3f3;
-    border-top: 6px solid #3498db;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-}
-#loading {
-        display: none;
-        margin-top: 30px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;      /* Centers content horizontally */
-        justify-content: center;  /* Vertically if needed */
-        width: 100%;
-    }
+ .notification-popup {
+     position: fixed;
+     top: 50%;
+     right: -300px;
+     transform: translateY(-50%);
+     width: 280px;
+     background: linear-gradient(135deg, #2ecc71, #27ae60);
+     color: white;
+     padding: 15px;
+     border-radius: 10px;
+     font-family: Arial, sans-serif;
+     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+     display: flex;
+     align-items: center;
+     font-size: 16px;
+     z-index: 1000;
+     animation: glowEffect 1.5s infinite;
+ }
 
+ .notification-popup i {
+     margin-right: 12px;
+     font-size: 22px;
+     animation: shakeBell 1s infinite alternate;
+ }
+
+ .close-btn {
+     margin-left: auto;
+     cursor: pointer;
+     font-weight: bold;
+     padding: 5px;
+     transition: color 0.3s ease;
+ }
+
+ .close-btn:hover {
+     color: #ffdddd;
+ }
+
+ /* Bell Shake Animation */
+ @keyframes shakeBell {
+     0% {
+         transform: rotate(0deg);
+     }
+
+     25% {
+         transform: rotate(-15deg);
+     }
+
+     50% {
+         transform: rotate(15deg);
+     }
+
+     75% {
+         transform: rotate(-10deg);
+     }
+
+     100% {
+         transform: rotate(10deg);
+     }
+ }
+
+ #loadingOverlay {
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(0, 0, 0, 0.5);
+     /* Semi-transparent background */
+     z-index: 1000;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     flex-direction: column;
+     color: white;
+     font-size: 18px;
+ }
+
+ /* Spinner Animation */
+ .loading-spinner {
+     width: 50px;
+     height: 50px;
+     border: 5px solid white;
+     border-top: 5px solid transparent;
+     border-radius: 50%;
+     animation: spin 1s linear infinite;
+ }
+
+ @keyframes spin {
+     0% {
+         transform: rotate(0deg);
+     }
+
+     100% {
+         transform: rotate(360deg);
+     }
+ }
+
+ #loader {
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(255, 255, 255, 0.9);
+     z-index: 9999;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+ }
+
+ .loader-icon {
+     border: 6px solid #f3f3f3;
+     border-top: 6px solid #3498db;
+     border-radius: 50%;
+     width: 50px;
+     height: 50px;
+     animation: spin 1s linear infinite;
+ }
+
+ #loading {
+     display: none;
+     margin-top: 30px;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     /* Centers content horizontally */
+     justify-content: center;
+     /* Vertically if needed */
+     width: 100%;
+ }

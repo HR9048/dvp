@@ -65,7 +65,8 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESS
             Tata: {
                 "BS-2": ["OLD", "NEW"],
                 "BS-3": ["MIDI", "OLD", "NEW"],
-                "BS-4": ["NEW"]
+                "BS-4": ["NEW"],
+                "BS-6": ["NEW"]
             },
             Leyland: {
                 "BS-2": ["NEW"],

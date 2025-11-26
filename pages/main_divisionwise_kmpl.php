@@ -102,7 +102,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                                                 SUM(total_km) AS total_km,
                                                 SUM(hsd) AS hsd
                                             FROM kmpl_data
-                                            WHERE DATE(date) <= '" . $row['date'] . "' 
+                                            WHERE DATE(date) BETWEEN DATE_FORMAT(NOW(), '%Y-%m-01') AND '" . $row['date'] . "' 
                                                 AND division = '$divisionname'";
                                     $cumulative_result = mysqli_query($db, $cumulative_sql);
                                     $cumulative_row = mysqli_fetch_assoc($cumulative_result);

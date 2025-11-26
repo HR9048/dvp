@@ -11,9 +11,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_SESSION['USERNAME'];
     $division = $_SESSION['DIVISION_ID'];
     $depot = $_SESSION['DEPOT_ID'];
-    date_default_timezone_set('Asia/Kolkata'); 
+    date_default_timezone_set('Asia/Kolkata');
     $submissionDateTime = date('Y-m-d H:i:s');
-    
+
     // Prepare and execute INSERT statement for each row of table data
     $tableData = $_POST['tableData'];
     foreach ($tableData as $rowData) {
@@ -49,13 +49,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $partsRequired = $row['Parts Required'];
                 $remarks = $row['Remarks'];
 
-                // Insert data into the off_road_data table
+
+                // Prepare SQL statement using placeholders
                 $sql1 = "INSERT INTO off_road_data (bus_number, make, emission_norms, off_road_date, off_road_location, parts_required, remarks, username, division, depot, submission_datetime, status)
-                        VALUES ('$busNumber', '$make', '$norms', '$date', '$offRoadLocation', '$partsRequired', '$remarks', '$username', '$division', '$depot', '$submissionDateTime', 'off_road')";
-                if ($db->query($sql1) === FALSE) {
-                    echo json_encode(['status' => 'error', 'message' => "Error inserting data for bus $busNumber: " . $db->error]);
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'off_road')";
+
+                $stmt = $db->prepare($sql1);
+
+                // Check for SQL prepare errors
+                if (!$stmt) {
+                    echo json_encode(['status' => 'error', 'message' => 'Prepare failed: ' . $db->error]);
                     exit;
                 }
+
+                // Bind parameters (s = string)
+                $stmt->bind_param(
+                    "sssssssssss",
+                    $busNumber,
+                    $make,
+                    $norms,
+                    $date,
+                    $offRoadLocation,
+                    $partsRequired,
+                    $remarks,
+                    $username,
+                    $division,
+                    $depot,
+                    $submissionDateTime
+                );
+
+                // Execute the query
+                if (!$stmt->execute()) {
+                    echo json_encode(['status' => 'error', 'message' => "Error inserting data for bus $busNumber: " . $stmt->error]);
+                    $stmt->close();
+                    exit;
+                }
+
+                // Close statement
+                $stmt->close();
             }
         }
     }
@@ -70,4 +101,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     header("Location: login.php");
     exit;
 }
-?>

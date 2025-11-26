@@ -486,7 +486,15 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                                                                                     </div>
                                                                                     <div class="form-group" style="display: none;">
                                                                                         <label for="reason_for_late_departure">Reason for Late Departure/ತಡವಾಗಿ ನಿರ್ಗಮನಕ್ಕೆ ಕಾರಣ:</label>
-                                                                                        <textarea class="form-control" id="reason_for_late_departure" name="reason_for_late_departure"></textarea>
+                                                                                        <select class="form-control" id="reason_for_late_departure" name="reason_for_late_departure">
+                                                                                            <option value="">Select Reason</option>
+                                                                                            <option value="W/C">W/C</option>
+                                                                                            <option value="W/D">W/D</option>
+                                                                                            <option value="W/V">W/V</option>
+                                                                                            <option value="Vehicle Repair">Vehicle Repair</option>
+                                                                                            <option value="W/Crew">W/Crew</option>                                                                                            
+                                                                                            <option value="Other">Other</option>
+                                                                                        </select>
                                                                                     </div>
                                                                                     <div class="form-group" style="display: none;">
                                                                                         <label for="reason_early_departure">Reason for Early Departure/ಮುಂಚಿತ ನಿರ್ಗಮನಕ್ಕೆ ಕಾರಣ:</label>
@@ -782,7 +790,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                 const timeDiff = actTotalMinutes - schTotalMinutes;
                 timeDiffInput.value = timeDiff;
 
-                if (timeDiff >= 30 && reasonLate.value.trim() === '') {
+                if (timeDiff > 30 && reasonLate.value.trim() === '') {
                     Swal.fire({
                         icon: 'error',
                         title: 'Late Departure Detected',
@@ -806,14 +814,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
                         submitBtn.disabled = false;
                     });
                     return;
-                }
-
-                if (timeDiff >= 30) {
-                    reasonLate.parentElement.style.display = 'block';
-                }
-
-                if (timeDiff <= -30) {
-                    reasonEarly.parentElement.style.display = 'block';
                 }
 
                 const formData = $(this).serialize();

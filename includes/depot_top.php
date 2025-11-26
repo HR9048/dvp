@@ -6,7 +6,7 @@ if (in_array($_SESSION['DEPOT_ID'], ['1', '8', '12', '13', '14', '15'])) {
     $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
     $reportstart_date = '2025-08-01';
     $formated_reportstart_date = date('d-m-Y', strtotime($reportstart_date));
-} elseif (in_array($_SESSION['DEPOT_ID'], ['2','3','4','5','6','7','9','10','11','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40','41','42','43','44','45','46','47','48','49','50','51','52','53'])) {
+} elseif (in_array($_SESSION['DEPOT_ID'], ['2', '3', '4', '5', '6', '7', '9', '10', '11', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53'])) {
     $programstart_date = '2025-09-30';
     $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
     $reportstart_date = '2025-10-01';
@@ -385,7 +385,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                 </ul>
                                             </div>
                                         </li>
-                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') ) { ?>
+                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM')) { ?>
                                             <li class="nav-item">
                                                 <div class="dropdown">
                                                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
@@ -403,6 +403,9 @@ date_default_timezone_set('Asia/Kolkata');
                                                                 Program Done Date</a></li>
                                                         <li><a class="dropdown-item" href="depot_w3_chart_data_update.php">ME26
                                                                 Update</a></li>
+                                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') { ?>
+                                                            <li><a class="dropdown-item" href="depot_emergency_program.php">Emergency Program</a></li>
+                                                        <?php } ?>
                                                     </ul>
                                                 </div>
                                             </li>

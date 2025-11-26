@@ -108,7 +108,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
             @page {
                 size: landscape;
-                margin: 0.5cm;
+                margin: 0.2cm;
             }
         }
     </style>
@@ -231,7 +231,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 margin-top: 10px;
                 display: flex;
                 flex-wrap: wrap;
-                gap: 6px;
+                gap: 0px;
                 /* space between tables */
             }
 
@@ -252,10 +252,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             }
 
             .mp-program-head {
-                font-weight: 700;
                 text-align: center;
                 font-size: 0.9rem;
-                padding: 4px 6px !important;
+                font-weight: bold;
+                padding: 0px 0px !important;
                 border: 1px solid #dee2e6;
                 background: none !important;
                 /* remove background */
@@ -270,15 +270,16 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             .mp-table th,
             .mp-table td {
                 border: 1px solid #000000ff;
-                padding: 1px 4px !important;
+                padding: 0px 0px !important;
                 vertical-align: middle;
-                font-size: 0.42rem;
+                font-size: 0.45rem;
+                font-weight: bold;
                 word-wrap: break-word;
                 text-align: center;
             }
 
             .mp-table thead th {
-                font-weight: 600;
+                font-weight: bold;
                 text-align: center;
                 background: none !important;
                 /* remove background */

@@ -281,6 +281,7 @@ confirm_logged_in();
                             <li><a class="dropdown-item" href="division_view_bd.php">Break Down Report</a></li>
                             <li><a class="dropdown-item" href="division_w3_report_fromto.php">W3 Chart Report</a></li>
                             <li><a class="dropdown-item" href="division_program_report_fromto.php">Program Completion Report</a></li>
+                            <li><a class="dropdown-item" href="division_program_pending_report.php">Program Pending Report</a></li>
                           <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
                             <li><a class="dropdown-item" href="division_schedule_report_day.php">Day wise Schedule reports</a></li>

@@ -37,28 +37,28 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     </style>
     <button class="btn btn-secondary back-btn" onclick="goBack()">Back</button>
     <script>
-function goBack() {
-    window.history.back();
-}
+        function goBack() {
+            window.history.back();
+        }
 
-// Auto print on page load
-window.onload = function() {
-    window.print();
+        // Auto print on page load
+        window.onload = function() {
+            window.print();
 
-    // Optional: Go back after print dialog closes
-    window.onafterprint = function() {
-        window.history.back();
-    };
-};
-</script>
+            // Optional: Go back after print dialog closes
+            window.onafterprint = function() {
+                window.history.back();
+            };
+        };
+    </script>
 <?php
 
     if (!isset($_POST['bus_number']) || empty($_POST['bus_number'])) {
-     echo "<script>
+        echo "<script>
         window.location = 'depot_dashboard.php';
     </script>";
-    exit;
-}
+        exit;
+    }
 
     $bus_number = isset($_POST['bus_number']) ? trim($_POST['bus_number']) : '';
     $bus_number = htmlspecialchars($bus_number, ENT_QUOTES, 'UTF-8'); // safe for output
@@ -225,7 +225,15 @@ window.onload = function() {
                 $deviation = $total_km - $prescribed_km;
 
 
-
+                if ($deviation > 500) {
+                    $color = 'bg-danger text-white'; // 🚩 Above prescribed km
+                } elseif ($deviation >= -500 && $deviation <= 500) {
+                    $color = 'bg-warning'; // ⚠️ Within acceptable tolerance
+                } elseif ($deviation >= -5000 && $deviation <= -501) {
+                    $color = 'bg-success text-white'; // ✅ Below prescribed km but within buffer
+                } else {
+                    continue; // Filter out others
+                }
 
                 $rows[] = [
                     'bus_number' => $bus_number,
@@ -315,7 +323,7 @@ window.onload = function() {
         while ($row = mysqli_fetch_assoc($result)) {
             echo "<tr>
             <td style='padding:3px;'>{$slno}</td>
-            <td style='padding:3px;'>{$row['date']}</td>
+            <td style='padding:3px;'>" . date('d-m-Y', strtotime($row['date'])) . "</td>
             <td style='padding:3px;'>{$row['km_operated']}</td>
             <td style='padding:3px;'>{$row['hsd']}</td>
             <td style='padding:3px;'>{$row['kmpl']}</td>

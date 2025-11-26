@@ -49,86 +49,14 @@ date_default_timezone_set('Asia/Kolkata');
   <link
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
-    
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .dropdown:hover .dropdown-menu {
-      display: block;
-      margin-top: 0;
-    }
 
-    .dropdown-toggle {
-      font-size: 12px;
-    }
-
-    .nav-link {
-      font-size: 18px;
-    }
-
-    .dropdown-menu {
-      font-size: 15px;
-    }
-
-    nav.navbar {
-      padding: 0 !important;
-    }
-
-    /* Remove padding from the navbar items (links and list items) */
-    nav.navbar ul {
-      padding: 0;
-      margin: 0;
-    }
-
-    nav.navbar ul li {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      /* optional, to remove bullets if it's a list */
-    }
-
-    nav.navbar ul li a {
-      padding: 0;
-      margin: 0;
-      display: inline-block;
-      /* To ensure links behave like inline elements */
-
-    }
-
-    nav.navbar ul li .dropdown-menu li {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      /* Optional: remove bullets */
-    }
-
-    nav.navbar ul li .dropdown-menu li a {
-      padding: 10px 20px;
-      /* Add padding around the links for better spacing */
-      display: block;
-      /* Ensure the anchor tags take up full width */
-      width: 100%;
-      /* Ensure the anchor fills the width of the dropdown */
-    }
-
-    /* Media query for mobile view */
-    @media (max-width: 600px) {
-      .navcenter p {
-        font-size: 0.55em;
-        /* Adjust font size for mobile */
-      }
-
-      .navcenter h6 {
-        font-size: 0.8em;
-        /* Adjust font size for mobile */
-        word-wrap: break-word;
-        /* Ensure long words wrap */
-      }
-
-    }
-  </style>
 </head>
 </head>
 
@@ -153,13 +81,11 @@ date_default_timezone_set('Asia/Kolkata');
             </div>
           </div>
           <nav class="navbar navbar-expand-md" style="background-color: #bfc9ca;">
-            <div class="container-fluid ">
-
-              <!--<h4>KKRTC</h4>&nbsp;&nbsp;-->
-              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
-                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-                <i class="fa-duotone fa-solid fa-sliders"></i>
-              </button>
+            <div class="container-fluid">
+              <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <i class="fa-duotone fa-solid fa-sliders"></i> </button>
               <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
                   <li class="nav-item">
@@ -252,27 +178,47 @@ date_default_timezone_set('Asia/Kolkata');
                         </ul>
                       </div>
                     </li>
+                    
                     <li class="nav-item">
                       <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
+                          aria-expanded="false" style="font-size: 15px;">
                           <b>Report</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="report.php">Off-Road Report</a></li>
-                          <li><a class="dropdown-item" href="main_schedule_report_dailywise.php">Daily Schedule Report</a>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Off-Road</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="report.php">Off-Road Report</a></li>
+                            </ul>
                           </li>
-                          <li><a class="dropdown-item" href="central_office_schedule_report_month.php">Monthly Schedule
-                              Report</a></li>
-                          <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">KMPL</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="co_vehicle_kmpl.php">Month KMPL Report</a></li>
+                              <li><a class="dropdown-item" href="co_vehicle_kmpl_ft.php">KMPL Report From-to Date</a></li>
+                              <li><a class="dropdown-item" href="co_kmpl_compare_report.php">KMPL Last 15 days Comparision Report</a></li>
+                              <li><a class="dropdown-item" href="co_vehicle_kmpl_report.php">Vehicle Kmpl Track Report</a></li>
+                              <li><a class="dropdown-item" href="co_defect_report.php">KMPL Defect Report</a></li>
+                            </ul>
                           </li>
-                          <li><a class="dropdown-item" href="co_vehicle_kmpl.php">kmpl report month</a></li>
-                          <li><a class="dropdown-item" href="co_vehicle_kmpl_ft.php">kmpl report Fron-To Date</a></li>
-                          <li><a class="dropdown-item" href="co_kmpl_compare_report.php">KMPL Comparision Report</a></li>
-                          <li><a class="dropdown-item" href="co_vehicle_kmpl_report.php">Vehicle Kmpl Track Report</a></li>
-                          <li><a class="dropdown-item" href="co_defect_report.php">Defect Report</a></li>
-                          <li><a class="dropdown-item" href="co_w3_report_fromto.php">W3 Chart Report</a></li>
-                          <li><a class="dropdown-item" href="co_program_report_fromto.php">Program Completion Report</a></li>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Schedule</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="main_schedule_report_dailywise.php">Day Schedule Report</a></li>
+                              <li><a class="dropdown-item" href="central_office_schedule_report_month.php">Monthly Schedule Report</a></li>
+                              <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a></li>
+                            </ul>
+                          </li>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Program</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="co_w3_report_fromto.php">W3 Chart Report</a></li>
+                              <li><a class="dropdown-item" href="co_program_report_fromto.php">Program Completion Report</a></li>
+                              <li><a class="dropdown-item" href="co_program_pending_report.php">Pending program Report</a></li>
+                              <li><a class="dropdown-item" href="co_program_monthly_report.php">Monthly Program Report</a></li>
+                            </ul>
+                          </li>
                         </ul>
                       </div>
                     </li>
@@ -301,7 +247,7 @@ date_default_timezone_set('Asia/Kolkata');
                           <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
                           <li><a class="dropdown-item" href="co_inventory_report_depotwise.php">Inventory report depotwise</a>
                         </ul>
-                      </div> 
+                      </div>
                     </li>
                   <?php } ?>
                 </ul>
@@ -315,10 +261,10 @@ date_default_timezone_set('Asia/Kolkata');
                         <b
                           class="mr-2 d-none d-lg-inline text-gray-600 small"><b><?php echo $_SESSION['FIRST_NAME'] . ' ' . $_SESSION['LAST_NAME']; ?></b></b>
                         <img class="img-profile rounded-circle profile-img" <?php if ($_SESSION['GENDER'] == 'Male') {
-                          echo 'src="../images/male.jpeg"';
-                        } else {
-                          echo 'src="../images/female2.jpeg"';
-                        } ?>>
+                                                                              echo 'src="../images/male.jpeg"';
+                                                                            } else {
+                                                                              echo 'src="../images/female2.jpeg"';
+                                                                            } ?>>
                       </button>
                       <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                         <li><button class="dropdown-item" onclick="on()"><i
@@ -339,9 +285,9 @@ date_default_timezone_set('Asia/Kolkata');
         <br><br><br><br><br>
         <!-- End of Topbar -->
         <script>
-          $(document).ready(function () {
+          $(document).ready(function() {
             // Close dropdown when clicking outside
-            $(document).click(function (e) {
+            $(document).click(function(e) {
               var target = e.target;
               if (!$(target).is('.dropdown-toggle') && !$(target).parents().is('.dropdown-menu')) {
                 $('.dropdown-menu').removeClass('show');
@@ -349,7 +295,7 @@ date_default_timezone_set('Asia/Kolkata');
             });
 
             // Open dropdown when clicking dropdown toggle
-            $('.dropdown-toggle').click(function () {
+            $('.dropdown-toggle').click(function() {
               var dropdownMenu = $(this).next('.dropdown-menu');
               $('.dropdown-menu').not(dropdownMenu).removeClass('show');
               dropdownMenu.toggleClass('show');

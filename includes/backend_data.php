@@ -483,7 +483,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if (!empty($duplicates)) {
         $duplicateMessages = [];
         foreach ($duplicates as $duplicate) {
-            $duplicateMessages[] = "PF Number: {$duplicate['vehicleNo']} has duplicate entries on dates: " . implode(', ', $duplicate['dates']);
+            $duplicateMessages[] = "Vehicle Number: {$duplicate['vehicleNo']} has duplicate entries on dates: " . implode(', ', $duplicate['dates']);
         }
         echo "error: " . implode("; ", $duplicateMessages);
     } elseif (!empty($errors)) {
@@ -7335,6 +7335,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $program_date = $_POST['program_date'] ?? '';
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
+    $reason = $_POST['reason'] ?? null;
+    $username = $_SESSION['USERNAME'];
 
     if (!$bus_number || !$program_type || !$program_completed_km || !$program_date) {
         echo "Missing required fields.";
@@ -7346,25 +7348,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
     // before inserting, check if the program already exists for the bus
     $checkQuery = mysqli_query($db, "SELECT COUNT(*) as count FROM program_data 
-        WHERE bus_number = '$bus_number' AND program_type = '$program_type' AND program_date = '$program_date' AND division_id = '$division_id' AND depot_id = '$depot_id'");
+        WHERE bus_number = '$bus_number' AND program_type = '$program_type' AND program_date = '$program_date'");
 
     //if it has data then update else insert
     $checkData = mysqli_fetch_assoc($checkQuery);
     // If the program already exists, update it else insert a new record
     if ($checkData['count'] > 0) {
-        // Update existing record
-        $update = mysqli_query($db, "UPDATE program_data SET program_completed_km = '$program_completed_km' 
-            WHERE bus_number = '$bus_number' AND program_type = '$program_type' AND program_date = '$program_date'");
+        // ✅ Update existing record using prepared statement
+        $query = "UPDATE program_data 
+              SET program_completed_km = ? 
+              WHERE bus_number = ? AND program_type = ? AND program_date = ? AND reason = ?";
 
-        echo $update ? "Program updated successfully." : "Error updating program.";
+        $stmt = $db->prepare($query);
+        if ($stmt) {
+            $stmt->bind_param("issss", $program_completed_km, $bus_number, $program_type, $program_date, $reason);
+            if ($stmt->execute()) {
+                echo "Program updated successfully.";
+            } else {
+                echo "Error updating program: " . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            echo "Prepare failed: " . $db->error;
+        }
         exit;
     } else {
+        // ✅ Insert new record using prepared statement
+        $query = "INSERT INTO program_data 
+              (bus_number, program_type, program_completed_km, program_date, division_id, depot_id, reason, created_by)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        // Insert only (no update)
-        $insert = mysqli_query($db, "INSERT INTO program_data (bus_number, program_type, program_completed_km, program_date, division_id, depot_id) 
-        VALUES ('$bus_number', '$program_type', '$program_completed_km', '$program_date', '$division_id', '$depot_id')");
-
-        echo $insert ? "Program saved successfully." : "Error saving program.";
+        $stmt = $db->prepare($query);
+        if ($stmt) {
+            $stmt->bind_param("ssisiiss", $bus_number, $program_type, $program_completed_km, $program_date, $division_id, $depot_id, $reason, $username);
+            if ($stmt->execute()) {
+                echo "Program saved successfully.";
+            } else {
+                echo "Error saving program: " . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            echo "Prepare failed: " . $db->error;
+        }
         exit;
     }
 }
@@ -7950,11 +7975,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 
 
     // Fetch kmpl totals for all buses from 2025-08-01 to $from
-    $kmplQuery = "SELECT bus_number, date as reading_date, km_operated 
+    $kmplQuery = "SELECT bus_number, date as reading_date, sum(km_operated) as km_operated
               FROM vehicle_kmpl 
               WHERE bus_number IN ($busKeyList) 
               AND date BETWEEN '$kmpl_start_date' AND '$from_date'
-              AND deleted != 1";
+              AND deleted != 1
+              GROUP BY bus_number, date";
     $kmplResult = mysqli_query($db, $kmplQuery);
     $kmplMap = [];
     while ($row = mysqli_fetch_assoc($kmplResult)) {
@@ -8045,11 +8071,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 
 
     // Fetch daily vehicle_kmpl data for selected range
-    $dailyKmplQuery = "SELECT bus_number, date, km_operated 
+    $dailyKmplQuery = "SELECT bus_number, date, sum(km_operated) as km_operated
                    FROM vehicle_kmpl 
                    WHERE bus_number IN ($busKeyList) 
                    AND date BETWEEN '$from' AND '$to'
-                   AND deleted != 1";
+                   AND deleted != 1
+                   GROUP BY bus_number, date";
     $dailyKmplResult = mysqli_query($db, $dailyKmplQuery);
     $dailyKmplData = [];
     while ($row = mysqli_fetch_assoc($dailyKmplResult)) {
@@ -8263,9 +8290,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     }
 
     // Step 2: Calculate KM from vehicle_kmpl
-    $from_date = $programstart_date;
+    if ($last_date == null) {
+        $from_date = $programstart_date;
+    }
 
-    if ($last_date && ($last_date !== '0000-00-00' || $last_date !== null)) {
+
+    if ($last_date !== null) {
         $from_date = date('Y-m-d', strtotime($last_date . ' +1 day'));
     }
 
@@ -8283,9 +8313,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     if ($km_row = mysqli_fetch_assoc($km_result)) {
         $total_km = (float)$km_row['total_km'];
     }
-
-    $estimated_km = $last_km + $total_km;
-
+    if ($last_date == null) {
+        $estimated_km = $last_km + $total_km;
+    } else {
+        $estimated_km =  $total_km;
+    }
     echo json_encode([
         'success' => true,
         'program_km' => round($estimated_km)
@@ -9326,4 +9358,492 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     } else {
         echo "<div class='alert alert-warning'>No KMPL or defect records found for bus <strong>$bus_number</strong> in the last 30 days.</div>";
     }
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "program_types_for_emergency_program") {
+
+    $bus_number = $db->real_escape_string($_POST['bus_number']);
+    $program_types = [];
+
+    // Fetch bus info
+    $busQuery = "SELECT make, emission_norms, model_type FROM bus_registration WHERE bus_number = '$bus_number' LIMIT 1";
+    $busResult = $db->query($busQuery);
+
+    if ($busResult && $busResult->num_rows > 0) {
+        $busData = $busResult->fetch_assoc();
+        $make = $busData['make'];
+        $emission_norms = $busData['emission_norms'];
+        $model_type = $busData['model_type'];
+
+        // Get program master details
+        $pmQuery = "SELECT * FROM program_master 
+                    WHERE make = '$make' AND model = '$emission_norms' AND model_type = '$model_type' 
+                    LIMIT 1";
+        $pmResult = $db->query($pmQuery);
+
+        if ($pmResult && $pmResult->num_rows > 0) {
+            $pmData = $pmResult->fetch_assoc();
+
+            foreach ($pmData as $key => $value) {
+                if (in_array($key, ['id', 'make', 'model', 'model_type', 'created_at', 'updated_at'])) continue;
+                if (!is_null($value) && $value !== '') {
+                    $program_types[] = $key;
+                }
+            }
+        }
+    }
+
+    // 🔹 Build and return <option> list
+    if (!empty($program_types)) {
+        echo '<option value="">Select Program Type</option>';
+        foreach ($program_types as $type) {
+            echo '<option value="' . htmlspecialchars($type) . '">' . htmlspecialchars(ucwords(str_replace('_', ' ', $type))) . '</option>';
+        }
+    } else {
+        echo '<option value="">No Programs Found</option>';
+    }
+    exit;
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && $_POST['action'] === "fetch_report_of_program_pending") {
+    $date = $_POST['date'];
+    $division_id  = $_POST['division'];
+    $depot_id     = $_POST['depot'];
+    $program_type = $_POST['program_type'];
+    $today        = date('Y-m-d');
+
+    if (!$date || !$division_id || !$depot_id || !$program_type) {
+        echo json_encode(['error' => 'Missing required parameters']);
+        exit;
+    }
+
+    // Get depot/division names
+    $locationQuery = "SELECT division FROM location WHERE division_id = '$division_id' limit 1";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+
+    // Get depot/division names
+    $locationQuery = "SELECT depot FROM location WHERE depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    //if the division or depot is set as All then fetch all the data depending on the selection
+    if ($division_id === 'All') {
+        $divisionCondition = "1"; // No division filter
+    } else {
+        $divisionCondition = "prd.division_id = '$division_id'";
+    }
+
+    if ($depot_id === 'All') {
+        $depotCondition = "1"; // No depot filter
+    } else {
+        $depotCondition = "prd.depot_id = '$depot_id'";
+    }
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+        if ($division_id == 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Pending Program Report for Central Office - $depotName</h3>";
+        } elseif ($division_id != 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Pending Program Report for $divisionName - All Depots</h3>";
+        } elseif ($division_id != 'All' && $depot_id != 'All') {
+            $html = "<h3 class='text-center'>Pending Program Report for $divisionName - $depotName</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DIVISION') {
+        if ($depot_id != 'All') {
+            $html = "<h3 class='text-center'>Pending Program Report for $divisionName - $depotName</h3>";
+        } else {
+            $html = "<h3 class='text-center'>Pending Program Report for $divisionName - All Depots</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DEPOT') {
+        $html = "<h3 class='text-center'>Pending Program Report for $divisionName - $depotName</h3>";
+    }
+    if ($program_type == 'All') {
+        $html .= "<h4 class='text-center'>Program Type: Docking and EOC</h4>";
+    } elseif ($program_type == 'docking') {
+        $html .= "<h4 class='text-center'>Program Type: Docking</h4>";
+    } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+        $html .= "<h4 class='text-center'>Program Type: EOC</h4>";
+    }
+    $html .= "<h4 class='text-center'>Date: " . date('d-m-Y', strtotime($date)) . "</h4>";
+
+    $sqlforreport = "SELECT prd.*, l.division, l.depot from program_summary_daily prd
+    LEFT JOIN location l ON prd.depot_id = l.depot_id AND prd.division_id = l.division_id
+    WHERE $divisionCondition
+    AND $depotCondition
+    and prd.summary_date = '$date'";
+
+    $result = mysqli_query($db, $sqlforreport);
+    $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+              <thead>
+                  <tr>
+                      <th>SL No</th>
+                      <th>Division</th>
+                      <th>Depot</th>";
+    if ($program_type == 'All') {
+        $html .= "<th>Pending Docking</th><th>Delayed Docking</th><th>Pending EOC</th><th>Delayed EOC</th>";
+    } elseif ($program_type == 'docking') {
+        $html .= "<th>Pending Docking</th><th>Delayed Docking</th>";
+    } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+        $html .= "<th>Pending EOC</th><th>Delayed EOC</th>";
+    }
+    $html .= "</tr>
+              </thead>
+              <tbody>";
+
+    $sl_no = 1;
+    $currentDivision = null;
+    $divisionTotals = [
+        'pending_docking' => 0,
+        'delayed_docking' => 0,
+        'pending_engine' => 0,
+        'delayed_engine' => 0
+    ];
+    $grandTotals = [
+        'pending_docking' => 0,
+        'delayed_docking' => 0,
+        'pending_engine' => 0,
+        'delayed_engine' => 0
+    ];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        // If division changes, print previous division total
+        if ($currentDivision !== null && $currentDivision !== $row['division']) {
+            $html .= "<tr style='font-weight:bold; background:#f0f0f0;'>
+                    <td colspan='3' style='text-align:center;'>{$currentDivision} Total</td>";
+            if ($program_type == 'All') {
+                $html .= "<td>{$divisionTotals['pending_docking']}</td>
+                                  <td>{$divisionTotals['delayed_docking']}</td>
+                                  <td>{$divisionTotals['pending_engine']}</td>
+                                  <td>{$divisionTotals['delayed_engine']}</td>";
+            } elseif ($program_type == 'docking') {
+                $html .= "<td>{$divisionTotals['pending_docking']}</td>
+                                  <td>{$divisionTotals['delayed_docking']}</td>";
+            } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+                $html .= "<td>{$divisionTotals['pending_engine']}</td>
+                                  <td>{$divisionTotals['delayed_engine']}</td>";
+            }
+            $html .= "</tr>";
+
+            // Reset division totals
+            $divisionTotals = [
+                'pending_docking' => 0,
+                'delayed_docking' => 0,
+                'pending_engine' => 0,
+                'delayed_engine' => 0
+            ];
+        }
+
+        // Update current division
+        $currentDivision = $row['division'];
+
+        // Print each depot row
+        $html .= "<tr>
+                <td>{$sl_no}</td>
+                <td>{$row['division']}</td>
+                <td>{$row['depot']}</td>";
+
+        if ($program_type == 'All') {
+            $html .= "<td>{$row['pending_docking']}</td>
+                  <td>{$row['delayed_docking']}</td>
+                  <td>{$row['pending_engine']}</td>
+                  <td>{$row['delayed_engine']}</td>";
+            $divisionTotals['pending_docking'] += $row['pending_docking'];
+            $divisionTotals['delayed_docking'] += $row['delayed_docking'];
+            $divisionTotals['pending_engine'] += $row['pending_engine'];
+            $divisionTotals['delayed_engine'] += $row['delayed_engine'];
+
+            $grandTotals['pending_docking'] += $row['pending_docking'];
+            $grandTotals['delayed_docking'] += $row['delayed_docking'];
+            $grandTotals['pending_engine'] += $row['pending_engine'];
+            $grandTotals['delayed_engine'] += $row['delayed_engine'];
+        } elseif ($program_type == 'docking') {
+            $html .= "<td>{$row['pending_docking']}</td>
+                  <td>{$row['delayed_docking']}</td>";
+            $divisionTotals['pending_docking'] += $row['pending_docking'];
+            $divisionTotals['delayed_docking'] += $row['delayed_docking'];
+            $grandTotals['pending_docking'] += $row['pending_docking'];
+            $grandTotals['delayed_docking'] += $row['delayed_docking'];
+        } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+            $html .= "<td>{$row['pending_engine']}</td>
+                  <td>{$row['delayed_engine']}</td>";
+            $divisionTotals['pending_engine'] += $row['pending_engine'];
+            $divisionTotals['delayed_engine'] += $row['delayed_engine'];
+            $grandTotals['pending_engine'] += $row['pending_engine'];
+            $grandTotals['delayed_engine'] += $row['delayed_engine'];
+        }
+
+        $html .= "</tr>";
+        $sl_no++;
+    }
+
+    // Print last division total
+    if ($currentDivision !== null) {
+        $html .= "<tr style='font-weight:bold; background:#f0f0f0;'>
+                <td colspan='3' style='text-align:center;'>{$currentDivision} Total</td>";
+        if ($program_type == 'All') {
+            $html .= "<td>{$divisionTotals['pending_docking']}</td>
+                              <td>{$divisionTotals['delayed_docking']}</td>
+                              <td>{$divisionTotals['pending_engine']}</td>
+                              <td>{$divisionTotals['delayed_engine']}</td>";
+        } elseif ($program_type == 'docking') {
+            $html .= "<td>{$divisionTotals['pending_docking']}</td>
+                              <td>{$divisionTotals['delayed_docking']}</td>";
+        } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+            $html .= "<td>{$divisionTotals['pending_engine']}</td>
+                              <td>{$divisionTotals['delayed_engine']}</td>";
+        }
+        $html .= "</tr>";
+    }
+
+    // Print corporation total
+    if ($division_id === 'All') {
+        $html .= "<tr style='font-weight:bold; background:#d0e0ff;'>
+            <td colspan='3' style='text-align:center;'>Corporation Total</td>";
+        if ($program_type == 'All') {
+            $html .= "<td>{$grandTotals['pending_docking']}</td>
+                          <td>{$grandTotals['delayed_docking']}</td>
+                          <td>{$grandTotals['pending_engine']}</td>
+                          <td>{$grandTotals['delayed_engine']}</td>";
+        } elseif ($program_type == 'docking') {
+            $html .= "<td>{$grandTotals['pending_docking']}</td>
+                          <td>{$grandTotals['delayed_docking']}</td>";
+        } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+            $html .= "<td>{$grandTotals['pending_engine']}</td>
+                          <td>{$grandTotals['delayed_engine']}</td>";
+        }
+        $html .= "</tr>";
+    }
+
+    $html .= "</tbody></table>";
+
+    echo json_encode(['status' => 'success', 'data' => $html]);
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetch_report_of_monthly_program') {
+    $month = $_POST['month'];
+    $year = $_POST['year'];
+    $division_id  = $_POST['division'];
+    $depot_id     = $_POST['depot'];
+    $program_type = $_POST['program_type'];
+    $monthname = date('F', mktime(0, 0, 0, $month, 10)); // Get month name
+    $start_date = "$year-$month-01";
+    $end_date = date("Y-m-t", strtotime($start_date));
+
+    // Get depot/division names
+    $locationQuery = "SELECT division FROM location WHERE division_id = '$division_id' limit 1";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+
+    // Get depot/division names
+    $locationQuery = "SELECT depot FROM location WHERE depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    //if the division or depot is set as All then fetch all the data depending on the selection
+    if ($division_id === 'All') {
+        $divisionCondition = "1 = 1"; // No division filter
+    } else {
+        $divisionCondition = "prm.division_id = '$division_id'";
+    }
+
+    if ($depot_id === 'All') {
+        $depotCondition = "1 = 1"; // No depot filter
+    } else {
+        $depotCondition = "prm.depot_id = '$depot_id'";
+    }
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+        if ($division_id == 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Monthly Program Report for Central Office - $depotName</h3>";
+        } elseif ($division_id != 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - All Depots</h3>";
+        } elseif ($division_id != 'All' && $depot_id != 'All') {
+            $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - $depotName</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DIVISION') {
+        if ($depot_id != 'All') {
+            $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - $depotName</h3>";
+        } else {
+            $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - All Depots</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DEPOT') {
+        $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - $depotName</h3>";
+    }
+    if ($program_type == 'All') {
+        $html .= "<h4 class='text-center'>Program Type: Docking and EOC</h4>";
+    } elseif ($program_type == 'docking') {
+        $html .= "<h4 class='text-center'>Program Type: Docking</h4>";
+    } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+        $html .= "<h4 class='text-center'>Program Type: EOC</h4>";
+    }
+    $html .= "<h4 class='text-center'>" . $monthname . " " . $year . "</h4>";
+    // Fetch summary rows
+// Fetch Monthly Summary
+$query = "SELECT prm.*, l.division, l.depot
+FROM program_summary_monthly prm
+LEFT JOIN location l ON prm.depot_id = l.depot_id AND prm.division_id = l.division_id
+WHERE prm.report_month='$month'
+AND prm.report_year='$year'
+AND $divisionCondition
+AND $depotCondition";
+
+$result = mysqli_query($db, $query);
+
+// Result storage for table creation
+$dockingRows = [];
+$eocRows = [];
+
+if (mysqli_num_rows($result) > 0) {
+
+    while ($row = mysqli_fetch_assoc($result)) {
+
+        $division = $row['division'];
+        $depot = $row['depot'];
+
+        // Count attended (In time / Late)
+        $summary = ["ontime" => 0, "late" => 0];
+
+        $pdQ = "
+            SELECT pd.bus_number, pd.program_completed_km, pd.program_type, 
+                   pm.docking AS docking_km, pm.engine_oil_and_main_filter_change AS eoc_km
+            FROM program_data pd
+            JOIN bus_registration br ON br.bus_number = pd.bus_number
+            JOIN program_master pm 
+                 ON pm.make = br.make 
+                AND pm.model = br.emission_norms 
+                AND pm.model_type = br.model_type
+            WHERE pd.program_date BETWEEN '$start_date' AND '$end_date'
+            AND pd.division_id = '{$row['division_id']}'
+            AND pd.depot_id = '{$row['depot_id']}'
+            AND pd.program_type IN ('docking','engine_oil_and_main_filter_change')
+        ";
+
+        $pdR = mysqli_query($db, $pdQ);
+
+        $attDocking = ["ontime"=>0,"late"=>0];
+        $attEoc = ["ontime"=>0,"late"=>0];
+
+        while ($pd = mysqli_fetch_assoc($pdR)) {
+            $reference = ($pd['program_type'] == 'docking') ? $pd['docking_km'] : $pd['eoc_km'];
+            $diff = $pd['program_completed_km'] - $reference;
+
+            if ($diff >= -500 && $diff <= 500) {
+                if ($pd['program_type']=='docking') $attDocking['ontime']++;
+                else $attEoc['ontime']++;
+            } else {
+                if ($pd['program_type']=='docking') $attDocking['late']++;
+                else $attEoc['late']++;
+            }
+        }
+
+        // Push into results arrays
+        $dockingRows[] = [
+            "division"=>$division,
+            "depot"=>$depot,
+            "prev"=>$row["previous_month_due_docking"],
+            "cur"=>$row["Current_month_due_docking"],
+            "ont"=>$attDocking['ontime'],
+            "late"=>$attDocking['late']
+        ];
+
+        $eocRows[] = [
+            "division"=>$division,
+            "depot"=>$depot,
+            "prev"=>$row["previous_month_due_eoc"],
+            "cur"=>$row["Current_month_due_eoc"],
+            "ont"=>$attEoc['ontime'],
+            "late"=>$attEoc['late']
+        ];
+    }
+}
+
+$html = "<h3 class='text-center'>Monthly Program Report</h3>
+<h4 class='text-center'>{$monthname} {$year}</h4>";
+
+$sl = 1;
+
+// Create DOCKING table
+if ($program_type == "All" || $program_type == "docking") {
+    $html .= "<h4 class='text-center mt-4'>Docking</h4>
+    <table class='table table-bordered text-center'>
+        <thead>
+            <tr>
+                <th rowspan='2'>SL No</th>
+                <th rowspan='2'>Division</th>
+                <th rowspan='2'>Depot</th>
+                <th rowspan='2'>Prev Due</th>
+                <th rowspan='2'>Curr Due</th>
+                <th colspan='3'>Total Attended</th>
+                <th rowspan='2'>Month End Due</th>
+            </tr>
+            <tr>
+                <th>In Time</th><th>Late</th><th>Total</th>
+            </tr>
+        </thead><tbody>";
+
+    $sl = 1;
+    foreach ($dockingRows as $d) {
+        $tot = $d['ont'] + $d['late'];
+        $enddue = ($d['prev'] + $d['cur']) - $tot;
+
+        $html .= "<tr>
+            <td>{$sl}</td>
+            <td>{$d['division']}</td>
+            <td>{$d['depot']}</td>
+            <td>{$d['prev']}</td>
+            <td>{$d['cur']}</td>
+            <td>{$d['ont']}</td>
+            <td>{$d['late']}</td>
+            <td>{$tot}</td>
+            <td>{$enddue}</td>
+        </tr>";
+
+        $sl++;
+    }
+    $html .= "</tbody></table>";
+}
+
+// Create EOC table
+if ($program_type == "All" || $program_type == "engine_oil_and_main_filter_change") {
+    $html .= "<h4 class='text-center mt-4'>EOC</h4>
+    <table class='table table-bordered text-center'>
+        <thead>
+            <tr>
+                <th rowspan='2'>SL No</th>
+                <th rowspan='2'>Division</th>
+                <th rowspan='2'>Depot</th>
+                <th rowspan='2'>Prev Due</th>
+                <th rowspan='2'>Curr Due</th>
+                <th colspan='3'>Total Attended</th>
+                <th rowspan='2'>Month End Due</th>
+            </tr>
+            <tr>
+                <th>In Time</th><th>Late</th><th>Total</th>
+            </tr>
+        </thead><tbody>";
+
+    $sl = 1;
+    foreach ($eocRows as $e) {
+        $tot = $e['ont'] + $e['late'];
+        $enddue = ($e['prev'] + $e['cur']) - $tot;
+
+        $html .= "<tr>
+            <td>{$sl}</td>
+            <td>{$e['division']}</td>
+            <td>{$e['depot']}</td>
+            <td>{$e['prev']}</td>
+            <td>{$e['cur']}</td>
+            <td>{$e['ont']}</td>
+            <td>{$e['late']}</td>
+            <td>{$tot}</td>
+            <td>{$enddue}</td>
+        </tr>";
+        $sl++;
+    }
+    $html .= "</tbody></table>";
+}
+
+
+    echo json_encode(['status' => 'success', 'data' => $html]);
+    exit;
 }

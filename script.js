@@ -192,34 +192,84 @@ function openModal(id, type, location, selectedDate) {
     );
     $(modalBodyId).html("<tr><td colspan='8' class='text-center'>Loading...</td></tr>");
     $.ajax({
-        url: "database/fetch_schedule_details.php",
-        method: "POST",
-        data: {
-            id: id,
-            type: type,
-            location: location,
-            date: selectedDate // Pass the selected date
-        },
-        dataType: "json",
-        success: function (data) {
-            let content = "";
-            if (data.length === 0) {
-                content =
-                    "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
-            } else {
-                content = data.map((row, index) => {
-                    if (type === 'difference') {
-                        return `<tr>
+    url: "database/fetch_schedule_details.php",
+    method: "POST",
+    data: {
+        id: id,
+        type: type,
+        location: location,
+        date: selectedDate
+    },
+    dataType: "json",
+    success: function (data) {
+        let content = "";
+        let header = ""; // ✅ define it once outside so it's accessible later
+
+        // Get table header separately
+        if (type === 'difference') {
+            header = `
+                <thead>
+                    <tr>
+                        <th>Sl.No</th>
+                        ${location === 'Division' ? '<th>Depot</th>' : ''}
+                        <th>Sch No</th>
+                        <th class="desc-column">Description</th>
+                        <th>Service Class</th>
+                        <th>Sch Dep Time</th>
+                    </tr>
+                </thead>
+            `;
+        } else {
+            header = `
+                <thead>
+                    <tr>
+                        <th>Sl.No</th>
+                        ${location === 'Division' ? '<th>Depot</th>' : ''}
+                        <th>Sch No</th>
+                        <th style="display:none;">Division</th>
+                        <th style="display:none;">Depot</th>
+                        <th class="desc-column">Description</th>
+                        <th>Service Class</th>
+                        <th>Sch Dep Time</th>
+                        <th>Act Dep Time</th>
+                        <th>Late By</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+            `;
+        }
+
+        // Generate table body rows
+        let body = "";
+
+        if (!data || data.length === 0) {
+            const colspan = location === 'Division' ? 6 : 5;
+            body = `<tr><td colspan="${colspan}" class="text-center">No data available</td></tr>`;
+        } else {
+            body = data.map((row, index) => {
+                if (type === 'difference') {
+                    const depotColumn = location === 'Division'
+                        ? `<td>${row.depot_name}</td>`
+                        : '';
+                    return `
+                        <tr>
                             <td>${index + 1}</td>
+                            ${depotColumn}
                             <td>${row.sch_key_no}</td>
                             <td>${row.sch_abbr}</td>
                             <td>${row.name}</td>
                             <td>${row.sch_dep_time}</td>
-                        </tr>`;
-                    } else {
-                        let lateTime = formatLateTime(row.late_by);
-                        return `<tr>
+                        </tr>
+                    `;
+                } else {
+                    const depotColumn = location === 'Division'
+                        ? `<td>${row.depot_name}</td>`
+                        : '';
+                    const lateTime = formatLateTime(row.late_by);
+                    return `
+                        <tr>
                             <td>${index + 1}</td>
+                            ${depotColumn}
                             <td onclick="fetchScheduleDetails('${row.sch_key_no}', '${row.division_id}', '${row.depot_id}', '${row.sch_abbr}', '${row.name}', '${row.sch_dep_time}')">${row.sch_key_no}</td>
                             <td style="display:none;">${row.division_id}</td>
                             <td style="display:none;">${row.depot_id}</td>
@@ -229,13 +279,26 @@ function openModal(id, type, location, selectedDate) {
                             <td>${row.act_dep_time}</td>
                             <td>${lateTime}</td>
                             <td>${row.reason || 'N/A'}</td>
-                        </tr>`;
-                    }
-                }).join("");
-            }
-            $(modalBodyId).html(content);
+                        </tr>
+                    `;
+                }
+            }).join("");
         }
-    });
+
+        // Final table content (header + body)
+        const table = `
+            ${header}
+            <tbody>
+                ${body}
+            </tbody>
+        `;
+
+        $(modalBodyId).html(table);
+    }
+});
+
+
+
 
     $(modalId).modal("show");
 }
@@ -276,6 +339,7 @@ function fetchScheduleDetails(schNo, divisionId, depotId, description, serviceCl
                         <td>${lateByText}</td>
                         <td>${row.driver_fixed == 0 ? '✔️' : '❌'}</td>
                         <td>${row.vehicle_fixed == 0 ? '✔️' : '❌'}</td>
+                        <td>${row.reason || 'N/A'}</td>
                     </tr>`;
                 });
 
@@ -564,7 +628,7 @@ $(document).ready(function () {
         $("#offRoadDataTable").html(""); // Clear previous content
 
         $.ajax({
-            url: "database/sch_live_fetch_offroad_data.php", // PHP script to fetch depot-wise data
+            url: "database/sch_live_fetch_offroad_data.php", // PHP script to fetch depot-wise data 
             type: "GET",
             dataType: "html",
             success: function (response) {
@@ -805,14 +869,15 @@ async function displayKMPLData(data, type, selectedDate) {
 document.getElementById("bd-date-selector").addEventListener("change", function () {
     let selectedDate = this.value;
     let today = new Date().toISOString().split("T")[0];
+    let yesterday = new Date(Date.now() - 864e5).toISOString().split("T")[0];
 
-    if (selectedDate > today) {
+    if (selectedDate > yesterday) {
         Swal.fire({
             icon: 'error',
             title: 'Invalid Date Selection',
             text: 'You cannot select a future date!',
         });
-        this.value = today; // Reset to today's date
+        this.value = yesterday; // Reset to yesterday's date
         return;
     }
 

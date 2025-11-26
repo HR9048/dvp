@@ -8,10 +8,10 @@
 <!-- Include Bootstrap JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
   crossorigin="anonymous"></script>
-
-
-<footer id="sticky-footer" class="flex-shrink-0 py-4">
-  <div class="text-center">
+<br><br>
+<footer id="sticky-footer" 
+  style="position: fixed; bottom: 0; left: 0; width: 100%; background: linear-gradient(90deg, #3c97bf,  #3c97bf, #3c97bf); color: white; text-align: center; padding: 10px 0; font-size: 14px; z-index: 1000;">
+  <div>
     <span>© Copyright 2024 KKRTC | All Rights Reserved</span>
   </div>
 </footer>

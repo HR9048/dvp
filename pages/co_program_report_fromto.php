@@ -12,7 +12,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
     $depot_id = $_SESSION['DEPOT_ID'];
 ?>
 
-    <h6>Select details for W3 Report</h6>
+    <h6>Select details for Program Report</h6>
     <form id="scheduleForm">
 
         <label for="from">From:</label>

@@ -37,6 +37,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
         <button class="btn btn-primary" type="submit">Submit</button>
         <button class="btn btn-success" onclick="window.print()">Print</button>
+        <button type="button" class="btn btn-info" onclick="downloadw3PDF()">Download PDF</button>
+
 
     </form>
     <div id="loadingIndicator" style="display:none; text-align:center; margin: 10px;">
@@ -271,7 +273,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 var programstart_date = '';
                 var formated_programstart_date = '';
                 var depots_1 = ['1', '8', '12', '13', '14', '15'];
-                var depots_2 = ['2','3','4','5','6','7','9','10','11','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40','41','42','43','44','45','46','47','48','49','50','51','52','53'];
+                var depots_2 = ['2', '3', '4', '5', '6', '7', '9', '10', '11', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53'];
 
                 if (depots_1.includes(depot)) {
                     programstart_date = '2025-07-31';
@@ -343,6 +345,37 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 });
             });
         });
+
+        function downloadw3PDF() {
+            var from = $('#from').val();
+            var to = $('#to').val();
+            var bus_number = $('#bus_number').val();
+            var division = $('#division').val();
+            var depot = $('#depot').val();
+
+            let missingFields = [];
+
+            if (!from) missingFields.push("From Date");
+            if (!to) missingFields.push("To Date");
+            if (!bus_number) missingFields.push("Bus Number");
+            if (!division) missingFields.push("Division");
+            if (!depot) missingFields.push("Depot");
+
+            if (missingFields.length > 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Required Fields Missing!',
+                    text: 'Please fill the following: ' + missingFields.join(', '),
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // If all fields are filled, proceed to download
+            window.location.href = 'w3_pdf_download.php?from=' + from + '&to=' + to + '&bus_number=' + bus_number +
+                '&division=' + division + '&depot=' + depot;
+        }
     </script>
 
 <?php

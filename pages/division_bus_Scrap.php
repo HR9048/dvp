@@ -97,6 +97,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESS
                 <input type="hidden" id="bus_body_builder" name="bus_body_builder">
                 <input type="hidden" id="bus_username" name="bus_username">
                 <input type="hidden" id="bus_submit_datetime" name="bus_submit_datetime">
+                <input type="hidden" id="model_type" name="model_type"> 
                 <input type="hidden" id="depotID" name="depotID">
                 <input type="hidden" id="divisionID" name="divisionID">
 
@@ -247,6 +248,7 @@ include '../includes/footer.php';
                 $('#bus_body_builder').val(response.bus_body_builder);
                 $('#bus_username').val(response.username);
                 $('#bus_submit_datetime').val(response.submit_datetime);
+                $('#model_type').val(response.model_type);
 
                 // Trigger change event on division dropdown to fetch depot options
                 $('#division').change();
@@ -258,6 +260,24 @@ include '../includes/footer.php';
                     alert(xhr.responseJSON.error);
                 } else {
                     alert('Error: Bus not Registered in KKRTC.');
+                    //null the form data
+                    $('#bus_number').val('');
+                    $('#division').val('');
+                    $('#divisionID').val('');
+                    $('#depot').val('');
+                    $('#depotID').val('');
+                    $('#make').val('');
+                    $('#emission_norms').val('');
+                    $('#doc').val('');
+                    $('#wheel_base').val('');
+                    $('#chassis_number').val('');
+                    $('#bus_category').val('');
+                    $('#bus_sub_category').val('');
+                    $('#seating_capacity').val('');
+                    $('#bus_body_builder').val('');
+                    $('#bus_username').val('');
+                    $('#bus_submit_datetime').val('');
+                    $('#model_type').val('');
                 }
             }
         });

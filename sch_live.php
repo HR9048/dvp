@@ -403,21 +403,8 @@ include 'includes/connection.php';
                                                 </div>
                                                 <div class="modal-body">
                                                     <div class="table-responsive">
-                                                        <table class="table table-striped">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Sl.No</th>
-                                                                    <th>Sch No</th>
-                                                                    <th class="desc-column">Description</th>
-                                                                    <th>Service Class</th>
-                                                                    <th>Sch Dep Time</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody id="difference-modal-body">
-                                                                <tr>
-                                                                    <td colspan="5" class="text-center">Loading...</td>
-                                                                </tr>
-                                                            </tbody>
+                                                        <table class="table table-striped" id="difference-modal-body">
+                                                            
                                                         </table>
                                                     </div>
                                                 </div>
@@ -471,8 +458,8 @@ include 'includes/connection.php';
 
                                         </h4>
                                         <input style="font-size: 12px;" type="date" id="bd-date-selector"
-                                            class="form-control w-auto" max="<?= date('Y-m-d'); ?>"
-                                            value="<?= date('Y-m-d'); ?>">
+                                            class="form-control w-auto" max="<?= date('Y-m-d', strtotime('-1 day')); ?>"
+                                            value="<?php echo date('Y-m-d', strtotime('-1 day')); ?>">
                                     </div>
 
                                     <div class="table-container">
@@ -645,26 +632,8 @@ include 'includes/connection.php';
                             </div>
                             <div class="modal-body">
                                 <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Sl.No</th>
-                                                <th>Sch No</th>
-                                                <th style="display:none;">division</th>
-                                                <th style="display:none;">depot</th>
-                                                <th class="desc-column">Description</th>
-                                                <th>Service Class</th>
-                                                <th>Sch Dep Time</th>
-                                                <th>Act Dep Time</th>
-                                                <th>Late By</th>
-                                                <th>Reason</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="late-modal-body">
-                                            <tr>
-                                                <td colspan="7" class="text-center">Loading...</td>
-                                            </tr>
-                                        </tbody>
+                                    <table class="table table-striped" id="late-modal-body">
+                                        
                                     </table>
                                 </div>
                             </div>
@@ -749,9 +718,10 @@ include 'includes/connection.php';
                                                 <th>Time Diff</th>
                                                 <th>Driver Fixed</th>
                                                 <th>Vehicle Fixed</th>
+                                                <th>Reason for Late Dep</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="schedule-details-modal-body">
+                                        <tbody id="schedule-details-modal-body"> 
                                             <!-- Data will be injected here -->
                                         </tbody>
                                     </table>

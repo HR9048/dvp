@@ -20,27 +20,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $yearlyBdCounts = [];
 
     // Query 1: Daily BD count (BDs on selected date)
-    $queryDaily = "SELECT 
-    l.kmpl_division, 
-    l.depot, 
-    COALESCE(COUNT(bd.`bus_number`), 0) AS bd_count
-FROM location l
-LEFT JOIN bd_datas bd 
-    ON l.division_id = bd.division_id 
-    AND l.depot_id = bd.depot_id 
-    AND bd.bd_date = '$selectedDate'
-    AND bd.deleted != '1'
-WHERE l.division_id NOT IN ('0', '10') 
-AND l.depot != 'DIVISION' 
-GROUP BY l.division_id, l.depot_id;
+    $queryDaily = "
+    SELECT 
+        l.division_id,
+        l.depot_id,
+        l.kmpl_division, 
+        l.depot, 
+        COALESCE(COUNT(bd.bus_number), 0) AS bd_count
+    FROM location l
+    LEFT JOIN bd_datas bd 
+        ON l.division_id = bd.division_id 
+        AND l.depot_id = bd.depot_id 
+        AND bd.bd_date = '$selectedDate'
+        AND bd.deleted != '1'
+    WHERE l.division_id NOT IN ('0', '10') 
+      AND l.depot != 'DIVISION' 
+    GROUP BY l.division_id, l.depot_id
 ";
     $resultDaily = mysqli_query($db, $queryDaily);
     if (!$resultDaily) {
         die("Daily BD Query failed: " . mysqli_error($db));
     }
+
+    $nextDate = date('Y-m-d', strtotime($selectedDate . ' +1 day'));
+
     while ($row = mysqli_fetch_assoc($resultDaily)) {
-        $dailyBdCounts[$row['kmpl_division']][$row['depot']] = $row['bd_count'];
+        $divisionId = $row['division_id'];
+        $depotId = $row['depot_id'];
+        $bdCount = $row['bd_count'];
+
+        if ($bdCount == 0) {
+            // Check if DVP entry exists for the next date
+            $checkDvpQuery = "
+            SELECT COUNT(*) AS dvp_exists 
+            FROM dvp_data 
+            WHERE division = '$divisionId' 
+              AND depot = '$depotId' 
+              AND date = '$nextDate'
+        ";
+            $checkResult = mysqli_query($db, $checkDvpQuery);
+            $checkRow = mysqli_fetch_assoc($checkResult);
+
+            if ($checkRow['dvp_exists'] > 0) {
+                $dailyBdCounts[$row['kmpl_division']][$row['depot']] = 0; // DVP present → show 0
+            } else {
+                $dailyBdCounts[$row['kmpl_division']][$row['depot']] = '#'; // No DVP → show #
+            }
+        } else {
+            $dailyBdCounts[$row['kmpl_division']][$row['depot']] = $bdCount;
+        }
     }
+
 
     // Query 2: Monthly cumulative BD count
     $queryMonthly = "SELECT l.kmpl_division, l.depot, COUNT(bd.`bus_number`) AS bd_count
@@ -153,10 +183,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $locationType = "1=1";
         }
         if ($subtype === "dayBD") {
-            $depotquery = "SELECT bd.*, bc.cause as cause_name, bc.reason as reason_name, l.kmpl_division, l.depot
+            $depotquery = "SELECT bd.*, m.make_abbr as make, br.emission_norms, bc.cause as cause_name, bc.reason as reason_name, l.kmpl_division, l.depot
                 FROM bd_datas bd
                 LEFT JOIN bd_cause bc ON bd.cause = bc.cause_id AND bd.reason = bc.reason_id
                 LEFT JOIN location l ON bd.depot_id = l.depot_id AND bd.division_id = l.division_id
+                LEFT JOIN bus_registration br ON bd.bus_number = br.bus_number
+                LEFT JOIN makes m ON br.make = m.make
                 WHERE $locationType
                 AND bd.bd_date = ?
                 ORDER BY l.division_id, l.depot_id, bd.bd_date ASC";
@@ -164,10 +196,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt->bind_param("s", $selectedDate);
             $stmt->execute();
         } elseif ($subtype === "monthBD") {
-            $depotquery = "SELECT bd.*, bc.cause as cause_name, bc.reason as reason_name, l.kmpl_division, l.depot
+            $depotquery = "SELECT bd.*, m.make_abbr as make, br.emission_norms, bc.cause as cause_name, bc.reason as reason_name, l.kmpl_division, l.depot
                 FROM bd_datas bd
                 LEFT JOIN bd_cause bc ON bd.cause = bc.cause_id AND bd.reason = bc.reason_id
                 LEFT JOIN location l ON bd.depot_id = l.depot_id AND bd.division_id = l.division_id
+                LEFT JOIN bus_registration br ON bd.bus_number = br.bus_number
+                LEFT JOIN makes m ON br.make = m.make
                 WHERE $locationType
                 AND bd.bd_date between ? AND ?
                 ORDER BY l.division_id, l.depot_id, bd.bd_date ASC";
@@ -175,10 +209,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt->bind_param("ss", $startdateofmonth, $selectedDate);
             $stmt->execute();
         } elseif ($subtype === "cummBD") {
-            $depotquery = "SELECT bd.*, bc.cause as cause_name, bc.reason as reason_name, l.kmpl_division, l.depot
+            $depotquery = "SELECT bd.*, m.make_abbr as make, br.emission_norms, bc.cause as cause_name, bc.reason as reason_name, l.kmpl_division, l.depot
                 FROM bd_datas bd
                 LEFT JOIN bd_cause bc ON bd.cause = bc.cause_id AND bd.reason = bc.reason_id
                 LEFT JOIN location l ON bd.depot_id = l.depot_id AND bd.division_id = l.division_id
+                LEFT JOIN bus_registration br ON bd.bus_number = br.bus_number
+                LEFT JOIN makes m ON br.make = m.make
                 WHERE $locationType
                 AND bd.bd_date between ? AND ?
                 ORDER BY l.division_id, l.depot_id, bd.bd_date ASC";
@@ -198,70 +234,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        if ($type === "Depot") {
-            if ($subtype === "dayBD") {
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Depot: <strong>$name</strong> on Date: <strong>" . date('d-m-Y', strtotime($selectedDate)) . "</strong></h6>";
-            } elseif ($subtype === "monthBD") {
-                $monthAbbr = date('M', strtotime($selectedDate));
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Depot: <strong>$name</strong> in Month: <strong>" . $monthAbbr . " " . date('Y', strtotime($selectedDate)) . "</strong></h6>";
-            } elseif ($subtype === "cummBD") {
-                $financialYear = (date('m', strtotime($selectedDate)) < 4) ? (date('Y', strtotime($selectedDate)) - 1) . "-" . date('Y', strtotime($selectedDate)) : date('Y', strtotime($selectedDate)) . "-" . (date('Y', strtotime($selectedDate)) + 1);
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Depot: <strong>$name</strong> in Year: <strong>" . $financialYear . "</strong></h6>";
-            }
-            $html .= "<table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
+    if ($type === "Depot") {
+        if ($subtype === "dayBD") {
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Depot: <strong>$name</strong> on Date: <strong>" . date('d-m-Y', strtotime($selectedDate)) . "</strong></h6>";
+        } elseif ($subtype === "monthBD") {
+            $monthAbbr = date('M', strtotime($selectedDate));
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Depot: <strong>$name</strong> in Month: <strong>" . $monthAbbr . " " . date('Y', strtotime($selectedDate)) . "</strong></h6>";
+        } elseif ($subtype === "cummBD") {
+            $financialYear = (date('m', strtotime($selectedDate)) < 4) ? (date('Y', strtotime($selectedDate)) - 1) . "-" . date('Y', strtotime($selectedDate)) : date('Y', strtotime($selectedDate)) . "-" . (date('Y', strtotime($selectedDate)) + 1);
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Depot: <strong>$name</strong> in Year: <strong>" . $financialYear . "</strong></h6>";
+        }
+        $html .= "<table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
                 <tr>
                     <th>Sl. No</th>
                     <th>BD Date</th>
                     <th>Bus Number</th>
+                    <th>Make</th>
+                    <th>Norms</th>
                     <th>Cause</th>
                     <th>Reason</th>
                     <th>KM After Docking</th>
 
                 </tr>";
-            $serial_number = 1;
+        //if no row found in the result set then show no records found
+        $serial_number = 1;
+        if ($result->num_rows > 0) {
+            // ✅ If rows are found
             while ($row = $result->fetch_assoc()) {
-
                 $html .= "<tr>
-                    <td>{$serial_number}</td>
-                    <td>" . date('d-m-Y', strtotime($row['bd_date'])) . "</td>
-                    <td>{$row['bus_number']}</td>
-                    <td>{$row['cause_name']}</td>
-                    <td>{$row['reason_name']}</td>
-                    <td>{$row['km_after_docking']}</td>
-                </tr>";
+            <td>{$serial_number}</td>
+            <td>" . date('d-m-Y', strtotime($row['bd_date'])) . "</td>
+            <td>{$row['bus_number']}</td>
+            <td>{$row['make']}</td>
+            <td>{$row['emission_norms']}</td>
+            <td>{$row['cause_name']}</td>
+            <td>{$row['reason_name']}</td>
+            <td>{$row['km_after_docking']}</td>
+        </tr>";
                 $serial_number++;
             }
+        } else {
+            // ❌ No records found
+            $html .= "<tr>
+        <td colspan='6' style='text-align:center; color:red; font-weight:bold;'>No Data Found</td>
+    </tr>";
+        }
 
+        $html .= "</table>";
 
-            $html .= "</table>";
-
-            echo json_encode([
-                "status" => "success",
-                "html" => $html,
-            ]);
-        } elseif ($type === "Division") {
-            if ($subtype === "dayBD") {
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Division: <strong>$name</strong> on Date: <strong>" . date('d-m-Y', strtotime($selectedDate)) . "</strong></h6>";
-            } elseif ($subtype === "monthBD") {
-                $monthAbbr = date('M', strtotime($selectedDate));
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Division: <strong>$name</strong> in Month: <strong>" . $monthAbbr . " " . date('Y', strtotime($selectedDate)) . "</strong></h6>";
-            } elseif ($subtype === "cummBD") {
-                $financialYear = (date('m', strtotime($selectedDate)) < 4) ? (date('Y', strtotime($selectedDate)) - 1) . "-" . date('Y', strtotime($selectedDate)) : date('Y', strtotime($selectedDate)) . "-" . (date('Y', strtotime($selectedDate)) + 1);
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Division: <strong>$name</strong> in Year: <strong>" . $financialYear . "</strong></h6>";
-            }
-            $html .= "<table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
+        echo json_encode([
+            "status" => "success",
+            "html" => $html,
+        ]);
+    } elseif ($type === "Division") {
+        if ($subtype === "dayBD") {
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Division: <strong>$name</strong> on Date: <strong>" . date('d-m-Y', strtotime($selectedDate)) . "</strong></h6>";
+        } elseif ($subtype === "monthBD") {
+            $monthAbbr = date('M', strtotime($selectedDate));
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Division: <strong>$name</strong> in Month: <strong>" . $monthAbbr . " " . date('Y', strtotime($selectedDate)) . "</strong></h6>";
+        } elseif ($subtype === "cummBD") {
+            $financialYear = (date('m', strtotime($selectedDate)) < 4) ? (date('Y', strtotime($selectedDate)) - 1) . "-" . date('Y', strtotime($selectedDate)) : date('Y', strtotime($selectedDate)) . "-" . (date('Y', strtotime($selectedDate)) + 1);
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Division: <strong>$name</strong> in Year: <strong>" . $financialYear . "</strong></h6>";
+        }
+        $html .= "<table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
                 <tr>
                     <th>Sl. No</th>
                     <th>Depot</th>
                     <th>BD Date</th>
                     <th>Bus Number</th>
+                    <th>Make</th>
+                    <th>Norms</th>
                     <th>Cause</th>
                     <th>Reason</th>
                     <th>KM After Docking</th>
 
                 </tr>";
-            $serial_number = 1;
+        $serial_number = 1;
+        if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
 
                 $html .= "<tr>
@@ -269,40 +318,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     <td>{$row['depot']}</td>
                     <td>" . date('d-m-Y', strtotime($row['bd_date'])) . "</td>
                     <td>{$row['bus_number']}</td>
+                    <td>{$row['make']}</td>
+                    <td>{$row['emission_norms']}</td>
                     <td>{$row['cause_name']}</td>
                     <td>{$row['reason_name']}</td>
                     <td>{$row['km_after_docking']}</td>
                 </tr>";
                 $serial_number++;
             }
-            $html .= "</table>";
+        } else {
+            // ❌ No records found
+            $html .= "<tr>
+        <td colspan='7' style='text-align:center; color:red; font-weight:bold;'>No Data Found</td>
+    </tr>";
+        }
+        $html .= "</table>";
 
-            echo json_encode([
-                "status" => "success",
-                "html" => $html,
-            ]);
-        } elseif ($type === "Overall") {
-            if ($subtype === "dayBD") {
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Corporation on Date: <strong>" . date('d-m-Y', strtotime($selectedDate)) . "</strong></h6>";
-            } elseif ($subtype === "monthBD") {
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Corporation in Month: <strong>" . date('M', strtotime($selectedDate)) . " " . date('Y', strtotime($selectedDate)) . "</strong></h6>";
-            } elseif ($subtype === "cummBD") {
-                $financialYear = (date('m', strtotime($selectedDate)) < 4) ? (date('Y', strtotime($selectedDate)) - 1) . "-" . date('Y', strtotime($selectedDate)) : date('Y', strtotime($selectedDate)) . "-" . (date('Y', strtotime($selectedDate)) + 1);
-                $html .= "<h6 class='text-center mb-3'>Break Down Details for Corporation in Year: <strong>" . $financialYear . "</strong></h6>";
-            }
-            $html .= "<table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
+        echo json_encode([
+            "status" => "success",
+            "html" => $html,
+        ]);
+    } elseif ($type === "Overall") {
+        if ($subtype === "dayBD") {
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Corporation on Date: <strong>" . date('d-m-Y', strtotime($selectedDate)) . "</strong></h6>";
+        } elseif ($subtype === "monthBD") {
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Corporation in Month: <strong>" . date('M', strtotime($selectedDate)) . " " . date('Y', strtotime($selectedDate)) . "</strong></h6>";
+        } elseif ($subtype === "cummBD") {
+            $financialYear = (date('m', strtotime($selectedDate)) < 4) ? (date('Y', strtotime($selectedDate)) - 1) . "-" . date('Y', strtotime($selectedDate)) : date('Y', strtotime($selectedDate)) . "-" . (date('Y', strtotime($selectedDate)) + 1);
+            $html .= "<h6 class='text-center mb-3'>Break Down Details for Corporation in Year: <strong>" . $financialYear . "</strong></h6>";
+        }
+        $html .= "<table border='1' cellspacing='0' cellpadding='5' style='width:100%; border-collapse: collapse;'>
             <tr>
                 <th>Sl. No</th>
                 <th>Division</th>
                 <th>Depot</th>
                 <th>BD Date</th>
                 <th>Bus Number</th>
+                <th>Make</th>
+                <th>Norms</th>
                 <th>Cause</th>
                 <th>Reason</th>
                 <th>KM After Docking</th>
 
             </tr>";
-            $serial_number = 1;
+        $serial_number = 1;
+        if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
 
                 $html .= "<tr>
@@ -311,19 +371,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <td>{$row['depot']}</td>
                 <td>" . date('d-m-Y', strtotime($row['bd_date'])) . "</td>
                 <td>{$row['bus_number']}</td>
+                <td>{$row['make']}</td>
+                <td>{$row['emission_norms']}</td>
                 <td>{$row['cause_name']}</td>
                 <td>{$row['reason_name']}</td>
                 <td>{$row['km_after_docking']}</td>
             </tr>";
                 $serial_number++;
             }
-            $html .= "</table>";
-            echo json_encode([
-                "status" => "success",
-                "html" => $html,
-            ]);
         } else {
-            echo json_encode(["status" => "error", "message" => "No records found"]);
+            // ❌ No records found
+            $html .= "<tr>
+        <td colspan='8' style='text-align:center; color:red; font-weight:bold;'>No Data Found</td>
+    </tr>";
         }
+        $html .= "</table>";
+        echo json_encode([
+            "status" => "success",
+            "html" => $html,
+        ]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "No records found"]);
     }
 }

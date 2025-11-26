@@ -8,7 +8,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 }
 if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') {
     // Allow access
-// Check if session variables are set
+    // Check if session variables are set
     if (!isset($_SESSION['DIVISION']) || !isset($_SESSION['DEPOT'])) {
         die("Error: Division or depot information not found in session.");
     }
@@ -19,13 +19,14 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     // Query to retrieve off-road vehicle counts for depot, DWS, and RWY
     $query = "SELECT 
             COUNT(*) AS total_count,
-            SUM(CASE WHEN max_off_road_location = 'Depot' THEN 1 ELSE 0 END) AS depot_count,
+            SUM(CASE WHEN max_off_road_location = 'Depot' AND max_parts_required <> 'Work under Progress' THEN 1 ELSE 0 END) AS depot_count,
+            SUM(CASE WHEN max_off_road_location = 'Depot' AND max_parts_required = 'Work under Progress' THEN 1 ELSE 0 END) AS wup_count,
             SUM(CASE WHEN max_off_road_location = 'DWS' THEN 1 ELSE 0 END) AS dws_count,
             SUM(CASE WHEN max_off_road_location = 'RWY' THEN 1 ELSE 0 END) AS rwy_count,
             SUM(CASE WHEN max_off_road_location = 'Police Station' THEN 1 ELSE 0 END) AS police_count,
             SUM(CASE WHEN max_off_road_location = 'Authorized Dealer' THEN 1 ELSE 0 END) AS authorized_dealer
           FROM (
-            SELECT bus_number, MAX(off_road_location) AS max_off_road_location
+            SELECT bus_number, MAX(off_road_location) AS max_off_road_location, MAX(parts_required) AS max_parts_required
             FROM off_road_data
             WHERE status = 'off_road' AND division = '$division' AND depot = '$depot'
             GROUP BY bus_number
@@ -46,10 +47,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
     // Assign counts to variables, handle the case when counts are null
     $depotCount = isset($row['depot_count']) ? $row['depot_count'] : 0;
+    $wupCount = isset($row['wup_count']) ? $row['wup_count'] : 0;
     $dwsCount = isset($row['dws_count']) ? $row['dws_count'] : 0;
     $rwyCount = isset($row['rwy_count']) ? $row['rwy_count'] : 0;
     $policecount = isset($row['police_count']) ? $row['police_count'] : 0;
     $authorizeddealer = isset($row['authorized_dealer']) ? $row['authorized_dealer'] : 0;
+    
 
     // Free the result set
     mysqli_free_result($result);
@@ -72,7 +75,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     // Free the result set
     mysqli_free_result($result);
 
-    ?>
+?>
 
 
     <!-- Rest of your HTML form -->
@@ -106,8 +109,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             justify-content: center;
         }
     </style>
+    <div style="color: red; text-align: center;"><h5>Note: For vehicles under Work in Progress, please update their details on the Off-Road page. The count will reflect in DVP.</h5></div>
 
     <div class="container" style="width: 90%;">
+        <h2>Daily Vehicle Position (DVP)</h2>
         <form id="dvpForm" action="save_dvp.php" method="post">
             <div class="form-group col-md-6">
                 <div class="input-group">
@@ -231,10 +236,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 <div class="form-group col-md-6">
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text">Vehicle Work Under Progress at Depot:</span>
+                            <span class="input-group-text" style="color: red;">Vehicle Work Under Progress at Depot:</span>
                         </div>
-                        <input type="number" class="form-control" id="wup1" name="wup1" oninput="calculateDifference()"
-                            required>
+                        <input type="number" class="form-control" id="wup1" name="wup1" oninput="calculateDifference()" value="<?php echo $wupCount; ?>"
+                            readonly style="color: red;">
                     </div>
                 </div>
                 <div class="form-group col-md-6">
@@ -292,7 +297,26 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                             readonly style="color: red;">
                     </div>
                 </div>
-                
+                <!-- give check box for conforing the breakdown details entered or not if not please add and submit dvp after dvp submission the breakdown details will be locked for that particular date -->
+                <div class="form-group col-md-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmCheckbox" name="confirmCheckbox" value="no" required>
+                            <label class="form-check-label" for="confirmCheckbox">
+                                I confirm that all breakdown details have been entered for yesterday.
+                            </label>
+                            <p>(Note: If not, please add them before submitting the DVP. Once the DVP is submitted, breakdown details for yesterday will be locked and cannot be modified.)</p>
+                        </div>
+                </div>
+
+                <script>
+                    const checkbox = document.getElementById('confirmCheckbox');
+
+                    checkbox.addEventListener('change', function() {
+                        this.value = this.checked ? 'yes' : 'no';
+                    });
+                </script>
+
+
                 <!-- Add other input groups similarly -->
             </div>
             <div class="center-button">
@@ -318,35 +342,73 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             var notdepot = parseInt(document.getElementById("notdepot").value);
             var loan = parseInt(document.getElementById("loan").value);
 
-    // Create an array to store all input fields and their corresponding IDs
-    var inputs = [
-        { value: schedules, id: "schdules" },
-        { value: vehicles, id: "vehicles" },
-        { value: docking, id: "docking" },
-        { value: wup, id: "wup" },
-        { value: wup1, id: "wup1" },
-        { value: ORDepot, id: "ORDepot" },
-        { value: ORDWS, id: "ORDWS" },
-        { value: ORRWY, id: "ORRWY" },
-        { value: CC, id: "CC" },
-        { value: Police, id: "Police" },
-        { value: Dealer, id: "Dealer" },
-        { value: notdepot, id: "notdepot" },
-        { value: loan, id: "loan" }
-    ];
+            // Create an array to store all input fields and their corresponding IDs
+            var inputs = [{
+                    value: schedules,
+                    id: "schdules"
+                },
+                {
+                    value: vehicles,
+                    id: "vehicles"
+                },
+                {
+                    value: docking,
+                    id: "docking"
+                },
+                {
+                    value: wup,
+                    id: "wup"
+                },
+                {
+                    value: wup1,
+                    id: "wup1"
+                },
+                {
+                    value: ORDepot,
+                    id: "ORDepot"
+                },
+                {
+                    value: ORDWS,
+                    id: "ORDWS"
+                },
+                {
+                    value: ORRWY,
+                    id: "ORRWY"
+                },
+                {
+                    value: CC,
+                    id: "CC"
+                },
+                {
+                    value: Police,
+                    id: "Police"
+                },
+                {
+                    value: Dealer,
+                    id: "Dealer"
+                },
+                {
+                    value: notdepot,
+                    id: "notdepot"
+                },
+                {
+                    value: loan,
+                    id: "loan"
+                }
+            ];
 
-    // Check if any input is negative
-    for (var i = 0; i < inputs.length; i++) {
-        if (inputs[i].value < 0) {
-            // Alert the user
-            alert("Please Enter a value Greater then 0");
+            // Check if any input is negative
+            for (var i = 0; i < inputs.length; i++) {
+                if (inputs[i].value < 0) {
+                    // Alert the user
+                    alert("Please Enter a value Greater then 0");
 
-            // Set the value of the corresponding input field to null
-            document.getElementById(inputs[i].id).value = '';
+                    // Set the value of the corresponding input field to null
+                    document.getElementById(inputs[i].id).value = '';
 
-            return; // Stop the calculation if a negative value is detected
-        }
-    }
+                    return; // Stop the calculation if a negative value is detected
+                }
+            }
             // Calculate the difference to find the number of spare vehicles
             var spare = (vehicles - schedules);
 
@@ -380,13 +442,21 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // Submit form using AJAX
-            $('#dvpForm').submit(function (e) {
+            $('#dvpForm').submit(function(e) {
                 e.preventDefault(); // Prevent default form submission
+                const checkbox = document.getElementById('confirmCheckbox');
+                if (!checkbox.checked) {
+                    e.preventDefault();
+                    alert('Please confirm that all breakdown details have been entered for yesterday.');
+                    return false;
+                }
+
 
                 // Get form data
                 var formData = $(this).serialize();
+                console.log(formData); // Log form data to console for debugging
 
                 // Send AJAX request
                 $.ajax({
@@ -394,7 +464,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                     url: '../database/save_dvp.php',
                     data: formData,
                     dataType: 'json', // Expect JSON response
-                    success: function (response) {
+                    success: function(response) {
                         // Display appropriate message
                         if (response.status === 'success') {
                             alert(response.message); // Alert success message
@@ -403,7 +473,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                             alert(response.message); // Alert error message
                         }
                     },
-                    error: function (xhr, status, error) {
+                    error: function(xhr, status, error) {
                         console.log(xhr.responseText); // Log error to console
                         alert('An error occurred while processing your request.'); // Alert error message
                     }
@@ -412,7 +482,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
         });
     </script>
 
-    <?php
+<?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
     exit;

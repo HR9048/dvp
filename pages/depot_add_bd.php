@@ -10,6 +10,16 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
+    $today_date = date('Y-m-d');
+    $check_query = "SELECT COUNT(*) as dvp_count FROM dvp_data WHERE division='$division_id' AND depot='$depot_id' AND date='$today_date'";
+    $check_result = mysqli_query($db, $check_query);
+    $check_row = mysqli_fetch_assoc($check_result);
+    $dvp_count = $check_row['dvp_count'];
+    if ($dvp_count > 0) {
+        echo "<script type='text/javascript'>Swal.fire({icon: 'error',title: 'DVP Already Submitted',text: 'DVP for today has already been submitted. You cannot add breakdowns now.',}).then((result) => {if (result.isConfirmed) {window.location = 'depot_dashboard.php';}});</script>";
+        exit;
+    }
+
 ?>
 <div class="container" style="margin-top: 20px; width: 70%;">
     <div class="container1">
@@ -19,7 +29,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 <div class="col">
                     <div class="form-group">
                         <label for=bd_date>BreakDown Date:</label>
-                        <input type="date" class="form-control" id="bd_date" name="bd_date" required>
+                        <input type="date" class="form-control" id="bd_date" name="bd_date" value="<?php echo date('Y-m-d', strtotime('-1 day')); ?>" readonly>
                     </div>
                 </div>
                 <div class="col">

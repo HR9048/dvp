@@ -1,390 +1,82 @@
 <?php
-include 'includes/connection.php';
-// SQL query to fetch division-wise counts (no overall total in query)
-$query = "
-    SELECT 
-        l.division, 
-        COUNT(am.id) AS record_count,
-        l.division_id
-    FROM alternator_master am
-    JOIN (SELECT DISTINCT division_id, division FROM location) l 
-        ON am.division_id = l.division_id
-    GROUP BY l.division, l.division_id
-    ORDER BY l.division_id;
-";
+// Database connection
+$servername = "localhost"; 
+$username = "root"; 
+$password = "kkrtcsystem";
+$port = 33306; // MySQL custom port
+$database = "kkrtcdvp_data"; 
+// Create connection using the custom MySQL port
+$db = new mysqli($servername, $username, $password, $database, $port);
 
-// Execute the query
-$result = $db->query($query);
+// Check connection
+if ($db->connect_error) {
+    die("Connection failed: " . $db->connect_error);
+} 
 
-// Initialize a variable to store the overall total
-$totalRecords = 0;
+// Set date range
+$last_30_days = date('Y-m-d', strtotime('-31 days'));
+$yesterday_date = date('Y-m-d', strtotime('-1 day'));
+$today_date = date('Y-m-d'); // Today's date
 
-// Check if query executed successfully
-if ($result->num_rows > 0) {
-    // Start the table to display the results
-    echo "<h2> Alternator Master</h2><table border='1' cellpadding='5' cellspacing='0'>
-            <tr>
-                <th>Division Name</th>
-                <th>Record Count</th>
-            </tr>";
-    
-    // Loop through the result set and display division-wise counts
-    while ($row = $result->fetch_assoc()) {
-        // Add the record count to the total
-        $totalRecords += $row['record_count'];
-        
-        // Display the division data
-        echo "<tr>
-                <td>" . htmlspecialchars($row['division']) . "</td>
-                <td>" . $row['record_count'] . "</td>
-              </tr>";
-    }
-    // Display the overall total at the end
-    echo "<tr>
-            <td><strong>Overall Total</strong></td>
-            <td><strong>" . $totalRecords . "</strong></td>
-          </tr>";
+// Query to fetch data
+$query = "SELECT 
+    sm.sch_dep_time, 
+    sm.sch_key_no, 
+    sm.sch_abbr, 
+    st.name AS type,
+    sm.division_id, 
+    sm.depot_id,
+    l.depot AS depot_name,
+    COALESCE(SUM(CASE WHEN svo.dep_time_diff > 30 THEN 1 ELSE 0 END), 0) AS late,
+    COALESCE(SUM(CASE WHEN svo.dep_time_diff <= 30 THEN 1 ELSE 0 END), 0) AS on_time,
+    COALESCE(COUNT(svo.sch_no), 0) AS total_schedules
+FROM schedule_master sm
+LEFT JOIN sch_veh_out svo 
+    ON sm.sch_key_no = svo.sch_no 
+    AND sm.depot_id = svo.depot_id 
+    AND svo.departed_date BETWEEN ? AND ?
+LEFT JOIN service_class st ON sm.service_class_id = st.id
+LEFT JOIN location l
+    ON sm.depot_id = l.depot_id
+WHERE sm.status = '1'
+GROUP BY sm.sch_key_no, sm.depot_id
+HAVING late > 7 
+ORDER BY l.depot_id, sm.sch_dep_time";
 
-    echo "</table>";
-} else {
-    echo "No records found.";
+$stmt = $db->prepare($query);
+$stmt->bind_param("ss", $last_30_days, $yesterday_date);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Insert fetched data into schedule_report
+$insertQuery = "INSERT INTO schedule_report 
+    (sch_dep_time, sch_key_no, sch_abbr, type, division_id, depot_id, depot_name, late, on_time, total_schedules, report_date) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+$insertStmt = $db->prepare($insertQuery);
+
+while ($row = $result->fetch_assoc()) {
+    $insertStmt->bind_param(
+        "ssssiisiiis", 
+        $row['sch_dep_time'], 
+        $row['sch_key_no'], 
+        $row['sch_abbr'], 
+        $row['type'], 
+        $row['division_id'], 
+        $row['depot_id'], 
+        $row['depot_name'], 
+        $row['late'], 
+        $row['on_time'], 
+        $row['total_schedules'], 
+        $today_date
+    );
+    $insertStmt->execute();
 }
-$query = "
-    SELECT 
-        l.division, 
-        COUNT(am.id) AS record_count,
-        l.division_id
-    FROM engine_master am
-    JOIN (SELECT DISTINCT division_id, division FROM location) l 
-        ON am.division_id = l.division_id
-    GROUP BY l.division, l.division_id
-    ORDER BY l.division_id;
-";
 
-// Execute the query
-$result = $db->query($query);
-
-// Initialize a variable to store the overall total
-$totalRecords = 0;
-
-// Check if query executed successfully
-if ($result->num_rows > 0) {
-    // Start the table to display the results
-    echo "<h2> Engine Master</h2><table border='1' cellpadding='5' cellspacing='0'>
-            <tr>
-                <th>Division Name</th>
-                <th>Record Count</th>
-            </tr>";
-    
-    // Loop through the result set and display division-wise counts
-    while ($row = $result->fetch_assoc()) {
-        // Add the record count to the total
-        $totalRecords += $row['record_count'];
-        
-        // Display the division data
-        echo "<tr>
-                <td>" . htmlspecialchars($row['division']) . "</td>
-                <td>" . $row['record_count'] . "</td>
-              </tr>";
-    }
-    // Display the overall total at the end
-    echo "<tr>
-            <td><strong>Overall Total</strong></td>
-            <td><strong>" . $totalRecords . "</strong></td>
-          </tr>";
-
-    echo "</table>";
-} else {
-    echo "No records found.";
-}
-$query = "
-    SELECT 
-        l.division, 
-        COUNT(am.id) AS record_count,
-        l.division_id
-    FROM gearbox_master am
-    JOIN (SELECT DISTINCT division_id, division FROM location) l 
-        ON am.division_id = l.division_id
-    GROUP BY l.division, l.division_id
-    ORDER BY l.division_id;
-";
-
-// Execute the query
-$result = $db->query($query);
-
-// Initialize a variable to store the overall total
-$totalRecords = 0;
-
-// Check if query executed successfully
-if ($result->num_rows > 0) {
-    // Start the table to display the results
-    echo "<h2> Gear Box Master</h2><table border='1' cellpadding='5' cellspacing='0'>
-            <tr>
-                <th>Division Name</th>
-                <th>Record Count</th>
-            </tr>";
-    
-    // Loop through the result set and display division-wise counts
-    while ($row = $result->fetch_assoc()) {
-        // Add the record count to the total
-        $totalRecords += $row['record_count'];
-        
-        // Display the division data
-        echo "<tr>
-                <td>" . htmlspecialchars($row['division']) . "</td>
-                <td>" . $row['record_count'] . "</td>
-              </tr>";
-    }
-    // Display the overall total at the end
-    echo "<tr>
-            <td><strong>Overall Total</strong></td>
-            <td><strong>" . $totalRecords . "</strong></td>
-          </tr>";
-
-    echo "</table>";
-} else {
-    echo "No records found.";
-}
-$query = "
-    SELECT 
-        l.division, 
-        COUNT(am.id) AS record_count,
-        l.division_id
-    FROM fip_hpp_master am
-    JOIN (SELECT DISTINCT division_id, division FROM location) l 
-        ON am.division_id = l.division_id
-    GROUP BY l.division, l.division_id
-    ORDER BY l.division_id;
-";
-
-// Execute the query
-$result = $db->query($query);
-
-// Initialize a variable to store the overall total
-$totalRecords = 0;
-
-// Check if query executed successfully
-if ($result->num_rows > 0) {
-    // Start the table to display the results
-    echo "<h2> FIP/FPP Master</h2><table border='1' cellpadding='5' cellspacing='0'>
-            <tr>
-                <th>Division Name</th>
-                <th>Record Count</th>
-            </tr>";
-    
-    // Loop through the result set and display division-wise counts
-    while ($row = $result->fetch_assoc()) {
-        // Add the record count to the total
-        $totalRecords += $row['record_count'];
-        
-        // Display the division data
-        echo "<tr>
-                <td>" . htmlspecialchars($row['division']) . "</td>
-                <td>" . $row['record_count'] . "</td>
-              </tr>";
-    }
-    // Display the overall total at the end
-    echo "<tr>
-            <td><strong>Overall Total</strong></td>
-            <td><strong>" . $totalRecords . "</strong></td>
-          </tr>";
-
-    echo "</table>";
-} else {
-    echo "No records found.";
-}
-$query = "
-    SELECT 
-        l.division, 
-        COUNT(am.id) AS record_count,
-        l.division_id
-    FROM starter_master am
-    JOIN (SELECT DISTINCT division_id, division FROM location) l 
-        ON am.division_id = l.division_id
-    GROUP BY l.division, l.division_id
-    ORDER BY l.division_id;
-";
-
-// Execute the query
-$result = $db->query($query);
-
-// Initialize a variable to store the overall total
-$totalRecords = 0;
-
-// Check if query executed successfully
-if ($result->num_rows > 0) {
-    // Start the table to display the results
-    echo "<h2> Starter Master</h2><table border='1' cellpadding='5' cellspacing='0'>
-            <tr>
-                <th>Division Name</th>
-                <th>Record Count</th>
-            </tr>";
-    
-    // Loop through the result set and display division-wise counts
-    while ($row = $result->fetch_assoc()) {
-        // Add the record count to the total
-        $totalRecords += $row['record_count'];
-        
-        // Display the division data
-        echo "<tr>
-                <td>" . htmlspecialchars($row['division']) . "</td>
-                <td>" . $row['record_count'] . "</td>
-              </tr>";
-    }
-    // Display the overall total at the end
-    echo "<tr>
-            <td><strong>Overall Total</strong></td>
-            <td><strong>" . $totalRecords . "</strong></td>
-          </tr>";
-
-    echo "</table>";
-} else {
-    echo "No records found.";
-}
-$query = "
-    SELECT 
-        l.division, 
-        COUNT(am.id) AS record_count,
-        l.division_id
-    FROM rear_axle_master am
-    JOIN (SELECT DISTINCT division_id, division FROM location) l 
-        ON am.division_id = l.division_id
-    GROUP BY l.division, l.division_id
-    ORDER BY l.division_id;
-";
-
-// Execute the query
-$result = $db->query($query);
-
-// Initialize a variable to store the overall total
-$totalRecords = 0;
-
-// Check if query executed successfully
-if ($result->num_rows > 0) {
-    // Start the table to display the results
-    echo "<h2> Rear axle Master</h2><table border='1' cellpadding='5' cellspacing='0'>
-            <tr>
-                <th>Division Name</th>
-                <th>Record Count</th>
-            </tr>";
-    
-    // Loop through the result set and display division-wise counts
-    while ($row = $result->fetch_assoc()) {
-        // Add the record count to the total
-        $totalRecords += $row['record_count'];
-        
-        // Display the division data
-        echo "<tr>
-                <td>" . htmlspecialchars($row['division']) . "</td>
-                <td>" . $row['record_count'] . "</td>
-              </tr>";
-    }
-    // Display the overall total at the end
-    echo "<tr>
-            <td><strong>Overall Total</strong></td>
-            <td><strong>" . $totalRecords . "</strong></td>
-          </tr>";
-
-    echo "</table>";
-} else {
-    echo "No records found.";
-}
-$query = "
-    SELECT 
-        l.division, 
-        COUNT(am.id) AS record_count,
-        l.division_id
-    FROM battery_master am
-    JOIN (SELECT DISTINCT division_id, division FROM location) l 
-        ON am.division_id = l.division_id
-    GROUP BY l.division, l.division_id
-    ORDER BY l.division_id;
-";
-
-// Execute the query
-$result = $db->query($query);
-
-// Initialize a variable to store the overall total
-$totalRecords = 0;
-
-// Check if query executed successfully
-if ($result->num_rows > 0) {
-    // Start the table to display the results
-    echo "<h2> Battery Master</h2><table border='1' cellpadding='5' cellspacing='0'>
-            <tr>
-                <th>Division Name</th>
-                <th>Record Count</th>
-            </tr>";
-    
-    // Loop through the result set and display division-wise counts
-    while ($row = $result->fetch_assoc()) {
-        // Add the record count to the total
-        $totalRecords += $row['record_count'];
-        
-        // Display the division data
-        echo "<tr>
-                <td>" . htmlspecialchars($row['division']) . "</td>
-                <td>" . $row['record_count'] . "</td>
-              </tr>";
-    }
-    // Display the overall total at the end
-    echo "<tr>
-            <td><strong>Overall Total</strong></td>
-            <td><strong>" . $totalRecords . "</strong></td>
-          </tr>";
-
-    echo "</table>";
-} else {
-    echo "No records found.";
-}
-$query = "
-    SELECT 
-        l.division, 
-        COUNT(am.id) AS record_count,
-        l.division_id
-    FROM tyre_master am
-    JOIN (SELECT DISTINCT division_id, division FROM location) l 
-        ON am.division_id = l.division_id
-    GROUP BY l.division, l.division_id
-    ORDER BY l.division_id;
-";
-
-// Execute the query
-$result = $db->query($query);
-
-// Initialize a variable to store the overall total
-$totalRecords = 0;
-
-// Check if query executed successfully
-if ($result->num_rows > 0) {
-    // Start the table to display the results
-    echo "<h2> Tyre Master</h2><table border='1' cellpadding='5' cellspacing='0'>
-            <tr>
-                <th>Division Name</th>
-                <th>Record Count</th>
-            </tr>";
-    
-    // Loop through the result set and display division-wise counts
-    while ($row = $result->fetch_assoc()) {
-        // Add the record count to the total
-        $totalRecords += $row['record_count'];
-        
-        // Display the division data
-        echo "<tr>
-                <td>" . htmlspecialchars($row['division']) . "</td>
-                <td>" . $row['record_count'] . "</td>
-              </tr>";
-    }
-    // Display the overall total at the end
-    echo "<tr>
-            <td><strong>Overall Total</strong></td>
-            <td><strong>" . $totalRecords . "</strong></td>
-          </tr>";
-
-    echo "</table>";
-} else {
-    echo "No records found.";
-}
-// Close the database dbection
+// Close connections
+$stmt->close();
+$insertStmt->close();
 $db->close();
+
+echo "Data inserted successfully.";
 ?>

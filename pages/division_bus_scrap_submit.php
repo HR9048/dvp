@@ -30,7 +30,7 @@ foreach ($form_fields as $field) {
 }
 
 // Check if hidden fields are present in the form
-$hidden_fields = ['doc', 'wheel_base', 'chassis_number', 'bus_category', 'bus_sub_category', 'seating_capacity', 'bus_body_builder', 'bus_username', 'bus_submit_datetime'];
+$hidden_fields = ['doc', 'wheel_base', 'chassis_number', 'bus_category', 'bus_sub_category', 'seating_capacity', 'bus_body_builder', 'bus_username', 'bus_submit_datetime', 'model_type'];
 foreach ($hidden_fields as $field) {
     if (!isset($_POST[$field]) || empty($_POST[$field])) {
         $response = array("status" => "error", "message" => "Form hidden details missing. Please fill once again. Field: $field");
@@ -55,6 +55,7 @@ $bus_body_builder = isset($_POST['bus_body_builder']) ? $_POST['bus_body_builder
 $bus_username = $_POST['bus_username'];
 $bus_submitdatetime = $_POST['bus_submit_datetime'];
 $transfer_order_no = $_POST['transfer_order_no'];
+$model_type = isset($_POST['model_type']);
 // Format the order date to 'YYYY-MM-DD' format
 $order_date = date('Y-m-d', strtotime($_POST['order_date']));
 $username = $_SESSION['USERNAME']; // Get username from session variable
@@ -65,7 +66,7 @@ date_default_timezone_set('Asia/Kolkata');
 
 
 // Prepare and bind SQL statement for inserting into bus_scrap_data table
-$insert_sql = "INSERT INTO bus_scrap_data (bus_number, make, emission_norms, depot, division, doc, wheel_base, chassis_number, bus_category, bus_sub_category, seating_capacity, bus_body_builder, bus_username, bus_submitdatetime, transfer_order_no, order_date, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$insert_sql = "INSERT INTO bus_scrap_data (bus_number, make, emission_norms, depot, division, doc, wheel_base, chassis_number, bus_category, bus_sub_category, seating_capacity, bus_body_builder, bus_username, bus_submitdatetime, model_type, transfer_order_no, order_date, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $insert_stmt = $db->prepare($insert_sql);
 
 // Check if the statement was prepared successfully
@@ -75,7 +76,7 @@ if ($insert_stmt === false) {
 
 // Bind parameters
 $insert_stmt->bind_param(
-    "sssssssssssssssss", 
+    "ssssssssssssssssss", 
     $bus_number, 
     $make, 
     $emission_norms, 
@@ -90,6 +91,7 @@ $insert_stmt->bind_param(
     $bus_body_builder, 
     $bus_username, 
     $bus_submitdatetime, // Ensure this is in 'YYYY-MM-DD' format
+    $model_type,
     $transfer_order_no, 
     $order_date, // Ensure this is in 'YYYY-MM-DD' format
     $username

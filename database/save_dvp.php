@@ -28,7 +28,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $ORTotal = $_POST['ORTotal'];
     $available = $_POST['available'];
     $ES = $_POST['E/S'];
-    // Retrieve other form data similarly
+    $confirmCheckbox = $_POST['confirmCheckbox'];
+    // Check if the confirmation checkbox is on or not
+    if ($confirmCheckbox !== 'yes') {
+        $response['status'] = 'error';
+        $response['message'] = 'Please confirm that all breakdown details have been entered for yesterday.';
+        echo json_encode($response);
+        exit;
+    }
+    if (!isset($_POST['confirmCheckbox'])) {
+        $response['status'] = 'error';
+        $response['message'] = 'Please confirm that all breakdown details have been entered for yesterday.';
+        echo json_encode($response);
+        exit;
+    }
+    if (empty($_POST['confirmCheckbox'])) {
+        $response['status'] = 'error';
+        $response['message'] = 'Please confirm that all breakdown details have been entered for yesterday.';
+        echo json_encode($response);
+        exit;
+    }
 // Retrieve username and designation from session data
     if (!isset($_SESSION['USERNAME']) || !isset($_SESSION['DIVISION_ID']) || !isset($_SESSION['DEPOT_ID'])) {
         // If session variables are not set, logout the user
@@ -74,17 +93,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             !isset($notdepot) ||
             !isset($ORTotal) ||
             !isset($available) ||
-            !isset($ES)
+            !isset($ES)||
+            !isset($confirmCheckbox)
         ) {
             // Return an error message if required fields are empty
             $response['status'] = 'error';
             $response['message'] = 'Please fill all required fields.';
         } else {
             // Prepared statement to prevent SQL injection
-            $stmt = $db->prepare("INSERT INTO dvp_data (date, schedules, vehicles, spare, spareP, docking, wup, ORDepot, ORDWS, ORRWY, CC, Police, Dealer, notdepot, ORTotal, available, ES, division, depot, username, designation, submission_datetime, loan, wup1) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $db->prepare("INSERT INTO dvp_data (date, schedules, vehicles, spare, spareP, docking, wup, ORDepot, ORDWS, ORRWY, CC, Police, Dealer, notdepot, ORTotal, available, ES, division, depot, username, designation, submission_datetime, loan, wup1, bd_confirmation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             // Bind parameters
-            $stmt->bind_param("siiidiiiiiiiiiiiiiisssii", $date, $schedules, $vehicles, $spare, $spareP, $docking, $wup, $ORDepot, $ORDWS, $ORRWY, $CC, $Police, $Dealer, $notdepot, $ORTotal, $available, $ES, $division, $depot, $username, $designation, $submissionDateTime, $loan, $wup1);
+            $stmt->bind_param("siiidiiiiiiiiiiiiiisssiis", $date, $schedules, $vehicles, $spare, $spareP, $docking, $wup, $ORDepot, $ORDWS, $ORRWY, $CC, $Police, $Dealer, $notdepot, $ORTotal, $available, $ES, $division, $depot, $username, $designation, $submissionDateTime, $loan, $wup1, $confirmCheckbox);
 
             // Execute prepared statement
             if ($stmt->execute()) {

@@ -205,7 +205,7 @@ AND vd.deleted = 0
 
                 // Fetch existing vehicle_kmpl data for this date, division, and depot
                 $kmplQuery = "SELECT * FROM vehicle_kmpl 
-                              WHERE division_id = '$division_id' AND depot_id = '$depot_id' AND date = '$report_date' and c_change != '1' and deleted = '0'";
+                              WHERE division_id = '$division_id' AND depot_id = '$depot_id' AND date = '$report_date' and c_change not in ('1', '2') and deleted = '0'";
                 $kmplResult = $db->query($kmplQuery);
 
                 // Store existing KMPL data in an associative array using bus_number as key

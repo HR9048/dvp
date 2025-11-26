@@ -8,13 +8,13 @@ $depot_id = $_POST['depot_id'];
 $today = date('Y-m-d');
 $last_30_days = date('Y-m-d', strtotime('-30 days'));
 
-$query = "
-    SELECT 
+$query = "SELECT 
         departed_date AS date, 
         dep_time, 
         dep_time_diff AS late_by, 
         driver_1_allotted_status AS driver_fixed, 
-        bus_allotted_status AS vehicle_fixed
+        bus_allotted_status AS vehicle_fixed,
+        reason_for_late_departure AS reason
     FROM sch_veh_out 
     WHERE sch_no = '$sch_no' 
     AND division_id = '$division_id' 

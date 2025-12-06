@@ -296,7 +296,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO' || 
                 <canvas id="kmplChart"></canvas>
             </div>
         </div>
-        <div class="col-lg-8 mb-4">
+        <div class="col-lg-12 mb-4">
             <div class="container">
                 <h1>Off-Road Data by Division</h1>
                 <canvas id="offroadChart"></canvas>

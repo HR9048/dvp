@@ -6,14 +6,14 @@ header("Content-Type: application/json");
 ini_set('max_execution_time', 0);
 include 'includes/connection.php';
 
-/*/ Check if API key is provided
+// Check if API key is provided
 $headers = getallheaders();
 if (!isset($headers['X-API-KEY'])) {
     die(json_encode(["message" => "API Key missing"]));
 }
 
-$api_key = $headers['X-API-KEY'];*/
-$api_key = '20170472417';
+$api_key = $headers['X-API-KEY'];
+//$api_key = '20170472417';
 
 // Verify API key in the database
 $stmt = $db->prepare("SELECT id FROM api_keys WHERE api_key = ?");

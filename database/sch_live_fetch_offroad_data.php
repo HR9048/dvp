@@ -252,7 +252,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"All\")'>{$prev_division}</td>
             <td>{$division_totals[$prev_division]['TOTAL_BUS']}</td>
             <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordepot\")'>{$division_totals[$prev_division]['DEPOT_COUNT']}</td>
-            <td>{$division_totals[$prev_division]['WUP']}</td>
+            <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordepotwup\")'>{$division_totals[$prev_division]['WUP']}</td>
             <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordws\")'>{$division_totals[$prev_division]['DWS']}</td>
             <td>{$division_totals[$prev_division]['DEALER_COUNT']}</td>
             <td><b>{$div_total_off_road}</b></td>
@@ -275,7 +275,7 @@ if ($prev_division !== null) {
         <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"All\")'>{$prev_division}</td>
         <td>{$division_totals[$prev_division]['TOTAL_BUS']}</td>
         <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordepot\")'>{$division_totals[$prev_division]['DEPOT_COUNT']}</td>
-        <td>{$division_totals[$prev_division]['WUP']}</td>
+        <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordepotwup\")'>{$division_totals[$prev_division]['WUP']}</td>
         <td onclick='fetchoffroadDetails(\"{$prev_division}\", \"{$prev_division}\", \"Division\", \"ordws\")'>{$division_totals[$prev_division]['DWS']}</td>
         <td>{$division_totals[$prev_division]['DEALER_COUNT']}</td>
         <td><b>{$div_total_off_road}</b></td>
@@ -291,7 +291,7 @@ echo "<tr style='background-color: #f8d7da; font-weight: bold;'>
     <td onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\", \"All\")'>Corporation Total</td>
     <td>{$corporation_totals['TOTAL_BUS']}</td>
     <td onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\", \"ordepot\")'>{$corporation_totals['DEPOT_COUNT']}</td>
-    <td>{$corporation_totals['WUP']}</td>
+    <td onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\", \"ordepotwup\")'>{$corporation_totals['WUP']}</td>
     <td onclick='fetchoffroadDetails(\"Corporation\", \"Corporation\", \"Corporation\", \"ordws\")'>{$corporation_totals['DWS']}</td>
     <td>{$corporation_totals['DEALER_COUNT']}</td>
     <td><b>{$div_total_off_road_corpo}</b></td>

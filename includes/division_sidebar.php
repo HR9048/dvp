@@ -52,81 +52,7 @@ confirm_logged_in();
     href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
     rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <style>
-    .dropdown:hover .dropdown-menu {
-      display: block;
-      margin-top: 0;
-    }
 
-    .dropdown-toggle {
-      font-size: 12px;
-    }
-
-    .nav-link {
-      font-size: 18px;
-    }
-
-    .dropdown-menu {
-      font-size: 15px;
-    }
-
-    nav.navbar {
-      padding: 0 !important;
-    }
-
-    /* Remove padding from the navbar items (links and list items) */
-    nav.navbar ul {
-      padding: 0;
-      margin: 0;
-    }
-
-    nav.navbar ul li {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      /* optional, to remove bullets if it's a list */
-    }
-
-    nav.navbar ul li a {
-      padding: 0;
-      margin: 0;
-      display: inline-block;
-      /* To ensure links behave like inline elements */
-
-    }
-
-    nav.navbar ul li .dropdown-menu li {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      /* Optional: remove bullets */
-    }
-
-    nav.navbar ul li .dropdown-menu li a {
-      padding: 10px 20px;
-      /* Add padding around the links for better spacing */
-      display: block;
-      /* Ensure the anchor tags take up full width */
-      width: 100%;
-      /* Ensure the anchor fills the width of the dropdown */
-    }
-
-    /* Media query for mobile view */
-    @media (max-width: 600px) {
-      .navcenter p {
-        font-size: 0.55em;
-        /* Adjust font size for mobile */
-      }
-
-      .navcenter h6 {
-        font-size: 0.8em;
-        /* Adjust font size for mobile */
-        word-wrap: break-word;
-        /* Ensure long words wrap */
-      }
-
-    }
-  </style>
 </head>
 </head>
 
@@ -266,29 +192,50 @@ confirm_logged_in();
                     <?php } ?>
                     <li class="nav-item">
                       <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
+                          aria-expanded="false" style="font-size: 15px;">
                           <b>Report</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
-
-                            <li><a class="dropdown-item" href="division_report.php">One day Off-Road Report</a></li>
-                            <li><a class="dropdown-item" href="division_offroad.php">From - To days Off-Road Report</a></li>
-                            <li><a class="dropdown-item" href="division_mkmpl_report.php">Vehicle wise Monthly KMPL Report</a></li>
-                            <li><a class="dropdown-item" href="division_vehicle_kmpl_ft.php">Vehicle wise From-To Date KMPL report </a></li>
-                            <li><a class="dropdown-item" href="division_vehicle_kmpl_report.php">Manual/Logsheet KMPL Comparison Report</a></li>
-                            <li><a class="dropdown-item" href="division_view_bd.php">Break Down Report</a></li>
-                            <li><a class="dropdown-item" href="division_w3_report_fromto.php">W3 Chart Report</a></li>
-                            <li><a class="dropdown-item" href="division_program_report_fromto.php">Program Completion Report</a></li>
-                            <li><a class="dropdown-item" href="division_program_pending_report.php">Program Pending Report</a></li>
+                            <li class="dropdown-submenu">
+                              <a class="dropdown-item dropdown-toggle" href="#">Off-Road</a>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="division_report.php">One day Off-Road Report</a></li>
+                                <li><a class="dropdown-item" href="division_offroad.php">From - To days Off-Road Report</a></li>
+                              </ul>
+                            </li>
+                            <li class="dropdown-submenu">
+                              <a class="dropdown-item dropdown-toggle" href="#">KMPL</a>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="division_mkmpl_report.php">Vehicle wise Monthly KMPL Report</a></li>
+                                <li><a class="dropdown-item" href="division_vehicle_kmpl_ft.php">Vehicle wise From-To Date KMPL report </a></li>
+                                <li><a class="dropdown-item" href="division_vehicle_kmpl_report.php">Manual/Logsheet KMPL Comparison Report</a></li>
+                                <li><a class="dropdown-item" href="division_view_bd.php">Break Down Report</a></li>
+                              </ul>
+                            </li>
+                            <li class="dropdown-submenu">
+                              <a class="dropdown-item dropdown-toggle" href="#">Program</a>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="division_w3_report_fromto.php">W3 Chart Report</a></li>
+                                <li><a class="dropdown-item" href="division_program_report_fromto.php">Program Completion Report</a></li>
+                                <li><a class="dropdown-item" href="division_program_pending_report.php">Program Pending Report</a></li>
+                                <li><a class="dropdown-item" href="division_program_monthly_report.php">Monthly Program Report</a></li>
+                              </ul>
+                            </li>
                           <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
-                            <li><a class="dropdown-item" href="division_schedule_report_day.php">Day wise Schedule reports</a></li>
-                            <li><a class="dropdown-item" href="division_schedule_report_month.php">Month wise Schedule reports</a></li>
-                            <li><a class="dropdown-item" href="division_schedule_monitor.php">Schedule Not returned Report</a></li>
-                            <li><a class="dropdown-item" href="division_departure_report.php">Departure/Arrival Count Report</a></li>
+                            <li class="dropdown-submenu">
+                              <a class="dropdown-item dropdown-toggle" href="#">Schedule</a>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="division_schedule_report_day.php">Day wise Schedule reports</a></li>
+                                <li><a class="dropdown-item" href="division_schedule_report_month.php">Month wise Schedule reports</a></li>
+                                <li><a class="dropdown-item" href="division_schedule_monitor.php">Schedule Not returned Report</a></li>
+                                <li><a class="dropdown-item" href="division_departure_report.php">Departure/Arrival Count Report</a></li>
+                              </ul>
+                            </li>
                           <?php } ?>
+
                         </ul>
                       </div>
                     </li>

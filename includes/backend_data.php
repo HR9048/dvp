@@ -9654,20 +9654,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
     if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
         if ($division_id == 'All' && $depot_id == 'All') {
-            $html = "<h3 class='text-center'>Monthly Program Report for Central Office - $depotName</h3>";
+            $html = "<h3 class='text-center'>Monthly Program Summery Report for Central Office - $depotName</h3>";
         } elseif ($division_id != 'All' && $depot_id == 'All') {
-            $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - All Depots</h3>";
+            $html = "<h3 class='text-center'>Monthly Program Summery Report for $divisionName - All Depots</h3>";
         } elseif ($division_id != 'All' && $depot_id != 'All') {
-            $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - $depotName</h3>";
+            $html = "<h3 class='text-center'>Monthly Program Summery Report for $divisionName - $depotName</h3>";
         }
     } elseif ($_SESSION['TYPE'] == 'DIVISION') {
         if ($depot_id != 'All') {
-            $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - $depotName</h3>";
+            $html = "<h3 class='text-center'>Monthly Program Summery Report for $divisionName - $depotName</h3>";
         } else {
-            $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - All Depots</h3>";
+            $html = "<h3 class='text-center'>Monthly Program Summery Report for $divisionName - All Depots</h3>";
         }
     } elseif ($_SESSION['TYPE'] == 'DEPOT') {
-        $html = "<h3 class='text-center'>Monthly Program Report for $divisionName - $depotName</h3>";
+        $html = "<h3 class='text-center'>Monthly Program Summery Report for $divisionName - $depotName</h3>";
     }
     if ($program_type == 'All') {
         $html .= "<h4 class='text-center'>Program Type: Docking and EOC</h4>";
@@ -9678,8 +9678,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
     $html .= "<h4 class='text-center'>" . $monthname . " " . $year . "</h4>";
     // Fetch summary rows
-// Fetch Monthly Summary
-$query = "SELECT prm.*, l.division, l.depot
+    // Fetch Monthly Summary
+    $query = "SELECT prm.*, l.division, l.depot
 FROM program_summary_monthly prm
 LEFT JOIN location l ON prm.depot_id = l.depot_id AND prm.division_id = l.division_id
 WHERE prm.report_month='$month'
@@ -9687,24 +9687,23 @@ AND prm.report_year='$year'
 AND $divisionCondition
 AND $depotCondition";
 
-$result = mysqli_query($db, $query);
+    $result = mysqli_query($db, $query);
 
-// Result storage for table creation
-$dockingRows = [];
-$eocRows = [];
+    // Result storage for table creation
+    $dockingRows = [];
+    $eocRows = [];
 
-if (mysqli_num_rows($result) > 0) {
+    if (mysqli_num_rows($result) > 0) {
 
-    while ($row = mysqli_fetch_assoc($result)) {
+        while ($row = mysqli_fetch_assoc($result)) {
 
-        $division = $row['division'];
-        $depot = $row['depot'];
+            $division = $row['division'];
+            $depot = $row['depot'];
 
-        // Count attended (In time / Late)
-        $summary = ["ontime" => 0, "late" => 0];
+            // Count attended (In time / Late)
+            $summary = ["ontime" => 0, "late" => 0, "early" => 0];
 
-        $pdQ = "
-            SELECT pd.bus_number, pd.program_completed_km, pd.program_type, 
+            $pdQ = "SELECT distinct(pd.bus_number), pd.program_completed_km, pd.program_type, 
                    pm.docking AS docking_km, pm.engine_oil_and_main_filter_change AS eoc_km
             FROM program_data pd
             JOIN bus_registration br ON br.bus_number = pd.bus_number
@@ -9718,130 +9717,332 @@ if (mysqli_num_rows($result) > 0) {
             AND pd.program_type IN ('docking','engine_oil_and_main_filter_change')
         ";
 
-        $pdR = mysqli_query($db, $pdQ);
+            $pdR = mysqli_query($db, $pdQ);
 
-        $attDocking = ["ontime"=>0,"late"=>0];
-        $attEoc = ["ontime"=>0,"late"=>0];
+            $attDocking = ["ontime" => 0, "late" => 0, "early" => 0];
+            $attEoc     = ["ontime" => 0, "late" => 0, "early" => 0];
 
-        while ($pd = mysqli_fetch_assoc($pdR)) {
-            $reference = ($pd['program_type'] == 'docking') ? $pd['docking_km'] : $pd['eoc_km'];
-            $diff = $pd['program_completed_km'] - $reference;
+            while ($pd = mysqli_fetch_assoc($pdR)) {
+                $reference = ($pd['program_type'] == 'docking') ? $pd['docking_km'] : $pd['eoc_km'];
+                $diff = $reference - $pd['program_completed_km'];
 
-            if ($diff >= -500 && $diff <= 500) {
-                if ($pd['program_type']=='docking') $attDocking['ontime']++;
-                else $attEoc['ontime']++;
-            } else {
-                if ($pd['program_type']=='docking') $attDocking['late']++;
-                else $attEoc['late']++;
+                if ($diff <= 5000 && $diff >= -500) {
+                    // In time
+                    if ($pd['program_type'] == 'docking') $attDocking['ontime']++;
+                    else $attEoc['ontime']++;
+                } elseif ($diff < -500) {
+                    // Late completion
+                    if ($pd['program_type'] == 'docking') $attDocking['late']++;
+                    else $attEoc['late']++;
+                } elseif ($diff > 5000) {
+                    // Early completion
+                    if ($pd['program_type'] == 'docking') $attDocking['early']++;
+                    else $attEoc['early']++;
+                }
+                // show which case it goes to
             }
+
+            // Push into results arrays
+            $dockingRows[] = [
+                "division" => $division,
+                "depot" => $depot,
+                "prev" => $row["previous_month_due_docking"],
+                "cur" => $row["Current_month_due_docking"],
+                "ont" => $attDocking['ontime'],
+                "late" => $attDocking['late'],
+                "early" => $attDocking['early']
+            ];
+
+            $eocRows[] = [
+                "division" => $division,
+                "depot" => $depot,
+                "prev" => $row["previous_month_due_eoc"],
+                "cur" => $row["Current_month_due_eoc"],
+                "ont" => $attEoc['ontime'],
+                "late" => $attEoc['late'],
+                "early" => $attEoc['early']
+            ];
         }
-
-        // Push into results arrays
-        $dockingRows[] = [
-            "division"=>$division,
-            "depot"=>$depot,
-            "prev"=>$row["previous_month_due_docking"],
-            "cur"=>$row["Current_month_due_docking"],
-            "ont"=>$attDocking['ontime'],
-            "late"=>$attDocking['late']
-        ];
-
-        $eocRows[] = [
-            "division"=>$division,
-            "depot"=>$depot,
-            "prev"=>$row["previous_month_due_eoc"],
-            "cur"=>$row["Current_month_due_eoc"],
-            "ont"=>$attEoc['ontime'],
-            "late"=>$attEoc['late']
-        ];
     }
-}
+    $html .= "<style> table, th, td { border: 1px solid black; border-collapse: collapse; padding: 0px !important;} th, td { padding: 0px !important; text-align: center; } </style>";
 
-$html = "<h3 class='text-center'>Monthly Program Report</h3>
-<h4 class='text-center'>{$monthname} {$year}</h4>";
+    $sl = 1;
 
-$sl = 1;
-
-// Create DOCKING table
-if ($program_type == "All" || $program_type == "docking") {
-    $html .= "<h4 class='text-center mt-4'>Docking</h4>
+    // Create DOCKING table
+    if ($program_type == "All" || $program_type == "docking") {
+        $html .= "<h4 class='text-center mt-4'>Docking</h4>
     <table class='table table-bordered text-center'>
-        <thead>
+        <thead style='text-align:center;'>
             <tr>
-                <th rowspan='2'>SL No</th>
-                <th rowspan='2'>Division</th>
-                <th rowspan='2'>Depot</th>
-                <th rowspan='2'>Prev Due</th>
-                <th rowspan='2'>Curr Due</th>
-                <th colspan='3'>Total Attended</th>
-                <th rowspan='2'>Month End Due</th>
+                <th rowspan='2' style='text-align:center;'>SL No</th>
+                <th rowspan='2' style='text-align:center;'>Division</th>
+                <th rowspan='2' style='text-align:center;'>Depot</th>
+                <th rowspan='2' style='text-align:center;'>Prev Due</th>
+                <th rowspan='2' style='text-align:center;'>Curr Due</th>
+                <th rowspan='2' style='text-align:center;'>Total Due</th>
+                <th colspan='4' style='text-align:center;'>Total Attended</th>
+                <th rowspan='2' style='text-align:center;'>Month End Due</th>
             </tr>
             <tr>
-                <th>In Time</th><th>Late</th><th>Total</th>
+                <th style='text-align:center;'>In Time</th><th style='text-align:center;'>Late</th><th style='text-align:center;'>Total</th><th style='text-align:center;'>Extra</th>
             </tr>
         </thead><tbody>";
 
-    $sl = 1;
-    foreach ($dockingRows as $d) {
-        $tot = $d['ont'] + $d['late'];
-        $enddue = ($d['prev'] + $d['cur']) - $tot;
 
-        $html .= "<tr>
+        $sl = 1;
+        $prevDivision = null;
+        $divSubtotal = ["prev" => 0, "cur" => 0, "totdue" => 0, "ont" => 0, "late" => 0, "early" => 0, "attended" => 0, "enddue" => 0];
+        $grandDocking = [
+            "prev" => 0,
+            "cur" => 0,
+            "totdue" => 0,
+            "ont" => 0,
+            "late" => 0,
+            "early" => 0,
+            "attended" => 0,
+            "enddue" => 0
+        ];
+
+        foreach ($dockingRows as $d) {
+
+            // If division block ended → print subtotal BEFORE moving to next division
+            if ($prevDivision !== null && $prevDivision !== $d['division']) {
+
+                // Print division subtotal row
+                $html .= "<tr style='font-weight:bold; background:#fff7cc;'>
+            <td></td>
+            <td>{$prevDivision} Total</td>
+            <td></td>
+            <td>{$divSubtotal['prev']}</td>
+            <td>{$divSubtotal['cur']}</td>
+            <td>{$divSubtotal['totdue']}</td>
+            <td>{$divSubtotal['ont']}</td>
+            <td>{$divSubtotal['late']}</td>
+            <td>{$divSubtotal['attended']}</td>
+            <td>{$divSubtotal['early']}</td>
+            <td>{$divSubtotal['enddue']}</td>
+        </tr>";
+
+                // Reset subtotal for next division
+                $divSubtotal = ["prev" => 0, "cur" => 0, "totdue" => 0, "ont" => 0, "late" => 0, "early" => 0, "attended" => 0, "enddue" => 0];
+            }
+
+            $prevDivision = $d['division'];
+
+            $tot = $d['ont'] + $d['late'];   // total attended excludes early
+            $totdue = $d['prev'] + $d['cur'];
+            $early = $d['early'];
+            $enddue = $totdue - $tot;
+
+
+            $html .= "<tr>
             <td>{$sl}</td>
             <td>{$d['division']}</td>
             <td>{$d['depot']}</td>
             <td>{$d['prev']}</td>
             <td>{$d['cur']}</td>
+            <td>{$totdue}</td>
             <td>{$d['ont']}</td>
             <td>{$d['late']}</td>
             <td>{$tot}</td>
+            <td>{$early}</td>
             <td>{$enddue}</td>
         </tr>";
+            $divSubtotal['prev']     += $d['prev'];
+            $divSubtotal['cur']      += $d['cur'];
+            $divSubtotal['totdue']   += $totdue;
+            $divSubtotal['ont']      += $d['ont'];
+            $divSubtotal['late']     += $d['late'];
+            $divSubtotal['early']    += $d['early'];
+            $divSubtotal['attended'] += $tot;
+            $divSubtotal['enddue']   += $enddue;
 
-        $sl++;
+            // Also accumulate for grand total (no change here)
+            $grandDocking['prev']     += $d['prev'];
+            $grandDocking['cur']      += $d['cur'];
+            $grandDocking['totdue']   += $totdue;
+            $grandDocking['ont']      += $d['ont'];
+            $grandDocking['late']     += $d['late'];
+            $grandDocking['early']    += $d['early'];
+            $grandDocking['attended'] += $tot;
+            $grandDocking['enddue']   += $enddue;
+
+
+            $sl++;
+        }
+
+        // Print final division subtotal
+        if ($depot_id === 'All') {
+        if ($prevDivision !== null) {
+            $html .= "<tr style='font-weight:bold; background:#fff7cc;'>
+        <td></td>
+        <td>{$prevDivision} Total</td>
+        <td></td>
+        <td>{$divSubtotal['prev']}</td>
+        <td>{$divSubtotal['cur']}</td>
+        <td>{$divSubtotal['totdue']}</td>
+        <td>{$divSubtotal['ont']}</td>
+        <td>{$divSubtotal['late']}</td>
+        <td>{$divSubtotal['attended']}</td>
+        <td>{$divSubtotal['early']}</td>
+        <td>{$divSubtotal['enddue']}</td>
+    </tr>";
+        }
     }
-    $html .= "</tbody></table>";
-}
 
-// Create EOC table
-if ($program_type == "All" || $program_type == "engine_oil_and_main_filter_change") {
-    $html .= "<h4 class='text-center mt-4'>EOC</h4>
-    <table class='table table-bordered text-center'>
-        <thead>
-            <tr>
-                <th rowspan='2'>SL No</th>
-                <th rowspan='2'>Division</th>
-                <th rowspan='2'>Depot</th>
-                <th rowspan='2'>Prev Due</th>
-                <th rowspan='2'>Curr Due</th>
-                <th colspan='3'>Total Attended</th>
-                <th rowspan='2'>Month End Due</th>
-            </tr>
-            <tr>
-                <th>In Time</th><th>Late</th><th>Total</th>
-            </tr>
-        </thead><tbody>";
+        // Grand Total
+        if ($division_id === 'All') {  // Only show grand total if multiple divisions
+            $html .= "<tr style='font-weight:bold; background:#cfe2ff;'>
+    <td></td>
+    <td colspan='2'>CORPORATION Total</td>
+    <td>{$grandDocking['prev']}</td>
+    <td>{$grandDocking['cur']}</td>
+    <td>{$grandDocking['totdue']}</td>
+    <td>{$grandDocking['ont']}</td>
+    <td>{$grandDocking['late']}</td>
+    <td>{$grandDocking['attended']}</td>
+    <td>{$grandDocking['early']}</td>
+    <td>{$grandDocking['enddue']}</td>
+</tr>";
+        }
 
-    $sl = 1;
-    foreach ($eocRows as $e) {
-        $tot = $e['ont'] + $e['late'];
-        $enddue = ($e['prev'] + $e['cur']) - $tot;
+        $html .= "</tbody></table>";
+    }
 
-        $html .= "<tr>
+    // Create EOC table
+    if ($program_type == "All" || $program_type == "engine_oil_and_main_filter_change") {
+        $html .= "<h4 class='text-center mt-4'>Engine Oil and Main Filter Change</h4>
+<table class='table table-bordered text-center'>
+    <thead>
+        <tr>
+            <th rowspan='2' style='text-align:center;'>SL No</th>
+            <th rowspan='2' style='text-align:center;'>Division</th>
+            <th rowspan='2' style='text-align:center;'>Depot</th>
+            <th rowspan='2' style='text-align:center;'>Prev Due</th>
+            <th rowspan='2' style='text-align:center;'>Curr Due</th>
+            <th rowspan='2' style='text-align:center;'>Total Due</th>
+            <th colspan='4' style='text-align:center;'>Total Attended</th>
+            <th rowspan='2' style='text-align:center;'>Month End Due</th>
+        </tr>
+        <tr>
+            <th style='text-align:center;'>In Time</th>
+            <th style='text-align:center;'>Late</th>
+            <th style='text-align:center;'>Total</th>
+            <th style='text-align:center;'>Extra</th>
+        </tr>
+    </thead><tbody>";
+
+        $sl = 1;
+        $prevDivisionEOC = null;
+
+        $divSubtotalEOC = ["prev" => 0, "cur" => 0, "totdue" => 0, "ont" => 0, "late" => 0, "early" => 0, "attended" => 0, "enddue" => 0];
+        $grandEOC = ["prev" => 0, "cur" => 0, "totdue" => 0, "ont" => 0, "late" => 0, "early" => 0, "attended" => 0, "enddue" => 0];
+
+        foreach ($eocRows as $e) {
+
+            // When division changes → print subtotal for earlier division
+            if ($prevDivisionEOC !== null && $prevDivisionEOC !== $e['division']) {
+
+                $html .= "<tr style='font-weight:bold; background:#fff7cc;'>
+                <td></td>
+                <td>{$prevDivisionEOC} Total</td>
+                <td></td>
+                <td>{$divSubtotalEOC['prev']}</td>
+                <td>{$divSubtotalEOC['cur']}</td>
+                <td>{$divSubtotalEOC['totdue']}</td>
+                <td>{$divSubtotalEOC['ont']}</td>
+                <td>{$divSubtotalEOC['late']}</td>
+                <td>{$divSubtotalEOC['attended']}</td>
+                <td>{$divSubtotalEOC['early']}</td>
+                <td>{$divSubtotalEOC['enddue']}</td>
+            </tr>";
+
+                // reset subtotal for next division
+                $divSubtotalEOC = ["prev" => 0, "cur" => 0, "totdue" => 0, "ont" => 0, "late" => 0, "early" => 0, "attended" => 0, "enddue" => 0];
+            }
+        
+
+            $prevDivisionEOC = $e['division'];
+
+            $tot     = $e['ont'] + $e['late'];
+            $totdue  = $e['prev'] + $e['cur'];
+            $early   = $e['early'];
+            $enddue  = $totdue - $tot;
+
+            $html .= "<tr>
             <td>{$sl}</td>
             <td>{$e['division']}</td>
             <td>{$e['depot']}</td>
             <td>{$e['prev']}</td>
             <td>{$e['cur']}</td>
+            <td>{$totdue}</td>
             <td>{$e['ont']}</td>
             <td>{$e['late']}</td>
             <td>{$tot}</td>
+            <td>{$early}</td>
             <td>{$enddue}</td>
         </tr>";
-        $sl++;
+
+            // add to division subtotal
+            $divSubtotalEOC['prev']     += $e['prev'];
+            $divSubtotalEOC['cur']      += $e['cur'];
+            $divSubtotalEOC['totdue']   += $totdue;
+            $divSubtotalEOC['ont']      += $e['ont'];
+            $divSubtotalEOC['late']     += $e['late'];
+            $divSubtotalEOC['early']    += $e['early'];
+            $divSubtotalEOC['attended'] += $tot;
+            $divSubtotalEOC['enddue']   += $enddue;
+
+            // add to grand total
+            $grandEOC['prev']     += $e['prev'];
+            $grandEOC['cur']      += $e['cur'];
+            $grandEOC['totdue']   += $totdue;
+            $grandEOC['ont']      += $e['ont'];
+            $grandEOC['late']     += $e['late'];
+            $grandEOC['early']    += $e['early'];
+            $grandEOC['attended'] += $tot;
+            $grandEOC['enddue']   += $enddue;
+
+            $sl++;
+        }
+
+        // final division total (last division)
+        if ($depot_id === 'All') {
+            if ($prevDivisionEOC !== null) {
+                $html .= "<tr style='font-weight:bold; background:#fff7cc;'>
+            <td></td>
+            <td>{$prevDivisionEOC} Total</td>
+            <td></td>
+            <td>{$divSubtotalEOC['prev']}</td>
+            <td>{$divSubtotalEOC['cur']}</td>
+            <td>{$divSubtotalEOC['totdue']}</td>
+            <td>{$divSubtotalEOC['ont']}</td>
+            <td>{$divSubtotalEOC['late']}</td>
+            <td>{$divSubtotalEOC['attended']}</td>
+            <td>{$divSubtotalEOC['early']}</td>
+            <td>{$divSubtotalEOC['enddue']}</td>
+        </tr>";
+            }
+        }
+
+        // grand total for EOC
+        if ($division_id === 'All') {  // Only show grand total if multiple divisions
+            $html .= "<tr style='font-weight:bold; background:#cfe2ff;'>
+        <td></td>
+        <td colspan='2'>CORPORATION Total</td>
+        <td>{$grandEOC['prev']}</td>
+        <td>{$grandEOC['cur']}</td>
+        <td>{$grandEOC['totdue']}</td>
+        <td>{$grandEOC['ont']}</td>
+        <td>{$grandEOC['late']}</td>
+        <td>{$grandEOC['attended']}</td>
+        <td>{$grandEOC['early']}</td>
+        <td>{$grandEOC['enddue']}</td>
+    </tr>";
+        }
+        $html .= "</tbody></table>";
     }
-    $html .= "</tbody></table>";
-}
+
 
 
     echo json_encode(['status' => 'success', 'data' => $html]);

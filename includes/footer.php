@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
   crossorigin="anonymous"></script>
 <br><br>
-<footer id="sticky-footer" 
+<footer id="sticky-footer"
   style="position: fixed; bottom: 0; left: 0; width: 100%; background: linear-gradient(90deg, #3c97bf,  #3c97bf, #3c97bf); color: white; text-align: center; padding: 10px 0; font-size: 14px; z-index: 1000;">
   <div>
     <span>© Copyright 2024 KKRTC | All Rights Reserved</span>
@@ -18,7 +18,57 @@
 </div>
 </div>
 <script>
-   
+  function functionExcelExport(fileName) {
+
+    // Get table/container that holds the report
+    var table = document.querySelector('.container1');
+
+    if (!table) {
+      alert('Report table not found!');
+      return;
+    }
+
+    // Convert HTML table to workbook
+    var workbook = XLSX.utils.table_to_book(table, {
+      raw: true
+    });
+
+    // Get first worksheet
+    var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    // Loop through worksheet cells
+    for (var cell in worksheet) {
+      if (worksheet.hasOwnProperty(cell) && cell[0] !== '!') {
+
+        var cellValue = worksheet[cell].v;
+
+        // ✅ Format YYYY-MM-DD → DD-MM-YYYY
+        if (typeof cellValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(cellValue)) {
+          var parts = cellValue.split("-");
+          worksheet[cell].v = parts[2] + "-" + parts[1] + "-" + parts[0];
+          worksheet[cell].t = 's';
+        }
+
+        // ✅ Force numeric-looking text as text
+        if (typeof cellValue === 'string' && !isNaN(cellValue)) {
+          worksheet[cell].t = 's';
+        }
+      }
+    }
+
+    // Add current date to file name (optional)
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var yyyy = today.getFullYear();
+
+    var finalFileName = fileName + '_' + dd + '-' + mm + '-' + yyyy + '.xlsx';
+
+    // Export Excel
+    XLSX.writeFile(workbook, finalFileName);
+  }
+
+
   function checkSession() {
     console.log('Checking session...');
     fetch('session1.php') // Calls the session checker

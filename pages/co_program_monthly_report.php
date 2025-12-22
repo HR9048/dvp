@@ -87,6 +87,8 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
         <button class="btn btn-primary" type="submit">Submit</button>
         <button class="btn btn-success" onclick="window.print()">Print</button>
+        <button class="btn btn-success" id="downloadExcel">Download Excel</button>
+
 
     </form>
     <div id="loadingIndicator" style="display:none; text-align:center; margin: 10px;">
@@ -275,6 +277,48 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                         });
                     }
                 });
+            });
+        });
+        $(document).ready(function() {
+            // Get current date from PHP
+            var todayDate = "<?php echo $currentDate; ?>"; // Date in 'YYYY-MM-DD' format
+
+            document.getElementById('downloadExcel').addEventListener('click', function() {
+                // Get the HTML table element
+                var table = document.querySelector('.container1');
+
+                // Convert table to workbook
+                var workbook = XLSX.utils.table_to_book(table, {
+                    raw: true
+                });
+
+                // Get the first worksheet
+                var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+                // Loop through all cells in the worksheet
+                for (var cell in worksheet) {
+                    if (worksheet.hasOwnProperty(cell) && cell[0] !== '!') {
+                        var cellValue = worksheet[cell].v;
+
+                        // ✅ Detect if it's a date in YYYY-MM-DD format
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(cellValue)) {
+                            // Reformat to dd-mm-yyyy
+                            var parts = cellValue.split("-");
+                            var formattedDate = parts[2] + "-" + parts[1] + "-" + parts[0];
+
+                            worksheet[cell].v = formattedDate; // Update cell value
+                            worksheet[cell].t = 's'; // Force text format
+                        }
+
+                        // ✅ Prevent number conversion for text
+                        if (typeof cellValue === 'string' && !isNaN(cellValue)) {
+                            worksheet[cell].t = 's'; // Force text type for numeric strings
+                        }
+                    }
+                }
+
+                // Export Excel file with current date in file name
+                XLSX.writeFile(workbook, 'Monthly_program_report.xlsx');
             });
         });
     </script>

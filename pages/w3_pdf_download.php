@@ -66,7 +66,14 @@ $sameDay = $from === $to;
 
 $busCondition = ($bus_number === 'All') ? "1=1" : "bus_number = '$bus_number'";
 $from_date = date('Y-m-d', strtotime($from . ' -1 day'));
-$kmpl_start_date = '2025-08-01';
+if (in_array($depot_id, ['1', '8', '12', '13', '14', '15'])) {
+    $programstart_date = '2025-08-01';
+    $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+} elseif (in_array($depot_id, ['2', '3', '4', '5', '6', '7', '9', '10', '11', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53'])) {
+    $programstart_date = '2025-10-01';
+    $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+}
+$kmpl_start_date = $programstart_date;
 
 $air_suspension_bus_category_array = ['Rajahamsa', 'Corona Sleeper AC', 'Sleeper AC', 'Regular Sleeper Non AC', 'Amoghavarsha Sleeper Non AC', 'Kalyana Ratha'];
 
@@ -392,18 +399,25 @@ foreach ($buses as $vehicleNo => $bus) {
         $completed_km = (float)($progData['program_completed_km'] ?? 0);
         $kmData       = $kmplMap[$vehicleNo] ?? [];
 
+
+        $start_date = $from;
         if (empty($program_date) || $program_date == '0000-00-00') {
             $initial_cumm_kms = $completed_km + sumKms($kmData, $kmpl_start_date, $from_date);
-        } elseif (strtotime($program_date) > strtotime($from_date)) {
+            $data = 0;
+        } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) > strtotime($from_date)) {
             $initial_cumm_kms = sumKms($kmData, $kmpl_start_date, $from_date);
-        } elseif (strtotime($program_date) == strtotime($from_date)) {
+            $data = 1;
+        } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) == strtotime($from_date)) {
             $initial_cumm_kms = 0;
-        } elseif (strtotime($program_date) < strtotime($from_date)) {
-            $program_date1    = date('Y-m-d', strtotime($program_date . ' +1 day'));
+            $data = 2;
+        } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) < strtotime($from_date)) {
+            $program_date1 = date('Y-m-d', strtotime($program_date . ' +1 day'));
             $initial_cumm_kms = sumKms($kmData, $program_date1, $from_date);
+            $data = 3;
         } else {
-            $start_date1      = date('Y-m-d', strtotime($program_date . ' +1 day'));
+            $start_date1 = date('Y-m-d', strtotime($program_date . ' +1 day'));
             $initial_cumm_kms = sumKms($kmData, $start_date1, $from_date);
+            $data = 4;
         }
 
         $dailyCumm = calculateCumulativePerDay(

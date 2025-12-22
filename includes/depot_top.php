@@ -144,6 +144,13 @@ date_default_timezone_set('Asia/Kolkata');
                                                             <li><a class="dropdown-item" href="depot_camera_defect.php">Add/view camera/VLTS/PIS Defect</a></li>
                                                         </ul>
                                                     </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">Tech Tools</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="depot_add_tech_tool.php">Add/Update/View Tech Tool</a></li>
+
+                                                        </ul>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </li>
@@ -340,6 +347,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                                 <li><a class="dropdown-item" href="depot_crew_report_d.php">Route Daily Crew report</a></li>
                                                                 <li><a class="dropdown-item" href="depot_crew_report_m.php">Route Monthly Crew report</a></li>
                                                                 <li><a class="dropdown-item" href="depot_schedule_monitor.php">Schedule Monitor</a></li>
+                                                                <li><a class="dropdown-item" href="depot_schedule_cancel_report.php">Schedule Cancel Report</a></li>
                                                             </ul>
                                                         </li>
                                                     <?php }
@@ -349,6 +357,12 @@ date_default_timezone_set('Asia/Kolkata');
                                                             <ul class="dropdown-menu">
                                                                 <li><a class="dropdown-item" href="depot_w3_report_fromto.php">W3 Chart Report</a></li>
                                                                 <li><a class="dropdown-item" href="depot_program_report_fromto.php">Program Completion Report</a></li>
+                                                            </ul>
+                                                        </li>
+                                                        <li class="dropdown-submenu">
+                                                            <a class="dropdown-item dropdown-toggle" href="#">Tech Tool</a>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item" href="depot_tech_tool_report.php">Tech Tool Report</a></li>
                                                             </ul>
                                                         </li>
                                                     <?php } ?>

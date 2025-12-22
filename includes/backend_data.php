@@ -9873,8 +9873,8 @@ AND $depotCondition";
 
         // Print final division subtotal
         if ($depot_id === 'All') {
-        if ($prevDivision !== null) {
-            $html .= "<tr style='font-weight:bold; background:#fff7cc;'>
+            if ($prevDivision !== null) {
+                $html .= "<tr style='font-weight:bold; background:#fff7cc;'>
         <td></td>
         <td>{$prevDivision} Total</td>
         <td></td>
@@ -9887,8 +9887,8 @@ AND $depotCondition";
         <td>{$divSubtotal['early']}</td>
         <td>{$divSubtotal['enddue']}</td>
     </tr>";
+            }
         }
-    }
 
         // Grand Total
         if ($division_id === 'All') {  // Only show grand total if multiple divisions
@@ -9960,7 +9960,7 @@ AND $depotCondition";
                 // reset subtotal for next division
                 $divSubtotalEOC = ["prev" => 0, "cur" => 0, "totdue" => 0, "ont" => 0, "late" => 0, "early" => 0, "attended" => 0, "enddue" => 0];
             }
-        
+
 
             $prevDivisionEOC = $e['division'];
 
@@ -10045,6 +10045,519 @@ AND $depotCondition";
 
 
 
+    echo json_encode(['status' => 'success', 'data' => $html]);
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'addtechtooldetails') {
+    $tech_tool_make = $_POST['tech_tool_make'];
+    $tech_tool_model = $_POST['tech_tool_model'];
+    $tech_tool_serial_number = $_POST['tool_serial_number'];
+    $tool_status = $_POST['tool_status'];
+    $tool_mechanic_name = $_POST['tool_mechanic_name'];
+    $tool_mechanic_contact = $_POST['tool_mechanic_contact'];
+    $division_id = $_SESSION['DIVISION_ID'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $username = $_SESSION['USERNAME'];
+
+    $missing = [];
+
+    if (empty($tech_tool_make)) $missing[] = "Tech Tool Make";
+    if (empty($tech_tool_model)) $missing[] = "Tech Tool Model";
+    if (empty($tech_tool_serial_number)) $missing[] = "Tool Serial Number";
+    if (empty($tool_status)) $missing[] = "Tool Status";
+    if (empty($tool_mechanic_name)) $missing[] = "Mechanic Name";
+    if (empty($tool_mechanic_contact)) $missing[] = "Mechanic Contact";
+
+    // send error with missing fields
+    if (!empty($missing)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => "Missing fields",
+            'missing_fields' => $missing   // array of missing field names
+        ]);
+        exit;
+    }
+    //validate the mobile number
+    if (!preg_match('/^[0-9]{10}$/', $tool_mechanic_contact)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Invalid mechanic contact number. It should be a 10-digit number.'
+        ]);
+        exit;
+    }
+    //validate first number of the mobile number
+    if (!in_array($tool_mechanic_contact[0], ['6', '7', '8', '9'])) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Invalid Mechanic Contact number. Please enter a valid 10-digit mobile number.'
+        ]);
+        exit;
+    }
+    // check for duplicate serial number
+    $dupCheckQuery = "SELECT * FROM tech_tools_details WHERE serial_number = '$tech_tool_serial_number'";
+    $dupCheckResult = mysqli_query($db, $dupCheckQuery);
+    if (mysqli_num_rows($dupCheckResult) > 0) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'A tool with this serial number already exists.'
+        ]);
+        exit;
+    }
+    // Insert into database
+    $insertQuery = "INSERT INTO tech_tools_details (make, model, serial_number, status, mechanic_name, mechanic_contact, division_id, depot_id, created_by)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = mysqli_prepare($db, $insertQuery);
+    mysqli_stmt_bind_param($stmt, 'sssssssss', $tech_tool_make, $tech_tool_model, $tech_tool_serial_number, $tool_status, $tool_mechanic_name, $tool_mechanic_contact, $division_id, $depot_id, $username);
+    $insertResult = mysqli_stmt_execute($stmt);
+    if ($insertResult) {
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Tech tool details added successfully.'
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Failed to add tech tool details.'
+        ]);
+    }
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'get_tech_tool_details') {
+    $id = $_POST['id'];
+    $result = mysqli_query($db, "SELECT * FROM tech_tools_details WHERE id = '$id'");
+    if ($row = mysqli_fetch_assoc($result)) {
+        echo json_encode([
+            "status" => "success",
+            "data" => $row
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "No record found"
+        ]);
+    }
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_tech_tool_details') {
+    $id = $_POST['id'];
+    $tech_tool_make = $_POST['tech_tool_make'];
+    $tech_tool_model = $_POST['tech_tool_model'];
+    $tech_tool_serial_number = $_POST['tool_serial_number'];
+    $tool_status = $_POST['tool_status'];
+    $tool_mechanic_name = $_POST['tool_mechanic_name'];
+    $tool_mechanic_contact = $_POST['tool_mechanic_contact'];
+    $username = $_SESSION['USERNAME'];
+
+    $missing = [];
+
+    if (empty($id)) $missing[] = "Tool ID";
+    if (empty($tech_tool_make)) $missing[] = "Tech Tool Make";
+    if (empty($tech_tool_model)) $missing[] = "Tech Tool Model";
+    if (empty($tech_tool_serial_number)) $missing[] = "Tool Serial Number";
+    if (empty($tool_status)) $missing[] = "Tool Status";
+    if (empty($tool_mechanic_name)) $missing[] = "Mechanic Name";
+    if (empty($tool_mechanic_contact)) $missing[] = "Mechanic Contact";
+
+    // send error with missing fields
+    if (!empty($missing)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => "Missing fields",
+            'missing_fields' => $missing   // array of missing field names
+        ]);
+        exit;
+    }
+
+    //validate the mobile number
+    if (!preg_match('/^[0-9]{10}$/', $tool_mechanic_contact)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Invalid mechanic contact number. It should be a 10-digit number.'
+        ]);
+        exit;
+    }
+    //validate first number of the mobile number
+    if (!in_array($tool_mechanic_contact[0], ['6', '7', '8', '9'])) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Invalid Mechanic Contact number. Please enter a valid 10-digit mobile number.'
+        ]);
+        exit;
+    }
+    // check for duplicate serial number
+    $dupCheckQuery = "SELECT * FROM tech_tools_details WHERE serial_number = '$tech_tool_serial_number' AND id != '$id'";
+    $dupCheckResult = mysqli_query($db, $dupCheckQuery);
+    if (mysqli_num_rows($dupCheckResult) > 0) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'A tool with this serial number already exists.'
+        ]);
+        exit;
+    }
+
+    // Update database
+    $updateQuery = "UPDATE tech_tools_details SET make = ?, model = ?, serial_number = ?, status = ?, mechanic_name = ?, mechanic_contact = ?, updated_by = ?
+                    WHERE id = ?";
+    $stmt = mysqli_prepare($db, $updateQuery);
+    mysqli_stmt_bind_param($stmt, 'sssssssi', $tech_tool_make, $tech_tool_model, $tech_tool_serial_number, $tool_status, $tool_mechanic_name, $tool_mechanic_contact, $username, $id);
+    $updateResult = mysqli_stmt_execute($stmt);
+    if ($updateResult) {
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Tech tool details updated successfully.'
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Failed to update tech tool details.'
+        ]);
+    }
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetch_report_of_tech_tool_details') {
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+    $status_type = $_POST['status_type'];
+    // Get depot/division names
+    $locationQuery = "SELECT division FROM location WHERE division_id = '$division_id' limit 1";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+
+    // Get depot/division names
+    $locationQuery = "SELECT depot FROM location WHERE depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    //if the division or depot is set as All then fetch all the data depending on the selection
+    if ($division_id === 'All') {
+        $divisionCondition = "1 = 1"; // No division filter
+    } else {
+        $divisionCondition = "ttd.division_id = '$division_id'";
+    }
+
+    if ($depot_id === 'All') {
+        $depotCondition = "1 = 1"; // No depot filter
+    } else {
+        $depotCondition = "ttd.depot_id = '$depot_id'";
+    }
+    if ($status_type === 'All') {
+        $techtoolstatuscondition = "1 = 1"; // No status filter
+    } else {
+        $techtoolstatuscondition = "ttd.status = '$status_type'";
+    }
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+        if ($division_id == 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Tech Tool Summery Report for Central Office - $depotName</h3>";
+        } elseif ($division_id != 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Tech Tool Summery Report for $divisionName - All Depots</h3>";
+        } elseif ($division_id != 'All' && $depot_id != 'All') {
+            $html = "<h3 class='text-center'>Tech Tool Summery Report for $divisionName - $depotName</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DIVISION') {
+        if ($depot_id != 'All') {
+            $html = "<h3 class='text-center'>Tech Tool Summery Report for $divisionName - $depotName</h3>";
+        } else {
+            $html = "<h3 class='text-center'>Tech Tool Summery Report for $divisionName - All Depots</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DEPOT') {
+        $html = "<h3 class='text-center'>Tech Tool Summery Report for $divisionName - $depotName</h3>";
+    }
+    if ($status_type == 'All') {
+        $html .= "<h4 class='text-center'>Status Type: Working and Not Working</h4>";
+    } elseif ($status_type == 'Working') {
+        $html .= "<h4 class='text-center'>Status Type: Working</h4>";
+    } elseif ($status_type == 'Not Working') {
+        $html .= "<h4 class='text-center'>Status Type: Not Working</h4>";
+    }
+    $showWorking    = ($status_type === 'All' || $status_type === 'Working');
+    $showNotWorking = ($status_type === 'All' || $status_type === 'Not Working');
+
+
+    $detailQuery = "
+SELECT 
+    l.division_id,
+    l.division,
+    l.depot_id,
+    l.depot,
+    SUM(ttd.status='Working') AS working,
+    SUM(ttd.status='Not Working') AS not_working,
+    COUNT(*) AS total
+FROM tech_tools_details ttd
+LEFT JOIN location l
+  ON l.division_id = ttd.division_id
+ AND l.depot_id    = ttd.depot_id
+WHERE $divisionCondition
+  AND $depotCondition
+  AND $techtoolstatuscondition
+GROUP BY l.division_id, l.depot_id
+ORDER BY l.division_id, l.depot_id
+";
+
+    $detailResult = mysqli_query($db, $detailQuery);
+
+    $html .= "
+<table class='table table-bordered text-center'>
+<thead>
+<tr>
+    <th>Division</th>
+    <th>Depot</th>";
+
+    if ($showWorking) {
+        $html .= "<th>Working</th>";
+    }
+    if ($showNotWorking) {
+        $html .= "<th>Not Working</th>";
+    }
+
+    $html .= "<th>Total</th>
+</tr>
+</thead>
+<tbody>
+";
+
+
+    $currentDivision = null;
+    $currentDivisionName = '';
+    $divWorking = $divNotWorking = $divTotal = 0;
+    $overallWorking = $overallNotWorking = $overallTotal = 0;
+
+    /* Division running totals */
+    $divWorking = $divNotWorking = $divTotal = 0;
+
+    /* Overall totals */
+    $overallWorking = $overallNotWorking = $overallTotal = 0;
+
+    while ($row = mysqli_fetch_assoc($detailResult)) {
+
+        /* When division changes */
+        if ($currentDivision !== null && $currentDivision !== $row['division_id']) {
+
+            // Print PREVIOUS division total
+            if ($depot_id === 'All')  // Only show division total if multiple depots
+            {
+                $html .= "
+        <tr class='fw-bold'>
+            <td colspan='2'>{$currentDivisionName} Total</td>";
+                if ($showWorking) {
+                    $html .= "<td>$divWorking</td>";
+                }
+                if ($showNotWorking) {
+                    $html .= "<td>$divNotWorking</td>";
+                }
+                $html .= "<td>$divTotal</td>
+        </tr>
+        ";
+            }
+
+            // Reset division totals
+            $divWorking = $divNotWorking = $divTotal = 0;
+        }
+
+        /* Update current division trackers */
+        $currentDivision = $row['division_id'];
+        $currentDivisionName = $row['division'];
+
+        /* Print depot row */
+        $html .= "
+    <tr>
+        <td>{$row['division']}</td>
+        <td>{$row['depot']}</td>";
+        if ($showWorking) {
+            $html .= "<td>{$row['working']}</td>";
+        }
+        if ($showNotWorking) {
+            $html .= "<td>{$row['not_working']}</td>";
+        }
+        $html .= "<td>{$row['total']}</td>
+    </tr>
+    ";
+
+        /* Accumulate division totals */
+        $divWorking    += $row['working'];
+        $divNotWorking += $row['not_working'];
+        $divTotal      += $row['total'];
+
+        /* Accumulate overall totals */
+        $overallWorking    += $row['working'];
+        $overallNotWorking += $row['not_working'];
+        $overallTotal      += $row['total'];
+    }
+
+    /* Print LAST division total */
+    if ($depot_id === 'All') {
+        if ($currentDivision !== null) {
+            $html .= "
+    <tr class='fw-bold'>
+        <td colspan='2'>{$currentDivisionName} Total</td>";
+            if ($showWorking) {
+                $html .= "<td>$divWorking</td>";
+            }
+            if ($showNotWorking) {
+                $html .= "<td>$divNotWorking</td>";
+            }
+            $html .= "<td>$divTotal</td>
+    </tr>
+    ";
+        }
+    }
+
+    /* Overall total */
+    if ($division_id === 'All')  // Only show overall total if multiple divisions
+    {
+        $html .= "
+<tr class='fw-bold'>
+    <td colspan='2'>Corporation Total</td>";
+        if ($showWorking) {
+            $html .= "<td>$overallWorking</td>";
+        }
+        if ($showNotWorking) {
+            $html .= "<td>$overallNotWorking</td>";
+        }
+        $html .= "<td>$overallTotal</td>
+</tr>
+";
+    }
+    $html .= "</tbody></table>";
+
+
+
+    // Fetch Tech Tool Details
+    $query = "SELECT ttd.*, l.division, l.depot from tech_tools_details ttd
+    LEFT JOIN location l ON ttd.depot_id = l.depot_id AND ttd.division_id = l.division_id
+    WHERE $divisionCondition AND $depotCondition AND $techtoolstatuscondition";
+    $result = mysqli_query($db, $query);
+    $html .= "<br><h4 class='text-center mt-4'>Tech Tool Detailed Report</h4>";
+    $html .= "<style> table, th, td { border: 1px solid black; border-collapse: collapse; padding: 0px !important;} th, td { padding: 0px !important; text-align: center; } </style>";
+    $html .= "<table class='table table-bordered text-center'>
+    <thead>
+        <tr>
+            <th style='text-align:center;'>SL No</th>
+            <th style='text-align:center;'>Division</th>
+            <th style='text-align:center;'>Depot</th>
+            <th style='text-align:center;'>Tool Make</th>
+            <th style='text-align:center;'>Tool Model</th>
+            <th style='text-align:center;'>Serial Number</th>
+            <th style='text-align:center;'>Status</th>
+            <th style='text-align:center;'>Mechanic Name</th>
+            <th style='text-align:center;'>Mechanic Contact</th>
+        </tr>
+    </thead><tbody>";
+    if (mysqli_num_rows($result) == 0) {
+        $html .= "<tr><td colspan='9'>No records found</td></tr>";
+    } else {
+    $sl = 1;
+    while ($row = mysqli_fetch_assoc($result)) {
+        $html .= "<tr>
+        <td>{$sl}</td>
+        <td>{$row['division']}</td>
+        <td>{$row['depot']}</td>
+        <td>{$row['make']}</td>
+        <td>{$row['model']}</td>
+        <td>{$row['serial_number']}</td>
+        <td>{$row['status']}</td>
+        <td>{$row['mechanic_name']}</td>
+        <td>{$row['mechanic_contact']}</td>
+    </tr>";
+        $sl++;
+    }
+}
+    $html .= "</tbody></table>";
+
+
+
+    echo json_encode(['status' => 'success', 'data' => $html]);
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetch_report_of_schedule_cancel_details') {
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+    $from = $_POST['from'];
+    $to = $_POST['to'];
+    // Get depot/division names
+    $locationQuery = "SELECT division FROM location WHERE division_id = '$division_id' limit 1";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+
+    // Get depot/division names
+    $locationQuery = "SELECT depot FROM location WHERE depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    //if the division or depot is set as All then fetch all the data depending on the selection
+    if ($division_id === 'All') {
+        $divisionCondition = "1 = 1"; // No division filter
+    } else {
+        $divisionCondition = "sc.division_id = '$division_id'";
+    }
+
+    if ($depot_id === 'All') {
+        $depotCondition = "1 = 1"; // No depot filter
+    } else {
+        $depotCondition = "sc.depot_id = '$depot_id'";
+    }
+    
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+        if ($division_id == 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Schedule Cancelation Report for Central Office - $depotName</h3>";
+        } elseif ($division_id != 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Schedule Cancelation Report for $divisionName - All Depots</h3>";
+        } elseif ($division_id != 'All' && $depot_id != 'All') {
+            $html = "<h3 class='text-center'>Schedule Cancelation Report for $divisionName - $depotName</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DIVISION') {
+        if ($depot_id != 'All') {
+            $html = "<h3 class='text-center'>Schedule Cancelation Report for $divisionName - $depotName</h3>";
+        } else {
+            $html = "<h3 class='text-center'>Schedule Cancelation Report for $divisionName - All Depots</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DEPOT') {
+        $html = "<h3 class='text-center'>Schedule Cancelation Report for $divisionName - $depotName</h3>";
+    }
+    $html .= "<h4 class='text-center'>From: $from To: $to</h4>";
+
+
+    $detailQuery = "SELECT 
+    l.division,l.depot,
+    sc.cancel_date,
+    sc.reason,
+    sc.sch_key_no
+    FROM schedule_cancel sc
+    JOIN location l ON l.division_id = sc.division_id AND l.depot_id = sc.depot_id
+    WHERE $divisionCondition AND $depotCondition AND sc.cancel_date BETWEEN '$from' AND '$to'
+    ORDER BY sc.cancel_date DESC";
+    $detailResult = mysqli_query($db, $detailQuery);
+    $html .= "<table class='table table-bordered text-center'>
+    <thead>
+        <tr>
+            <th style='text-align:center;'>Serial Number</th>
+            <th style='text-align:center;'>Division</th>
+            <th style='text-align:center;'>Depot</th>
+            <th style='text-align:center;'>Schedule Key No</th>
+            <th style='text-align:center;'>Cancel Date</th>
+            <th style='text-align:center;'>Reason</th>
+        </tr>
+    </thead><tbody>";
+    if (mysqli_num_rows($detailResult) == 0) {
+        $html .= "<tr><td colspan='6'>No records found</td></tr>";
+    } else {
+        $sl = 1;
+        while ($row = mysqli_fetch_assoc($detailResult)) {
+            $html .= "<tr>
+                <td>{$sl}</td>
+                <td>{$row['division']}</td>
+                <td>{$row['depot']}</td>
+                <td>{$row['sch_key_no']}</td>
+                <td>{$row['cancel_date']}</td>
+                <td>{$row['reason']}</td>
+            </tr>";
+            $sl++;
+        }
+    }
+    $html .= "</tbody></table>";
     echo json_encode(['status' => 'success', 'data' => $html]);
     exit;
 }

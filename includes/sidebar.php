@@ -208,6 +208,7 @@ date_default_timezone_set('Asia/Kolkata');
                               <li><a class="dropdown-item" href="main_schedule_report_dailywise.php">Day Schedule Report</a></li>
                               <li><a class="dropdown-item" href="central_office_schedule_report_month.php">Monthly Schedule Report</a></li>
                               <li><a class="dropdown-item" href="central_office_departure_report.php">Departure Report</a></li>
+                              <li><a class="dropdown-item" href="co_schedule_cancel_report.php">Schedule Cancelation Report</a></li>
                             </ul>
                           </li>
                           <li class="dropdown-submenu">
@@ -217,6 +218,12 @@ date_default_timezone_set('Asia/Kolkata');
                               <li><a class="dropdown-item" href="co_program_report_fromto.php">Program Completion Report</a></li>
                               <li><a class="dropdown-item" href="co_program_pending_report.php">Pending program Report</a></li>
                               <li><a class="dropdown-item" href="co_program_monthly_report.php">Monthly Program Report</a></li>
+                            </ul>
+                          </li>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Tech Tool</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="co_tech_tool_report.php">Tech Tool Status Report</a></li>
                             </ul>
                           </li>
                         </ul>

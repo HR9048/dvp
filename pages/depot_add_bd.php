@@ -29,7 +29,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                 <div class="col">
                     <div class="form-group">
                         <label for=bd_date>BreakDown Date:</label>
-                        <input type="date" class="form-control" id="bd_date" name="bd_date" value="<?php echo date('Y-m-d', strtotime('-1 day')); ?>" readonly>
+                        <input type="date" class="form-control" id="bd_date" name="bd_date" required>
                     </div>
                 </div>
                 <div class="col">
@@ -39,12 +39,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                             <option value="" disabled selected>Select Bus Number</option>
                             <?php
                 // Fetch bus numbers from the database
-                $query = "SELECT BUS_NUMBER FROM bus_registration WHERE depot_name = ? AND division_name = ?
-          UNION
-          SELECT bus_number FROM bus_scrap_data WHERE order_date > '2025-03-31' AND depot = ? AND division = ?";
+                $query = "SELECT BUS_NUMBER FROM bus_registration WHERE depot_name = ? AND division_name = ?";
 
 if ($stmt = $db->prepare($query)) {
-    $stmt->bind_param("ssss", $depot_id, $division_id, $depot_id, $division_id);
+    $stmt->bind_param("ss", $depot_id, $division_id);
     $stmt->execute();
     $result = $stmt->get_result();
 

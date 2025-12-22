@@ -223,6 +223,12 @@ confirm_logged_in();
                                 <li><a class="dropdown-item" href="division_program_monthly_report.php">Monthly Program Report</a></li>
                               </ul>
                             </li>
+                            <li class="dropdown-submenu">
+                              <a class="dropdown-item dropdown-toggle" href="#">Tech Tool</a>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="division_tech_tool_report.php">Tech Tool Report</a></li>
+                              </ul>
+                            </li>
                           <?php } ?>
                           <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'ASO(Stat)' || $_SESSION['JOB_TITLE'] == 'DTO' || $_SESSION['JOB_TITLE'] == 'DC') { ?>
                             <li class="dropdown-submenu">

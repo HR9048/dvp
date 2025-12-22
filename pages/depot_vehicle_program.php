@@ -461,9 +461,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
     <?php
     $today = new DateTime();
-    //$fromdate = clone $today;
-    //$fromdate->modify('-2 days');
-    $fromdate = new DateTime('2025-08-01');
+    $fromdate = clone $today;
+    $fromdate->modify('-4 days');
+    //$fromdate = new DateTime('2025-08-01');
 
     // Format dates for JavaScript display (d-m-Y)
     $serverDateFormatted = $today->format('d-m-Y');

@@ -906,9 +906,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         $(document).ready(function() {
             $('#sch_in_form').on('submit', function(e) {
                 e.preventDefault(); // Prevent default form submission
-                document.getElementById('submitBtnvehiclein').addEventListener('click', function() {
-                    document.getElementById('submitBtnvehiclein').disabled = true;
-                });
+                
                 // Serialize form data
                 var formData = $(this).serialize();
 
@@ -1036,9 +1034,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'SECURITY') {
         $(document).ready(function() {
             $('#sch_change_bus_form').on('submit', function(e) {
                 e.preventDefault(); // Prevent default form submission
-                document.getElementById('submitBtnchange').addEventListener('click', function() {
-                    document.getElementById('submitBtnchange').disabled = true;
-                });
+                
                 // Check if any checkbox is selected
                 const isAtLeastOneSelected = $('#change_vehicle').is(':checked') ||
                     $('#change_driver').is(':checked') ||

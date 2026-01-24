@@ -1,6 +1,5 @@
 <?php
-include '../includes/connection.php';
-include '../includes/sidebar.php';
+include 'ad_nav.php';
 
 // Function to delete a record
 function deleteRecord($id, $db)
@@ -19,15 +18,11 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 ?>
     <div class="container mt-5">
-        <h2 class="mb-4">Select Date Range</h2>
+        <h2 class="mb-4">Select Date</h2>
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
             <div class="form-group">
-                <label for="startDate">Start Date:</label>
-                <input type="date" id="startDate" class="form-control" name="startDate" required>
-            </div>
-            <div class="form-group">
-                <label for="endDate">End Date:</label>
-                <input type="date" id="endDate" class="form-control" name="endDate" required>
+                <label for="startDate">Select Date:</label>
+                <input type="date" id="startDate" class="form-control" name="startDate" style="width:200px; margin:0 auto; display:block;" required>
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </form>
@@ -36,22 +31,20 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $startDate = $_POST['startDate'];
-            $endDate = $_POST['endDate'];
 
             $query = "SELECT k.*, 
         loc.division AS division_name, 
         loc.depot AS depot_name 
  FROM kmpl_data k 
  INNER JOIN location loc ON k.depot = loc.depot_id 
- WHERE k.date BETWEEN '$startDate' AND '$endDate'";
+ WHERE k.date = '$startDate'";
             $result = mysqli_query($db, $query);
 
             if ($result) {
         ?>
                 <div class="mt-5">
                     <h2 class="mb-4">KMPL Data from
-                        <?php echo $startDate; ?> to
-                        <?php echo $endDate; ?>
+                        <?php echo $startDate; ?>
                     </h2>
                     <table id="dataTable">
                         <thead>
@@ -170,12 +163,14 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 $('#hsd').val(hsd);
                 $('#kmpl').val(kmpl);
                 $('#date').val(date);
+                //append action to the form
+                $('#editForm').append('<input type="hidden" name="action" value="updateKmplData">');
 
             });
 
             $('#editForm').submit(function(e) {
                 e.preventDefault();
-                fetch('update_main_kmpl_data.php', {
+                fetch('../includes/backend_data.php', {
                         method: 'POST',
                         body: new FormData(this)
                     })
@@ -213,5 +208,5 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
     exit;
 }
-include '../includes/footer.php';
+include 'ad_footer.php';
 ?>

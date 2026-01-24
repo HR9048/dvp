@@ -529,6 +529,34 @@ include 'includes/connection.php';
                                 </div>
                             </div>
                         </div>
+                        <div class="card">
+                            <div class="card-header" id="headingEight">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left collapsed" type="button"
+                                        data-toggle="collapse" data-target="#collapseEight" aria-expanded="false"
+                                        aria-controls="collapseEight">
+                                        Program Details <i class="fas fa-chevron-down float-right"></i>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseEight" class="collapse" aria-labelledby="headingEight"
+                                data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center my-3">
+                                        <h4 class="mb-0" id="bd-heading">
+                                            Program Report
+                                        </h4>
+                                        <input style="font-size: 12px;" type="date" id="program-date-selector"
+                                            class="form-control w-auto" max="<?= date('Y-m-d'); ?>"
+                                            value="<?php echo date('Y-m-d'); ?>">
+                                    </div>
+
+                                    <div id="loadingMessageprogram" style="display: none;">Loading Program data,
+                                        please wait...</div>
+                                    <div id="ProgramTable" class="table-responsive"></div>
+                                </div>
+                            </div>
+                        </div>
 
 
                         <!--<div class="card">

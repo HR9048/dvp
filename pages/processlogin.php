@@ -107,7 +107,12 @@ function determineRedirect($db, $type, $jobTitle, $member_id)
         // Determine redirect URL based on user type and job title
         switch ($type) {
             case 'HEAD-OFFICE':
-                return "index.php";
+                switch ($member_id) {
+                    case '1':
+                        return "admin_select.php";
+                    default:
+                        return "index.php";
+                }
             case 'RWY':
                 return "rwy.php";
             case 'DIVISION':

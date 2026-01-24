@@ -190,7 +190,7 @@ WHERE br.division_name = '$division_id'
 AND br.depot_name = '$depot_id'
 
 UNION 
-
+(
 SELECT vd.bus_number, COALESCE(br.make, '') AS make, COALESCE(br.emission_norms, '') AS emission_norms
 FROM vehicle_deputation vd
 LEFT JOIN bus_registration br ON vd.bus_number = br.bus_number
@@ -199,7 +199,22 @@ AND vd.t_depot_id = '$depot_id'
 AND vd.tr_date = '$report_date' 
 AND vd.status NOT IN (1) 
 AND vd.deleted = 0
+)
+UNION
 
+(
+    SELECT 
+        bt.bus_number,
+        COALESCE(br.make, '') AS make,
+        COALESCE(br.emission_norms, '') AS emission_norms
+    FROM bus_transfer_data bt
+    LEFT JOIN bus_registration br 
+        ON br.bus_number = bt.bus_number
+    WHERE bt.division = '$division_id'
+      AND bt.from_depot = '$depot_id'
+      AND bt.order_date >= '$report_date'
+      AND bt.order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+);
 ";
                 $busResult = $db->query($busQuery);
 

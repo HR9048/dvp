@@ -66,7 +66,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         }
     }
 
-    if ($incomplete) {
+    /*if ($incomplete) {
         echo "<script>
         Swal.fire({
             icon: 'warning',
@@ -78,12 +78,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         });
     </script>";
         exit;
-    }
+    }*/
     $today = date('d-m-Y');
 ?>
     <style>
-        
-
         .modal-95 {
             max-width: 95% !important;
         }
@@ -141,12 +139,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
 
         $buses = [];
-        $bus_result = mysqli_query($db, "SELECT bus_number, make, emission_norms, model_type FROM bus_registration WHERE division_name = '$division_id' AND depot_name = '$depot_id'");
+        $bus_result = mysqli_query($db, "SELECT bus_number, make, emission_norms, model_type, bus_sub_category FROM bus_registration WHERE division_name = '$division_id' AND depot_name = '$depot_id'");
         while ($row = mysqli_fetch_assoc($bus_result)) {
             $buses[$row['bus_number']] = [
                 'make' => $row['make'],
                 'emission_norms' => $row['emission_norms'],
-                'model_type' => $row['model_type']
+                'model_type' => $row['model_type'],
+                'bus_sub_category' => $row['bus_sub_category']
             ];
         }
 
@@ -219,6 +218,19 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             $rows = [];
             foreach ($bus_list_group as $bus_number) {
                 foreach ($programs as $ptype => $prescribed_km) {
+
+                    // ❌ Skip ONLY Air Suspension Check for non-air-suspension buses
+                    if (
+                        $ptype === 'air_suspension_check' &&
+                        !in_array(
+                            $buses[$bus_number]['bus_sub_category'],
+                            $air_suspension_bus_category_array,
+                            true
+                        )
+                    ) {
+                        continue;
+                    }
+
                     $last_entry = $last_program_data[$bus_number][$ptype] ?? null;
                     $program_date = $last_entry['date'] ?? null;
 
@@ -334,6 +346,19 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             $rows = [];
             foreach ($bus_list_group as $bus_number) {
                 foreach ($programs as $ptype => $prescribed_km) {
+
+                    // ❌ Skip ONLY Air Suspension Check for non-air-suspension buses
+                    if (
+                        $ptype === 'air_suspension_check' &&
+                        !in_array(
+                            $buses[$bus_number]['bus_sub_category'],
+                            $air_suspension_bus_category_array,
+                            true
+                        )
+                    ) {
+                        continue;
+                    }
+
                     $last_entry = $last_program_data[$bus_number][$ptype] ?? null;
                     $program_date = $last_entry['date'] ?? null;
 
@@ -462,7 +487,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     <?php
     $today = new DateTime();
     $fromdate = clone $today;
-    $fromdate->modify('-4 days');
+    $fromdate->modify('-5 days');
     //$fromdate = new DateTime('2025-08-01');
 
     // Format dates for JavaScript display (d-m-Y)

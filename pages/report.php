@@ -33,7 +33,7 @@ JOIN location l ON o.depot = l.depot_id";
 
 
         $result = $db->query($sql);
-        ?>
+?>
         <style>
             @media print {
                 body * {
@@ -101,7 +101,7 @@ JOIN location l ON o.depot = l.depot_id";
                                 $bus_number_rowspans_count[$bus_number]++;
                             }
                             mysqli_data_seek($result, 0); // Reset the result pointer to the beginning
-                    
+
                             ?>
                         </select>
                     </div>
@@ -110,120 +110,121 @@ JOIN location l ON o.depot = l.depot_id";
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </form>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Sl No</th>
-                            <th>Divn (Sl No)</th>
-                            <th>Division</th>
-                            <th>Depot</th>
-                            <th>Bus Number</th>
-                            <th>Make</th>
-                            <th>Emission Norms</th>
-                            <th>Off Road From Date</th>
-                            <th>Number of days off-road</th>
-                            <th>Off Road Location</th>
-                            <th>Parts Required</th>
-                            <th>Remarks</th>
-                            <th>DWS Remarks</th>
-                            <th>On road date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        // Initialize serial number counters
-                        $bus_serial_number = 1;
-                        $division_serial_number = 1;
-                        $current_division = null; // Track the current division
-                
-                        // Loop through each bus number
-                        foreach ($bus_numbers as $bus_number) {
-                            // Flag to indicate if it's the first row for the current bus number
-                            $first_row = true;
-                            // Count the number of rows for the current bus number
-                            $row_count = 0;
-                            // Loop through each row of the result set for the current bus number
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                if ($row['bus_number'] == $bus_number) {
-                                    // Increment row count for the current bus number
-                                    $row_count++;
-                                    // Output data in table rows
-                                    echo "<tr>";
-                                    // Output bus serial number only for the first row of the current bus number
-                                    if ($first_row) {
-                                        echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>$bus_serial_number</td>";
-                                        // Output division serial number only if division has changed
-                                        if ($row['division'] != $current_division) {
-                                            $current_division = $row['division'];
-                                            $division_serial_number = 1; // Reset division serial number
+            <div class="container1">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sl No</th>
+                                <th>Divn (Sl No)</th>
+                                <th>Division</th>
+                                <th>Depot</th>
+                                <th>Bus Number</th>
+                                <th>Make</th>
+                                <th>Emission Norms</th>
+                                <th>Off Road From Date</th>
+                                <th>Number of days off-road</th>
+                                <th>Off Road Location</th>
+                                <th>Parts Required</th>
+                                <th>Remarks</th>
+                                <th>DWS Remarks</th>
+                                <th>On road date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Initialize serial number counters
+                            $bus_serial_number = 1;
+                            $division_serial_number = 1;
+                            $current_division = null; // Track the current division
+
+                            // Loop through each bus number
+                            foreach ($bus_numbers as $bus_number) {
+                                // Flag to indicate if it's the first row for the current bus number
+                                $first_row = true;
+                                // Count the number of rows for the current bus number
+                                $row_count = 0;
+                                // Loop through each row of the result set for the current bus number
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    if ($row['bus_number'] == $bus_number) {
+                                        // Increment row count for the current bus number
+                                        $row_count++;
+                                        // Output data in table rows
+                                        echo "<tr>";
+                                        // Output bus serial number only for the first row of the current bus number
+                                        if ($first_row) {
+                                            echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>$bus_serial_number</td>";
+                                            // Output division serial number only if division has changed
+                                            if ($row['division'] != $current_division) {
+                                                $current_division = $row['division'];
+                                                $division_serial_number = 1; // Reset division serial number
+                                            }
+                                            echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>$division_serial_number</td>";
+                                            echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['division_name'] . "</td>";
+                                            echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['depot_name'] . "</td>";
+                                            echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['bus_number'] . "</td>";
+                                            echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['make'] . "</td>";
+                                            echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['emission_norms'] . "</td>";
+                                            $first_row = false;
                                         }
-                                        echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>$division_serial_number</td>";
-                                        echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['division_name'] . "</td>";
-                                        echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['depot_name'] . "</td>";
-                                        echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['bus_number'] . "</td>";
-                                        echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['make'] . "</td>";
-                                        echo "<td rowspan='" . $bus_number_rowspans_count[$bus_number] . "'>" . $row['emission_norms'] . "</td>";
-                                        $first_row = false;
-                                    }
-                                    // Extract data from the row
-                                    $offRoadFromDate = $row['off_road_date'];
-                                    $offRoadLocation = $row['off_road_location'];
-                                    $partsRequired = $row['parts_required'];
-                                    $remarks = $row['remarks'];
-                                    $dws_remarks = $row['dws_remark'];
-                                    $on_road_date = $row['on_road_date'];
-                                    // Calculate the number of days off-road
-                                    $offRoadDate = new DateTime($offRoadFromDate);
-                                    $today = new DateTime();
-                                    $daysOffRoad = $today->diff($offRoadDate)->days;
+                                        // Extract data from the row
+                                        $offRoadFromDate = $row['off_road_date'];
+                                        $offRoadLocation = $row['off_road_location'];
+                                        $partsRequired = $row['parts_required'];
+                                        $remarks = $row['remarks'];
+                                        $dws_remarks = $row['dws_remark'];
+                                        $on_road_date = $row['on_road_date'];
+                                        // Calculate the number of days off-road
+                                        $offRoadDate = new DateTime($offRoadFromDate);
+                                        $today = new DateTime();
+                                        $daysOffRoad = $today->diff($offRoadDate)->days;
 
-                                    // Output the data in table rows
-                                    echo "<td>" . date('d/m/y', strtotime($offRoadFromDate)) . "</td>";
-                                    echo "<td>$daysOffRoad</td>";
-                                    echo "<td>$offRoadLocation</td>";
-                                    echo "<td>$partsRequired</td>";
-                                    echo "<td>$remarks</td>";
-                                    echo "<td>$dws_remarks</td>";
-                                    if (empty($on_road_date)) {
-                                        echo "<td>Off Road</td>";
-                                    } else {
-                                        // Convert datetime string to date format
-                                        $on_road_date_only = date('Y-m-d', strtotime($on_road_date));
-
-                                        if ($on_road_date_only == $selected_date) {
-                                            echo "<td>$on_road_date_only</td>";
-                                        } else {
+                                        // Output the data in table rows
+                                        echo "<td>" . date('d/m/y', strtotime($offRoadFromDate)) . "</td>";
+                                        echo "<td>$daysOffRoad</td>";
+                                        echo "<td>$offRoadLocation</td>";
+                                        echo "<td>$partsRequired</td>";
+                                        echo "<td>$remarks</td>";
+                                        echo "<td>$dws_remarks</td>";
+                                        if (empty($on_road_date)) {
                                             echo "<td>Off Road</td>";
+                                        } else {
+                                            // Convert datetime string to date format
+                                            $on_road_date_only = date('Y-m-d', strtotime($on_road_date));
+
+                                            if ($on_road_date_only == $selected_date) {
+                                                echo "<td>$on_road_date_only</td>";
+                                            } else {
+                                                echo "<td>Off Road</td>";
+                                            }
                                         }
+
+                                        echo "</tr>";
                                     }
-
-                                    echo "</tr>";
                                 }
+                                // Increment the bus serial number only if there were rows for the current bus number
+                                if ($row_count > 0) {
+                                    $bus_serial_number++;
+                                    // Increment division serial number for each new division
+                                    $division_serial_number++;
+                                }
+                                // Reset the result pointer to the beginning for the next bus number
+                                mysqli_data_seek($result, 0);
                             }
-                            // Increment the bus serial number only if there were rows for the current bus number
-                            if ($row_count > 0) {
-                                $bus_serial_number++;
-                                // Increment division serial number for each new division
-                                $division_serial_number++;
-                            }
-                            // Reset the result pointer to the beginning for the next bus number
-                            mysqli_data_seek($result, 0);
-                        }
-                        ?>
-                    </tbody>
-                </table>
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
             <div class="text-center mt-3">
                 <button class="btn btn-primary" onclick="window.print()">Print</button>
             </div>
         </div>
 
-        <?php
+    <?php
     } else {
         // Show the date and like items selection form
-        ?>
+    ?>
         <div class="container-fluid custom-container">
             <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                 <div class="form-row">
@@ -257,9 +258,8 @@ JOIN location l ON o.depot = l.depot_id";
                 </div>
             </form>
         </div>
-        <?php
+<?php
     }
-
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
     exit;

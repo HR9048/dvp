@@ -10447,9 +10447,9 @@ ORDER BY l.division_id, l.depot_id
     if (mysqli_num_rows($result) == 0) {
         $html .= "<tr><td colspan='9'>No records found</td></tr>";
     } else {
-    $sl = 1;
-    while ($row = mysqli_fetch_assoc($result)) {
-        $html .= "<tr>
+        $sl = 1;
+        while ($row = mysqli_fetch_assoc($result)) {
+            $html .= "<tr>
         <td>{$sl}</td>
         <td>{$row['division']}</td>
         <td>{$row['depot']}</td>
@@ -10460,9 +10460,9 @@ ORDER BY l.division_id, l.depot_id
         <td>{$row['mechanic_name']}</td>
         <td>{$row['mechanic_contact']}</td>
     </tr>";
-        $sl++;
+            $sl++;
+        }
     }
-}
     $html .= "</tbody></table>";
 
 
@@ -10499,7 +10499,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     } else {
         $depotCondition = "sc.depot_id = '$depot_id'";
     }
-    
+
     if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
         if ($division_id == 'All' && $depot_id == 'All') {
             $html = "<h3 class='text-center'>Schedule Cancelation Report for Central Office - $depotName</h3>";
@@ -10559,5 +10559,740 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
     $html .= "</tbody></table>";
     echo json_encode(['status' => 'success', 'data' => $html]);
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetch_report_of_kmpl_diff_details') {
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+    $from = $_POST['from'];
+    $to = $_POST['to'];
+    $kmpl_type = $_POST['kmpl_type'];
+
+    if (!$division_id || !$depot_id || !$kmpl_type || !$from || !$to) {
+        echo json_encode(['status' => 'error', 'message' => 'all fields required']);
+        exit;
+    }
+    // Get depot/division names
+    $locationQuery = "SELECT division FROM location WHERE division_id = '$division_id' limit 1";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+
+    // Get depot/division names
+    $locationQuery = "SELECT depot FROM location WHERE depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    //if the division or depot is set as All then fetch all the data depending on the selection
+    if ($division_id === 'All') {
+        $divisionCondition = "1 = 1"; // No division filter
+    } else {
+        $divisionCondition = "vk.division_id = '$division_id'";
+    }
+
+    if ($depot_id === 'All') {
+        $depotCondition = "1 = 1"; // No depot filter
+    } else {
+        $depotCondition = "vk.depot_id = '$depot_id'";
+    }
+    $kmplCond = "1=1";
+    if ($kmpl_type == "<5.00") {
+        $kmplCond = "pf_kmpl < 5";
+    } elseif ($kmpl_type == "5.00-5.20") {
+        $kmplCond = "pf_kmpl BETWEEN 5 AND 5.20";
+    } elseif ($kmpl_type == ">5.20") {
+        $kmplCond = "pf_kmpl > 5.20";
+    }
+    $showBelow = $showBetween = $showAbove = true;
+
+    if ($kmpl_type !== 'All') {
+        $showBelow = $kmpl_type === '<5.00';
+        $showBetween = $kmpl_type === '5.00-5.20';
+        $showAbove = $kmpl_type === '>5.20';
+    }
+
+
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+        if ($division_id == 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>KMPL Report for Central Office - $depotName</h3>";
+        } elseif ($division_id != 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>KMPL Report for $divisionName - All Depots</h3>";
+        } elseif ($division_id != 'All' && $depot_id != 'All') {
+            $html = "<h3 class='text-center'>KMPL Report for $divisionName - $depotName</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DIVISION') {
+        if ($depot_id != 'All') {
+            $html = "<h3 class='text-center'>KMPL Report for $divisionName - $depotName</h3>";
+        } else {
+            $html = "<h3 class='text-center'>KMPL Report for $divisionName - All Depots</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DEPOT') {
+        $html = "<h3 class='text-center'>KMPL Report for $divisionName - $depotName</h3>";
+    }
+    function formatMonth($ym)
+    {
+        return DateTime::createFromFormat('Y-m', $ym)->format('M Y');
+    }
+
+    $html .= "<h4 class='text-center'>From: $from To: $to</h4>";
+    $html .= "<h4 class='text-center'>KMPL Type: $kmpl_type</h4>";
+
+    $start = new DateTime($from);
+    $end   = new DateTime($to);
+    $end->modify('first day of next month');
+
+    $months = [];
+    while ($start < $end) {
+        $months[] = $start->format('Y-m');
+        $start->modify('+1 month');
+    }
+
+    /* ---------------- MAIN SQL ---------------- */
+
+    $sql = "SELECT
+    division_id,
+    depot_id,
+    division,
+    depot,
+    ym,
+    SUM(CASE WHEN pf_kmpl < 5.00 THEN 1 ELSE 0 END) AS below_5,
+    SUM(CASE WHEN pf_kmpl BETWEEN 5.00 AND 5.20 THEN 1 ELSE 0 END) AS between_5_520,
+    SUM(CASE WHEN pf_kmpl > 5.20 THEN 1 ELSE 0 END) AS above_520
+FROM (
+    SELECT
+        vk.division_id,
+        vk.depot_id,
+        l.division,
+        l.depot,
+        DATE_FORMAT(vk.date,'%Y-%m') AS ym,
+        pf.pf_no,
+        SUM(pf.km_share) / NULLIF(SUM(pf.hsd_share),0) AS pf_kmpl
+    FROM vehicle_kmpl vk
+    JOIN location l
+        ON l.division_id = vk.division_id
+       AND l.depot_id = vk.depot_id
+
+    JOIN (
+        SELECT id,
+               driver_1_pf AS pf_no,
+               CASE
+                   WHEN driver_2_pf IS NULL OR driver_2_pf = ''
+                   THEN km_operated
+                   ELSE km_operated / 2
+               END AS km_share,
+               CASE
+                   WHEN driver_2_pf IS NULL OR driver_2_pf = ''
+                   THEN hsd
+                   ELSE hsd / 2
+               END AS hsd_share
+        FROM vehicle_kmpl
+
+        UNION ALL
+
+        SELECT id,
+               driver_2_pf,
+               km_operated / 2,
+               hsd / 2
+        FROM vehicle_kmpl
+        WHERE driver_2_pf IS NOT NULL AND driver_2_pf <> ''
+    ) pf ON pf.id = vk.id
+
+    WHERE vk.deleted = 0
+      AND vk.date BETWEEN '$from' AND '$to'
+      AND $divisionCondition
+      AND $depotCondition
+
+    GROUP BY vk.division_id, vk.depot_id, l.division, l.depot, ym, pf.pf_no
+) t
+WHERE $kmplCond
+GROUP BY division_id, depot_id, division, depot, ym
+ORDER BY division_id, depot_id, ym;";
+
+    $result = mysqli_query($db, $sql);
+
+    /* ---------------- ORGANIZE DATA ---------------- */
+
+    $data = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $key = $row['division'] . '|' . $row['depot'];
+        $data[$key]['division'] = $row['division'];
+        $data[$key]['depot']    = $row['depot'];
+        $data[$key][$row['ym']] = $row;
+    }
+
+    /* ---------------- HTML OUTPUT ---------------- */
+
+    $html .= "<table border='1' cellpadding='6' cellspacing='0' width='100%'>";
+
+    /* ---------- HEADER ---------- */
+    $html .= "<tr>
+        <th rowspan='2'>Division</th>
+        <th rowspan='2'>Depot</th>";
+    foreach ($months as $m) {
+        $colspan = ($showBelow ? 1 : 0) + ($showBetween ? 1 : 0) + ($showAbove ? 1 : 0);
+        $html .= "<th style='text-align:center;' colspan='$colspan'>" . formatMonth($m) . "</th>";
+    }
+    $html .= "</tr>";
+
+    $html .= "<tr>";
+    foreach ($months as $m) {
+        if ($showBelow)   $html .= "<th>&lt;5</th>";
+        if ($showBetween) $html .= "<th>5–5.20</th>";
+        if ($showAbove)   $html .= "<th>&gt;5.20</th>";
+    }
+    $html .= "</tr>";
+
+    /* ---------- TOTAL HOLDERS ---------- */
+    $grandTotal = [];
+    foreach ($months as $m) {
+        $grandTotal[$m] = ['below' => 0, 'between' => 0, 'above' => 0];
+    }
+
+    $currentDivision = null;
+    $divisionTotal = [];
+
+    /* ---------- DATA ROWS ---------- */
+    foreach ($data as $row) {
+
+        /* 🔄 Division change */
+        if ($currentDivision !== null && $currentDivision !== $row['division']) {
+
+            // Division total row
+            $html .= "<tr style='font-weight:bold;background:#f0f0f0'>
+                <td colspan='2'>Total – $currentDivision</td>";
+
+            foreach ($months as $m) {
+                if ($showBelow)   $html .= "<td align='center'>{$divisionTotal[$m]['below']}</td>";
+                if ($showBetween) $html .= "<td align='center'>{$divisionTotal[$m]['between']}</td>";
+                if ($showAbove)   $html .= "<td align='center'>{$divisionTotal[$m]['above']}</td>";
+            }
+
+            $html .= "</tr>";
+
+            // Reset division total
+            $divisionTotal = [];
+            foreach ($months as $m) {
+                $divisionTotal[$m] = ['below' => 0, 'between' => 0, 'above' => 0];
+            }
+        }
+
+        if ($currentDivision !== $row['division']) {
+            $currentDivision = $row['division'];
+            foreach ($months as $m) {
+                $divisionTotal[$m] = ['below' => 0, 'between' => 0, 'above' => 0];
+            }
+        }
+
+        /* ---------- DATA ROW ---------- */
+        $html .= "<tr>";
+        $html .= "<td>{$row['division']}</td>";
+        $html .= "<td>{$row['depot']}</td>";
+
+        foreach ($months as $m) {
+            $below   = $row[$m]['below_5']       ?? 0;
+            $between = $row[$m]['between_5_520'] ?? 0;
+            $above   = $row[$m]['above_520']     ?? 0;
+
+            if ($showBelow) {
+                $html .= "<td align='center'>$below</td>";
+                $divisionTotal[$m]['below'] += $below;
+                $grandTotal[$m]['below'] += $below;
+            }
+
+            if ($showBetween) {
+                $html .= "<td align='center'>$between</td>";
+                $divisionTotal[$m]['between'] += $between;
+                $grandTotal[$m]['between'] += $between;
+            }
+
+            if ($showAbove) {
+                $html .= "<td align='center'>$above</td>";
+                $divisionTotal[$m]['above'] += $above;
+                $grandTotal[$m]['above'] += $above;
+            }
+        }
+
+        $html .= "</tr>";
+    }
+
+    /* ---------- LAST DIVISION TOTAL ---------- */
+    if ($currentDivision !== null) {
+        if ($depot_id === 'All')  // Only show division total if multiple depots
+        {
+            $html .= "<tr style='font-weight:bold;background:#f0f0f0'>
+            <td colspan='2'>Total – $currentDivision</td>";
+            foreach ($months as $m) {
+                if ($showBelow)   $html .= "<td align='center'>{$divisionTotal[$m]['below']}</td>";
+                if ($showBetween) $html .= "<td align='center'>{$divisionTotal[$m]['between']}</td>";
+                if ($showAbove)   $html .= "<td align='center'>{$divisionTotal[$m]['above']}</td>";
+            }
+            $html .= "</tr>";
+        }
+    }
+
+    /* ---------- GRAND TOTAL ---------- */
+    if ($division_id === 'All')  // Only show grand total if multiple divisions
+    {
+        $html .= "<tr style='font-weight:bold;background:#d9edf7'>
+        <td colspan='2'>GRAND TOTAL</td>";
+
+        foreach ($months as $m) {
+            if ($showBelow)   $html .= "<td align='center'>{$grandTotal[$m]['below']}</td>";
+            if ($showBetween) $html .= "<td align='center'>{$grandTotal[$m]['between']}</td>";
+            if ($showAbove)   $html .= "<td align='center'>{$grandTotal[$m]['above']}</td>";
+        }
+
+        $html .= "</tr>";
+    }
+
+    $html .= "</table>";
+
+
+    $kmplHaving = "1=1";
+
+    if ($kmpl_type === "<5.00") {
+        $kmplHaving = "ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 2) < 5.00";
+    } elseif ($kmpl_type === "5.00-5.20") {
+        $kmplHaving = "ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 2) BETWEEN 5.00 AND 5.20";
+    } elseif ($kmpl_type === ">5.20") {
+        $kmplHaving = "ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 2) > 5.20";
+    }
+    /* ---------------- EMPLOYEE PF-WISE KMPL REPORT ---------------- */
+    $sql_pf = "
+SELECT
+    t.division_id,
+    t.depot_id,
+    t.division,
+    t.depot,
+    t.pf_no,
+    SUM(t.km_share) AS total_km,
+    SUM(t.hsd_share) AS total_hsd,
+    ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 2) AS kmpl
+FROM (
+    SELECT
+        vk.division_id,
+        vk.depot_id,
+        l.division,
+        l.depot,
+        pf.pf_no,
+        pf.km_share,
+        pf.hsd_share
+    FROM vehicle_kmpl vk
+    JOIN location l
+        ON l.division_id = vk.division_id
+       AND l.depot_id = vk.depot_id
+    JOIN (
+        SELECT id,
+               driver_1_pf AS pf_no,
+               CASE
+                   WHEN driver_2_pf IS NULL OR driver_2_pf = ''
+                   THEN km_operated
+                   ELSE km_operated / 2
+               END AS km_share,
+               CASE
+                   WHEN driver_2_pf IS NULL OR driver_2_pf = ''
+                   THEN hsd
+                   ELSE hsd / 2
+               END AS hsd_share
+        FROM vehicle_kmpl
+
+        UNION ALL
+
+        SELECT id,
+               driver_2_pf,
+               km_operated / 2,
+               hsd / 2
+        FROM vehicle_kmpl
+        WHERE driver_2_pf IS NOT NULL AND driver_2_pf <> ''
+    ) pf ON pf.id = vk.id
+    WHERE vk.deleted = 0
+      AND vk.date BETWEEN '$from' AND '$to'
+      AND $divisionCondition
+      AND $depotCondition
+) t
+GROUP BY
+    t.division_id,
+    t.depot_id,
+    t.division,
+    t.depot,
+    t.pf_no
+HAVING $kmplHaving
+ORDER BY
+    t.division_id,
+    t.depot_id,
+    kmpl ASC,
+    t.pf_no
+";
+
+
+    $result_pf = mysqli_query($db, $sql_pf);
+
+    $html .= "<h3 class='text-center'>Employee PF-wise KMPL Report</h3>";
+
+    $html .= "<table border='1' cellpadding='6' cellspacing='0' width='100%'>
+        <tr style='background:#f5f5f5;font-weight:bold'>
+            <th>Sl No</th>
+            <th>PF Number</th>
+            <th>Division</th>
+            <th>Depot</th>
+            <th>Total KM Operated</th>
+            <th>Total HSD</th>
+            <th>KMPL</th>
+        </tr>";
+
+    $sl = 1;
+    $grand_km = 0;
+    $grand_hsd = 0;
+
+    while ($row = mysqli_fetch_assoc($result_pf)) {
+
+        $grand_km  += $row['total_km'];
+        $grand_hsd += $row['total_hsd'];
+
+        $km  = number_format($row['total_km'], 1);
+        $hsd = number_format($row['total_hsd'], 1);
+
+        $html .= "<tr>
+    <td align='center'>{$sl}</td>
+    <td align='center'>{$row['pf_no']}</td>
+    <td>{$row['division']}</td>
+    <td>{$row['depot']}</td>
+    <td align='right'>{$km}</td>
+    <td align='right'>{$hsd}</td>
+    <td align='center'>{$row['kmpl']}</td>
+</tr>";
+
+        $sl++;
+    }
+
+    $grand_kmpl = ($grand_hsd > 0)
+        ? round($grand_km / $grand_hsd, 2)
+        : 0;
+
+    $html .= "<tr style='font-weight:bold;background:#e9f3ff'>
+        <td colspan='4' align='right'>GRAND TOTAL</td>
+        <td align='right'>$grand_km</td>
+        <td align='right'>$grand_hsd</td>
+        <td align='center'>$grand_kmpl</td>
+      </tr>";
+
+    $html .= "</table>";
+
+
+
+    echo json_encode(['status' => 'success', 'data' => $html]);
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'deletedvprow') {
+    $id = $_POST['id'];
+    $deleteQuery = "DELETE FROM dvp_data WHERE id = ?";
+    $stmt = mysqli_prepare($db, $deleteQuery);
+    mysqli_stmt_bind_param($stmt, 'i', $id);
+    $deleteResult = mysqli_stmt_execute($stmt);
+    if ($deleteResult) {
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'DVP record deleted successfully.'
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Failed to delete DVP record.'
+        ]);
+    }
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updatedvpdata') {
+    /* ---------------- REQUIRED FIELDS ---------------- */
+    $required = [
+        'editId',
+        'date',
+        'schedules',
+        'vehicles',
+        'spare',
+        'spareP',
+        'docking',
+        'wup',
+        'editWUP1',
+        'ORDepot',
+        'ORDWS',
+        'ORRWY',
+        'CC',
+        'loan',
+        'Police',
+        'dealer',
+        'notdepot',
+        'ORTotal',
+        'available',
+        'ES'
+    ];
+
+    foreach ($required as $field) {
+        if (!isset($_POST[$field]) || $_POST[$field] === '') {
+            echo json_encode([
+                'status' => 'error',
+                'message' => "Missing field: $field"
+            ]);
+            exit;
+        }
+    }
+
+
+    /* ---------------- ASSIGN VALUES ---------------- */
+    $editId     = intval($_POST['editId']);
+    $date       = $_POST['date'];
+    $schedules  = intval($_POST['schedules']);
+    $vehicles   = intval($_POST['vehicles']);
+    $spare      = intval($_POST['spare']);
+    $spareP     = floatval($_POST['spareP']);
+    $docking    = intval($_POST['docking']);
+    $wup        = intval($_POST['wup']);
+    $wup1       = intval($_POST['editWUP1']);
+    $ORDepot    = intval($_POST['ORDepot']);
+    $ORDWS      = intval($_POST['ORDWS']);
+    $ORRWY      = intval($_POST['ORRWY']);
+    $CC         = intval($_POST['CC']);
+    $loan       = intval($_POST['loan']);
+    $Police     = intval($_POST['Police']);
+    $Dealer     = intval($_POST['dealer']);
+    $notdepot   = intval($_POST['notdepot']);
+    $ORTotal    = intval($_POST['ORTotal']);
+    $available  = intval($_POST['available']);
+    $ES         = intval($_POST['ES']);
+
+    $username   = $_SESSION['USERNAME'];
+    $designation = $_SESSION['JOB_TITLE'];
+    $division   = $_SESSION['DIVISION_ID'];
+    $depot      = $_SESSION['DEPOT_ID'];
+
+    date_default_timezone_set('Asia/Kolkata');
+    $updatedAt = date('Y-m-d H:i:s');
+
+    /* ---------------- PREPARE QUERY ---------------- */
+    $sql = "UPDATE dvp_data SET
+    schedules=?,
+    vehicles=?,
+    spare=?,
+    spareP=?,
+    docking=?,
+    wup=?,
+    wup1=?,
+    ORDepot=?,
+    ORDWS=?,
+    ORRWY=?,
+    CC=?,
+    loan=?,
+    Police=?,
+    Dealer=?,
+    notdepot=?,
+    ORTotal=?,
+    available=?,
+    ES=?,
+    updated_by=?
+WHERE id=?";
+
+    /* ---------------- PREPARE ---------------- */
+    $stmt = $db->prepare($sql);
+
+    if (!$stmt) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Prepare failed: ' . $db->error
+        ]);
+        exit;
+    }
+
+    /* ---------------- BIND ---------------- */
+    if (
+        !$stmt->bind_param(
+            "iiidiiiiiiiiiiiiiisi",
+            $schedules,
+            $vehicles,
+            $spare,
+            $spareP,
+            $docking,
+            $wup,
+            $wup1,
+            $ORDepot,
+            $ORDWS,
+            $ORRWY,
+            $CC,
+            $loan,
+            $Police,
+            $Dealer,
+            $notdepot,
+            $ORTotal,
+            $available,
+            $ES,
+            $username,
+            $editId
+        )
+    ) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Bind failed: ' . $stmt->error
+        ]);
+        exit;
+    }
+
+    /* ---------------- EXECUTE ---------------- */
+    if (!$stmt->execute()) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Execute failed: ' . $stmt->error
+        ]);
+        exit;
+    }
+
+    /* ---------------- CHECK AFFECTED ROWS ---------------- */
+    if ($stmt->affected_rows === 0) {
+        echo json_encode([
+            'status' => 'warning',
+            'message' => 'No changes made (data may be same or ID not found)'
+        ]);
+        exit;
+    }
+
+    /* ---------------- SUCCESS ---------------- */
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'DVP data updated successfully'
+    ]);
+
+    $stmt->close();
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updateBusDetails') {
+    // Collect the updated bus details from the POST data
+    $oldBusNumber = mysqli_real_escape_string($db, $_POST['busNumber']);
+    $busNumber = mysqli_real_escape_string($db, $_POST['newBusNumber']); // New bus number if it's edited
+    $division = mysqli_real_escape_string($db, $_POST['division']);
+    $depot = mysqli_real_escape_string($db, $_POST['depot']);
+    $make = mysqli_real_escape_string($db, $_POST['make']);
+    $emissionNorms = mysqli_real_escape_string($db, $_POST['emissionNorms']);
+    $doc = mysqli_real_escape_string($db, $_POST['doc']);
+    $wheelBase = mysqli_real_escape_string($db, $_POST['wheelBase']);
+    $chassisNumber = mysqli_real_escape_string($db, $_POST['chassisNumber']);
+    $busCategory = mysqli_real_escape_string($db, $_POST['busCategory']);
+    $busSubCategory = mysqli_real_escape_string($db, $_POST['busSubCategory']);
+    $seatingCapacity = mysqli_real_escape_string($db, $_POST['seatingCapacity']);
+    $busBodyBuilder = mysqli_real_escape_string($db, $_POST['busBodyBuilder']);
+
+    // SQL query to update the bus details in the database
+    $sql = "UPDATE bus_registration SET 
+            bus_number='$busNumber',
+            make = '$make',
+            emission_norms = '$emissionNorms',
+            doc = '$doc',
+            wheel_base = '$wheelBase',
+            chassis_number = '$chassisNumber',
+            bus_category = '$busCategory',
+            bus_sub_category = '$busSubCategory',
+            seating_capacity = '$seatingCapacity',
+            bus_body_builder = '$busBodyBuilder'
+            WHERE bus_number = '$oldBusNumber'";
+
+
+    if (mysqli_query($db, $sql)) {
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Bus details updated successfully'
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => $stmt->error
+        ]);
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updateKmplData') {
+    $id = $_POST['editId'];
+    $total_km = $_POST['total_km'];
+    $hsd = $_POST['hsd'];
+    $kmpl = $_POST['kmpl'];
+    $date = $_POST['date'];
+
+    // Prepare and execute SQL statement
+    $sql = "UPDATE kmpl_data SET  total_km=?, hsd=?, kmpl=?, date=? WHERE id=?";
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, "iidsi", $total_km, $hsd, $kmpl, $date, $id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        // Data updated successfully
+        echo "Data updated successfully!";
+    } else {
+        // Error occurred
+        echo "Error: " . mysqli_error($db);
+    }
+
+    // Close statement and connection
+    mysqli_stmt_close($stmt);
+    mysqli_close($db);
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updateOffRoadData') {
+    $id        = $_POST['editId'] ?? '';
+    $remarks   = $_POST['editRemarks'] ?? '';
+    $status    = $_POST['editStatus'] ?? '';
+    $dwsreason = $_POST['editDwsRemark'] ?? '';
+
+    $missing = [];
+
+    // Check each field
+    if (empty($id)) {
+        $missing[] = "ID";
+    }
+    if (empty($remarks)) {
+        $missing[] = "Remarks";
+    }
+    if (empty($status)) {
+        $missing[] = "Status";
+    }
+    if (empty($dwsreason)) {
+        $missing[] = "DWS Remark";
+    }
+
+    // If any missing, return error with exact fields
+    if (!empty($missing)) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'Missing field(s): ' . implode(", ", $missing)
+        ]);
+        exit;
+    }
+
+    // Prepare and execute SQL statement
+    $sql = "UPDATE off_road_data SET remarks=?, status=?, dws_remark=? WHERE id=?";
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, "sssi", $remarks, $status, $dwsreason, $id);
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode([
+            'status'  => 'success',
+            'message' => 'Off-road data updated successfully.'
+        ]);
+    } else {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'Error updating off-road data: ' . mysqli_error($db)
+        ]);
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'deleteOffRoadData') {
+    $id = $_POST['id'];
+    $deleteQuery = "DELETE FROM off_road_data WHERE id = ?";
+    $stmt = mysqli_prepare($db, $deleteQuery);
+    mysqli_stmt_bind_param($stmt, 'i', $id);
+    $deleteResult = mysqli_stmt_execute($stmt);
+    if ($deleteResult) {
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Off-road record deleted successfully.'
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Failed to delete off-road record.'
+        ]);
+    }
     exit;
 }

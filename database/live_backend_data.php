@@ -9,7 +9,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $selectedDate = isset($_POST['date']) ? $_POST['date'] : date('Y-m-d');
     $formattedDate = date('d-m-Y', strtotime($selectedDate));
     $monthStartDate = date('Y-m-01', strtotime($selectedDate));
-    $financialYearStartDate = date('Y-04-01', strtotime($selectedDate));
+    $year  = date('Y', strtotime($selectedDate));
+    $month = date('n', strtotime($selectedDate));
+
+    if ($month >= 4) {
+        // April to December
+        $financialYearStartDate = $year . '-04-01';
+        $financialYearEndDate   = ($year + 1) . '-03-31';
+    } else {
+        // January to March
+        $financialYearStartDate = ($year - 1) . '-04-01';
+        $financialYearEndDate   = $year . '-03-31';
+    }
 
     $monthAbbr = date('M', strtotime($selectedDate));
     $displayLabel = $monthAbbr . " BD";
@@ -393,4 +404,205 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     } else {
         echo json_encode(["status" => "error", "message" => "No records found"]);
     }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetchprogramdata') {
+    $date = $_POST['date'];
+    $division_id  = 'All';
+    $depot_id     = 'All';
+    $program_type = 'All';
+    $today        = date('Y-m-d');
+
+    if (!$date || !$division_id || !$depot_id || !$program_type) {
+        echo json_encode(['error' => 'Missing required parameters']);
+        exit;
+    }
+
+    // Get depot/division names
+    $locationQuery = "SELECT division FROM location WHERE division_id = '$division_id' limit 1";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+
+    // Get depot/division names
+    $locationQuery = "SELECT depot FROM location WHERE depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    //if the division or depot is set as All then fetch all the data depending on the selection
+    if ($division_id === 'All') {
+        $divisionCondition = "1"; // No division filter
+    } else {
+        $divisionCondition = "prd.division_id = '$division_id'";
+    }
+
+    if ($depot_id === 'All') {
+        $depotCondition = "1"; // No depot filter
+    } else {
+        $depotCondition = "prd.depot_id = '$depot_id'";
+    }
+        if ($division_id == 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Pending Program Report for Central Office - $depotName</h3>";
+        } elseif ($division_id != 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Pending Program Report for $divisionName - All Depots</h3>";
+        } elseif ($division_id != 'All' && $depot_id != 'All') {
+            $html = "<h3 class='text-center'>Pending Program Report for $divisionName - $depotName</h3>";
+        }
+    
+    echo "<h4 class='text-center'>Date: " . date('d-m-Y', strtotime($date)) . "</h4>";
+
+    $sqlforreport = "SELECT prd.*, l.division, l.depot from program_summary_daily prd
+    LEFT JOIN location l ON prd.depot_id = l.depot_id AND prd.division_id = l.division_id
+    WHERE $divisionCondition
+    AND $depotCondition
+    and prd.summary_date = '$date'";
+
+    $result = mysqli_query($db, $sqlforreport);
+    echo "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+              <thead>
+                  <tr>
+                      <th>SL No</th>
+                      <th>Division</th>
+                      <th>Depot</th>";
+    if ($program_type == 'All') {
+        echo "<th>Pending Docking</th><th>Delayed Docking</th><th>Pending EOC</th><th>Delayed EOC</th>";
+    } elseif ($program_type == 'docking') {
+        echo "<th>Pending Docking</th><th>Delayed Docking</th>";
+    } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+        echo "<th>Pending EOC</th><th>Delayed EOC</th>";
+    }
+    echo "</tr>
+              </thead>
+              <tbody>";
+
+    $sl_no = 1;
+    $currentDivision = null;
+    $divisionTotals = [
+        'pending_docking' => 0,
+        'delayed_docking' => 0,
+        'pending_engine' => 0,
+        'delayed_engine' => 0
+    ];
+    $grandTotals = [
+        'pending_docking' => 0,
+        'delayed_docking' => 0,
+        'pending_engine' => 0,
+        'delayed_engine' => 0
+    ];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        // If division changes, print previous division total
+        if ($currentDivision !== null && $currentDivision !== $row['division']) {
+            echo "<tr style='font-weight:bold; background:#f0f0f0;'>
+                    <td colspan='3' style='text-align:center;'>{$currentDivision} Total</td>";
+            if ($program_type == 'All') {
+                echo "<td>{$divisionTotals['pending_docking']}</td>
+                                  <td>{$divisionTotals['delayed_docking']}</td>
+                                  <td>{$divisionTotals['pending_engine']}</td>
+                                  <td>{$divisionTotals['delayed_engine']}</td>";
+            } elseif ($program_type == 'docking') {
+                echo "<td>{$divisionTotals['pending_docking']}</td>
+                                  <td>{$divisionTotals['delayed_docking']}</td>";
+            } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+                echo "<td>{$divisionTotals['pending_engine']}</td>
+                                  <td>{$divisionTotals['delayed_engine']}</td>";
+            }
+            echo "</tr>";
+
+            // Reset division totals
+            $divisionTotals = [
+                'pending_docking' => 0,
+                'delayed_docking' => 0,
+                'pending_engine' => 0,
+                'delayed_engine' => 0
+            ];
+        }
+
+        // Update current division
+        $currentDivision = $row['division'];
+
+        // Print each depot row
+        echo "<tr>
+                <td>{$sl_no}</td>
+                <td>{$row['division']}</td>
+                <td>{$row['depot']}</td>";
+
+        if ($program_type == 'All') {
+            echo "<td>{$row['pending_docking']}</td>
+                  <td>{$row['delayed_docking']}</td>
+                  <td>{$row['pending_engine']}</td>
+                  <td>{$row['delayed_engine']}</td>";
+            $divisionTotals['pending_docking'] += $row['pending_docking'];
+            $divisionTotals['delayed_docking'] += $row['delayed_docking'];
+            $divisionTotals['pending_engine'] += $row['pending_engine'];
+            $divisionTotals['delayed_engine'] += $row['delayed_engine'];
+
+            $grandTotals['pending_docking'] += $row['pending_docking'];
+            $grandTotals['delayed_docking'] += $row['delayed_docking'];
+            $grandTotals['pending_engine'] += $row['pending_engine'];
+            $grandTotals['delayed_engine'] += $row['delayed_engine'];
+        } elseif ($program_type == 'docking') {
+            echo "<td>{$row['pending_docking']}</td>
+                  <td>{$row['delayed_docking']}</td>";
+            $divisionTotals['pending_docking'] += $row['pending_docking'];
+            $divisionTotals['delayed_docking'] += $row['delayed_docking'];
+            $grandTotals['pending_docking'] += $row['pending_docking'];
+            $grandTotals['delayed_docking'] += $row['delayed_docking'];
+        } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+            echo "<td>{$row['pending_engine']}</td>
+                  <td>{$row['delayed_engine']}</td>";
+            $divisionTotals['pending_engine'] += $row['pending_engine'];
+            $divisionTotals['delayed_engine'] += $row['delayed_engine'];
+            $grandTotals['pending_engine'] += $row['pending_engine'];
+            $grandTotals['delayed_engine'] += $row['delayed_engine'];
+        }
+
+        echo "</tr>";
+        $sl_no++;
+    }
+
+    // Print last division total
+    if ($currentDivision !== null) {
+        echo "<tr style='font-weight:bold; background:#f0f0f0;'>
+                <td colspan='3' style='text-align:center;'>{$currentDivision} Total</td>";
+        if ($program_type == 'All') {
+            echo "<td>{$divisionTotals['pending_docking']}</td>
+                              <td>{$divisionTotals['delayed_docking']}</td>
+                              <td>{$divisionTotals['pending_engine']}</td>
+                              <td>{$divisionTotals['delayed_engine']}</td>";
+        } elseif ($program_type == 'docking') {
+            echo "<td>{$divisionTotals['pending_docking']}</td>
+                              <td>{$divisionTotals['delayed_docking']}</td>";
+        } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+            echo "<td>{$divisionTotals['pending_engine']}</td>
+                              <td>{$divisionTotals['delayed_engine']}</td>";
+        }
+        echo "</tr>";
+    }
+
+    // Print corporation total
+    if ($division_id === 'All') {
+        echo "<tr style='font-weight:bold; background:#d0e0ff;'>
+            <td colspan='3' style='text-align:center;'>Corporation Total</td>";
+        if ($program_type == 'All') {
+            echo "<td>{$grandTotals['pending_docking']}</td>
+                          <td>{$grandTotals['delayed_docking']}</td>
+                          <td>{$grandTotals['pending_engine']}</td>
+                          <td>{$grandTotals['delayed_engine']}</td>";
+        } elseif ($program_type == 'docking') {
+            echo "<td>{$grandTotals['pending_docking']}</td>
+                          <td>{$grandTotals['delayed_docking']}</td>";
+        } elseif ($program_type == 'engine_oil_and_main_filter_change') {
+            echo "<td>{$grandTotals['pending_engine']}</td>
+                          <td>{$grandTotals['delayed_engine']}</td>";
+        }
+        echo "</tr>";
+    }
+
+    echo "</tbody></table>";
+
+    exit;
+
+
 }

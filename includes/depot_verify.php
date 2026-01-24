@@ -41,6 +41,22 @@ if ($_SESSION['TYPE'] == 'DEPOT'){
         </script>
         <?php
     }
+}else if ($_SESSION['TYPE'] == 'HEAD-OFFICE' ){
+    if ($_SESSION['JOB_TITLE'] == 'CME_CO'){
+        ?>
+        <script type="text/javascript">
+            // Redirect to admin_select.php if the user is the main admin
+            window.location = "../pages/index.php";
+        </script>
+        <?php
+    }
+}else if ($_SESSION['TYPE'] == 'DIVISION'){
+    ?>
+    <script type="text/javascript">
+        // Redirect to division.php if the user type is DIVISION
+        window.location = "../pages/division.php";
+    </script>
+    <?php
 }else {
     // Redirect to login.php if accessed directly without POST data
     header("Location: ../pages/login.php");

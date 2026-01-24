@@ -1030,3 +1030,42 @@ function opendepotBDDetails(name, type, subtype, selectedDate) {
         }
     });
 }
+$(document).ready(function () {
+
+    // Load when accordion opens
+    $('#collapseEight').on('show.bs.collapse', function () {
+        fetchProgramData();
+    });
+
+    // Load when date changes
+    $('#program-date-selector').on('change', function () {
+        fetchProgramData();
+    });
+
+    function fetchProgramData() {
+        $("#loadingMessageprogram").show();
+        $("#ProgramTable").html("");
+
+        let selectedDate = $("#program-date-selector").val(); // ✅ correct ID
+        let action = "fetchprogramdata";
+
+        $.ajax({
+            url: 'database/live_backend_data.php',
+            type: 'POST',
+            data: {
+                date: selectedDate,
+                action: action
+            },
+            dataType: 'html',
+            success: function (response) {
+                $("#loadingMessageprogram").hide();
+                $("#ProgramTable").html(response);
+            },
+            error: function () {
+                $("#loadingMessageprogram").hide();
+                $("#ProgramTable").html("<p>Error loading data.</p>");
+            }
+        });
+    }
+
+});

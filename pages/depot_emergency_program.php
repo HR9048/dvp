@@ -99,7 +99,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {
             });
         });
 
-        // on select of program date, check if the date is not in future and not more than 30 days from today
+        // on select of program date, check if the date is not in future and not more than 5 days from today
         $(document).ready(function() {
             $('#program_date').change(function() {
                 var program_date = new Date($(this).val());
@@ -109,8 +109,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {
                 if (program_date > today) {
                     Swal.fire("Not Allowed", "Program date cannot be in the future.", "warning");
                     $(this).val('');
-                } else if (diffDays > 30) {
-                    Swal.fire("Not Allowed", "Program date must be within the last 30 days.", "warning");
+                } else if (diffDays > 5) {
+                    Swal.fire("Not Allowed", "Program date must be within the last 4 days.", "warning");
                     $(this).val('');
                 }
             });
@@ -146,8 +146,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {
                     Swal.fire("Error", "Program date cannot be in the future.", "warning");
                     return;
                 }
-                if (diffDays > 30) {
-                    Swal.fire("Error", "Program date must be within the last 30 days.", "warning");
+                if (diffDays > 5) {
+                    Swal.fire("Error", "Program date must be within the last 5 days.", "warning");
                     return;
                 }
                 // Disable the submit button

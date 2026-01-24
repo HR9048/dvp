@@ -70,7 +70,6 @@
 
 
   function checkSession() {
-    console.log('Checking session...');
     fetch('session1.php') // Calls the session checker
       .then(response => response.json())
       .then(data => {
@@ -167,7 +166,25 @@
       "autoWidth": true // Automatically adjust column widths
     });
   });
+
+function handleUserTypeChange() {
+    const userType = document.getElementById('usertype');
+
+    if (userType.value !== '') {
+        document.getElementById('userTypeForm').submit();
+    }
+    console.log(userType.value);
+
+    if (userType.value === 'central') {
+        window.location.href = 'index.php';
+    } else if (userType.value === 'admin') {
+        window.location.href = '../admin/admin_pannel.php';
+    } else {
+        alert('Please select a user type');
+    }
+}
 </script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 <script>
   $(document).ready(function() {
@@ -276,14 +293,6 @@
   });
 </script>
 
-
-
-<!-- Page level plugins -->
-<!-- <script src="../datatables/jquery.dataTables.min.js"></script>
-  <script src="../datatables/dataTables.bootstrap4.min.js"></script> -->
-
-<!-- Page level custom scripts -->
-<!-- <script src="../datatables/datatables-demo.js"></script> -->
 
 <!-- PROFILE OVERLAY NA MODAL -->
 <div id="overlay" onclick="off()">

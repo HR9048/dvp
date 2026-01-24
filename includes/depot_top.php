@@ -407,10 +407,10 @@ date_default_timezone_set('Asia/Kolkata');
                                                         <b>Program</b>
                                                     </button>
                                                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                        <li><a class="dropdown-item" href="depot_bus_type_update.php">Update Bus
+                                                        <!--<li><a class="dropdown-item" href="depot_bus_type_update.php">Update Bus
                                                                 Type for Program</a></li>
                                                         <li><a class="dropdown-item" href="depot_program_update.php">Last
-                                                                Maintenance KM Update</a></li>
+                                                                Maintenance KM Update</a></li>-->
                                                         <li><a class="dropdown-item" href="depot_program_print.php">Generate
                                                                 Program</a></li>
                                                         <li><a class="dropdown-item" href="depot_vehicle_program.php">Update

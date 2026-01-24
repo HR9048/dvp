@@ -178,7 +178,7 @@ date_default_timezone_set('Asia/Kolkata');
                         </ul>
                       </div>
                     </li>
-                    
+
                     <li class="nav-item">
                       <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
@@ -197,6 +197,7 @@ date_default_timezone_set('Asia/Kolkata');
                             <ul class="dropdown-menu">
                               <li><a class="dropdown-item" href="co_vehicle_kmpl.php">Month KMPL Report</a></li>
                               <li><a class="dropdown-item" href="co_vehicle_kmpl_ft.php">KMPL Report From-to Date</a></li>
+                              <li><a class="dropdown-item" href="co_vehicle_kmpl_ft1.php">KMPL Type wise Report </a></li>
                               <li><a class="dropdown-item" href="co_kmpl_compare_report.php">KMPL Last 15 days Comparision Report</a></li>
                               <li><a class="dropdown-item" href="co_vehicle_kmpl_report.php">Vehicle Kmpl Track Report</a></li>
                               <li><a class="dropdown-item" href="co_defect_report.php">KMPL Defect Report</a></li>
@@ -261,29 +262,58 @@ date_default_timezone_set('Asia/Kolkata');
                 <ul class="navbar-nav ml-auto">
                   <div class="topbar-divider d-none d-sm-block"></div>
 
-                  <li class="nav-item">
+                  <li class="nav-item d-flex align-items-center">
+
+                    <!-- USER TYPE SELECT -->
+                    <?php if (isset($_SESSION['USERNAME']) && $_SESSION['USERNAME'] === 'admin@admin') { ?>
+                      <div class="mr-3">
+                        <form method="post" id="userTypeForm">
+                          <select name="userType" id="usertype"
+                            class="form-control form-control-sm"
+                            onchange="handleUserTypeChange()">
+                            <option value="central">Central Office</option>
+                            <option value="admin">Super Admin</option>
+                          </select>
+                        </form>
+                      </div>
+
+                    <?php } ?>
+
+                    <!-- USER PROFILE DROPDOWN -->
                     <div class="dropdown">
-                      <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
+                      <button class="btn dropdown-toggle d-flex align-items-center" type="button"
+                        id="dropdownMenuButton1" data-toggle="dropdown" aria-expanded="false"
                         style="font-size: 15px;">
-                        <b
-                          class="mr-2 d-none d-lg-inline text-gray-600 small"><b><?php echo $_SESSION['FIRST_NAME'] . ' ' . $_SESSION['LAST_NAME']; ?></b></b>
-                        <img class="img-profile rounded-circle profile-img" <?php if ($_SESSION['GENDER'] == 'Male') {
-                                                                              echo 'src="../images/male.jpeg"';
-                                                                            } else {
-                                                                              echo 'src="../images/female2.jpeg"';
-                                                                            } ?>>
+
+                        <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                          <b><?php echo $_SESSION['FIRST_NAME'] . ' ' . $_SESSION['LAST_NAME']; ?></b>
+                        </span>
+
+                        <img class="img-profile rounded-circle profile-img"
+                          src="../images/<?php echo ($_SESSION['GENDER'] === 'Male') ? 'male.jpeg' : 'female2.jpeg'; ?>">
                       </button>
-                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <li><button class="dropdown-item" onclick="on()"><i
-                              class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Profile</button></li>
-                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal"
-                            data-href="settings.php?action=edit & id='<?php echo $a; ?>'"><i
-                              class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Settings</a></li>
-                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal"><i
-                              class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout</a></li>
+
+                      <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton1">
+                        <li>
+                          <button class="dropdown-item" onclick="on()">
+                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>Profile
+                          </button>
+                        </li>
+                        <li>
+                          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal">
+                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>Settings
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>Logout
+                          </a>
+                        </li>
                       </ul>
                     </div>
+
                   </li>
+
                 </ul>
               </div>
             </div>

@@ -7,7 +7,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 }
 if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') {
     // Allow access
-    ?>
+?>
 
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -117,6 +117,20 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                         <label for="wheel_base">Wheel Base:<span class="text-danger">*</span></label>
                         <select class="form-control" id="wheel_base" name="wheel_base" required>
                             <option value="">Select Wheel Base</option>
+                            <?php
+                            $sqlforwheelbase = "SELECT * FROM wheelbase";
+                            $result = $db->query($sqlforwheelbase); // ❗ FIXED variable name
+
+                            if ($result && $result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                            ?>
+                                    <option value="<?php echo htmlspecialchars($row['wheel_base']); ?>">
+                                        <?php echo htmlspecialchars($row['wheel_base']); ?>
+                                    </option>
+                            <?php
+                                }
+                            }
+                            ?>
                         </select>
                     </div>
                 </div>
@@ -158,10 +172,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                         <select class="form-control" id="seating_capacity" name="seating_capacity" required>
                             <option value="">Select Seating Capacity</option>
                             <?php // Populate dropdown with numbers from 1 to 65
-                                for ($i = 20; $i <= 65; $i++) {
-                                    echo "<option value='$i'>$i</option>";
-                                }
-                                ?>
+                            for ($i = 20; $i <= 65; $i++) {
+                                echo "<option value='$i'>$i</option>";
+                            }
+                            ?>
                         </select>
                         <small class="form-text text-muted">seating capacity=passenger+driver+conductor</small>
                     </div>
@@ -171,6 +185,20 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
                         <label for="bus_body_builder">Bus Body Builder:<span class="text-danger">*</span></label>
                         <select class="form-control" id="bus_body_builder" name="bus_body_builder" required>
                             <option value="">Select Body Builder</option>
+                            <?php
+                            $sqlforwheelbase = "SELECT * FROM bus_body_builder";
+                            $result = $db->query($sqlforwheelbase); // ❗ FIXED variable name
+
+                            if ($result && $result->num_rows > 0) {
+                                while ($row = $result->fetch_assoc()) {
+                            ?>
+                                    <option value="<?php echo htmlspecialchars($row['body_type']); ?>">
+                                        <?php echo htmlspecialchars($row['body_type']); ?>
+                                    </option>
+                            <?php
+                                }
+                            }
+                            ?>
                         </select>
                     </div>
                 </div>
@@ -189,10 +217,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             $.ajax({
                 url: '../includes/data_fetch.php',
                 type: 'GET',
-                data: { action: 'fetchMakes' },
-                success: function (response) {
+                data: {
+                    action: 'fetchMakes'
+                },
+                success: function(response) {
                     var makes = JSON.parse(response);
-                    $.each(makes, function (index, value) {
+                    $.each(makes, function(index, value) {
                         $('#make').append('<option value="' + value + '">' + value + '</option>');
                     });
                 }
@@ -204,45 +234,18 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             $.ajax({
                 url: '../includes/data_fetch.php',
                 type: 'GET',
-                data: { action: 'fetchEmissionNorms' },
-                success: function (response) {
+                data: {
+                    action: 'fetchEmissionNorms'
+                },
+                success: function(response) {
                     var emissionNorms = JSON.parse(response);
-                    $.each(emissionNorms, function (index, value) {
+                    $.each(emissionNorms, function(index, value) {
                         $('#emission_norms').append('<option value="' + value + '">' + value + '</option>');
                     });
                 }
             });
         }
 
-        // Function to fetch wheel base
-        function fetchWheelBase() {
-            $.ajax({
-                url: '../includes/data_fetch.php',
-                type: 'GET',
-                data: { action: 'fetchWheelBase' },
-                success: function (response) {
-                    var wheelBase = JSON.parse(response);
-                    $.each(wheelBase, function (index, value) {
-                        $('#wheel_base').append('<option value="' + value + '">' + value + '</option>');
-                    });
-                }
-            });
-        }
-
-        // Function to fetch body builder
-        function fetchBodyBuilder() {
-            $.ajax({
-                url: '../includes/data_fetch.php',
-                type: 'GET',
-                data: { action: 'fetchBodyBuilder' },
-                success: function (response) {
-                    var bodyBuilders = JSON.parse(response);
-                    $.each(bodyBuilders, function (index, value) {
-                        $('#bus_body_builder').append('<option value="' + value + '">' + value + '</option>');
-                    });
-                }
-            });
-        }
         function fetchBusCategory() {
 
 
@@ -250,10 +253,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             $.ajax({
                 url: '../includes/data_fetch.php',
                 type: 'GET',
-                data: { action: 'fetchBusCategory' },
-                success: function (response) {
+                data: {
+                    action: 'fetchBusCategory'
+                },
+                success: function(response) {
                     var busCategory = JSON.parse(response);
-                    $.each(busCategory, function (index, value) {
+                    $.each(busCategory, function(index, value) {
                         $('#bus_category').append('<option value="' + value + '">' + value + '</option>');
                     });
                 }
@@ -262,13 +267,15 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
 
             //Fetch bus sub-categories based on selected bus category
-            $('#bus_category').change(function () {
+            $('#bus_category').change(function() {
                 var busCategory = $(this).val();
                 $.ajax({
                     url: '../includes/data_fetch.php?action=fetchBusSubCategory',
                     method: 'POST',
-                    data: { bus_category: busCategory },
-                    success: function (data) {
+                    data: {
+                        bus_category: busCategory
+                    },
+                    success: function(data) {
                         $('#bus_sub_category').html(data);
                     }
                 });
@@ -277,15 +284,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
 
 
         // Call the functions to fetch data on page load
-        $(document).ready(function () {
+        $(document).ready(function() {
             fetchMakes();
             fetchEmissionNorms();
-            fetchWheelBase();
-            fetchBodyBuilder();
             fetchBusCategory();
 
         });
-        $(document).ready(function () {
+        $(document).ready(function() {
             // Function to update validation pattern and show/hide note based on make and emission norms
             function updateValidationPatternAndNote() {
                 var make = $("#make").val();
@@ -303,13 +308,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION[
             // Call the function initially
             updateValidationPatternAndNote();
             // AJAX function to update validation pattern and show/hide note when make or emission norms change
-            $("#make, #emission_norms").change(function () {
+            $("#make, #emission_norms").change(function() {
                 updateValidationPatternAndNote();
             });
         });
-
     </script>
-    <?php
+<?php
 } else {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'login.php';</script>";
     exit;

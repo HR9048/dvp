@@ -15,6 +15,7 @@ $depot = $data['depot'] ?? null;
 $sch_no = $data['sch_no'] ?? null;
 $bus_number = $data['bus_number'] ?? null;
 $driver_token = $data['driver_token'] ?? null;
+$kmpl_type = $data['kmpl_type'] ?? null;
 
 // Validate required fields
 if (strtolower($sch_no) === 'all' || strtolower($bus_number) === 'all' || strtolower($driver_token) === 'all') {
@@ -25,6 +26,26 @@ if (strtolower($sch_no) === 'all' || strtolower($bus_number) === 'all' || strtol
     $locationData = mysqli_fetch_assoc($locationResult);
     $divisionName = $locationData['division'] ?? 'Unknown';
     $depotName = $locationData['depot'] ?? 'Unknown';
+
+    if ($kmpl_type === "All") {
+        $kmplHaving = "1=1";
+    } elseif ($kmpl_type === "<5.00") {
+        $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) < 5.00";
+    } elseif ($kmpl_type === "5.00-5.20") {
+        $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) BETWEEN 5.00 AND 5.20";
+    } elseif ($kmpl_type === ">5.20") {
+        $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) > 5.20";
+    }
+
+    $kmplWhere = "1=1";
+
+    if ($kmpl_type === "<5.00") {
+        $kmplWhere = "(km_operated / NULLIF(hsd,0)) < 5.00";
+    } elseif ($kmpl_type === "5.00-5.20") {
+        $kmplWhere = "(km_operated / NULLIF(hsd,0)) BETWEEN 5.00 AND 5.20";
+    } elseif ($kmpl_type === ">5.20") {
+        $kmplWhere = "(km_operated / NULLIF(hsd,0)) > 5.20";
+    }
 
 
     if (!$from || !$to || !$division || !$depot) {
@@ -183,6 +204,11 @@ if (strtolower($sch_no) === 'all' || strtolower($bus_number) === 'all' || strtol
             $totalHsd += $dates[$d]['hsd'] ?? 0;
         }
         $cumulativeKmpl = $totalHsd > 0 ? number_format($totalKm / $totalHsd, 2) : "0.00";
+        if ($kmpl_type === "<5.00" && $cumulativeKmpl >= 5.00) continue;
+
+    if ($kmpl_type === "5.00-5.20" && ($cumulativeKmpl < 5.00 || $cumulativeKmpl > 5.20)) continue;
+
+    if ($kmpl_type === ">5.20" && $cumulativeKmpl <= 5.20) continue;
 
         $html .= "<tr><td>$sl</td><td>$label</td>
               <td><strong>" . round($totalKm, 2) . "</strong></td>

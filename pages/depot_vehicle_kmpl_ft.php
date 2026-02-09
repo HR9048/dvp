@@ -6,7 +6,7 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') {
+if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') {
     // Allow access
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
@@ -36,6 +36,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
         <select id="driver_token" name="driver_token">
             <option value="">Select Driver</option>
         </select>
+        <label for="kmpl_type">KMPL Type:</label>
+        <select id="kmpl_type" name="kmpl_type">
+            <option value="">Select any All option first</option>
+        </select>
         <button class="btn btn-primary" type="submit">Submit</button>
         <button class="btn btn-success" onclick="window.print()">Print</button>
         <button class="btn btn-success" id="downloadExcel">Download Excel</button>
@@ -52,6 +56,57 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
     ?>
 
     <script>
+        function updateKMPLTypeOptions() {
+
+            let sch = $('#sch_no').val();
+            let bus = $('#bus_number').val();
+            let driver = $('#driver_token').val();
+
+            let kmplSelect = $('#kmpl_type');
+
+            // ✅ If any dropdown has All selected
+            if (sch === "All" || bus === "All" || driver === "All") {
+
+
+                // ✅ Load actual KMPL options dynamically
+                kmplSelect.html(`
+            <option value="">Select</option>
+            <option value="All">All</option>
+            <option value="<5.00">Less than 5.00</option>
+            <option value="5.00-5.20">5.00 to 5.20</option>
+            <option value=">5.20">Greater than 5.20</option>
+        `);
+
+                kmplSelect.prop("disabled", false);
+
+            } else {
+
+                // ❌ Reset back to default option
+                kmplSelect.html(`
+            <option value="">Select any All option first</option>
+        `);
+
+                kmplSelect.prop("disabled", true);
+
+            }
+
+            // ✅ Refresh Select2 if applied
+            kmplSelect.trigger("change.select2");
+        }
+
+        $(document).ready(function() {
+
+            // Disable KMPL initially
+            $('#kmpl_type').prop("disabled", true);
+
+            // Trigger update when user changes any dropdown
+            $('#sch_no, #bus_number, #driver_token').on("change.select2 change", function() {
+                updateKMPLTypeOptions();
+            });
+
+            // Run once initially
+            updateKMPLTypeOptions();
+        });
         $(document).ready(function() {
             // Get current date from PHP
             var todayDate = "<?php echo $currentDate; ?>"; // Date in 'YYYY-MM-DD' format
@@ -301,12 +356,23 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                 var sch_no = $('#sch_no').val();
                 var bus_number = $('#bus_number').val();
                 var driver_token = $('#driver_token').val();
+                var kmpl_type = $('#kmpl_type').val();
 
                 if (!sch_no && !bus_number && !driver_token) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Selection Required!',
                         text: 'Please select any one: Schedule No, Bus Number, or Driver Token.',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'OK'
+                    });
+                    return; // Stop execution
+                }
+                if ((bus_number === 'All' || driver_token === 'All' || sch_no === 'All') && !kmpl_type) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'KMPL Type Required!',
+                        text: 'Please select KMPL Type when Schedule No, Bus Number, or Driver Token is "All".',
                         confirmButtonColor: '#d33',
                         confirmButtonText: 'OK'
                     });
@@ -324,7 +390,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                         depot: depot,
                         sch_no: sch_no,
                         bus_number: bus_number,
-                        driver_token: driver_token
+                        driver_token: driver_token,
+                        kmpl_type: kmpl_type
                     }),
                     contentType: 'application/json',
                     dataType: 'json',

@@ -75,22 +75,23 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     </div>
 
     <script>
-        document.getElementById('reportDate').addEventListener('change', function () {
-    const selectedDate = new Date(this.value);
-    const minDate = new Date("<?php echo $reportstart_date; ?>");
+        document.getElementById('reportDate').addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const minDate = new Date("<?php echo $reportstart_date; ?>");
 
-    if (selectedDate < minDate) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Invalid Date',
-            text: 'Please select a date on or after ' + minDate.toLocaleDateString('en-GB') + '.',
-            confirmButtonColor: '#3085d6'
+            if (selectedDate < minDate) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Date',
+                    text: 'Please select a date on or after ' + minDate.toLocaleDateString('en-GB') + '.',
+                    confirmButtonColor: '#3085d6'
+                });
+
+                // Optional: Clear the invalid date
+                this.value = '';
+            }
         });
 
-        // Optional: Clear the invalid date
-        this.value = '';
-    }
-});
         function validateAndSubmit1() {
             let reportDate = document.getElementById('reportDate').value;
             if (!reportDate) {
@@ -104,7 +105,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             let fourDaysAgo = new Date();
 
             yesterday.setDate(today.getDate());
-            fourDaysAgo.setDate(today.getDate() - 10);
+            <?php
+            $slectprogramdayfromdb = "SELECT `me26_update_days` FROM `program_restrictions` WHERE depot_id = $depot_id AND division_id = $division_id";
+            $result = mysqli_query($db, $slectprogramdayfromdb);
+            $row = mysqli_fetch_assoc($result);
+            $program_update_days = $row['me26_update_days'] ?? 0;
+            ?>
+            fourDaysAgo.setDate(today.getDate() - <?php echo $program_update_days; ?>);
 
             // Convert dates to 'YYYY-MM-DD' format for accurate comparison
             let selectedDateString = selectedDate.toISOString().split('T')[0];
@@ -205,7 +212,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                         echo '<select class="operation-select">';
                         echo '<option style="width:100%;" value="">Select</option>'; // Default option
 
-                        $fixedOptions = ['KM Added','Night Out', 'Extra', 'Off-Road', 'DWS', 'RWY', 'RTO', 'BD', 'CC', 'Spare', 'Fair/Jatra', 'Police Station', 'Other Depot', 'Not Arrived', 'Docking', 'Others'];
+                        $fixedOptions = ['KM Added', 'Night Out', 'Extra', 'Off-Road', 'DWS', 'RWY', 'RTO', 'BD', 'CC', 'Spare', 'Fair/Jatra', 'Police Station', 'Other Depot', 'Not Arrived', 'Docking', 'Others'];
                         foreach ($fixedOptions as $opt) {
                             $selected = '';
 

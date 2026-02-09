@@ -209,7 +209,8 @@ confirm_logged_in();
                               <a class="dropdown-item dropdown-toggle" href="#">KMPL</a>
                               <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="division_mkmpl_report.php">Vehicle wise Monthly KMPL Report</a></li>
-                                <li><a class="dropdown-item" href="division_vehicle_kmpl_ft.php">Vehicle wise From-To Date KMPL report </a></li>
+                                <li><a class="dropdown-item" href="division_vehicle_kmpl_ft.php">From-To Date KMPL report </a></li>
+                                <li><a class="dropdown-item" href="division_vehicle_kmpl_ft1.php">From-To Date KMPL report Typewise</a></li>
                                 <li><a class="dropdown-item" href="division_vehicle_kmpl_report.php">Manual/Logsheet KMPL Comparison Report</a></li>
                                 <li><a class="dropdown-item" href="division_view_bd.php">Break Down Report</a></li>
                               </ul>

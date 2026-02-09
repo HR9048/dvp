@@ -301,7 +301,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 });
                 return;
             }
-            console.log("Data to be sent:", data);
 
             // AJAX request to update
             $.ajax({

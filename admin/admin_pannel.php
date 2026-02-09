@@ -73,6 +73,72 @@ include 'ad_nav.php';
             </div>
         </div>
 
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card shadow-sm"
+                 onclick="location.href='program_done_date.php'">
+                <div class="card-body py-5">
+                    <h5 class="text-primary">program Done Date Restriction</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card shadow-sm"
+                 onclick="location.href='me26_restriction_days.php'">
+                <div class="card-body py-5">
+                    <h5 class="text-success">ME 26 Restriction Days</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card shadow-sm"
+                 onclick="location.href='vehicle_logsheet_restriction.php'">
+                <div class="card-body py-5">
+                    <h5 class="text-warning">Vehicle Logsheet Restriction</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card shadow-sm"
+                 onclick="location.href='emergency_program_restriction.php'">
+                <div class="card-body py-5">
+                    <h5 class="text-danger">Emergency Program Restriction</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card shadow-sm"
+                 onclick="location.href='program_done_date_edit.php'">
+                <div class="card-body py-5">
+                    <h5 class="text-primary">Program Done Date Edit</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card shadow-sm"
+                 onclick="location.href='me26_restriction_days.php'">
+                <div class="card-body py-5">
+                    <h5 class="text-success">ME 26 Restriction Days</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card shadow-sm"
+                 onclick="location.href='vehicle_logsheet_restriction.php'">
+                <div class="card-body py-5">
+                    <h5 class="text-warning">Vehicle Logsheet Restriction</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card dashboard-card shadow-sm"
+                 onclick="location.href='emergency_program_restriction.php'">
+                <div class="card-body py-5">
+                    <h5 class="text-danger">Emergency Program Restriction</h5>
+                </div>
+            </div>
+        </div>
+
     </div>
 
 </div>

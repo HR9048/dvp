@@ -1,43 +1,52 @@
 <?php
 include '../includes/connection.php';
-include '../includes/depot_top.php';
+include '../includes/division_sidebar.php';
 // Check if session variables are set
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
     echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') {
-    // Allow access
+if ($_SESSION['TYPE'] == 'DIVISION' && ($_SESSION['JOB_TITLE'] == 'DME') || ($_SESSION['JOB_TITLE'] == 'DC')) {
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
 ?>
-
-    <h6>Select details for Defect Records</h6>
+    <h6>Select details for Program Report</h6>
     <form id="scheduleForm">
-
         <label for="from">From:</label>
-        <input id="from" type="date" name="from" required>
+        <input id="from" type="date" name="from">
 
         <label for="to">To:</label>
-        <input id="to" type="date" name="to" required>
-        <input type="hidden" id="division" name="division" value="<?php echo $division_id; ?>">
-        <input type="hidden" id="depot" name="depot" value="<?php echo $depot_id; ?>">
-        <label for="sch_no">Schedule No:</label>
-        <select id="sch_no" name="sch_no">
-            <option value="">Select Schedule</option>
+        <input id="to" type="date" name="to">
+
+        <input type="hidden" id="division" name="division" value="<?php echo $division_id; ?>">        
+
+        <label for="depot">Depot:</label>
+        <select id="depot" name="depot">
+            <option value="">select</option>
+            <option value="All">All</option>
+            <?php
+            $depot_query = "SELECT DEPOT_ID, DEPOT FROM location WHERE DIVISION_ID = '$division_id' and depot != 'DIVISION' ORDER BY DEPOT_ID ASC";
+            $depot_result = mysqli_query($db, $depot_query);
+            while ($depot_row = mysqli_fetch_array($depot_result)) {
+                $depot_id_option = $depot_row['DEPOT_ID'];
+                $depot_name_option = $depot_row['DEPOT'];
+                echo "<option value='$depot_id_option'>$depot_name_option</option>";
+            }
+            ?>
         </select>
 
-        <label for="bus_number">Bus Number:</label>
-        <select id="bus_number" name="bus_number">
-            <option value="">Select Bus</option>
+        <label for="kmpl_type">KMPL Type:</label>
+        <select id="kmpl_type" name="kmpl_type" required>
+            <option value="">select</option>
+            <option value="All">All</option>
+            <option value="<5.00">Less then 5.00</option>
+            <option value="5.00-5.20">5.00 to 5.20</option>
+            <option value=">5.20">Greater then 5.20</option>
         </select>
 
-        <label for="driver_token">Driver Token:</label>
-        <select id="driver_token" name="driver_token">
-            <option value="">Select Driver</option>
-        </select>
         <button class="btn btn-primary" type="submit">Submit</button>
         <button class="btn btn-success" onclick="window.print()">Print</button>
+        <button class="btn btn-secondary" onclick="functionExcelExport('Tech_Tool_details')" type="button">Export to Excel</button>
 
     </form>
     <div id="loadingIndicator" style="display:none; text-align:center; margin: 10px;">
@@ -54,11 +63,11 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
     date_default_timezone_set('Asia/Kolkata'); // Set the time zone to Asia/Kolkata
     $currentDate = date('Y-m-d', strtotime('+1 day')); // Get current date plus 1 day in YYYY-MM-DD format
     ?>
-
     <script>
         $(document).ready(function() {
             // Get current date from PHP
             var todayDate = "<?php echo $currentDate; ?>"; // Date in 'YYYY-MM-DD' format
+
 
             // Date Validation: Ensure 'From' is not greater than 'To' and not greater than today
             $('#from, #to').on('change', function() {
@@ -150,134 +159,35 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                 }
             });
         });
-    </script>
 
-    <script>
-        $(document).ready(function() {
-            var depotId = "<?php echo $_SESSION['DEPOT_ID']; ?>"; // Get depot ID from session
-
-            if (depotId) {
-                $('#depot').val(depotId).trigger('change'); // Set and trigger change event
-                fetchScheduleNos(depotId);
-                fetchBusNumbers(depotId);
-                fetchDriverTokens(depotId);
-            }
-
-
-
-            // Initialize Select2
-            $('#sch_no, #bus_number, #driver_token').select2();
-
-            // Handle change event for any of the three dropdowns
-            $('#sch_no, #bus_number, #driver_token').on('change', function() {
-                var selectedId = $(this).attr('id');
-
-                // Loop through each field and reset the others
-                $('#sch_no, #bus_number, #driver_token').each(function() {
-                    if ($(this).attr('id') !== selectedId) {
-                        if ($(this).val()) {
-                            $(this).val(null).trigger('change.select2'); // Reset the other two
-                        }
-                    }
-                });
-            });
-
-
-
-
-
-
-
-            function fetchScheduleNos(depotId) {
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: {
-                        action: 'fetchScheduleNos',
-                        depot_id: depotId
-                    },
-                    success: function(response) {
-                        $('#sch_no').html(response);
-                    }
-                });
-            }
-
-            function fetchBusNumbers(depotId) {
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: {
-                        action: 'fetchBusNumbers',
-                        depot_id: depotId
-                    },
-                    success: function(response) {
-                        $('#bus_number').html(response);
-                    }
-                });
-            }
-
-            function fetchDriverTokens(depotId) {
-                $.ajax({
-                    url: '../includes/backend_data.php',
-                    type: 'POST',
-                    data: {
-                        action: 'getDepotDetails',
-                        depot_id: depotId
-                    },
-                    success: function(response) {
-                        var depotDetails = JSON.parse(response);
-                        if (depotDetails.kmpl_division && depotDetails.kmpl_depot) {
-                            callApis(depotDetails.kmpl_division, depotDetails.kmpl_depot);
-                        } else {
-                            console.error("Missing kmpl_division or kmpl_depot");
-                        }
-                    }
-                });
-            }
-
-            function callApis(kmplDivision, kmplDepot) {
-                var apiUrl1 = `../includes/data.php?division=${kmplDivision}&depot=${kmplDepot}`;
-                var apiUrl2 = `../database/private_emp_api.php?division=${kmplDivision}&depot=${kmplDepot}`;
-
-                $.when($.get(apiUrl1), $.get(apiUrl2)).done(function(response1, response2) {
-                    var data1 = response1[0]?.data ?? [];
-                    var data2 = response2[0]?.data ?? [];
-                    var combinedData = [...data1, ...data2];
-
-                    $('#driver_token').html('<option value="">Select Driver</option>');
-                    $('#driver_token').append(`<option value="All">All</option>`);
-                    combinedData.forEach(driver => {
-                        $('#driver_token').append(`<option value="${driver.EMP_PF_NUMBER}">${driver.token_number}-(${driver.EMP_NAME})</option>`);
-                    });
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    console.error("API Call Failed:", textStatus, errorThrown);
-                });
-            }
+        //add select2 for program type
+        $('#status_type').select2({
+            placeholder: "Select Status Type",
+            allowClear: true
         });
-    </script>
-    <script>
+
+        
+
         $(document).ready(function() {
             $('#scheduleForm').on('submit', function(e) {
                 e.preventDefault(); // Prevent default form submission
 
-                var from = $('#from').val();
-                var to = $('#to').val();
                 var division = $('#division').val();
                 var depot = $('#depot').val();
-                var sch_no = $('#sch_no').val();
-                var bus_number = $('#bus_number').val();
-                var driver_token = $('#driver_token').val();
+                var kmpl_type = $('#kmpl_type').val();
+                var fromdate = $('#from').val();
+                var todate = $('#to').val();
 
-                if (!sch_no && !bus_number && !driver_token) {
+                if (!division || !depot || !kmpl_type || !fromdate || !todate) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'Selection Required!',
-                        text: 'Please select any one: Schedule No, Bus Number, or Driver Token.',
-                        confirmButtonColor: '#d33',
+                        title: 'Incomplete Selection',
+                        text: 'Please select all fields before submitting the form.',
                         confirmButtonText: 'OK'
                     });
-                    return;
+                    return; // Exit the function if validation fails
                 }
+
 
                 // Show loading and clear report container
                 $('#reportContainer').html('');
@@ -288,14 +198,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
                     url: '../includes/backend_data.php',
                     dataType: 'json',
                     data: {
-                        from: from,
-                        to: to,
                         division: division,
                         depot: depot,
-                        sch_no: sch_no,
-                        bus_number: bus_number,
-                        driver_token: driver_token,
-                        action: 'fetch_report_of_defect_record'
+                        kmpl_type: kmpl_type,
+                        from: fromdate,
+                        to: todate,
+                        action: 'fetch_report_of_kmpl_diff_details'
                     },
                     success: function(response) {
                         $('#loadingIndicator').hide(); // hide loading on success
@@ -323,6 +231,9 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSIO
             });
         });
     </script>
+
+
+
 
 <?php
 } else {

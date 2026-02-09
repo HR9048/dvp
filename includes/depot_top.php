@@ -328,13 +328,14 @@ date_default_timezone_set('Asia/Kolkata');
                                                                 </ul>
                                                             </li>
                                                         <?php } ?>
-                                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM') { ?>
+                                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESSION['JOB_TITLE'] == 'Mech') { ?>
                                                             <li class="dropdown-submenu">
                                                                 <a class="dropdown-item dropdown-toggle" href="#">KMPL</a>
                                                                 <ul class="dropdown-menu">
                                                                     <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Daywise KMPL Report</a></li>
                                                                     <li><a class="dropdown-item" href="depot_kmpl_report.php">Monthly KMPL Report</a></li>
                                                                     <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft.php">From-To date KMPL Report</a></li>
+                                                                    <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft1.php">From-To date KMPL Report Typewise</a></li>
                                                                     <li><a class="dropdown-item" href="depot_defect_record.php">KMPL Defect Report</a></li>
                                                                 </ul>
                                                             </li>

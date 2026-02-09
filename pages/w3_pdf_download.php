@@ -480,5 +480,5 @@ foreach ($buses as $vehicleNo => $bus) {
 $pdf->writeHTML($html, true, false, true, false, '');
 
 // Output file
-$pdf->Output("W3_Report_{$divisionName}_{$depotName}.pdf", 'I');
+$pdf->Output("W3_Report_{$divisionName}_{$depotName}.pdf", 'D');
 exit;

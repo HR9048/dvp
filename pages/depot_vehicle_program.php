@@ -487,7 +487,11 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     <?php
     $today = new DateTime();
     $fromdate = clone $today;
-    $fromdate->modify('-5 days');
+    $slectprogramdayfromdb = "SELECT `program_update_days` FROM `program_restrictions` WHERE depot_id = $depot_id AND division_id = $division_id";
+    $result = mysqli_query($db, $slectprogramdayfromdb);
+    $row = mysqli_fetch_assoc($result);
+    $program_update_days = $row['program_update_days'] ?? 0;
+    $fromdate->modify("-$program_update_days days");
     //$fromdate = new DateTime('2025-08-01');
 
     // Format dates for JavaScript display (d-m-Y)

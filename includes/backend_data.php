@@ -10650,7 +10650,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     /* ---------------- MAIN SQL ---------------- */
 
-    $sql = "SELECT
+$sql = "SELECT
     division_id,
     depot_id,
     division,
@@ -10687,6 +10687,7 @@ FROM (
                    ELSE hsd / 2
                END AS hsd_share
         FROM vehicle_kmpl
+        WHERE deleted != '1'
 
         UNION ALL
 
@@ -10696,9 +10697,10 @@ FROM (
                hsd / 2
         FROM vehicle_kmpl
         WHERE driver_2_pf IS NOT NULL AND driver_2_pf <> ''
+          AND deleted != '1'
     ) pf ON pf.id = vk.id
 
-    WHERE vk.deleted = 0
+    WHERE vk.deleted != '1'
       AND vk.date BETWEEN '$from' AND '$to'
       AND $divisionCondition
       AND $depotCondition
@@ -10708,6 +10710,7 @@ FROM (
 WHERE $kmplCond
 GROUP BY division_id, depot_id, division, depot, ym
 ORDER BY division_id, depot_id, ym;";
+
 
     $result = mysqli_query($db, $sql);
 
@@ -10852,15 +10855,14 @@ ORDER BY division_id, depot_id, ym;";
     $kmplHaving = "1=1";
 
     if ($kmpl_type === "<5.00") {
-        $kmplHaving = "ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 2) < 5.00";
+    $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) < 5.00";
     } elseif ($kmpl_type === "5.00-5.20") {
-        $kmplHaving = "ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 2) BETWEEN 5.00 AND 5.20";
+        $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) BETWEEN 5.00 AND 5.20";
     } elseif ($kmpl_type === ">5.20") {
-        $kmplHaving = "ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 2) > 5.20";
+        $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) > 5.20";
     }
     /* ---------------- EMPLOYEE PF-WISE KMPL REPORT ---------------- */
-    $sql_pf = "
-SELECT
+    $sql_pf = "SELECT
     t.division_id,
     t.depot_id,
     t.division,
@@ -10868,7 +10870,7 @@ SELECT
     t.pf_no,
     SUM(t.km_share) AS total_km,
     SUM(t.hsd_share) AS total_hsd,
-    ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 2) AS kmpl
+    ROUND(SUM(t.km_share) / NULLIF(SUM(t.hsd_share),0), 3) AS kmpl
 FROM (
     SELECT
         vk.division_id,
@@ -10882,6 +10884,7 @@ FROM (
     JOIN location l
         ON l.division_id = vk.division_id
        AND l.depot_id = vk.depot_id
+
     JOIN (
         SELECT id,
                driver_1_pf AS pf_no,
@@ -10896,6 +10899,7 @@ FROM (
                    ELSE hsd / 2
                END AS hsd_share
         FROM vehicle_kmpl
+        WHERE deleted != '1'
 
         UNION ALL
 
@@ -10904,9 +10908,12 @@ FROM (
                km_operated / 2,
                hsd / 2
         FROM vehicle_kmpl
-        WHERE driver_2_pf IS NOT NULL AND driver_2_pf <> ''
+        WHERE driver_2_pf IS NOT NULL
+          AND driver_2_pf <> ''
+          AND deleted != '1'
     ) pf ON pf.id = vk.id
-    WHERE vk.deleted = 0
+
+    WHERE vk.deleted != '1'
       AND vk.date BETWEEN '$from' AND '$to'
       AND $divisionCondition
       AND $depotCondition
@@ -10922,8 +10929,8 @@ ORDER BY
     t.division_id,
     t.depot_id,
     kmpl ASC,
-    t.pf_no
-";
+    t.pf_no";
+
 
 
     $result_pf = mysqli_query($db, $sql_pf);
@@ -11295,4 +11302,401 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         ]);
     }
     exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_program_update_days') {
+    $division_id         = $_POST['division_id'] ?? "";
+    $depot_id            = $_POST['depot_id'] ?? "";
+    $program_update_days = $_POST['program_update_days'] ?? "";
+
+    if ($division_id == "" || $depot_id == "" || $program_update_days === "") {
+        echo json_encode([
+            "status" => "error",
+            "message" => "All fields are required"
+        ]);
+        exit;
+    }
+
+    /* ✅ Check if depot exists */
+    $check = $db->prepare("SELECT id FROM program_restrictions WHERE depot_id=?");
+    $check->bind_param("i", $depot_id);
+    $check->execute();
+    $res = $check->get_result();
+
+    if ($res->num_rows > 0) {
+
+        /* ✅ UPDATE */
+        $sql = "UPDATE program_restrictions 
+            SET program_update_days=? 
+            WHERE depot_id=?";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("ii", $program_update_days, $depot_id);
+    } else {
+
+        /* ✅ INSERT */
+        $sql = "INSERT INTO program_restrictions 
+            (division_id, depot_id, program_update_days)
+            VALUES (?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("iii", $division_id, $depot_id, $program_update_days);
+    }
+
+    /* ✅ Execute */
+    if ($stmt->execute()) {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Restriction Days Saved"
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Database Error"
+        ]);
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_me26_restriction_days') {
+    $division_id         = $_POST['division_id'] ?? "";
+    $depot_id            = $_POST['depot_id'] ?? "";
+    $me26_restriction_days = $_POST['me26_restriction_days'] ?? "";
+
+    if ($division_id == "" || $depot_id == "" || $me26_restriction_days === "") {
+        echo json_encode([
+            "status" => "error",
+            "message" => "All fields are required"
+        ]);
+        exit;
+    }
+
+    /* ✅ Check if depot exists */
+    $check = $db->prepare("SELECT id FROM program_restrictions WHERE depot_id=?");
+    $check->bind_param("i", $depot_id);
+    $check->execute();
+    $res = $check->get_result();
+
+    if ($res->num_rows > 0) {
+
+        /* ✅ UPDATE */
+        $sql = "UPDATE program_restrictions 
+            SET me26_update_days=? 
+            WHERE depot_id=?";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("ii", $me26_restriction_days, $depot_id);
+    } else {
+
+        /* ✅ INSERT */
+        $sql = "INSERT INTO program_restrictions 
+            (division_id, depot_id, me26_update_days)
+            VALUES (?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("iii", $division_id, $depot_id, $me26_restriction_days);
+    }
+
+    /* ✅ Execute */
+    if ($stmt->execute()) {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Restriction Days Saved"
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Database Error"
+        ]);
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_vehicle_logsheet_days') {
+    $division_id         = $_POST['division_id'] ?? "";
+    $depot_id            = $_POST['depot_id'] ?? "";
+    $vehicle_logsheet_days = $_POST['vehicle_logsheet_days'] ?? "";
+
+    if ($division_id == "" || $depot_id == "" || $vehicle_logsheet_days === "") {
+        echo json_encode([
+            "status" => "error",
+            "message" => "All fields are required"
+        ]);
+        exit;
+    }
+
+    /* ✅ Check if depot exists */
+    $check = $db->prepare("SELECT id FROM program_restrictions WHERE depot_id=?");
+    $check->bind_param("i", $depot_id);
+    $check->execute();
+    $res = $check->get_result();
+
+    if ($res->num_rows > 0) {
+
+        /* ✅ UPDATE */
+        $sql = "UPDATE program_restrictions 
+            SET vehicle_logsheet_days=? 
+            WHERE depot_id=?";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("ii", $vehicle_logsheet_days, $depot_id);
+    } else {
+
+        /* ✅ INSERT */
+        $sql = "INSERT INTO program_restrictions 
+            (division_id, depot_id, vehicle_logsheet_days)
+            VALUES (?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("iii", $division_id, $depot_id, $vehicle_logsheet_days);
+    }
+
+    /* ✅ Execute */
+    if ($stmt->execute()) {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Restriction Days Saved"
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Database Error"
+        ]);
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_emergency_program_restriction') {
+    $division_id         = $_POST['division_id'] ?? "";
+    $depot_id            = $_POST['depot_id'] ?? "";
+    $emergency_program_restriction = $_POST['emergency_program_update_days'] ?? "";
+
+    if ($division_id == "" || $depot_id == "" || $emergency_program_restriction === "") {
+        echo json_encode([
+            "status" => "error",
+            "message" => "All fields are required"
+        ]);
+        exit;
+    }
+
+    /* ✅ Check if depot exists */
+    $check = $db->prepare("SELECT id FROM program_restrictions WHERE depot_id=?");
+    $check->bind_param("i", $depot_id);
+    $check->execute();
+    $res = $check->get_result();
+
+    if ($res->num_rows > 0) {
+
+        /* ✅ UPDATE */
+        $sql = "UPDATE program_restrictions 
+            SET emergency_program_update_days=? 
+            WHERE depot_id=?";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("ii", $emergency_program_restriction, $depot_id);
+    } else {
+
+        /* ✅ INSERT */
+        $sql = "INSERT INTO program_restrictions 
+            (division_id, depot_id, emergency_program_update_days)
+            VALUES (?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("iii", $division_id, $depot_id, $emergency_program_restriction);
+    }
+
+    /* ✅ Execute */
+    if ($stmt->execute()) {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Restriction Saved"
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Database Error"
+        ]);
+    }
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'fetchVehicleProgramdataforedit') {
+    $vehicle_no = $_POST['vehicle_no'] ?? '';
+
+    if (empty($vehicle_no)) {
+        echo "<div class='alert alert-danger'>Vehicle Number is required</div>";
+        exit;
+    }
+
+    $sql = "SELECT p.*, l.division, l.depot FROM program_data p LEFT JOIN location l on l.division_id = p.division_id and l.depot_id = p.depot_id WHERE p.bus_number = ? AND p.program_date IS NOT NULL ORDER BY p.program_date DESC limit 20";
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, 's', $vehicle_no);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if (mysqli_num_rows($result) > 0) {
+
+        echo "<h4 class='mt-3'>Program Details for Vehicle: <b>$vehicle_no</b></h4>";
+
+        echo "<table class='table table-bordered table-striped mt-3'>
+            <thead >
+                <tr>
+                    <th>#</th>
+                    <th>Division</th>
+                    <th>Depot</th>
+                    <th>Program Type</th>
+                    <th>Completed KM</th>
+                    <th>Date</th>
+                    <th>Reason</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>";
+
+        $sl = 1;
+        while ($row = mysqli_fetch_assoc($result)) {
+
+            echo "<tr>
+                <td>" . $sl++ . "</td>
+                <td>" . $row['division'] . "</td>
+                <td>" . $row['depot'] . "</td>
+                <td>" . $row['program_type'] . "</td>
+                <td>" . $row['program_completed_km'] . "</td>
+                <td>" . $row['program_date'] . "</td>
+                <td>" . $row['reason'] . "</td>
+                <td>
+                    <button class='btn btn-sm btn-primary edit-program-btn' 
+                        data-id='" . $row['id'] . "'
+                        data-vehicle_no='" . $row['bus_number'] . "'
+                        data-division_id='" . $row['division_id'] . "'
+                        data-depot_id='" . $row['depot_id'] . "'
+                        data-program_type='" . $row['program_type'] . "'
+                        data-program_completed_km='" . $row['program_completed_km'] . "'
+                        data-program_date='" . $row['program_date'] . "'
+                        data-reason='" . $row['reason'] . "'
+                    >
+                        Edit
+                    </button>
+                    <button class='btn btn-sm btn-danger delete-program-btn' data-id='" . $row['id'] . "' data-bus_number='" . $row['bus_number'] . "' data-program_type='" . $row['program_type'] . "' data-program_date='" . $row['program_date'] . "'>Delete</button>
+                </td>
+              </tr>";
+        }
+
+        echo "</tbody></table>";
+    } else {
+        echo "<div class='alert alert-warning'>
+            No data found for Vehicle Number: <b>$vehicle_no</b>
+          </div>";
+    }
+
+    mysqli_stmt_close($stmt);
+    exit;
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "get_program_km_for_bus_admin") {
+
+    if (!isset($_POST['bus_number'], $_POST['program_type'], $_POST['program_date'], $_POST['rowId'], $_POST['division_id'], $_POST['depot_id'])) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Missing required parameters.'
+        ]);
+        exit;
+    }
+    if (in_array($_POST['depot_id'], ['1', '8', '12', '13', '14', '15'])) {
+        $programstart_date = '2025-08-01';
+        $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+    } elseif (in_array($_POST['depot_id'], ['2', '3', '4', '5', '6', '7', '9', '10', '11', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47' ,'48' ,'49' ,'50'])) {
+        $programstart_date = '2025-10-01';
+        $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+    }
+
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+    $program_type = mysqli_real_escape_string($db, $_POST['program_type']);
+    $selected_date = mysqli_real_escape_string($db, $_POST['program_date']); // expected format: Y-m-d
+    $rowId = mysqli_real_escape_string($db, $_POST['rowId']);
+    $last_km = 0;
+    $last_date = null;
+
+    // Step 1: Get the last program entry (if any)
+    $last_km_query = "
+    SELECT program_completed_km, program_date 
+    FROM program_data 
+    WHERE bus_number = '$bus_number' 
+    AND program_type = '$program_type' 
+    AND id != '$rowId'
+    ORDER BY program_date DESC 
+    LIMIT 1
+";
+    $last_km_result = mysqli_query($db, $last_km_query);
+
+    if ($row = mysqli_fetch_assoc($last_km_result)) {
+        $last_km = (float)$row['program_completed_km'];
+        $last_date = $row['program_date'];
+    }
+
+    // Step 2: Calculate KM from vehicle_kmpl
+    if ($last_date == null) {
+        $from_date = $programstart_date;
+    }
+
+
+    if ($last_date !== null) {
+        $from_date = date('Y-m-d', strtotime($last_date . ' +1 day'));
+    }
+
+    $km_query = "
+    SELECT SUM(km_operated) AS total_km 
+    FROM vehicle_kmpl 
+    WHERE bus_number = '$bus_number' 
+    AND date >= '$from_date' 
+    AND date <= '$selected_date'
+    AND deleted != '1'
+";
+    $km_result = mysqli_query($db, $km_query);
+    $total_km = 0;
+
+    if ($km_row = mysqli_fetch_assoc($km_result)) {
+        $total_km = (float)$km_row['total_km'];
+    }
+    if ($last_date == null) {
+        $estimated_km = $last_km + $total_km;
+    } else {
+        $estimated_km =  $total_km;
+    }
+    echo json_encode([
+        'success' => true,
+        'program_km' => round($estimated_km)
+    ]);
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "save_program_data_admin") {
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+    $program_type = mysqli_real_escape_string($db, $_POST['program_type']);
+    $program_completed_km = mysqli_real_escape_string($db, $_POST['program_completed_km']);
+    $program_date = mysqli_real_escape_string($db, $_POST['program_date']);
+    $rowId = mysqli_real_escape_string($db, $_POST['rowId']);
+
+    if ($rowId) {
+        // Update existing record
+        $update_query = "
+        UPDATE program_data 
+        SET program_completed_km='$program_completed_km', program_date='$program_date'
+        WHERE id='$rowId'
+    ";
+        if (mysqli_query($db, $update_query)) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Program data updated successfully.'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error updating program data: ' . mysqli_error($db)
+            ]);
+        }
+    } else {
+        // give error row not found
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error: Record not found for update.'
+        ]);
+    }
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "deleteProgramData") {
+    $id = mysqli_real_escape_string($db, $_POST['id']);
+
+    $delete_query = "DELETE FROM program_data WHERE id='$id'";
+
+    if (mysqli_query($db, $delete_query)) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Program data deleted successfully.'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error deleting program data: ' . mysqli_error($db)
+        ]);
+    }
 }

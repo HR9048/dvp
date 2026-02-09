@@ -141,7 +141,13 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Bunk' || $_SESSI
             let fourDaysAgo = new Date();
 
             yesterday.setDate(today.getDate());
-            fourDaysAgo.setDate(today.getDate() - 5);
+            <?php
+            $slectprogramdayfromdb = "SELECT `vehicle_logsheet_days` FROM `program_restrictions` WHERE depot_id = $depot_id AND division_id = $division_id";
+            $result = mysqli_query($db, $slectprogramdayfromdb);
+            $row = mysqli_fetch_assoc($result);
+            $program_update_days = $row['vehicle_logsheet_days'] ?? 0;
+            ?>
+            fourDaysAgo.setDate(today.getDate() - <?php echo $program_update_days; ?>);
 
             // Convert dates to 'YYYY-MM-DD' format for accurate comparison
             let selectedDateString = selectedDate.toISOString().split('T')[0];

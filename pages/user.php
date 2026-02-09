@@ -28,9 +28,9 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                         <?php
                         $query = 'SELECT ID, FIRST_NAME,LAST_NAME,USERNAME, t.TYPE
               FROM users u
-              JOIN employee e ON e.PF_ID=u.PF_ID
+              JOIN employee e ON e.pf_number=u.PF_ID
               JOIN type t ON t.TYPE_ID=u.TYPE_ID
-              WHERE u.TYPE_ID=1';
+              WHERE u.TYPE_ID=1 and u.username!="admin@admin"';
                         $result = mysqli_query($db, $query) or die(mysqli_error($db));
 
                         while ($row = mysqli_fetch_assoc($result)) {

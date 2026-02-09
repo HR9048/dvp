@@ -98,6 +98,12 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {
                 }
             });
         });
+        <?php
+        $slectprogramdayfromdb = "SELECT `emergency_program_update_days` FROM `program_restrictions` WHERE depot_id = $depot_id AND division_id = $division_id";
+    $result = mysqli_query($db, $slectprogramdayfromdb);
+    $row = mysqli_fetch_assoc($result);
+    $program_update_days = $row['emergency_program_update_days'] ?? 0;
+    ?>
 
         // on select of program date, check if the date is not in future and not more than 5 days from today
         $(document).ready(function() {
@@ -109,8 +115,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {
                 if (program_date > today) {
                     Swal.fire("Not Allowed", "Program date cannot be in the future.", "warning");
                     $(this).val('');
-                } else if (diffDays > 5) {
-                    Swal.fire("Not Allowed", "Program date must be within the last 4 days.", "warning");
+                } else if (diffDays > <?php echo $program_update_days; ?>) {
+                    Swal.fire("Not Allowed", "Program date must be within the last <?php echo $program_update_days; ?> days.", "warning");
                     $(this).val('');
                 }
             });
@@ -146,8 +152,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') {
                     Swal.fire("Error", "Program date cannot be in the future.", "warning");
                     return;
                 }
-                if (diffDays > 5) {
-                    Swal.fire("Error", "Program date must be within the last 5 days.", "warning");
+                if (diffDays > <?php echo $program_update_days; ?>) {
+                    Swal.fire("Error", "Program date must be within the last <?php echo $program_update_days; ?> days.", "warning");
                     return;
                 }
                 // Disable the submit button

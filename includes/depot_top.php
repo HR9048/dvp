@@ -332,7 +332,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                             <li class="dropdown-submenu">
                                                                 <a class="dropdown-item dropdown-toggle" href="#">KMPL</a>
                                                                 <ul class="dropdown-menu">
-                                                                    <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Daywise KMPL Report</a></li>
+                                                                    <li><a class="dropdown-item" href="depot_kmpl_report_day.php">Daily Logsheet Report</a></li>
                                                                     <li><a class="dropdown-item" href="depot_kmpl_report.php">Monthly KMPL Report</a></li>
                                                                     <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft.php">From-To date KMPL Report</a></li>
                                                                     <li><a class="dropdown-item" href="depot_vehicle_kmpl_ft1.php">From-To date KMPL Report Typewise</a></li>
@@ -357,6 +357,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                             <a class="dropdown-item dropdown-toggle" href="#">Program</a>
                                                             <ul class="dropdown-menu">
                                                                 <li><a class="dropdown-item" href="depot_w3_report_fromto.php">W3 Chart Report</a></li>
+                                                                <li><a class="dropdown-item" href="depot_w3_report_d_e.php">W3 Chart Docking & EOC Report</a></li>
                                                                 <li><a class="dropdown-item" href="depot_program_report_fromto.php">Program Completion Report</a></li>
                                                             </ul>
                                                         </li>
@@ -414,6 +415,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                                 Maintenance KM Update</a></li>-->
                                                         <li><a class="dropdown-item" href="depot_program_print.php">Generate
                                                                 Program</a></li>
+                                                        <li><a class="dropdown-item" href="depot_program_report_daily.php">Daily Program Report</a></li>
                                                         <li><a class="dropdown-item" href="depot_vehicle_program.php">Update
                                                                 Program Done Date</a></li>
                                                         <li><a class="dropdown-item" href="depot_w3_chart_data_update.php">ME26

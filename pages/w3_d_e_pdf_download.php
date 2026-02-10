@@ -19,23 +19,23 @@ if (!in_array($_SESSION['JOB_TITLE'], $allowedJobs)) {
 
 
 // Create TCPDF object
-$pdf = new TCPDF('L', PDF_UNIT, 'A2', true, 'UTF-8', false); // use A2 as per your earlier requirement
+$pdf = new TCPDF('P', PDF_UNIT, 'A4', true, 'UTF-8', false); // use A2 as per your earlier requirement
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('KKRTC');
 $pdf->SetTitle('Annexure-H W3 Chart Report');
-$pdf->SetMargins(25, 1, 1);
+$pdf->SetMargins(5, 1, 1);
 $pdf->SetHeaderMargin(0);
 $pdf->SetFooterMargin(5);
-$pdf->SetAutoPageBreak(TRUE, 15);
+$pdf->SetAutoPageBreak(TRUE, 3);
 $pdf->AddPage();
-$pdf->SetY(25);
+$pdf->SetY(2);
 // Custom styles (since bootstrap is not supported)
+$pdf->SetFont('helvetica', '', 5);
+
 $style = "
 <style>
     h2, h3, h4 { text-align: center; }
-    table { border-collapse: collapse; width: 100%; font-size: 9px; padding: 10px;}
-    th { background-color: #f2f2f2; text-align: center; font-weight: bold; }
-    td, th { border: 1px solid #000; padding: 0px; }
+    
 </style>
 ";
 
@@ -102,7 +102,7 @@ $busKeys = array_map(fn($b) => "'" . mysqli_real_escape_string($db, $b) . "'", a
 $busKeyList = implode(',', $busKeys);
 
 // Fetch all program data for those buses
-$progDataQuery = "SELECT * FROM program_data WHERE bus_number IN ($busKeyList)";
+$progDataQuery = "SELECT * FROM program_data WHERE bus_number IN ($busKeyList) and program_type IN ('docking', 'engine_oil_and_main_filter_change')";
 $progDataResult = mysqli_query($db, $progDataQuery);
 
 // Group program data
@@ -198,7 +198,7 @@ function sumKms($data, $from, $to)
 }
 
 $slNo = 1;
-$progQuery = "SELECT * FROM program_master";
+$progQuery = "SELECT id, make, model, model_type, docking, engine_oil_and_main_filter_change FROM program_master";
 $progResult = mysqli_query($db, $progQuery);
 $programMasterMap = [];
 
@@ -300,7 +300,7 @@ $totalDays = 0;
 foreach ($monthGroups as $dates) {
     $totalDays += count($dates);
 }
-$dayWidth = 80 / $totalDays;
+$dayWidth = 85 / $totalDays;
 $formatted_from = date('d-m-y', strtotime($from_date));
 foreach ($buses as $vehicleNo => $bus) {
     $make = $bus['make'];
@@ -332,21 +332,21 @@ foreach ($buses as $vehicleNo => $bus) {
     // -------------------------------------------
     // TCPDF-safe table (fixed header + inline CSS)
     // -------------------------------------------
-    $html .= '<table border="1" cellspacing="0" cellpadding="5" style="font-size:9pt; margin-bottom:30px; width:100%;">';
+    $html .= '<table border="0.5" cellspacing="0" cellpadding="1" style="font-size:4pt; margin-bottom:30px; width:100%;">';
     $html .= '<thead>';
 
     // Header row 1: fixed columns + months
     $html .= '<tr bgcolor="#d9d9d9">';
-    $html .= '  <th align="center" style="font-weight:bold; width: 3%;">SL No</th>';
-    $html .= '  <th align="center" style="font-weight:bold; width: 7%">Vehicle No</th>';
-    $html .= '  <th rowspan="2" align="center" style="font-weight:bold; width: 5%">Program Target KMS</th>';
-    $html .= '  <th rowspan="2" align="center" style="font-weight:bold; width: 5%">Cumm. program <br/> kms as on ' . $formatted_from . '</th>';
+    $html .= '  <th align="center" style=" width: 2%;">SN</th>';
+    $html .= '  <th align="center" style=" width: 5%">Vehicle No</th>';
+    $html .= '  <th rowspan="2" align="center" style="width: 3.5%">Program Target KMS</th>';
+    $html .= '  <th rowspan="2" align="center" style="width: 4.5%">Cumm. program <br/> kms as on ' . $formatted_from . '</th>';
 
     foreach ($monthGroups as $monthYear => $dates) {
         $colspan = count($dates);
         $monthWidth = $colspan * $dayWidth;
         $html .= '<th colspan="' . $colspan . '" align="center" 
-                     style="font-weight:bold; width:' . number_format($monthWidth, 2) . '%;">'
+                     style="width:' . number_format($monthWidth, 2) . '%;">'
             . $monthYear . '</th>';
     }
 
@@ -354,11 +354,11 @@ foreach ($buses as $vehicleNo => $bus) {
 
     // Header row 2: day numbers
     $html .= '<tr bgcolor="#efefef">';
-    $html .= "  <td rowspan='2'><b>$slNo</b></td>";
-    $html .= "  <td rowspan='2'><b>{$vehicleNo}</b></td>";
+    $html .= "  <td rowspan='2'>$slNo</td>";
+    $html .= "  <td rowspan='2'>{$vehicleNo}</td>";
     foreach ($monthGroups as $dates) {
         foreach ($dates as $dateObj) {
-            $html .= '  <th align="center" style="font-weight:bold;">' . $dateObj->format('j') . '</th>';
+            $html .= '  <th align="center">' . $dateObj->format('j') . '</th>';
         }
     }
     $html .= '</tr>';
@@ -373,9 +373,9 @@ foreach ($buses as $vehicleNo => $bus) {
 
     // First data row: labels "Program Name" and "Daily KMS"
     $html .= '<tr bgcolor="#f9f9f9" style="max-width: 100%;">';
-    $html .= '  <td colspan="2" align="center" style="font-weight:bold; width: 10%">Program Name</td>';
-    $html .= '  <td colspan="2" align="center" style="font-weight:bold; width: 10%">Daily KMS</td>';
-    $dayWidth = ($totalDays > 0) ? (80 / $totalDays) : 0;
+    $html .= '  <td colspan="2" align="center" style="width: 7%">Program Name</td>';
+    $html .= '  <td colspan="2" align="center" style="width: 8%">Daily KMS</td>';
+    $dayWidth = ($totalDays > 0) ? (85 / $totalDays) : 0;
 
     foreach ($monthGroups as $dates) {
         foreach ($dates as $dateObj) {
@@ -433,7 +433,12 @@ foreach ($buses as $vehicleNo => $bus) {
         $html .= '<tr>';
 
         // Program name spans "SL No" + "Vehicle No" columns
-        $html .= '  <td colspan="2" align="left" bgcolor="#f4f6f7" style="font-weight:bold;">' . $prog['name'] . '</td>';
+        if ($prog['name'] === 'Engine Oil And Main Filter Change') {
+            $displayName = 'EOC';
+        } else {
+            $displayName = $prog['name'];
+        }
+        $html .= '  <td colspan="2" align="left" bgcolor="#f4f6f7">' . $displayName . '</td>';
 
         // Target + initial cumm kms
         $html .= '  <td align="center">' . $prog['value'] . '</td>';
@@ -444,6 +449,20 @@ foreach ($buses as $vehicleNo => $bus) {
         foreach ($monthGroups as $dates) {
             foreach ($dates as $dateObj) {
                 $dateStr = $dateObj->format('Y-m-d');
+
+                $dailyValue = null;
+
+                if (isset($dailyKmplData[$vehicleNo][$dateStr])) {
+                    $dailyValue = $dailyKmplData[$vehicleNo][$dateStr];
+                } elseif (isset($w3Data[$vehicleNo][$dateStr])) {
+                    $dailyValue = $w3Data[$vehicleNo][$dateStr];
+                }
+
+                if ($dailyValue === 'Spare') {
+                    $html .= "<td></td>";
+                    continue;
+                }
+
                 $d = $dailyCumm[$dateStr] ?? ['value' => 'NA', 'color' => 'default'];
                 $val   = $d['value'];
                 $color = $d['color'] ?? 'default';
@@ -464,7 +483,7 @@ foreach ($buses as $vehicleNo => $bus) {
                     }
                 }
 
-                $html .= '  <td' . $cellAttr . $bg . '>' . $val . '</td>';
+                $html .= '  <td' . $cellAttr . $bg . '><span style="padding:0px;">' . $val . '</span></td>';
             }
         }
 
@@ -474,6 +493,26 @@ foreach ($buses as $vehicleNo => $bus) {
     $html .= '</tbody>';
     $html .= '</table><br><br>';
     $slNo++;
+$html .= '
+<br><br><br>
+<table width="100%" cellpadding="10">
+    <tr>
+        <td width="33%" style="text-align:center;">
+            <div style="border-top:1px solid #000; width:60%; margin:0 auto;"></div>
+            ME Clerk
+        </td>
+        <td width="33%" style="text-align:center;">
+            <div style="border-top:1px solid #000; width:60%; margin:0 auto;"></div>
+            CM/AWS
+        </td>
+        <td width="33%" style="text-align:center;">
+            <div style="border-top:1px solid #000; width:60%; margin:0 auto;"></div>
+            DM
+        </td>
+    </tr>
+</table>
+';
+
 }
 
 // Output HTML to PDF

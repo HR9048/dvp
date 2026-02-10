@@ -107,9 +107,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             }
 
             @page {
-                size: landscape;
+                size: A4 portrait;
                 margin: 0.2cm;
             }
+
         }
     </style>
 
@@ -119,7 +120,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     </div>
 
     <div class="container1">
-        <h2 class="text-center text-primary mt-4"><?php echo $_SESSION['KMPL_DEPOT']; ?> Maintenance Program As on Date: <?php echo $today; ?></h2>
+        <h4 class="text-center text-primary mt-4"><?php echo $_SESSION['KMPL_DEPOT']; ?> Depot Pending Maintenance Program As on Date: <?php echo $today; ?></h4>
         <div class="text-center mb-3">
 
         </div>
@@ -195,7 +196,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             FROM program_data
             WHERE bus_number IN ($bus_list)
             GROUP BY bus_number, program_type
-        ) latest ON pd.id = latest.max_id  ");
+        ) latest ON pd.id = latest.max_id
+    ");
         while ($row = mysqli_fetch_assoc($program_result)) {
             $bus = $row['bus_number'];
             $ptype = $row['program_type'];
@@ -209,7 +211,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         $kmpl_data = [];
         $kmpl_result = mysqli_query($db, "
         SELECT bus_number, date, km_operated FROM vehicle_kmpl
-        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '$programstart_date' AND date <= '$today'");
+        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '$programstart_date' AND date <= '$today'
+    ");
         while ($row = mysqli_fetch_assoc($kmpl_result)) {
             $bus = $row['bus_number'];
             $date = $row['date'];
@@ -244,7 +247,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             }
 
             .mp-program-table {
-                flex: 1 0 calc(10% - 6px);
+                flex: 1 0 calc(12% - 6px);
                 /* target ~10 per row */
                 max-width: calc(16.66% - 6px);
                 /* min 6 per row if space */
@@ -272,7 +275,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 border: 1px solid #000000ff;
                 padding: 0px 0px !important;
                 vertical-align: middle;
-                font-size: 0.45rem;
+                font-size: 0.6rem;
                 font-weight: bold;
                 word-wrap: break-word;
                 text-align: center;
@@ -366,7 +369,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
 
                         $deviation = $total_km - $prescribed_km;
 
-                        if ($deviation > 500 || ($deviation >= -5000 && $deviation <= 500)) {
+                        if ($deviation > 500 || ($deviation >= -500 && $deviation <= 500)) {
                             $rows[] = [
                                 'bus_number' => $bus_number,
                                 'total_km'   => $total_km
@@ -416,8 +419,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 $kms = array_column($tyre_rotation_data, 'total_km');
 
                 $total_vehicles = count($vehicle_numbers);
-                $chunked_vehicle_numbers = array_chunk($vehicle_numbers, 18);
-                $chunked_kms = array_chunk($kms, 18);
+                $chunked_vehicle_numbers = array_chunk($vehicle_numbers, 15);
+                $chunked_kms = array_chunk($kms, 15);
 
                 foreach ($chunked_vehicle_numbers as $index => $vehicle_chunk) {
                     echo "<div><table class='mp-table'>";
@@ -441,13 +444,310 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                     echo "</tbody></table></div>";
                 }
             }
-
-
+            $today = date('d-m-Y');
             ?>
         </div>
+
+        <h4 class="text-center text-primary mt-4">
+            <?php echo $_SESSION['KMPL_DEPOT']; ?> Depot Upcoming Maintenance Program As on Date: <?php echo $today; ?>
+        </h4>
+
+        <?php
+        $today = date('Y-m-d');
+
+        $buses = [];
+        $bus_result = mysqli_query($db, "SELECT br.bus_number, br.make, br.emission_norms, br.model_type, br.bus_sub_category FROM bus_registration br LEFT JOIN makes m ON br.make = m.make WHERE br.division_name = '$division_id' AND br.depot_name = '$depot_id' ORDER BY m.id, br.emission_norms");
+        while ($row = mysqli_fetch_assoc($bus_result)) {
+            $buses[$row['bus_number']] = [
+                'make' => $row['make'],
+                'emission_norms' => $row['emission_norms'],
+                'model_type' => $row['model_type'],
+                'bus_sub_category' => $row['bus_sub_category']
+            ];
+        }
+
+        if (empty($buses)) {
+            echo "<p>No buses found.</p>";
+            return;
+        }
+
+        $bus_numbers = array_keys($buses);
+        $bus_list = "'" . implode("','", $bus_numbers) . "'";
+
+        // Get last program data and km in one pass
+        $last_program_data = [];
+        $program_result = mysqli_query($db, "
+        SELECT pd.bus_number, pd.program_type, pd.program_completed_km, pd.program_date
+        FROM program_data pd
+        INNER JOIN (
+            SELECT bus_number, program_type, MAX(id) as max_id
+            FROM program_data
+            WHERE bus_number IN ($bus_list)
+            GROUP BY bus_number, program_type
+        ) latest ON pd.id = latest.max_id
+    ");
+        while ($row = mysqli_fetch_assoc($program_result)) {
+            $bus = $row['bus_number'];
+            $ptype = $row['program_type'];
+            $last_program_data[$bus][$ptype] = [
+                'km' => $row['program_completed_km'],
+                'date' => $row['program_date']
+            ];
+        }
+
+        // Collect all vehicle_kmpl data in one query
+        $kmpl_data = [];
+        $kmpl_result = mysqli_query($db, "
+        SELECT bus_number, date, km_operated FROM vehicle_kmpl
+        WHERE deleted != '1' AND bus_number IN ($bus_list) AND date > '$programstart_date' AND date <= '$today'
+    ");
+        while ($row = mysqli_fetch_assoc($kmpl_result)) {
+            $bus = $row['bus_number'];
+            $date = $row['date'];
+            $km = $row['km_operated'];
+            $kmpl_data[$bus][$date] = ($kmpl_data[$bus][$date] ?? 0) + $km;
+        }
+
+        $grouped_buses = [];
+        foreach ($buses as $bus_number => $meta) {
+            $key = $meta['make'] . "|" . $meta['emission_norms'] . "|" . $meta['model_type'];
+            $grouped_buses[$key][] = $bus_number;
+        }
+
+
+        ?>
+
+        <div class="mp-wrap">
+            <?php
+            function compute_total_km1($bus_number, $ptype, $last_program_data, $kmpl_data, $programstart_date)
+            {
+                $total_km = 0;
+                $last_entry = $last_program_data[$bus_number][$ptype] ?? null;
+                $program_date = $last_entry['date'] ?? null;
+
+                if (!empty($program_date) && $program_date !== '0000-00-00') {
+                    $start_date = date('Y-m-d', strtotime($program_date . ' +1 day'));
+                    if (!empty($kmpl_data[$bus_number])) {
+                        foreach ($kmpl_data[$bus_number] as $date => $km) {
+                            if ($date >= $start_date) {
+                                $total_km += $km;
+                            }
+                        }
+                    }
+                } else {
+                    $last_km = $last_entry['km'] ?? 0;
+                    $total_km = $last_km;
+                    if (!empty($kmpl_data[$bus_number])) {
+                        foreach ($kmpl_data[$bus_number] as $date => $km) {
+                            if ($date > $programstart_date) {
+                                $total_km += $km;
+                            }
+                        }
+                    }
+                }
+                return $total_km;
+            }
+
+            $tyre_rotation_data = []; // store tyre rotation separately
+
+            foreach ($grouped_buses as $group_key => $bus_list_group) {
+                list($make, $emission, $model_type) = explode('|', $group_key);
+
+                $pm_result = mysqli_query($db, "SELECT * FROM program_master WHERE make = '$make' AND model = '$emission' AND model_type = '$model_type' LIMIT 1");
+                if (!mysqli_num_rows($pm_result)) continue;
+                $pm = mysqli_fetch_assoc($pm_result);
+
+                // keep only numeric km values
+                $programs = [];
+                foreach ($pm as $prog => $km) {
+                    if (in_array($prog, ['id', 'make', 'model', 'model_type', 'created_at', 'updated_at'])) continue;
+                    if ($km !== null && $km !== '') $programs[$prog] = (int)$km;
+                }
+                if (empty($programs)) continue;
+
+                $group_has_data = false;
+                $group_tables_html = "";
+
+                foreach ($program_labels as $ptype => $pname) {
+                    if (!isset($programs[$ptype])) continue;
+
+                    $prescribed_km = $programs[$ptype];
+                    $rows = [];
+                    foreach ($bus_list_group as $bus_number) {
+
+                        // ❌ Skip ONLY Air Suspension Check for non-air buses
+                        if (
+                            $ptype === 'air_suspension_check' &&
+                            !in_array(
+                                $buses[$bus_number]['bus_sub_category'],
+                                $air_suspension_bus_category_array,
+                                true
+                            )
+                        ) {
+                            continue;
+                        }
+
+                        $total_km = compute_total_km1(
+                            $bus_number,
+                            $ptype,
+                            $last_program_data,
+                            $kmpl_data,
+                            $programstart_date
+                        );
+
+                        $deviation = $total_km - $prescribed_km;
+
+                        if ($deviation >= -5000 && $deviation <= -500) {
+                            $rows[] = [
+                                'bus_number' => $bus_number,
+                                'total_km'   => $total_km
+                            ];
+                        }
+                    }
+
+
+                    // ✅ Handle Tyre Rotation Check separately
+                    if ($pname === "Tyre Rotation" && !empty($rows)) {
+                        foreach ($rows as $r) {
+                            $tyre_rotation_data[] = $r; // save for later table
+                        }
+                        continue; // skip normal printing
+                    }
+
+                    if (!empty($rows)) {
+                        $group_has_data = true;
+                        $group_tables_html .= "<div class='mp-program-table'>
+                <table class='mp-table'>
+                    <thead>
+                        <tr><th class='mp-program-head' colspan='2'>" . htmlspecialchars($pname) . "<br>({$prescribed_km})</th></tr>
+                        <tr><th>Vehicle</th><th>KM</th></tr>
+                    </thead>
+                    <tbody>";
+
+                        foreach ($rows as $r) {
+                            $group_tables_html .= "<tr>
+                    <td>" . htmlspecialchars($r['bus_number']) . "</td>
+                    <td>" . (int)$r['total_km'] . "</td>
+                </tr>";
+                        }
+
+                        $group_tables_html .= "</tbody></table></div>";
+                    }
+                }
+
+                if ($group_has_data) {
+                    echo "<div class='mp-group-title'>Make: " . htmlspecialchars($make) . " | Emission: " . htmlspecialchars($emission) . " | Model Type: " . htmlspecialchars($model_type) . "</div>";
+                    echo $group_tables_html;
+                }
+            }
+
+            // ✅ Print Tyre Rotation Check table at the end
+            if (!empty($tyre_rotation_data)) {
+                $vehicle_numbers = array_column($tyre_rotation_data, 'bus_number');
+                $kms = array_column($tyre_rotation_data, 'total_km');
+
+                $total_vehicles = count($vehicle_numbers);
+                $chunked_vehicle_numbers = array_chunk($vehicle_numbers, 15);
+                $chunked_kms = array_chunk($kms, 15);
+
+                foreach ($chunked_vehicle_numbers as $index => $vehicle_chunk) {
+                    echo "<div><table class='mp-table'>";
+                    echo "<thead>";
+                    if ($index === 0) {
+                        echo "<tr><th class='mp-program-head' colspan='" . (count($vehicle_chunk) + 1) . "'><h4><b>Tyre Rotation</b></h4></th></tr>";
+                    }
+                    echo "<tr><th>Vehicle No</th>";
+                    foreach ($vehicle_chunk as $v) {
+                        echo "<th>" . htmlspecialchars($v) . "</th>";
+                    }
+                    echo "</tr></thead><tbody>";
+
+                    // KM row
+                    echo "<tr> <th>KM</th>";
+                    foreach ($chunked_kms[$index] as $km_val) {
+                        echo "<td>" . (int)$km_val . "</td>";
+                    }
+                    echo "</tr>";
+
+                    echo "</tbody></table></div>";
+                }
+            }
+            $yesterday = date('d-m-Y', strtotime('-1 day'));
+            ?>
+        </div>
+        <h4 class="text-center text-primary mt-4"><?php echo $_SESSION['KMPL_DEPOT']; ?> Depot Program's Attended on Date: <?php echo $yesterday; ?></h4>
+        <!-- Fetch and display programs attended yesterday -->
+        <?php
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $query = "SELECT pd.bus_number, pd.program_type, pd.program_date, pd.program_completed_km, br.make, br.emission_norms AS model, br.model_type
+              FROM program_data pd
+              JOIN bus_registration br ON pd.bus_number = br.bus_number
+              WHERE pd.division_id = '$division_id'
+              AND pd.depot_id = '$depot_id'
+              AND pd.program_date = '$yesterday'
+              AND br.deleted != '1'
+              ORDER BY pd.program_date ASC, pd.program_type ASC";
+        $result = mysqli_query($db, $query);
+        
+            echo "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+        <thead>
+            <tr>
+                <th>SL No</th>
+                <th>Vehicle No</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Model Type</th>
+                <th>Program Type</th>
+                <th>Program Completed KMS</th>
+            </tr>
+        </thead>
+        <tbody>";
+        if (mysqli_num_rows($result) > 0) {
+            $slNo = 1;
+            while ($row = mysqli_fetch_assoc($result)) {
+                echo "<tr>
+                <td>{$slNo}</td>
+                <td>{$row['bus_number']}</td>
+                <td>{$row['make']}</td>
+                <td>{$row['model']}</td>
+                <td>{$row['model_type']}</td>
+                <td>" . ucwords(str_replace('_', ' ', $row['program_type'])) . "</td>
+                <td>{$row['program_completed_km']}</td>
+            </tr>";
+                $slNo++;
+            }
+        } else {
+            $yesterday = date('d-m-Y', strtotime('-1 day'));
+            echo "<tr><td colspan='7'>No programs attended on " . $yesterday . ".</td></tr>";
+        }
+            echo "</tbody></table>";
+        
+        echo "<br><br><div class='d-flex justify-content-between mt-5'>";
+        echo "<div class='text-center'>";
+        echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+        echo "<p style='font-weight: bold;'>ME Clerk</p>";
+        echo "</div>";
+        echo "<div class='text-center'>";
+        echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+        echo "<p style='font-weight: bold;'>Fuel Clerk</p>";
+        echo "</div>";
+        echo "<div class='text-center'>";
+        echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+        echo "<p style='font-weight: bold;'>Store Clerk</p>";
+        echo "</div>";
+        echo "<div class='text-center'>";
+        echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+        echo "<p style='font-weight: bold;'>CM/AWS</p>";
+        echo "</div>";
+        echo "<div class='text-center'>";
+        echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+        echo "<p style='font-weight: bold;'>DM</p>";
+        echo "</div>";
+        echo "</div>";
+        ?>
     </div>
 
-    <?php
+<?php
 } else {
     echo "<script>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
     exit;

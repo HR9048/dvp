@@ -5045,6 +5045,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 
     echo "</tbody>";
     echo "</table>";
+
+    //add signature section for the report for security, fule clerk, ME clerk, CM/AWS and DM given below the table all aligh in one line with a line for signature and designation below the line
+    // create a div with 5 sections for the signatures
+    echo "<br><br><div class='d-flex justify-content-between mt-5'>";
+    echo "<div class='text-center'>";
+    echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+    echo "<p style='font-weight: bold;'>Security</p>";
+    echo "</div>";
+    echo "<div class='text-center'>";
+    echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+    echo "<p style='font-weight: bold;'>Fuel Clerk</p>";
+    echo "</div>";
+    echo "<div class='text-center'>";
+    echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+    echo "<p style='font-weight: bold;'>ME Clerk</p>";
+    echo "</div>";
+    echo "<div class='text-center'>";
+    echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+    echo "<p style='font-weight: bold;'>CM/AWS</p>";
+    echo "</div>";
+    echo "<div class='text-center'>";
+    echo "<div style='border-top: 1px solid #000; width: 150px; margin: 0 auto;'></div>";
+    echo "<p style='font-weight: bold;'>DM</p>";
+    echo "</div>";
+    echo "</div>";
 }
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'get_bus_details' && isset($_POST['bus_number'])) {
     $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
@@ -9784,7 +9809,7 @@ AND $depotCondition";
                 <th rowspan='2' style='text-align:center;'>Month End Due</th>
             </tr>
             <tr>
-                <th style='text-align:center;'>In Time</th><th style='text-align:center;'>Late</th><th style='text-align:center;'>Total</th><th style='text-align:center;'>Extra</th>
+                <th style='text-align:center;'>In Time</th><th style='text-align:center;'>Late</th><th style='text-align:center;'>Total</th><th style='text-align:center;'>Emergency</th>
             </tr>
         </thead><tbody>";
 
@@ -9928,7 +9953,7 @@ AND $depotCondition";
             <th style='text-align:center;'>In Time</th>
             <th style='text-align:center;'>Late</th>
             <th style='text-align:center;'>Total</th>
-            <th style='text-align:center;'>Extra</th>
+            <th style='text-align:center;'>Emergency</th>
         </tr>
     </thead><tbody>";
 
@@ -10650,7 +10675,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     /* ---------------- MAIN SQL ---------------- */
 
-$sql = "SELECT
+    $sql = "SELECT
     division_id,
     depot_id,
     division,
@@ -10855,7 +10880,7 @@ ORDER BY division_id, depot_id, ym;";
     $kmplHaving = "1=1";
 
     if ($kmpl_type === "<5.00") {
-    $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) < 5.00";
+        $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) < 5.00";
     } elseif ($kmpl_type === "5.00-5.20") {
         $kmplHaving = "(SUM(t.km_share)/NULLIF(SUM(t.hsd_share),0)) BETWEEN 5.00 AND 5.20";
     } elseif ($kmpl_type === ">5.20") {
@@ -11587,7 +11612,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     if (in_array($_POST['depot_id'], ['1', '8', '12', '13', '14', '15'])) {
         $programstart_date = '2025-08-01';
         $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    } elseif (in_array($_POST['depot_id'], ['2', '3', '4', '5', '6', '7', '9', '10', '11', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47' ,'48' ,'49' ,'50'])) {
+    } elseif (in_array($_POST['depot_id'], ['2', '3', '4', '5', '6', '7', '9', '10', '11', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50'])) {
         $programstart_date = '2025-10-01';
         $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
     }
@@ -11699,4 +11724,449 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
             'message' => 'Error deleting program data: ' . mysqli_error($db)
         ]);
     }
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_report_of_w3_d_e_from_to") {
+    $from = $_POST['from'];
+    $to = $_POST['to'];
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+    $bus_number = $_POST['bus_number'];
+
+    if (!$from || !$to || !$division_id || !$depot_id) {
+        echo json_encode(['error' => 'Missing required parameters']);
+        exit;
+    }
+    if (in_array($depot_id, ['1', '8', '12', '13', '14', '15'])) {
+        $programstart_date = '2025-08-01';
+        $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+    } elseif (in_array($depot_id, ['2', '3', '4', '5', '6', '7', '9', '10', '11', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53'])) {
+        $programstart_date = '2025-10-01';
+        $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+    }
+    // Get depot/division names
+    $locationQuery = "SELECT division, depot FROM location WHERE division_id = '$division_id' AND depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    $sameDay = $from === $to;
+    $busCondition = ($bus_number === 'All') ? "1=1" : "bus_number = '$bus_number'";
+    $from_date = date('Y-m-d', strtotime($from . ' -1 day'));
+    $kmpl_start_date = $programstart_date;
+
+    $air_suspension_bus_category_array = ['Rajahamsa', 'Corona Sleeper AC', 'Sleeper AC', 'Regular Sleeper Non AC', 'Amoghavarsha Sleeper Non AC', 'Kalyana Ratha'];
+
+    $html = "<h3 class='text-center'>Annexure-H W3 Chart Report for $divisionName - $depotName</h3>";
+    $html .= $sameDay
+        ? "<h4 class='text-center'>Date: " . date('d-m-Y', strtotime($from)) . "</h4>"
+        : "<h4 class='text-center'>From: " . date('d-m-Y', strtotime($from)) . " To: " . date('d-m-Y', strtotime($to)) . "</h4>";
+
+    // Fetch all buses
+    $buses = [];
+    $fromDateTimestamp = strtotime($from_date);
+    $busQuery = "SELECT bus_number, make, emission_norms AS model, model_type, bus_sub_category
+             FROM bus_registration 
+             WHERE $busCondition 
+             AND division_name = '$division_id' 
+             AND depot_name = '$depot_id' 
+             AND deleted != 1";
+    $busResult = mysqli_query($db, $busQuery);
+
+    while ($row = mysqli_fetch_assoc($busResult)) {
+        $buses[$row['bus_number']] = $row;
+    }
+
+    // Prepare list of bus numbers
+    $busKeys = array_map(fn($b) => "'" . mysqli_real_escape_string($db, $b) . "'", array_keys($buses));
+    $busKeyList = implode(',', $busKeys);
+
+    // Fetch all program data for those buses
+    $progDataQuery = "SELECT * FROM program_data WHERE bus_number IN ($busKeyList) AND program_type in ('docking', 'engine_oil_and_main_filter_change')";
+    $progDataResult = mysqli_query($db, $progDataQuery);
+
+    // Group program data
+    $allProgramData = [];
+    while ($row = mysqli_fetch_assoc($progDataResult)) {
+        $busNo = $row['bus_number'];
+        $type = $row['program_type'];
+        $programDate = $row['program_date'];
+
+        $timestamp = ($programDate && $programDate !== '0000-00-00') ? strtotime($programDate) : null;
+
+        $allProgramData[$busNo][$type][] = [
+            'row' => $row,
+            'date' => $timestamp,
+            'is_null_date' => is_null($timestamp),
+        ];
+    }
+
+    // Final program data map
+    $programDataMap = [];
+
+    foreach ($allProgramData as $busNo => $programs) {
+        foreach ($programs as $type => $entries) {
+            $chosen = null;
+
+            // Split into categories
+            $nullDates = array_filter($entries, fn($e) => $e['is_null_date']);
+            $validDates = array_filter($entries, fn($e) => !$e['is_null_date']);
+
+            $beforeOrOnFrom = array_filter($validDates, fn($e) => $e['date'] <= $fromDateTimestamp);
+            $afterFrom = array_filter($validDates, fn($e) => $e['date'] > $fromDateTimestamp);
+
+            if (!empty($beforeOrOnFrom)) {
+                // ✅ Use latest before or on from_date
+                usort($beforeOrOnFrom, fn($a, $b) => $b['date'] <=> $a['date']);
+                $chosen = $beforeOrOnFrom[0]['row'];
+            } elseif (!empty($afterFrom)) {
+                if (!empty($nullDates)) {
+                    // ✅ Prefer null-date row over future-dated rows
+                    $chosen = $nullDates[0]['row'];
+                } else {
+                    // ❌ No valid past or null entry, fallback (can also be set to empty values)
+                    $chosen = [
+                        'bus_number' => $busNo,
+                        'program_type' => $type,
+                        'program_date' => null,
+                        'km' => null
+                    ];
+                }
+            } elseif (!empty($nullDates)) {
+                // ✅ Only null-dated row present
+                $chosen = $nullDates[0]['row'];
+            } else {
+                // ❌ No data found at all
+                $chosen = [
+                    'bus_number' => $busNo,
+                    'program_type' => $type,
+                    'program_date' => null,
+                    'km' => null
+                ];
+            }
+
+            $programDataMap[$busNo][$type] = $chosen;
+        }
+    }
+
+
+
+    // Fetch kmpl totals for all buses from 2025-08-01 to $from
+    $kmplQuery = "SELECT bus_number, date as reading_date, sum(km_operated) as km_operated
+              FROM vehicle_kmpl 
+              WHERE bus_number IN ($busKeyList) 
+              AND date BETWEEN '$kmpl_start_date' AND '$from_date'
+              AND deleted != 1
+              GROUP BY bus_number, date";
+    $kmplResult = mysqli_query($db, $kmplQuery);
+    $kmplMap = [];
+    while ($row = mysqli_fetch_assoc($kmplResult)) {
+        $busNo = $row['bus_number'];
+        $date = $row['reading_date'];
+        $km = (float) $row['km_operated'];
+        $kmplMap[$busNo][$date] = ($kmplMap[$busNo][$date] ?? 0) + $km;
+    }
+
+    // Helper: sum km from a date range
+    function sumKms($data, $from, $to)
+    {
+        $sum = 0;
+        foreach ($data as $date => $km) {
+            if ($date >= $from && $date <= $to) {
+                $sum += $km;
+            }
+        }
+        return round($sum, 2);
+    }
+
+    $slNo = 1;
+    $progQuery = "SELECT 
+    id,
+    make,
+    model,
+    model_type,
+    docking,
+    engine_oil_and_main_filter_change
+FROM program_master;
+";
+    $progResult = mysqli_query($db, $progQuery);
+    $programMasterMap = [];
+
+    while ($row = mysqli_fetch_assoc($progResult)) {
+        $key = $row['make'] . '|' . $row['model'] . '|' . $row['model_type'];
+        $programMasterMap[$key] = $row;
+    }
+    function calculateCumulativePerDay($initial_kms, $kmpl_data, $from, $to, $vehicleNo, $programName)
+    {
+        global $db; // use your db connection
+
+        $result = [];
+        $current_kms = $initial_kms;
+        $current = strtotime($from);
+        $end = strtotime($to);
+
+        // Fetch program dates from DB
+        $programDates = [];
+        $query = "SELECT program_date FROM program_data 
+              WHERE bus_number = '$vehicleNo' 
+              AND program_type = '$programName' 
+              AND program_date BETWEEN '$from' AND '$to'";
+        $res = mysqli_query($db, $query);
+        while ($row = mysqli_fetch_assoc($res)) {
+            $programDates[] = $row['program_date'];
+        }
+
+        // Convert to associative for faster lookup
+        $programDateMap = array_flip($programDates);
+        $reset = false;
+
+        while ($current <= $end) {
+            $date = date('Y-m-d', $current);
+            $daily_km = $kmpl_data[$date] ?? null;
+
+            if ($reset) {
+                $current_kms = 0;
+                $reset = false;
+            }
+
+            if (is_numeric($daily_km)) {
+                $current_kms += (float)$daily_km;
+            }
+
+            if (isset($programDateMap[$date])) {
+                $result[$date] = [
+                    'value' => round($current_kms, 2),
+                    'color' => 'green'
+                ];
+                $reset = true; // next day will reset
+            } else {
+                $result[$date] = [
+                    'value' => round($current_kms, 2),
+                    'color' => 'default'
+                ];
+            }
+
+            $current = strtotime('+1 day', $current);
+        }
+
+        return $result;
+    }
+
+    $monthGroups = [];
+
+
+    // Fetch daily vehicle_kmpl data for selected range
+    $dailyKmplQuery = "SELECT bus_number, date, sum(km_operated) as km_operated
+                   FROM vehicle_kmpl 
+                   WHERE bus_number IN ($busKeyList) 
+                   AND date BETWEEN '$from' AND '$to'
+                   AND deleted != 1
+                   GROUP BY bus_number, date";
+    $dailyKmplResult = mysqli_query($db, $dailyKmplQuery);
+    $dailyKmplData = [];
+    while ($row = mysqli_fetch_assoc($dailyKmplResult)) {
+        $dailyKmplData[$row['bus_number']][$row['date']] = $row['km_operated'];
+    }
+
+    // Fetch w3_chart_data only if not present in kmpl
+    $w3Query = "SELECT bus_number, report_date AS date,operation_type as km_operated 
+            FROM w3_chart_data 
+            WHERE bus_number IN ($busKeyList)
+            AND deleted != '1' 
+            AND report_date BETWEEN '$from' AND '$to'";
+    $w3Result = mysqli_query($db, $w3Query);
+    $w3Data = [];
+    while ($row = mysqli_fetch_assoc($w3Result)) {
+        $w3Data[$row['bus_number']][$row['date']] = $row['km_operated'];
+    }
+
+    $start = new DateTime($from);
+    $end = new DateTime($to);
+
+    while ($start <= $end) {
+        $monthKey = strtoupper($start->format('M Y'));
+        $monthGroups[$monthKey][] = clone $start;
+        $start->modify('+1 day');
+    }
+    $formatted_from = date('d-m-y', strtotime($from_date));
+    foreach ($buses as $vehicleNo => $bus) {
+        $make = $bus['make'];
+        $model = $bus['model'];
+        $modelType = $bus['model_type'];
+        $subCategory = $bus['bus_sub_category'];
+
+        // Get program master row
+        $key = $make . '|' . $model . '|' . $modelType;
+        $progRow = $programMasterMap[$key] ?? null;
+        if (!$progRow) continue;
+
+        $programs = [];
+        foreach ($progRow as $key => $targetKms) {
+            if (in_array($key, ['id', 'make', 'model', 'model_type', 'created_at', 'updated_at']) || $targetKms === null || $targetKms === '') continue;
+            if ($key === 'air_suspension_check' && !in_array($subCategory, $air_suspension_bus_category_array)) continue;
+
+            $programName = $key;
+            $progData = $programDataMap[$vehicleNo][$programName] ?? null;
+            $readableName = ucwords(str_replace('_', ' ', $programName));
+            $programs[] = [
+                'realname' => $programName,
+                'name' => $readableName,
+                'value' => $targetKms
+            ];
+        }
+
+        // Generate table for this vehicle
+        $html .= "<table border='1' cellspacing='0' cellpadding='5' width='100%' style='margin-bottom: 30px; text-align:center;'>
+        <thead>
+            <tr>
+                <th>SL No</th>
+                <th>Vehicle No</th>
+                <th rowspan='2'>Program Target KMS</th>
+                <th rowspan='2'>Cumm. program <br> kms as on {$formatted_from}</th>";
+
+        foreach ($monthGroups as $monthYear => $dates) {
+            $colspan = count($dates);
+            $html .= "<th style='text-align:center;' colspan='{$colspan}'>$monthYear</th>";
+        }
+        $html .= "</tr>
+            <tr>
+                <td rowspan='2'><b>$slNo</b></td>
+                <td rowspan='2'><b>{$vehicleNo}</b></td>";
+        foreach ($monthGroups as $dates) {
+            foreach ($dates as $dateObj) {
+                $html .= "<th style='text-align:center;'>" . $dateObj->format('j') . "</th>";
+            }
+        }
+
+        $html .= "</tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan='2' style='text-align:center;'><b>Program Name  &#8595;</b></td>
+                <td colspan='2' style='text-align:center;'><b>Daily KMS --></b></td>";
+        foreach ($monthGroups as $dates) {
+            foreach ($dates as $dateObj) {
+                $dateStr = $dateObj->format('Y-m-d');
+                $value = 'NA';
+
+                if (isset($dailyKmplData[$vehicleNo][$dateStr])) {
+                    $value = $dailyKmplData[$vehicleNo][$dateStr];
+                } elseif (isset($w3Data[$vehicleNo][$dateStr])) {
+                    $value = $w3Data[$vehicleNo][$dateStr];
+                }
+
+                $html .= "<td>$value</td>";
+            }
+        }
+        $html .= "</tr>";
+
+        foreach ($programs as $prog) {
+            $programName = strtolower(str_replace(' ', '_', $prog['name']));
+            $progData = $programDataMap[$vehicleNo][$programName] ?? null;
+            $program_date = $progData['program_date'] ?? null;
+            $completed_km = (float)($progData['program_completed_km'] ?? 0);
+            $kmData = $kmplMap[$vehicleNo] ?? [];
+            $start_date = $from;
+            if (empty($program_date) || $program_date == '0000-00-00') {
+                $initial_cumm_kms = $completed_km + sumKms($kmData, $kmpl_start_date, $from_date);
+                $data = 0;
+            } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) > strtotime($from_date)) {
+                $initial_cumm_kms = sumKms($kmData, $kmpl_start_date, $from_date);
+                $data = 1;
+            } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) == strtotime($from_date)) {
+                $initial_cumm_kms = 0;
+                $data = 2;
+            } elseif (!empty($program_date) && $program_date !== '0000-00-00' && strtotime($program_date) < strtotime($from_date)) {
+                $program_date1 = date('Y-m-d', strtotime($program_date . ' +1 day'));
+                $initial_cumm_kms = sumKms($kmData, $program_date1, $from_date);
+                $data = 3;
+            } else {
+                $start_date1 = date('Y-m-d', strtotime($program_date . ' +1 day'));
+                $initial_cumm_kms = sumKms($kmData, $start_date1, $from_date);
+                $data = 4;
+            }
+
+            $dailyCumm = calculateCumulativePerDay($initial_cumm_kms, $dailyKmplData[$vehicleNo] ?? [], $from, $to, $vehicleNo, $prog['realname']);
+
+
+            $html .= "<tr>";
+            if ($prog['name'] === 'Engine Oil And Main Filter Change') {
+            $displayName = 'EOC';
+        } else {
+            $displayName = $prog['name'];
+        }
+        $html .= "<td colspan='2' style='text-align:left;'>{$displayName}</td>
+        <td>{$prog['value']}</td>
+        <td>{$initial_cumm_kms}</td>";
+            foreach ($monthGroups as $dates) {
+                foreach ($dates as $dateObj) {
+                    $dateStr = $dateObj->format('Y-m-d');
+
+                    $dailyValue = null;
+
+                    if (isset($dailyKmplData[$vehicleNo][$dateStr])) {
+                        $dailyValue = $dailyKmplData[$vehicleNo][$dateStr];
+                    } elseif (isset($w3Data[$vehicleNo][$dateStr])) {
+                        $dailyValue = $w3Data[$vehicleNo][$dateStr];
+                    }
+
+                    if ($dailyValue === 'Spare') {
+                        $html .= "<td></td>";
+                        continue;
+                    }
+
+
+                    $data = $dailyCumm[$dateStr] ?? ['value' => 'NA', 'color' => 'default'];
+                    $val  = $data['value'];
+                    $color = $data['color'] ?? 'default';
+                    $target  = (float) $prog['value'];
+                    if (is_numeric($val)) {
+                        if ($color === 'green') {
+                            $html .= "<td style='background-color:green;'>$val</td>";
+                        } else {
+                            $numVal = (float) $val;
+
+                            if ($numVal > $target + 500) {                // more than +500
+                                $html .= "<td style='background-color:red;'>$val</td>";
+                            } elseif (abs($numVal - $target) <= 500) {    // within ±500
+                                $html .= "<td style='background-color:yellow;'>$val</td>";
+                            } else {                                      // anything else
+                                $html .= "<td>$val</td>";
+                            }
+                        }
+                    } else {
+                        $html .= "<td>$val</td>";
+                    }
+                }
+            }
+
+
+            $html .= "</tr>";
+        }
+
+
+        $html .= "</tbody></table>";
+        $slNo++;
+
+        //generate signature box in a single row for ME Clerk, CM/AWS And DM add text not table
+        $html .= "<br><br><br><div style='display:flex; justify-content:space-around; margin-bottom:50px;'>
+        <div style='text-align:center;'>
+            <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+            <p><b>ME Clerk</b></p>
+        </div>
+        <div style='text-align:center;'>
+            <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+            <p><b>CM/AWS</b></p>
+        </div>
+        <div style='text-align:center;'>
+            <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+            <p><b>DM</b></p>
+        </div>
+    </div>";
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'data' => $html
+    ]);
 }

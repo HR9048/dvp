@@ -33,9 +33,7 @@ $pdf->SetY(25);
 $style = "
 <style>
     h2, h3, h4 { text-align: center; }
-    table { border-collapse: collapse; width: 100%; font-size: 9px; padding: 10px;}
-    th { background-color: #f2f2f2; text-align: center; font-weight: bold; }
-    td, th { border: 1px solid #000; padding: 0px; }
+   
 </style>
 ";
 
@@ -474,11 +472,31 @@ foreach ($buses as $vehicleNo => $bus) {
     $html .= '</tbody>';
     $html .= '</table><br><br>';
     $slNo++;
+
+    $html .= '
+<br><br><br>
+<table width="100%" cellpadding="10">
+    <tr>
+        <td width="33%" style="text-align:center;">
+            <div style="border-top:1px solid #000; width:60%; margin:0 auto;"></div>
+            ME Clerk
+        </td>
+        <td width="33%" style="text-align:center;">
+            <div style="border-top:1px solid #000; width:60%; margin:0 auto;"></div>
+            CM/AWS
+        </td>
+        <td width="33%" style="text-align:center;">
+            <div style="border-top:1px solid #000; width:60%; margin:0 auto;"></div>
+            DM
+        </td>
+    </tr>
+</table>
+';
 }
 
 // Output HTML to PDF
 $pdf->writeHTML($html, true, false, true, false, '');
 
 // Output file
-$pdf->Output("W3_Report_{$divisionName}_{$depotName}.pdf", 'D');
+$pdf->Output("W3_Report_{$divisionName}_{$depotName}.pdf", 'I');
 exit;

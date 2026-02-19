@@ -249,6 +249,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         if (!empty($rows)) {
             $any_rows_printed = true; // ✅ Set flag to true since we printed some data
 
+            echo "<h3 class='mt-4 text-center text-decoration-underline'>Docking Chart</h3>";
+
             echo "<h4 class='mt-4 text-primary'>
     Bus number: $bus_number | Make: $make | Emission: $emission | Model Type: $model_type
 </h4>";
@@ -256,6 +258,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             echo "<div><table class='table table-bordered' style='border-collapse: collapse;'>";
             echo "<thead>
 <tr>
+
     <th>Sl No</th>
     <th>Program Name</th>
     <th>Prescribed KM</th>
@@ -298,50 +301,121 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         }
     }
 
-    echo "<h4 class='mt-4 text-primary'>Vehicle Last 30 Days KMPL and Defect Sheet</h4>";
+    echo "<h4 class='mt-4 text-primary'>Vehicle Last 6 Months KMPL Summary</h4>";
 
-    // Fetch data from database
-    $last30days = date('Y-m-d', strtotime('-30 days'));
-    $sqlforkmplofbus = "SELECT * FROM vehicle_kmpl WHERE bus_number = '$bus_number' AND deleted != 1 and date between '$last30days' and '$today' order by date DESC";
-    $result = mysqli_query($db, $sqlforkmplofbus);
+    $last6months = date('Y-m-01', strtotime('-5 months')); // from 1st of month
+    $today = date('Y-m-d');
 
-    if ($result && mysqli_num_rows($result) > 0) {
+    $sqlSummary = "
+SELECT 
+    DATE_FORMAT(date, '%Y-%m') as month_year,
+    SUM(km_operated) as total_km,
+    SUM(hsd) as total_hsd
+FROM vehicle_kmpl
+WHERE bus_number = '$bus_number'
+AND deleted != 1
+AND date BETWEEN '$last6months' AND '$today'
+GROUP BY DATE_FORMAT(date, '%Y-%m')
+ORDER BY month_year DESC
+";
+
+    $resultSummary = mysqli_query($db, $sqlSummary);
+
+    if ($resultSummary && mysqli_num_rows($resultSummary) > 0) {
+
         echo "<div class='table-responsive'>";
-        echo "<table class='table table-bordered table-sm' style='border-collapse: collapse;'>";
+        echo "<table class='table table-bordered table-sm'>";
         echo "<thead class='table-light'>
-        <tr>
-            <th>Sl No</th>
-            <th>Date</th>
-            <th>KM</th>
-            <th>HSD</th>
-            <th>KMPL</th>
-            <th>Defects Noticed</th>
-        </tr>
-    </thead><tbody>";
+            <tr>
+                <th>Sl No</th>
+                <th>Month</th>
+                <th>Total KM</th>
+                <th>Total HSD</th>
+                <th>KMPL</th>
+            </tr>
+          </thead><tbody>";
 
         $slno = 1;
-        while ($row = mysqli_fetch_assoc($result)) {
+
+        while ($row = mysqli_fetch_assoc($resultSummary)) {
+
+            $total_km  = $row['total_km'] ?? 0;
+            $total_hsd = $row['total_hsd'] ?? 0;
+
+            $kmpl = ($total_hsd > 0) ? round($total_km / $total_hsd, 2) : 0;
+
             echo "<tr>
-            <td style='padding:3px;'>{$slno}</td>
-            <td style='padding:3px;'>" . date('d-m-Y', strtotime($row['date'])) . "</td>
-            <td style='padding:3px;'>{$row['km_operated']}</td>
-            <td style='padding:3px;'>{$row['hsd']}</td>
-            <td style='padding:3px;'>{$row['kmpl']}</td>
-            <td style='padding:3px;'>{$row['remarks']}</td>
-        </tr>";
+                <td>{$slno}</td>
+                <td>" . date('F Y', strtotime($row['month_year'] . "-01")) . "</td>
+                <td>{$total_km}</td>
+                <td>{$total_hsd}</td>
+                <td>{$kmpl}</td>
+              </tr>";
+
             $slno++;
         }
 
-        echo "</tbody></table></div><br><br><br>";
+        echo "</tbody></table></div><br>";
+    } else {
+        echo "<div class='alert alert-warning'>No KMPL records found for last 6 months.</div>";
+    }
+    echo "<h4 class='mt-4 text-danger'>Last 2 Months Defect Records</h4>";
 
-        echo '<div style="display: flex; justify-content: space-between;">
+    $last2months = date('Y-m-d', strtotime('-2 months'));
+
+    $sqlDefects = "
+SELECT date, km_operated, hsd, kmpl, remarks
+FROM vehicle_kmpl
+WHERE bus_number = '$bus_number'
+AND deleted != 1
+AND date >= '$last2months'
+AND remarks IS NOT NULL
+AND remarks != ''
+ORDER BY date DESC
+";
+
+    $resultDefects = mysqli_query($db, $sqlDefects);
+
+    if ($resultDefects && mysqli_num_rows($resultDefects) > 0) {
+
+        echo "<div class='table-responsive'>";
+        echo "<table class='table table-bordered table-sm'>";
+        echo "<thead class='table-light'>
+            <tr>
+                <th>Sl No</th>
+                <th>Date</th>
+                <th>KM</th>
+                <th>HSD</th>
+                <th>KMPL</th>
+                <th>Defects Noticed</th>
+            </tr>
+          </thead><tbody>";
+
+        $slno = 1;
+
+        while ($row = mysqli_fetch_assoc($resultDefects)) {
+
+            echo "<tr>
+                <td>{$slno}</td>
+                <td>" . date('d-m-Y', strtotime($row['date'])) . "</td>
+                <td>{$row['km_operated']}</td>
+                <td>{$row['hsd']}</td>
+                <td>{$row['kmpl']}</td>
+                <td>{$row['remarks']}</td>
+              </tr>";
+
+            $slno++;
+        }
+
+        echo "</tbody></table></div>";
+    } else {
+        echo "<div class='alert alert-success'>No defects reported in last 2 months 🎉</div>";
+    }
+    echo '<br><br><Br><br><div style="display: flex; justify-content: space-between;">
             <h2 style="text-align:left; padding: 2%; margin: 0;">JA</h2>
             <h2 style="text-align:center; padding: 2%; margin: 0;">CM/AWS</h2>
             <h2 style="text-align:right; padding: 2%; margin: 0;">DM</h2>
         </div>';
-    } else {
-        echo "<div class='alert alert-warning'>No KMPL or defect records found for bus <strong>$bus_number</strong> in the last 30 days.</div>";
-    }
     echo "</div>";
 } else {
     echo "<script>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";

@@ -8268,6 +8268,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 
         $html .= "</tbody></table>";
         $slNo++;
+
+        $html .= "<br><br><br><br><div style='display:flex; justify-content:space-around; margin-bottom:50px;'>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>ME Clerk</b></p>  
+    </div>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>CM/AWS</b></p>
+    </div>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>DM</b></p>
+    </div>
+    </div>";
     }
 
     echo json_encode([
@@ -12091,11 +12106,11 @@ FROM program_master;
 
             $html .= "<tr>";
             if ($prog['name'] === 'Engine Oil And Main Filter Change') {
-            $displayName = 'EOC';
-        } else {
-            $displayName = $prog['name'];
-        }
-        $html .= "<td colspan='2' style='text-align:left;'>{$displayName}</td>
+                $displayName = 'EOC';
+            } else {
+                $displayName = $prog['name'];
+            }
+            $html .= "<td colspan='2' style='text-align:left;'>{$displayName}</td>
         <td>{$prog['value']}</td>
         <td>{$initial_cumm_kms}</td>";
             foreach ($monthGroups as $dates) {
@@ -12164,6 +12179,400 @@ FROM program_master;
         </div>
     </div>";
     }
+
+    echo json_encode([
+        'status' => 'success',
+        'data' => $html
+    ]);
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_fleet_utilization_report") {
+    $year = $_POST['year'];
+    $month = $_POST['month'];
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+
+    $start_date = date('Y-m-01', strtotime("$year-$month-01"));
+    $end_date = date('Y-m-t', strtotime($start_date));
+
+
+    if (in_array($depot_id, ['1', '8', '12', '13', '14', '15'])) {
+        $programstart_date = '2025-08-01';
+        $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+    } elseif (in_array($depot_id, ['2', '3', '4', '5', '6', '7', '9', '10', '11', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53'])) {
+        $programstart_date = '2025-10-01';
+        $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+    }
+
+    if (!$start_date || !$end_date || !$division_id || !$depot_id) {
+        echo json_encode(['status' => 'error', 'message' => 'Missing required parameters']);
+        exit;
+    }
+
+    if ($start_date < $programstart_date) {
+        echo json_encode(['status' => 'error', 'message' => "Data not available before " . date('d-m-Y', strtotime($programstart_date))]);
+        exit;
+    }
+    // Get depot/division names
+    $locationQuery = "SELECT division, depot FROM location WHERE division_id = '$division_id' AND depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+
+    $html = "<h3 class='text-center'>Fleet Utilization Report for $divisionName - $depotName</h3>";
+    $html .= "<h4 class='text-center'>Month: " . date('F Y', strtotime($start_date)) . "</h4>";
+
+    //if selected month is same as the present month and year then end date should be current date
+    $currentYear = date('Y');
+    $currentMonth = date('m');
+    if ($year == $currentYear && $month == $currentMonth) {
+        $daysInMonth = date('d'); // current day of the month
+    } else {
+        $daysInMonth = date("t", strtotime($start_date));
+    }
+
+
+    $sql = "SELECT 
+    bus_number, 
+    DATE(date) as km_date, 
+    SUM(km_operated) as total_km
+FROM vehicle_kmpl
+WHERE division_id = '$division_id'
+AND depot_id = '$depot_id'
+AND date BETWEEN '$start_date' AND '$end_date'
+AND deleted != 1
+GROUP BY bus_number, DATE(date)
+ORDER BY bus_number, km_date";
+
+    $result = mysqli_query($db, $sql);
+
+
+    /* ===== FETCH OPERATION TYPE DATA ONCE ===== */
+    $sqlforoperation_type = "SELECT bus_number, report_date, operation_type 
+FROM w3_chart_data 
+WHERE division_id = '$division_id' 
+AND depot_id = '$depot_id' 
+AND report_date BETWEEN '$start_date' AND '$end_date' 
+AND deleted != '1'";
+
+    $resultOperationType = mysqli_query($db, $sqlforoperation_type);
+
+    /* ===== STORE DATA IN ARRAY ===== */
+    $operationData = [];
+
+    while ($opRow = mysqli_fetch_assoc($resultOperationType)) {
+        $bus = $opRow['bus_number'];
+        $day = date("j", strtotime($opRow['report_date']));
+        $operationData[$bus][$day] = $opRow['operation_type'];
+    }
+
+
+    /* ===== STORE KM DATA ===== */
+    $busData = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $bus = $row['bus_number'];
+        $day = date("j", strtotime($row['km_date']));
+        $busData[$bus][$day] = $row['total_km'];
+    }
+
+
+    /* ===== START TABLE ===== */
+    $html .= "<table border='1' cellpadding='5' cellspacing='0' width='100%' style='border-collapse:collapse;font-size:12px;'>";
+
+    /* ===== HEADER ===== */
+    $html .= "<tr style='background:#f2f2f2;'>";
+    $html .= "<th>Sl No</th>";
+    $html .= "<th>Bus Number</th>";
+
+    for ($d = 1; $d <= $daysInMonth; $d++) {
+        $html .= "<th>$d</th>";
+    }
+
+    $html .= "<th>Total</th>";
+    $html .= "</tr>";
+
+
+    /* ===== INITIALIZE DATE TOTAL ARRAY ===== */
+    $dateTotals = [];
+    for ($d = 1; $d <= $daysInMonth; $d++) {
+        $dateTotals[$d] = 0;
+    }
+
+
+    /* ===== DATA ROWS ===== */
+    $sl = 1;
+    $grandTotal = 0;
+
+    foreach ($busData as $bus => $days) {
+
+        $rowTotal = 0;
+
+        $html .= "<tr>";
+        $html .= "<td align='center'>$sl</td>";
+        $html .= "<td>$bus</td>";
+
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+
+            if (isset($days[$d])) {
+
+                $km = round($days[$d], 1);
+                $rowTotal += $km;
+                $dateTotals[$d] += $km;   // 🔥 ADD TO DATE TOTAL
+                $html .= "<td align='right'>$km</td>";
+            } else {
+
+                $operationType = $operationData[$bus][$d] ?? '';
+
+                if (strtoupper($operationType) == 'SPARE') {
+                    $html .= "<td align='center'><strong>$operationType</strong></td>";
+                } else {
+                    $html .= "<td align='center'>$operationType</td>";
+                }
+            }
+        }
+
+        $grandTotal += $rowTotal;
+
+        $html .= "<td align='right'><strong>" . round($rowTotal, 1) . "</strong></td>";
+        $html .= "</tr>";
+
+        $sl++;
+    }
+    /* ===== DATE WISE TOTAL ROW ===== */
+    $html .= "<tr style='background:#d9edf7;font-weight:bold;'>";
+    $html .= "<td colspan='2' align='center'>Total</td>";
+
+    for ($d = 1; $d <= $daysInMonth; $d++) {
+        $html .= "<td align='right'>" . round($dateTotals[$d], 1) . "</td>";
+    }
+
+    $html .= "<td align='right'>" . round($grandTotal, 1) . "</td>";
+    $html .= "</tr>";
+    $html .= "</table>";
+
+    //create a signature box for ME Clerk, CM/AWS And DM add text not table
+    $html .= "<br><br><br><br><div style='display:flex; justify-content:space-around; margin-bottom:50px;'>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>ME Clerk</b></p>  
+    </div>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>CM/AWS</b></p>
+    </div>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>DM</b></p>
+    </div>
+    </div>";
+
+
+    echo json_encode([
+        'status' => 'success',
+        'data' => $html
+    ]);
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] == 'mark_done') {
+
+    $bus_number = $db->real_escape_string($_POST['bus_number']);
+    $division_id = $_SESSION['DIVISION_ID'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $done_date = $_POST['done_date'];
+    $week_start = $_POST['week_start'];
+
+    $check = $db->query("
+        SELECT id FROM weekly_maintenance_done
+        WHERE bus_number='$bus_number'
+        AND done_date='$done_date'
+        AND week_start='$week_start'
+    ");
+
+    if ($check->num_rows == 0) {
+
+        $db->query("
+            INSERT INTO weekly_maintenance_done
+            (bus_number, done_date, division_id, depot_id, week_start)
+            VALUES
+            ('$bus_number', '$done_date', '$division_id', '$depot_id', '$week_start')
+        ");
+    }
+
+    echo json_encode(['status' => 'success']);
+    exit;
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "preventive_maintenance_report") {
+    $year = $_POST['year'];
+    $month = $_POST['month'];
+    $division_id = $_POST['division'];
+    $depot_id = $_POST['depot'];
+
+    $start_date = date('Y-m-01', strtotime("$year-$month-01"));
+    $end_date = date('Y-m-t', strtotime($start_date));
+
+    if (!$start_date || !$end_date || !$division_id || !$depot_id) {
+        echo json_encode(['status' => 'error', 'message' => 'Missing required parameters']);
+        exit;
+    }
+
+
+    // Get depot/division names
+    $locationQuery = "SELECT division FROM location WHERE division_id = '$division_id' limit 1";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $divisionName = $locationData['division'] ?? 'Unknown';
+
+    $locationQuery = "SELECT depot FROM location WHERE depot_id = '$depot_id'";
+    $locationResult = mysqli_query($db, $locationQuery);
+    $locationData = mysqli_fetch_assoc($locationResult);
+    $depotName = $locationData['depot'] ?? 'Unknown';
+
+    if ($division_id != 'All') {
+        $divisioncondition = "division_id = $division_id";
+    } else {
+        $divisioncondition = "1=1";
+    }
+    if ($depot_id != 'All') {
+        $depotcondition = "depot_id = $depot_id";
+    } else {
+        $depotcondition = "1=1";
+    }
+    if ($division_id != 'All') {
+        $divisioncondition1 = "division_name = $division_id";
+    } else {
+        $divisioncondition1 = "1=1";
+    }
+    if ($depot_id != 'All') {
+        $depotcondition1 = "depot_name = $depot_id";
+    } else {
+        $depotcondition1 = "1=1";
+    }
+
+    if ($_SESSION['TYPE'] == 'HEAD-OFFICE') {
+        if ($division_id == 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Preventive Maintenance Report for Central Office - $depotName</h3>";
+        } elseif ($division_id != 'All' && $depot_id == 'All') {
+            $html = "<h3 class='text-center'>Preventive Maintenance Report for $divisionName - All Depots</h3>";
+        } elseif ($division_id != 'All' && $depot_id != 'All') {
+            $html = "<h3 class='text-center'>Preventive Maintenance Report for $divisionName - $depotName</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DIVISION') {
+        if ($depot_id != 'All') {
+            $html = "<h3 class='text-center'>Preventive Maintenance Report for $divisionName - $depotName</h3>";
+        } else {
+            $html = "<h3 class='text-center'>Preventive Maintenance Report for $divisionName - All Depots</h3>";
+        }
+    } elseif ($_SESSION['TYPE'] == 'DEPOT') {
+        $html = "<h3 class='text-center'>Preventive Maintenance Report for $divisionName - $depotName</h3>";
+    }
+    $html .= "<h4 class='text-center'>Month: " . date('F Y', strtotime($start_date)) . "</h4>";
+
+    $html .= "<table class='table table-bordered table-striped'>
+<thead>
+<tr>
+    <th>Sl No</th>
+    <th>Bus Number</th>
+    <th>Operated Days</th>
+    <th>Spare Days</th>
+    <th>Off Road Days</th>
+    <th>Docking</th>
+    <th>EOC</th>
+    <th>Tyre Rotation</th>
+</tr>
+</thead>
+<tbody>
+";
+
+    $busQuery = "
+    SELECT bus_number 
+    FROM bus_registration
+    WHERE $divisioncondition1
+    AND $depotcondition1
+    ORDER BY bus_number ASC
+";
+
+    $busResult = mysqli_query($db, $busQuery);
+
+    $sl = 1;
+
+    while ($bus = mysqli_fetch_assoc($busResult)) {
+
+        $bus_number = $bus['bus_number'];
+
+        /* ===== Operated + Spare ===== */
+        $w3Query = "SELECT 
+            SUM(CASE WHEN operation_type IN('KM Added', 'Night Out', 'Extra', 'CC', 'Fair/Jatra', 'Other Depot', 'Not Arrived', 'Others') THEN 1 ELSE 0 END) as operated_days,
+            SUM(CASE WHEN operation_type='Spare' THEN 1 ELSE 0 END) as spare_days,
+            SUM(CASE WHEN operation_type IN ('Off-Road', 'DWS', 'RWY', 'RTO', 'BD', 'Police Station') THEN 1 ELSE 0 END) as off_days
+        FROM w3_chart_data
+        WHERE bus_number='$bus_number'
+        AND report_date BETWEEN '$start_date' AND '$end_date'
+        AND deleted != '1'
+    ";
+        $w3Result = mysqli_query($db, $w3Query);
+        $w3Data = mysqli_fetch_assoc($w3Result);
+
+        $operated_days = $w3Data['operated_days'] ?? 0;
+        $spare_days = $w3Data['spare_days'] ?? 0;
+        $off_days = $w3Data['off_days'] ?? 0;
+
+
+        /* ===== Program Counts ===== */
+        $programQuery = "
+        SELECT 
+            SUM(CASE WHEN program_type='docking' THEN 1 ELSE 0 END) as docking,
+            SUM(CASE WHEN program_type='engine_oil_and_main_filter_change' THEN 1 ELSE 0 END) as eoc,
+            SUM(CASE WHEN program_type='tyre_rotation' THEN 1 ELSE 0 END) as tyre
+        FROM program_data
+        WHERE bus_number='$bus_number'
+        AND program_date BETWEEN '$start_date' AND '$end_date'
+    ";
+        $programResult = mysqli_query($db, $programQuery);
+        $programData = mysqli_fetch_assoc($programResult);
+
+        $docking = $programData['docking'] ?? 0;
+        $eoc = $programData['eoc'] ?? 0;
+        $tyre = $programData['tyre'] ?? 0;
+
+        $html .= "
+    <tr>
+        <td>{$sl}</td>
+        <td>{$bus_number}</td>
+        <td>{$operated_days}</td>
+        <td>{$spare_days}</td>
+        <td>{$off_days}</td>
+        <td>{$docking}</td>
+        <td>{$eoc}</td>
+        <td>{$tyre}</td>
+    </tr>
+    ";
+
+        $sl++;
+    }
+
+    $html .= "</tbody></table>";
+
+
+//create a signature box for ME Clerk, CM/AWS And DM add text not table
+    $html .= "<br><br><br><br><div style='display:flex; justify-content:space-around; margin-bottom:50px;'>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>ME Clerk</b></p>  
+    </div>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>CM/AWS</b></p>
+    </div>
+    <div style='text-align:center;'>
+        <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
+        <p><b>DM</b></p>
+    </div>
+    </div>";
+
+
+
 
     echo json_encode([
         'status' => 'success',

@@ -216,6 +216,7 @@ date_default_timezone_set('Asia/Kolkata');
                             <a class="dropdown-item dropdown-toggle" href="#">Program</a>
                             <ul class="dropdown-menu">
                               <li><a class="dropdown-item" href="co_w3_report_fromto.php">W3 Chart Report</a></li>
+                              <li><a class="dropdown-item" href="co_preventive_maintenance_report.php">Preventive Maintenance Report</a></li>
                               <li><a class="dropdown-item" href="co_program_report_fromto.php">Program Completion Report</a></li>
                               <li><a class="dropdown-item" href="co_program_pending_report.php">Pending program Report</a></li>
                               <li><a class="dropdown-item" href="co_program_monthly_report.php">Monthly Program Report</a></li>

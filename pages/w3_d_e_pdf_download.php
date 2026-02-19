@@ -493,7 +493,7 @@ foreach ($buses as $vehicleNo => $bus) {
     $html .= '</tbody>';
     $html .= '</table><br><br>';
     $slNo++;
-$html .= '
+    $html .= '
 <br><br><br>
 <table width="100%" cellpadding="10">
     <tr>
@@ -512,7 +512,6 @@ $html .= '
     </tr>
 </table>
 ';
-
 }
 
 // Output HTML to PDF

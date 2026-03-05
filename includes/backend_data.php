@@ -8229,13 +8229,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
             $dailyCumm = calculateCumulativePerDay($initial_cumm_kms, $dailyKmplData[$vehicleNo] ?? [], $from, $to, $vehicleNo, $prog['realname']);
 
 
-            $html .= "<tr>
-        <td colspan='2' style='text-align:left;'>{$prog['name']}</td>
+            $html .= "<tr>";
+         if ($prog['name'] === 'Engine Oil And Main Filter Change') {
+                $displayName = 'EOC';
+            } else {
+                $displayName = $prog['name'];
+            }
+            $html .= "<td colspan='2' style='text-align:left;'>{$displayName}</td>
         <td>{$prog['value']}</td>
         <td>{$initial_cumm_kms}</td>";
             foreach ($monthGroups as $dates) {
                 foreach ($dates as $dateObj) {
                     $dateStr = $dateObj->format('Y-m-d');
+
+                    $dailyValue = null;
+
+                    if (isset($dailyKmplData[$vehicleNo][$dateStr])) {
+                        $dailyValue = $dailyKmplData[$vehicleNo][$dateStr];
+                    } elseif (isset($w3Data[$vehicleNo][$dateStr])) {
+                        $dailyValue = $w3Data[$vehicleNo][$dateStr];
+                    }
+
+                    if ($dailyValue === 'Spare') {
+                        $html .= "<td></td>";
+                        continue;
+                    }
+
 
                     $data = $dailyCumm[$dateStr] ?? ['value' => 'NA', 'color' => 'default'];
                     $val  = $data['value'];
@@ -8269,7 +8288,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         $html .= "</tbody></table>";
         $slNo++;
 
-        $html .= "<br><br><br><br><div style='display:flex; justify-content:space-around; margin-bottom:50px;'>
+        
+    }
+$html .= "<br><br><br><br><div style='display:flex; justify-content:space-around; margin-bottom:50px;'>
     <div style='text-align:center;'>
         <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
         <p><b>ME Clerk</b></p>  
@@ -8283,8 +8304,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         <p><b>DM</b></p>
     </div>
     </div>";
-    }
-
     echo json_encode([
         'status' => 'success',
         'data' => $html
@@ -12163,7 +12182,9 @@ FROM program_master;
         $html .= "</tbody></table>";
         $slNo++;
 
-        //generate signature box in a single row for ME Clerk, CM/AWS And DM add text not table
+       
+    }
+ //generate signature box in a single row for ME Clerk, CM/AWS And DM add text not table
         $html .= "<br><br><br><div style='display:flex; justify-content:space-around; margin-bottom:50px;'>
         <div style='text-align:center;'>
             <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>
@@ -12178,8 +12199,6 @@ FROM program_master;
             <p><b>DM</b></p>
         </div>
     </div>";
-    }
-
     echo json_encode([
         'status' => 'success',
         'data' => $html
@@ -12375,7 +12394,7 @@ AND deleted != '1'";
     ]);
 }
 
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] == 'mark_done') {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] == 'mark_done_weekely_maintenance') {
 
     $bus_number = $db->real_escape_string($_POST['bus_number']);
     $division_id = $_SESSION['DIVISION_ID'];
@@ -12394,6 +12413,34 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 
         $db->query("
             INSERT INTO weekly_maintenance_done
+            (bus_number, done_date, division_id, depot_id, week_start)
+            VALUES
+            ('$bus_number', '$done_date', '$division_id', '$depot_id', '$week_start')
+        ");
+    }
+
+    echo json_encode(['status' => 'success']);
+    exit;
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] == 'mark_done_tyre_pressure') {
+
+    $bus_number = $db->real_escape_string($_POST['bus_number']);
+    $division_id = $_SESSION['DIVISION_ID'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+    $done_date = $_POST['done_date'];
+    $week_start = $_POST['week_start'];
+
+    $check = $db->query("
+        SELECT id FROM weekly_tyre_pressure_done
+        WHERE bus_number='$bus_number'
+        AND done_date='$done_date'
+        AND week_start='$week_start'
+    ");
+
+    if ($check->num_rows == 0) {
+
+        $db->query("
+            INSERT INTO weekly_tyre_pressure_done
             (bus_number, done_date, division_id, depot_id, week_start)
             VALUES
             ('$bus_number', '$done_date', '$division_id', '$depot_id', '$week_start')
@@ -12555,7 +12602,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     $html .= "</tbody></table>";
 
 
-//create a signature box for ME Clerk, CM/AWS And DM add text not table
+    //create a signature box for ME Clerk, CM/AWS And DM add text not table
     $html .= "<br><br><br><br><div style='display:flex; justify-content:space-around; margin-bottom:50px;'>
     <div style='text-align:center;'>
         <div style='border-top:2px solid #000; width:500px; margin:0 auto;'></div>

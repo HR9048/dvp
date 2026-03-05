@@ -387,6 +387,52 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
                 document.body.removeChild(link);
             });
         </script>
+        <script>
+            document.getElementById('downloadExcel').addEventListener('click', function() {
+                // Get container1 HTML content
+                var htmlContent = document.querySelector('.container').outerHTML;
+
+                // Convert HTML to workbook
+                var workbook = XLSX.utils.table_to_book(document.querySelector('.container'));
+
+                // Save workbook as Excel file with the PHP formatted date and "KMPL" appended to the file name
+                XLSX.writeFile(workbook, '<?php echo $formattedDate; ?>_KMPL.xlsx');
+            });
+
+
+            document.getElementById('downloadText').addEventListener('click', function() {
+                // Get today's date
+
+                // Get all table data as a 2D array
+                var tableData = Array.from(document.querySelectorAll('table')).map(function(table) {
+                    return Array.from(table.querySelectorAll('tr')).map(function(row) {
+                        return Array.from(row.querySelectorAll('td, th')).map(function(cell) {
+                            return cell.innerText;
+                        }).join('\t');
+                    }).join('\n');
+                }).join('\n\n');
+
+                // Create a Blob containing the table data
+                var blob = new Blob([tableData], {
+                    type: 'text/plain;charset=utf-8'
+                });
+
+                // Create a link element to download the Blob
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = '<?php echo $formattedDate; ?>_KMPL.txt';
+
+                // Hide the link and append it to the body
+                link.style.display = 'none';
+                document.body.appendChild(link);
+
+                // Trigger a click event to download the text file
+                link.click();
+
+                // Remove the link from the body
+                document.body.removeChild(link);
+            });
+        </script>
     <?php
     } else {
         // If the form is not submitted or date is not set, show the form

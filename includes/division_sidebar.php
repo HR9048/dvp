@@ -1,6 +1,22 @@
 <?php
 require('session.php');
 confirm_logged_in();
+if (in_array($_SESSION['DIVISION_ID'], ['1', '2', '3'])) {
+    $programstart_date = '2025-07-31';
+    $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+    $reportstart_date = '2025-08-01';
+    $formated_reportstart_date = date('d-m-Y', strtotime($reportstart_date));
+    $start_month = 8;
+    $start_month_name = date('M', mktime(0, 0, 0, $start_month, 8));
+} elseif (in_array($_SESSION['DIVISION_ID'], ['4', '5', '6', '7', '8', '9'])) {
+    $programstart_date = '2025-09-30';
+    $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+    $reportstart_date = '2025-10-01';
+    $formated_reportstart_date = date('d-m-Y', strtotime($reportstart_date));
+    $start_month = 10;
+    $start_month_name = date('M', mktime(0, 0, 0, $start_month, 10));
+}
+date_default_timezone_set('Asia/Kolkata');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -219,6 +235,9 @@ confirm_logged_in();
                               <a class="dropdown-item dropdown-toggle" href="#">Program</a>
                               <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="division_w3_report_fromto.php">W3 Chart Report</a></li>
+                                <li><a class="dropdown-item" href="division_w3_report_d_eoc_fromto.php">W3 Chart Report D & EOC</a></li>
+                                <li><a class="dropdown-item" href="division_fleet_utilization_report.php">Fleet Utilization Report</a></li>
+                                <li><a class="dropdown-item" href="division_preventive_maintenance_report.php">Preventive Maintenance Report</a></li>
                                 <li><a class="dropdown-item" href="division_program_report_fromto.php">Program Completion Report</a></li>
                                 <li><a class="dropdown-item" href="division_program_pending_report.php">Program Pending Report</a></li>
                                 <li><a class="dropdown-item" href="division_program_monthly_report.php">Monthly Program Report</a></li>

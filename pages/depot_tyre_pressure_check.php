@@ -1,90 +1,72 @@
 <?php
 include '../includes/connection.php';
 include '../includes/depot_top.php';
-// Check if session variables are set
+
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
-    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    echo "<script>alert('Restricted Page!'); window.location='logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM') {
-    // Allow access
+
+if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM')) {
+
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id    = $_SESSION['DEPOT_ID'];
 
-    $today      = date('N');
-    $yesterday  = ($today == 1) ? 7 : $today - 1;
+    $today      = date('N'); // 1 to 7
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    if ($today == 7) exit;   // Sunday no work
+
     $week_start = date('Y-m-d', strtotime('monday this week'));
 
     /* ================= DASHBOARD DATA ================= */
 
     $total_buses = $db->query("
-    SELECT COUNT(*) as total
-    FROM bus_registration
-    WHERE division_name='$division_id'
-    AND depot_name='$depot_id'
-")->fetch_assoc()['total'];
+        SELECT COUNT(*) as total
+        FROM bus_registration
+        WHERE division_name='$division_id'
+        AND depot_name='$depot_id'
+    ")->fetch_assoc()['total'];
 
     $done_today = $db->query("
-    SELECT COUNT(*) as done
-    FROM weekly_maintenance_done
-    WHERE division_id='$division_id'
-    AND depot_id='$depot_id'
-    AND done_date=CURDATE()
-")->fetch_assoc()['done'];
+        SELECT COUNT(*) as done
+        FROM weekly_tyre_pressure_done
+        WHERE division_id='$division_id'
+        AND depot_id='$depot_id'
+        AND done_date=CURDATE()
+    ")->fetch_assoc()['done'];
 
-    /* ================= YESTERDAY PENDING =================
+    /* ================= TODAY TYRE SCHEDULE ================= */
 
-    $pending_query = $db->query("
-    SELECT w.bus_number, w.week_start
-    FROM weekly_maintenance_schedule w
-    WHERE (w.primary_day = '$yesterday' OR w.backup_day = '$yesterday')
-    AND w.week_start = '$week_start'
-    AND w.division_id = '$division_id'
-    AND w.depot_id = '$depot_id'
+    $today_query = $db->query("
+        SELECT w.bus_number, w.week_start
+        FROM weekly_tyre_pressure_schedule w
+        WHERE (w.check_day1='$today' OR w.check_day2='$today')
+        AND w.week_start='$week_start'
+        AND w.division_id='$division_id'
+        AND w.depot_id='$depot_id'
 
-    AND NOT EXISTS (
-        SELECT 1 FROM weekly_maintenance_done d
-        WHERE d.bus_number = w.bus_number
-        AND d.week_start = w.week_start
-    )
+        AND NOT EXISTS (
+            SELECT 1 FROM weekly_tyre_pressure_done d
+            WHERE d.bus_number = w.bus_number
+            AND d.week_start = w.week_start
+            AND d.done_date = CURDATE()
+        )
+    ");
 
-    AND w.backup_day != '$today'
-"); */
+    $yesterday_query = $db->query("
+        SELECT w.bus_number, w.week_start
+        FROM weekly_tyre_pressure_schedule w
+        WHERE (w.check_day1='$yesterday' OR w.check_day2='$yesterday')
+        AND w.division_id='$division_id'
+        AND w.depot_id='$depot_id'
 
-    /* ================= TODAY PRIMARY ================= */
-
-    $today_primary_query = $db->query("
-    SELECT w.bus_number, w.week_start
-    FROM weekly_maintenance_schedule w
-    WHERE w.primary_day = '$today'
-    AND w.week_start = '$week_start'
-    AND w.division_id = '$division_id'
-    AND w.depot_id = '$depot_id'
-
-    AND NOT EXISTS (
-        SELECT 1 FROM weekly_maintenance_done d
-        WHERE d.bus_number = w.bus_number
-        AND d.week_start = w.week_start
-    )
-");
-
-    /* ================= TODAY BACKUP ================= */
-
-    $today_backup_query = $db->query("
-    SELECT w.bus_number, w.week_start
-    FROM weekly_maintenance_schedule w
-    WHERE w.backup_day = '$today'
-    AND w.primary_day != '$today'
-    AND w.week_start = '$week_start'
-    AND w.division_id = '$division_id'
-    AND w.depot_id = '$depot_id'
-
-    AND NOT EXISTS (
-        SELECT 1 FROM weekly_maintenance_done d
-        WHERE d.bus_number = w.bus_number
-        AND d.week_start = w.week_start
-    )
-");
+        AND NOT EXISTS (
+            SELECT 1 FROM weekly_tyre_pressure_done d
+            WHERE d.bus_number = w.bus_number
+            AND d.week_start = w.week_start
+            AND d.done_date = CURDATE()
+        )
+    ");
 ?>
 
     <div class="container mt-4">
@@ -100,59 +82,15 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                     <h2 class="text-success" id="doneCount"><?= $done_today; ?></h2>
                 </div>
                 <div class="col-md-4"> 
-                    <h5><a href="depot_print_weekly_maintenance.php" target="_blank">Print Weekly Schedule</a></h5>
+                    <h5><a href="depot_print_tyre_pressure.php" target="_blank">Print Report</a></h5>
                     <h5>Click here <i class="fa-solid fa-circle-arrow-up fa-sm" style="color: #000000;"></i></h5>
             </div>
         </div>
 
-        <!-- YESTERDAY PENDING -->
+        <!-- TODAY TYRE PRESSURE -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-danger text-white">
-                ⚠ Yesterday Pending
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-bordered table-striped mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th >Sl No</th>
-                            <th>Bus Number</th>
-                            <th>Select Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $i = 1; ?>
-                        <?php while ($row = $today_backup_query->fetch_assoc()) { ?>
-                            <tr class="busRow">
-                                <td><?= $i++; ?></td>
-
-                                <td><strong><?= $row['bus_number']; ?></strong></td>
-
-                                <td style="width:180px;">
-                                    <input type="date"
-                                        class="form-control form-control-sm doneDate"
-                                        value="<?= date('Y-m-d'); ?>">
-                                    <input type="hidden"
-                                        class="weekStart"
-                                        value="<?= $row['week_start']; ?>">
-                                </td>
-
-                                <td>
-                                    <button class="btn btn-success btn-sm markDoneBtn"
-                                        data-bus="<?= $row['bus_number']; ?>">
-                                        Mark Done
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <!-- TODAY PRIMARY -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
-                📅 Today - Schedule
+            <div class="card-header bg-danger text-dark">
+                🚍 Yesterdays Pending Tyre Pressure Check
             </div>
             <div class="card-body p-0">
                 <table class="table table-bordered table-striped mb-0">
@@ -166,12 +104,10 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                     </thead>
                     <tbody>
                         <?php $i = 1; ?>
-                        <?php while ($row = $today_primary_query->fetch_assoc()) { ?>
+                        <?php while ($row = $yesterday_query->fetch_assoc()) { ?>
                             <tr class="busRow">
                                 <td><?= $i++; ?></td>
-
                                 <td><strong><?= $row['bus_number']; ?></strong></td>
-
                                 <td style="width:180px;">
                                     <input type="date"
                                         class="form-control form-control-sm doneDate"
@@ -180,9 +116,50 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                                         class="weekStart"
                                         value="<?= $row['week_start']; ?>">
                                 </td>
-
                                 <td>
-                                    <button class="btn btn-success btn-sm markDoneBtn"
+                                    <button class="btn btn-success btn-sm markTyreDoneBtn"
+                                        data-bus="<?= $row['bus_number']; ?>">
+                                        Mark Done
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TODAY TYRE PRESSURE -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+                🚍 Today Tyre Pressure Check
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sl No</th>
+                            <th>Bus Number</th>
+                            <th>Select Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $i = 1; ?>
+                        <?php while ($row = $today_query->fetch_assoc()) { ?>
+                            <tr class="busRow">
+                                <td><?= $i++; ?></td>
+                                <td><strong><?= $row['bus_number']; ?></strong></td>
+                                <td style="width:180px;">
+                                    <input type="date"
+                                        class="form-control form-control-sm doneDate"
+                                        value="<?= date('Y-m-d'); ?>">
+                                    <input type="hidden"
+                                        class="weekStart"
+                                        value="<?= $row['week_start']; ?>">
+                                </td>
+                                <td>
+                                    <button class="btn btn-success btn-sm markTyreDoneBtn"
                                         data-bus="<?= $row['bus_number']; ?>">
                                         Mark Done
                                     </button>
@@ -194,10 +171,8 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
             </div>
         </div>
     </div>
-
-
     <script>
-        $(document).on('click', '.markDoneBtn', function() {
+        $(document).on('click', '.markTyreDoneBtn', function() {
 
             let row = $(this).closest('.busRow');
             let bus_number = $(this).data('bus');
@@ -232,7 +207,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
                         url: '../includes/backend_data.php',
                         type: 'POST',
                         data: {
-                            action: 'mark_done_weekely_maintenance',
+                            action: 'mark_done_tyre_pressure',
                             bus_number: bus_number,
                             done_date: selectedDate,
                             week_start: week_start
@@ -269,8 +244,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
         });
     </script>
-
-
 <?php
 
 } else {

@@ -27,6 +27,7 @@ if ($stmt->num_rows === 0) {
 } else {
     date_default_timezone_set('Asia/Kolkata');
     $week_start = date('Y-m-d', strtotime('monday this week'));
+    $previous_week_start = date('Y-m-d', strtotime('monday last week'));
     echo "Starting Weekly Maintenance Generation...\n";
     /* ================= GET ALL DEPOTS ================= */
     $depots = $db->query("SELECT `division_id`, `depot_id` FROM `location` WHERE `division_id` not in (0,10) and DEPOT != 'DIVISION'");
@@ -50,17 +51,29 @@ if ($stmt->num_rows === 0) {
         DELETE FROM weekly_maintenance_schedule
         WHERE division_id='$division_id'
         AND depot_id='$depot_id'
-        AND week_start='$week_start'
+        AND week_start='$previous_week_start'
     ");
 
-        /* GET ACTIVE BUSES */
+        /* DELETE OLD TYRE DATA */
+        $db->query("
+    DELETE FROM weekly_tyre_pressure_schedule
+    WHERE division_id='$division_id'
+    AND depot_id='$depot_id'
+    AND week_start='$previous_week_start'
+");
+
+
+        /* GET ALL BUSES FOR TYRE PRESSURE */
         $buses = $db->query("
-        SELECT bus_number
-        FROM bus_registration
-        WHERE division_name='$division_id'
-        AND depot_name='$depot_id'
-        ORDER BY bus_number ASC
-    ");
+    SELECT bus_number
+    FROM bus_registration
+    WHERE division_name='$division_id'
+    AND depot_name='$depot_id'
+    ORDER BY bus_number ASC
+");
+
+        $tyre_day = 1;
+
 
         $day = 1;
 
@@ -71,14 +84,12 @@ if ($stmt->num_rows === 0) {
 
             $bus_number = $bus['bus_number'];
 
-            $db->query("
-            INSERT INTO weekly_maintenance_schedule
+            $db->query("INSERT INTO weekly_maintenance_schedule
             (bus_number, primary_day, backup_day, division_id, depot_id, week_start)
             VALUES
             ('$bus_number','$primary','$backup','$division_id','$depot_id','$week_start')
         ");
-            $db->query("
-            INSERT INTO weekly_maintenance_schedule_backup
+            $db->query("INSERT INTO weekly_maintenance_schedule_backup
             (bus_number, primary_day, backup_day, division_id, depot_id, week_start)
             VALUES
             ('$bus_number','$primary','$backup','$division_id','$depot_id','$week_start')
@@ -86,6 +97,31 @@ if ($stmt->num_rows === 0) {
 
             $day++;
             if ($day > 6) $day = 1;
+
+
+            // First check
+            $check_day1 = $tyre_day;
+
+            // Second check (after 3 days)
+            $check_day2 = $check_day1 + 3;
+            if ($check_day2 > 6) {
+                $check_day2 -= 6;
+            }
+
+            $db->query("INSERT INTO weekly_tyre_pressure_schedule
+        (bus_number, check_day1, check_day2, division_id, depot_id, week_start)
+        VALUES
+        ('$bus_number','$check_day1','$check_day2','$division_id','$depot_id','$week_start')
+    ");
+
+            $db->query("INSERT INTO weekly_tyre_pressure_schedule_backup
+        (bus_number, check_day1, check_day2, division_id, depot_id, week_start)
+        VALUES
+        ('$bus_number','$check_day1','$check_day2','$division_id','$depot_id','$week_start')
+    ");
+
+            $tyre_day++;
+            if ($tyre_day > 6) $tyre_day = 1;
         }
 
         echo "Completed for Depot: $depot_id \n";

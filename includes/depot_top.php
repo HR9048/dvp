@@ -366,6 +366,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                                 <li><a class="dropdown-item" href="depot_preventive_maintenance_report.php">Preventive Maintenance Report</a></li>
                                                                 <li><a class="dropdown-item" href="depot_program_report_fromto.php">Program Completion Report</a></li>
                                                                 <li><a class="dropdown-item" href="depot_print_weekly_maintenance.php">Weekly Maintenance Report</a></li>
+                                                                <li><a class="dropdown-item" href="depot_print_tyre_pressure.php">Tyre Pressure Check Report</a></li>
                                                             </ul>
                                                         </li>
                                                         <li class="dropdown-submenu">
@@ -431,6 +432,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                             <li><a class="dropdown-item" href="depot_emergency_program.php">Emergency Program</a></li>
                                                         <?php } ?>
                                                         <li><a class="dropdown-item" href="depot_weekly_maintenance_program.php">Weekly Maintenance Program</a></li>
+                                                        <li><a class="dropdown-item" href="depot_tyre_pressure_check.php">Tyre Pressure Check</a></li>
                                                     </ul>
                                                 </div>
                                             </li>

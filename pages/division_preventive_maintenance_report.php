@@ -1,17 +1,16 @@
 <?php
 include '../includes/connection.php';
 include '../includes/division_sidebar.php';
-// Check if session variables are set
+
 if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESSION['JOB_TITLE'])) {
-    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
+    echo "<script>alert('Restricted Page! You will be redirected to Login Page'); window.location = 'logout.php';</script>";
     exit;
 }
-if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSION['JOB_TITLE'] == 'DME') {
-    // Allow access
+
+if ($_SESSION['TYPE'] == 'DIVISION' && ($_SESSION['JOB_TITLE'] == 'DME' || $_SESSION['JOB_TITLE'] == 'DC')) {
     $division_id = $_SESSION['DIVISION_ID'];
     $depot_id = $_SESSION['DEPOT_ID'];
 ?>
-
     <h6>Select details for Program Report</h6>
     <form id="scheduleForm">
         <?php
@@ -20,14 +19,11 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSI
         $today = (int)$currentDate->format("j");      // day number
         $actualCurrentMonth = (int)$currentDate->format("n");
 
-        if ($today > 4) {
-            $currentMonth = $actualCurrentMonth - 1;   // previous month
-        } else {
-            $currentMonth = 0;  // show no months
-        }
+        $currentMonth = $actualCurrentMonth;   // previous month
+
 
         $startYear = 2025;
-        $startMonth = 10;
+        $startMonth = $start_month;
 
         // Generate year range
         $year_range = range($startYear, $currentYear);
@@ -59,41 +55,24 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSI
         </select>
 
         <input type="hidden" id="division" name="division" value="<?php echo $division_id; ?>">
-
         <label for="depot">Depot:</label>
         <select id="depot" name="depot" required>
-            <option value="">select</option>
-            <option value="All">All</option>
             <?php
-            $depot_sql = "SELECT DEPOT_ID, DEPOT FROM location WHERE DIVISION_ID = '$division_id' and depot != 'DIVISION' ORDER BY DEPOT_ID;";
-            $depot_result = mysqli_query($db, $depot_sql);
-            while ($row = mysqli_fetch_assoc($depot_result)) {
-                $depot_id_option = $row['DEPOT_ID'];
-                $depot_name = $row['DEPOT'];
-                echo "<option value='$depot_id_option'>$depot_name</option>";
+            $depotQuery = "SELECT depot, depot_id FROM location WHERE division_id = '$division_id' and depot != 'DIVISION'";
+            $depotResult = mysqli_query($db, $depotQuery);
+            echo "<option value=''>Select Depot</option>";
+            while ($depot = mysqli_fetch_assoc($depotResult)) {
+                echo "<option value='" . $depot['depot_id'] . "'>" . $depot['depot'] . "</option>";
             }
             ?>
         </select>
 
-        <label for="program_type">Program Type:</label>
-        <select id="program_type" name="program_type" required>
-            <option value="">select</option>
-            <option value="All">All</option>
-            <?php
-            $programtype_sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'program_master'  AND TABLE_SCHEMA = 'kkrtcdvp_data'  AND ORDINAL_POSITION between 5 and 6 AND ORDINAL_POSITION < (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'program_master' AND TABLE_SCHEMA = 'kkrtcdvp_data') - 1 ORDER BY ORDINAL_POSITION;";
-            $programtype_result = mysqli_query($db, $programtype_sql);
 
-            while ($row = mysqli_fetch_assoc($programtype_result)) {
-                $column_name = $row['COLUMN_NAME'];
-                // Format for display: replace _ with space and capitalize first letters
-                $display_name = ucwords(str_replace('_', ' ', $column_name));
-                echo "<option value='$column_name'>$display_name</option>";
-            }
-            ?>
-        </select>
 
         <button class="btn btn-primary" type="submit">Submit</button>
         <button class="btn btn-success" onclick="window.print()">Print</button>
+        <button class="btn btn-success" onclick="functionExcelExport('Preventive_maintenance_report')">Download Excel</button>
+
 
     </form>
     <div id="loadingIndicator" style="display:none; text-align:center; margin: 10px;">
@@ -112,14 +91,6 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSI
     ?>
 
     <script>
-        //add select2 for program type
-        $('#program_type').select2({
-            placeholder: "Select Program Type",
-            allowClear: true
-        });
-
-        
-
         function updateMonths() {
             // Get the selected year
             const yearSelect = document.getElementById("year");
@@ -139,11 +110,11 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSI
 
             // Define start year, start month, and current year/month
             const startYear = 2025;
-            const startMonth = 10;
+            const startMonth = <?php echo $start_month; ?>;
             const currentYear = new Date().getFullYear();
             const today = new Date().getDate();
             let actualCurrentMonth = new Date().getMonth() + 1;
-            let currentMonth = (today > 3) ? actualCurrentMonth - 1 : actualCurrentMonth-2;
+            let currentMonth = actualCurrentMonth; // Default to previous month if today is not in the current month
 
 
             let start = 1; // Default start month
@@ -175,10 +146,9 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSI
 
                 var division = $('#division').val();
                 var depot = $('#depot').val();
-                var program_type = $('#program_type').val();
                 var year = $('#year').val();
                 var month = $('#month').val();
-                if (!year || !month || !division || !depot || !program_type) {
+                if (!year || !month || !division || !depot) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Incomplete Selection',
@@ -188,11 +158,11 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSI
                     return; // Exit the function if validation fails
                 }
 
-                if (month < 10 && year < 2026) {
+                if (month < <?php echo $start_month; ?> && year < 2026) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Invalid Date',
-                        text: 'Please select a month and year between Oct-2025 and <?php echo date('M-Y'); ?>. Reports available only for this range.',
+                        text: 'Please select a month and year between <?php echo $start_month_name; ?>-2025 and <?php echo date('M-Y'); ?>. Reports available only for this range.',
                         confirmButtonText: 'OK'
                     });
                     return; // Exit the function if validation fails
@@ -212,8 +182,7 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSI
                         month: month,
                         division: division,
                         depot: depot,
-                        program_type: program_type,
-                        action: 'fetch_report_of_monthly_program'
+                        action: 'preventive_maintenance_report'
                     },
                     success: function(response) {
                         $('#loadingIndicator').hide(); // hide loading on success
@@ -243,12 +212,8 @@ if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DC' || $_SESSI
     </script>
 
 <?php
-
-
-
 } else {
-    echo "<script type='text/javascript'>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
+    echo "<script>alert('Restricted Page! You will be redirected to " . $_SESSION['JOB_TITLE'] . " Page'); window.location = 'processlogin.php';</script>";
     exit;
 }
-include '../includes/footer.php';
-?>
+include '../includes/footer.php'; ?>

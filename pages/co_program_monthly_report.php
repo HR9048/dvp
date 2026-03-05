@@ -182,7 +182,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && $_SESSION['JOB_TITLE'] == 'CME_CO') {
             const currentYear = new Date().getFullYear();
             const today = new Date().getDate();
             let actualCurrentMonth = new Date().getMonth() + 1;
-            let currentMonth = (today > 4) ? actualCurrentMonth - 1 : 0;
+            let currentMonth = (today > 3) ? actualCurrentMonth - 1 : actualCurrentMonth-2;
 
 
             let start = 1; // Default start month

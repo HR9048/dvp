@@ -13,7 +13,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
     $depot_id    = $_SESSION['DEPOT_ID'];
 
     $today      = date('N'); // 1 to 7
-    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $yesterday = date('N', strtotime('-1 day'));
     if ($today == 7) exit;   // Sunday no work
 
     $week_start = date('Y-m-d', strtotime('monday this week'));
@@ -57,6 +57,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
         SELECT w.bus_number, w.week_start
         FROM weekly_tyre_pressure_schedule w
         WHERE (w.check_day1='$yesterday' OR w.check_day2='$yesterday')
+        AND w.week_start='$week_start'
         AND w.division_id='$division_id'
         AND w.depot_id='$depot_id'
 
@@ -64,7 +65,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
             SELECT 1 FROM weekly_tyre_pressure_done d
             WHERE d.bus_number = w.bus_number
             AND d.week_start = w.week_start
-            AND d.done_date = CURDATE()
         )
     ");
 ?>

@@ -117,7 +117,7 @@ date_default_timezone_set('Asia/Kolkata');
                                             <div class="dropdown">
                                                 <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
                                                     aria-expanded="false" style="font-size: 15px;">
-                                                    <b>DVP</b>
+                                                    <b>Daily Data Entry</b>
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                                                     <li class="dropdown-submenu">
@@ -135,13 +135,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                             <li><a class="dropdown-item" href="depot_update_bd.php">Update old BD Data</a></li>
                                                         </ul>
                                                     </li>
-                                                    <li class="dropdown-submenu">
-                                                        <a class="dropdown-item dropdown-toggle" href="#">DVP</a>
-                                                        <ul class="dropdown-menu">
-                                                            <li><a class="dropdown-item" href="dvp.php">Add DVP</a></li>
-                                                            <li><a class="dropdown-item" href="dvp_print.php">Print DVP</a></li>
-                                                        </ul>
-                                                    </li>
+
                                                     <li class="dropdown-submenu">
                                                         <a class="dropdown-item dropdown-toggle" href="#">Defect Records</a>
                                                         <ul class="dropdown-menu">
@@ -153,6 +147,30 @@ date_default_timezone_set('Asia/Kolkata');
                                                         <ul class="dropdown-menu">
                                                             <li><a class="dropdown-item" href="depot_add_tech_tool.php">Add/Update/View Tech Tool</a></li>
 
+                                                        </ul>
+                                                    </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">DVP</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="dvp.php">Add DVP</a></li>
+                                                            <li><a class="dropdown-item" href="dvp_print.php">Print DVP</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">Program</a>
+                                                        <ul class="dropdown-menu">
+                                                            <!--<li><a class="dropdown-item" href="depot_bus_type_update.php">Update Bus
+                                                                Type for Program</a></li>
+                                                        <li><a class="dropdown-item" href="depot_program_update.php">Last
+                                                                Maintenance KM Update</a></li>
+                                                        <li><a class="dropdown-item" href="depot_program_print.php">Generate
+                                                                Program</a></li>-->
+                                                            <li><a class="dropdown-item" href="depot_program_report_daily.php">Daily Program Generate</a></li>
+                                                            <li><a class="dropdown-item" href="depot_vehicle_program.php">Update Program Done Date</a></li>
+                                                            <li><a class="dropdown-item" href="depot_w3_chart_data_update.php">ME26 Update</a></li>
+                                                            <li><a class="dropdown-item" href="depot_emergency_program.php">Emergency Program</a></li>
+                                                            <li><a class="dropdown-item" href="depot_weekly_maintenance_program.php">Weekly Maintenance Program</a></li>
+                                                            <li><a class="dropdown-item" href="depot_tyre_pressure_check.php">Tyre Pressure Check</a></li>
                                                         </ul>
                                                     </li>
                                                 </ul>
@@ -409,35 +427,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                 </ul>
                                             </div>
                                         </li>
-                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM')) { ?>
-                                            <li class="nav-item">
-                                                <div class="dropdown">
-                                                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
-                                                        aria-expanded="false" style="font-size: 15px;">
-                                                        <b>Program</b>
-                                                    </button>
-                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                        <!--<li><a class="dropdown-item" href="depot_bus_type_update.php">Update Bus
-                                                                Type for Program</a></li>
-                                                        <li><a class="dropdown-item" href="depot_program_update.php">Last
-                                                                Maintenance KM Update</a></li>-->
-                                                        <li><a class="dropdown-item" href="depot_program_print.php">Generate
-                                                                Program</a></li>
-                                                        <li><a class="dropdown-item" href="depot_program_report_daily.php">Daily Program Report</a></li>
-                                                        <li><a class="dropdown-item" href="depot_vehicle_program.php">Update
-                                                                Program Done Date</a></li>
-                                                        <li><a class="dropdown-item" href="depot_w3_chart_data_update.php">ME26
-                                                                Update</a></li>
-                                                        <?php if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'DM') { ?>
-                                                            <li><a class="dropdown-item" href="depot_emergency_program.php">Emergency Program</a></li>
-                                                        <?php } ?>
-                                                        <li><a class="dropdown-item" href="depot_weekly_maintenance_program.php">Weekly Maintenance Program</a></li>
-                                                        <li><a class="dropdown-item" href="depot_tyre_pressure_check.php">Tyre Pressure Check</a></li>
-                                                    </ul>
-                                                </div>
-                                            </li>
-
-                                    <?php }
+                                    <?php
                                     } ?>
                                 </ul>
                                 <ul class="navbar-nav ml-auto">

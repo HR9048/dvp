@@ -50,7 +50,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
            MIN(d.done_date) as done_date1,
            MAX(d.done_date) as done_date2
 
-    FROM weekly_tyre_pressure_schedule w
+    FROM weekly_tyre_pressure_schedule_backup w
     LEFT JOIN weekly_tyre_pressure_done d
         ON w.bus_number = d.bus_number
         AND w.week_start = d.week_start

@@ -48,7 +48,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                w.primary_day,
                w.backup_day,
                d.done_date
-        FROM weekly_maintenance_schedule w
+        FROM weekly_maintenance_schedule_backup w
         LEFT JOIN weekly_maintenance_done d
             ON w.bus_number = d.bus_number
             AND w.week_start = d.week_start

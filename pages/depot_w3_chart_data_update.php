@@ -157,8 +157,37 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSI
                 sleep(3); // Simulating processing time
 
                 // Fetch bus numbers
-                $bus_data_fetch_query = "SELECT br.bus_number FROM bus_registration br WHERE br.division_name = '$division_id' AND br.depot_name = '$depot_id' UNION
-                SELECT vd.bus_number FROM vehicle_deputation vd LEFT JOIN bus_registration br ON vd.bus_number = br.bus_number WHERE vd.t_division_id = '$division_id' AND vd.t_depot_id = '$depot_id' AND vd.tr_date = '$report_date' AND vd.status NOT IN (1) AND vd.deleted = 0";
+                $bus_data_fetch_query = "SELECT bus_number FROM (
+
+    SELECT br.bus_number
+    FROM bus_registration br
+    WHERE br.division_name = '$division_id'
+    AND br.depot_name = '$depot_id'
+
+    UNION
+
+    SELECT vd.bus_number
+    FROM vehicle_deputation vd
+    WHERE vd.t_division_id = '$division_id'
+    AND vd.t_depot_id = '$depot_id'
+    AND vd.tr_date = '$report_date'
+    AND vd.status NOT IN (1)
+    AND vd.deleted = 0
+
+) AS total_buses
+
+WHERE bus_number NOT IN (
+
+    SELECT vd.bus_number
+    FROM vehicle_deputation vd
+    WHERE vd.f_division_id = '$division_id'
+    AND vd.f_depot_id = '$depot_id'
+    AND vd.tr_date = '$report_date'
+    AND vd.status NOT IN (1)
+    AND vd.deleted = 0
+
+)
+";
                 $bus_data_fetch_result = $db->query($bus_data_fetch_query);
 
 

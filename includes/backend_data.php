@@ -9181,12 +9181,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         'def_air_filter_change' => 'DEF Air Filter Change',
         'mc_assembely_with_oil_chnage' => 'Clutch M/C, Assembly & Oil Change',
         'air_suspension_check' => 'Air Suspension Check',
-        'alternator_overhauling' => 'Alternator Overhauling',
-        'air_compressor_overhaul' => 'Air Compressor Overhaul',
         'Air_compressor_read_calve' => 'Air Compressor Read Calve Change',
         'fan_belt_check_or_change' => 'Fan Belt Check/Change',
-        'tappet_setting' => 'Tappet Setting',
-        'spring_cambering_check' => 'Spring Cambering Check',
         'voith_retarder_oil_change' => 'Voith Retarder Oil Change',
         'tyre_rotation' => 'Tyre Rotation',
         'error_code_edc_check' => 'Error Code EDC Check',
@@ -9199,7 +9195,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         'air_drier_filter_change' => 'Air Drier Filter Change',
         'coolant_pump_and_alternator_belt_change' => 'Coolant Pump and Alternator Belt Change',
         'particulate_filter_insert_change' => 'Particulate Filter Insert Change',
-        'air_supply_system_check' => 'Air Supply System Check'
+        'air_supply_system_check' => 'Air Supply System Check',
+        'eats_Ash_cleaning' => 'EATS Ash Cleaning',
+        'crank_case_filter_change' => 'Crank Case Filter Change'
     ];
 
 

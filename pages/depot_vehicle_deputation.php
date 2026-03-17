@@ -189,7 +189,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech')) {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0); // Reset time for accurate comparison
 
-                // Check if From Date is less than today's date
+                /*/ Check if From Date is less than today's date
                 if (fromDate < today) {
                     Swal.fire({
                         icon: "warning",
@@ -199,7 +199,7 @@ if ($_SESSION['TYPE'] == 'DEPOT' && ($_SESSION['JOB_TITLE'] == 'Mech')) {
                         $(this).val(""); // Reset From Date
                     });
                     return;
-                }
+                }*/
 
                 // Check if From Date is greater than To Date (if To Date is selected)
                 if ($("#toDate").val() !== "" && fromDate > toDate) {

@@ -28,7 +28,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $ORTotal = $_POST['ORTotal'];
     $available = $_POST['available'];
     $ES = $_POST['E/S'];
-    $confirmCheckbox = $_POST['confirmCheckbox'];
+    //$confirmCheckbox = $_POST['confirmCheckbox'];
+    $confirmCheckbox = 'yes';
+    
     // Check if the confirmation checkbox is on or not
     if ($confirmCheckbox !== 'yes') {
         $response['status'] = 'error';
@@ -36,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo json_encode($response);
         exit;
     }
-    if (!isset($_POST['confirmCheckbox'])) {
+    /*if (!isset($_POST['confirmCheckbox'])) {
         $response['status'] = 'error';
         $response['message'] = 'Please confirm that all breakdown details have been entered for yesterday.';
         echo json_encode($response);
@@ -47,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $response['message'] = 'Please confirm that all breakdown details have been entered for yesterday.';
         echo json_encode($response);
         exit;
-    }
+    }*/
 // Retrieve username and designation from session data
     if (!isset($_SESSION['USERNAME']) || !isset($_SESSION['DIVISION_ID']) || !isset($_SESSION['DEPOT_ID'])) {
         // If session variables are not set, logout the user

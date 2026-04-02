@@ -9,17 +9,13 @@ if (!isset($_SESSION['MEMBER_ID']) || !isset($_SESSION['TYPE']) || !isset($_SESS
 
 if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) {
 
-    // Define the date you want vehicle held data from dvp_data
-    $target_date = '2025-03-29';
-
     // Fetch data from dvp_data for vehicle held
     $held_query = "SELECT 
-        division as division_id, 
-        depot as depot_id, 
-        SUM(vehicles) AS vehicle_held
-    FROM dvp_data
-    WHERE date = '$target_date'
-    GROUP BY division, depot";
+        division_name as division_id, 
+        depot_name as depot_id, 
+        COUNT(bus_number) AS vehicle_held
+    FROM bus_registration_2025_26
+    GROUP BY division_name, depot_name";
 
     $held_result = mysqli_query($db, $held_query);
     $vehicle_held_data = [];
@@ -37,7 +33,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
         l.depot AS depot_name,
         COUNT(DISTINCT bi.bus_number) AS inventory_submitted
     FROM location l
-    LEFT JOIN bus_inventory bi 
+    LEFT JOIN bus_inventory_2025_26 bi 
         ON l.depot_id = bi.depot_id AND l.division_id = bi.division_id
     WHERE l.division_id NOT IN (0) 
     GROUP BY l.division_id, l.depot_id
@@ -54,7 +50,7 @@ if ($_SESSION['TYPE'] == 'HEAD-OFFICE' && ($_SESSION['JOB_TITLE'] == 'CME_CO')) 
                 <th>Sl No</th>
                 <th>Division</th>
                 <th>Depot</th>
-                <th>Vehicles As on 31-03-2025</th>
+                <th>Vehicles As on 31-03-2026</th>
                 <th>Inventory Submitted</th>
                 <th>Difference</th>
             </tr>

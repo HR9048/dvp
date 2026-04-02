@@ -34,7 +34,7 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESS
                         <option value="alternator">Alternator</option>
                         <option value="rear_axle">Rear Axle</option>
                         <option value="battery">Battery</option>
-                        <option value="tyre">Tyre</option>
+                        <!--<option value="tyre">Tyre</option>-->
                     </select>
                 </div>
 

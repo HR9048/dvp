@@ -20,35 +20,26 @@ if ($_SESSION['JOB_TITLE'] == 'Mech' || $_SESSION['JOB_TITLE'] == 'DM' || $_SESS
                     <select class="form-control" id="bus_number" name="bus_number" required>
                         <option value="">-- Select Bus Number --</option>
                         <?php
-                        if ($_SESSION['TYPE'] == 'DEPOT'){
-                        $q = mysqli_query($db, "SELECT bus_number 
+                        if ($_SESSION['TYPE'] == 'DEPOT') {
+                            $q = mysqli_query($db, "SELECT bus_number 
 FROM (
-    -- From bus_registration
+    -- From bus_registration_2025_26
     SELECT bus_number 
-    FROM bus_registration 
+    FROM bus_registration_2025_26 
     WHERE division_name = '$division_id' 
       AND depot_name = '$depot_id'
-    
-    UNION
-
-    -- From bus_transfer_data
-    SELECT bus_number 
-    FROM bus_transfer_data 
-    WHERE order_date > '2025-03-31' 
-      AND division = '$division_id' 
-      AND from_depot = '$depot_id'
 ) AS all_buses
 WHERE NOT EXISTS (
     SELECT 1 
-    FROM bus_inventory 
-    WHERE bus_inventory.bus_number = all_buses.bus_number 
-      AND inventory_date = '2025-03-31' 
+    FROM `bus_inventory_2025_26` 
+    WHERE `bus_inventory_2025_26`.bus_number = all_buses.bus_number 
+      AND inventory_date = '2026-03-31' 
       AND deleted != 1
 );");
-                        }elseif($_SESSION['TYPE'] == 'DIVISION'){
-                            $q = mysqli_query($db, "SELECT bus_number FROM bus_registration WHERE division_name = '$division_id'  AND NOT EXISTS (SELECT 1 FROM bus_inventory WHERE bus_inventory.bus_number = bus_registration.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
-                        }elseif($_SESSION['TYPE'] == 'RWY'){
-                            $q = mysqli_query($db, "SELECT bus_number FROM bus_registration WHERE NOT EXISTS (SELECT 1 FROM bus_inventory WHERE bus_inventory.bus_number = bus_registration.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
+                        } elseif ($_SESSION['TYPE'] == 'DIVISION') {
+                            $q = mysqli_query($db, "SELECT bus_number FROM bus_registration_2025_26 WHERE division_name = '$division_id'  AND NOT EXISTS (SELECT 1 FROM `bus_inventory_2025_26` WHERE `bus_inventory_2025_26`.bus_number = bus_registration_2025_26.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
+                        } elseif ($_SESSION['TYPE'] == 'RWY') {
+                            $q = mysqli_query($db, "SELECT bus_number FROM bus_registration_2025_26 WHERE NOT EXISTS (SELECT 1 FROM `bus_inventory_2025_26` WHERE `bus_inventory_2025_26`.bus_number = bus_registration_2025_26.bus_number AND inventory_date = '2025-03-31' and deleted !=1);");
                         }
                         while ($row = mysqli_fetch_assoc($q)) {
                             echo '<option value="' . $row['bus_number'] . '">' . $row['bus_number'] . '</option>';
@@ -107,7 +98,7 @@ WHERE NOT EXISTS (
                     <input type="date" id="date_of_fc" name="date_of_fc" class="form-control" min="2020-03-31" max="2030-03-31" required>
                 </div>
                 <div class="col-md-6">
-                    <label for="bus_progressive_km" class="form-label">Bus Progresive KM (As on 31-03-2025)</label>
+                    <label for="bus_progressive_km" class="form-label">Bus Progresive KM (As on 31-03-2026)</label>
                     <input type="number" id="bus_progressive_km" name="bus_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -121,7 +112,7 @@ WHERE NOT EXISTS (
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="engine_no_progressive_km" class="form-label">Engine Progressive KM (As on 31-03-2025)</label>
+                    <label for="engine_no_progressive_km" class="form-label">Engine Progressive KM (As on 31-03-2026)</label>
                     <input type="number" id="engine_no_progressive_km" name="engine_no_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -134,7 +125,7 @@ WHERE NOT EXISTS (
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="fiphpp_no_progressive_km" class="form-label">FIP/FPP Progressive KM (As on 31-03-2025)</label>
+                    <label for="fiphpp_no_progressive_km" class="form-label">FIP/FPP Progressive KM (As on 31-03-2026)</label>
                     <input type="number" id="fiphpp_no_progressive_km" name="fiphpp_no_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -147,7 +138,7 @@ WHERE NOT EXISTS (
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="gearbox_no_progressive_km" class="form-label">Gear Box Progressive KM (As on 31-03-2025)</label>
+                    <label for="gearbox_no_progressive_km" class="form-label">Gear Box Progressive KM (As on 31-03-2026)</label>
                     <input type="number" id="gearbox_no_progressive_km" name="gearbox_no_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -160,7 +151,7 @@ WHERE NOT EXISTS (
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="starter_no_progressive_km" class="form-label">Starter Progressive KM (As on 31-03-2025)</label>
+                    <label for="starter_no_progressive_km" class="form-label">Starter Progressive KM (As on 31-03-2026)</label>
                     <input type="number" id="starter_no_progressive_km" name="starter_no_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -174,7 +165,7 @@ WHERE NOT EXISTS (
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="alternator_no_progressive_km" class="form-label">Alternator Progressive KM (As on 31-03-2025)</label>
+                    <label for="alternator_no_progressive_km" class="form-label">Alternator Progressive KM (As on 31-03-2026)</label>
                     <input type="number" id="alternator_no_progressive_km" name="alternator_no_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -188,7 +179,7 @@ WHERE NOT EXISTS (
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="rear_axel_no_progressive_km" class="form-label">Rear Axel Progressive KM (As on 31-03-2025)</label>
+                    <label for="rear_axel_no_progressive_km" class="form-label">Rear Axel Progressive KM (As on 31-03-2026)</label>
                     <input type="number" id="rear_axel_no_progressive_km" name="rear_axel_no_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -202,7 +193,7 @@ WHERE NOT EXISTS (
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="battery_1_no_progressive_km" class="form-label">Battery 1 Progressive KM (As on 31-03-2025)</label>
+                    <label for="battery_1_no_progressive_km" class="form-label">Battery 1 Progressive KM (As on 31-03-2026)</label>
                     <input type="number" id="battery_1_no_progressive_km" name="battery_1_no_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -215,7 +206,7 @@ WHERE NOT EXISTS (
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="battery_2_no_progressive_km" class="form-label">Battery 2 Progressive KM (As on 31-03-2025)</label>
+                    <label for="battery_2_no_progressive_km" class="form-label">Battery 2 Progressive KM (As on 31-03-2026)</label>
                     <input type="number" id="battery_2_no_progressive_km" name="battery_2_no_progressive_km" class="form-control" required>
                 </div>
             </div>
@@ -435,7 +426,7 @@ WHERE NOT EXISTS (
                 <div class="col-md-6">
                     <label for="fire_extinguisher_total_kg" class="form-label">Fire Extinguisher Total in Kgs</label>
                     <input type="number" class="form-control" id="fire_extinguisher_total_kg" name="fire_extinguisher_total_kg" required min="0" step="any">
-                    </div>
+                </div>
 
                 <div class="col-md-6">
                     <label for="first_aid_box_status" class="form-label">First Aid Box</label>
@@ -502,7 +493,7 @@ WHERE NOT EXISTS (
             loadBattery();
             initBatterySelection();
         });
-        
+
 
         $('#bus_number').on('change', function() {
             var bus_number = $(this).val();
@@ -532,9 +523,14 @@ WHERE NOT EXISTS (
                             updatePISFields();
                             updateVLTSFields();
                             updateFDASField();
-                            loadEngines(response.data.make, response.data.emission_norms);
-                            loadFipHpp(response.data.make, response.data.emission_norms);
-                            loadGearBox(response.data.make, response.data.emission_norms);
+                            loadEngines(response.data.make, response.data.emission_norms, response.data.engine_id);
+                            loadFipHpp(response.data.make, response.data.emission_norms, response.data.fiphpp_id);
+                            loadGearBox(response.data.make, response.data.emission_norms, response.data.gearbox_id);
+                            $('#starter_no').val(response.data.starter_id).trigger('change');
+                            $('#alternator_no').val(response.data.alternator_id).trigger('change');
+                            $('#rear_axel_no').val(response.data.rear_axel_id).trigger('change');
+                            $('#battery_1_no').val(response.data.battery_1_id).trigger('change');
+                            $('#battery_2_no').val(response.data.battery_2_id).trigger('change');
                         }
                     }
                 });
@@ -544,7 +540,7 @@ WHERE NOT EXISTS (
             }
         });
 
-        function loadEngines(make, norms) {
+        function loadEngines(make, norms, selectedEngine = '') {
             $.ajax({
                 url: "../includes/backend_data.php",
                 type: "POST",
@@ -555,11 +551,16 @@ WHERE NOT EXISTS (
                 },
                 success: function(data) {
                     $("#engine_no").html(data);
+
+                    // ✅ set selected value AFTER options loaded
+                    if (selectedEngine) {
+                        $("#engine_no").val(selectedEngine);
+                    }
                 }
             });
         }
 
-        function loadFipHpp(make, norms) {
+        function loadFipHpp(make, norms, selectedFipHpp = '') {
             $.ajax({
                 url: "../includes/backend_data.php",
                 type: "POST",
@@ -570,11 +571,16 @@ WHERE NOT EXISTS (
                 },
                 success: function(data) {
                     $("#fiphpp_no").html(data);
+
+                    // ✅ set selected value AFTER options loaded
+                    if (selectedFipHpp) {
+                        $("#fiphpp_no").val(selectedFipHpp);
+                    }
                 }
             });
         }
 
-        function loadGearBox(make, norms) {
+        function loadGearBox(make, norms, selectedGearBox = '') {
             $.ajax({
                 url: "../includes/backend_data.php",
                 type: "POST",
@@ -585,6 +591,11 @@ WHERE NOT EXISTS (
                 },
                 success: function(data) {
                     $("#gearbox_no").html(data);
+
+                    // ✅ set selected value AFTER options loaded
+                    if (selectedGearBox) {
+                        $("#gearbox_no").val(selectedGearBox);
+                    }
                 }
             });
         }
@@ -703,7 +714,7 @@ WHERE NOT EXISTS (
             $('.led-fields').hide().find('select').prop('required', false).val('');
             $('#led_board_section').hide().find('select').val('');
 
-            if (category === "Jn-NURM Midi City" || category === "Branded DULT City") {
+            if (category === "Jn-NURM Midi City" || category === "Branded DULT City" || category === "Double Door City") {
                 $('#led_board_section').show(); // Show LED Board Present field
             }
 
@@ -712,7 +723,7 @@ WHERE NOT EXISTS (
                     $('.led-fields').show().find('select').prop('required', true);
 
                     // If bus category is NOT "DULT City", hide Front Inside and LHS Outside
-                    if (category !== "Branded DULT City") {
+                    if (category !== "Branded DULT City" && category !== "Double Door City") {
                         $('.dult-only').hide().find('select').prop('required', false).val('');
                     }
                 } else {
@@ -847,8 +858,8 @@ WHERE NOT EXISTS (
             // Check if the date is in the future
             var dateOfRC = new Date($('#date_of_fc').val());
             //current date = 2025-03-31
-            var currentDate = new Date('2030-03-31');
-            var pastDate = new Date('2020-03-31');
+            var currentDate = new Date('2031-03-31');
+            var pastDate = new Date('2021-03-31');
             //var currentDate = new Date();
             if (dateOfRC > currentDate) {
                 submitBtn.prop('disabled', false).html('Submit'); // Re-enable + reset text

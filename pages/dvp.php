@@ -456,7 +456,6 @@ if ($_SESSION['TYPE'] == 'DEPOT' && $_SESSION['JOB_TITLE'] == 'Mech' || $_SESSIO
 
                 // Get form data
                 var formData = $(this).serialize();
-                console.log(formData); // Log form data to console for debugging
 
                 // Send AJAX request
                 $.ajax({

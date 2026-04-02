@@ -2,19 +2,19 @@
 require('session.php');
 confirm_logged_in();
 if (in_array($_SESSION['DIVISION_ID'], ['1', '2', '3'])) {
-    $programstart_date = '2025-07-31';
-    $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    $reportstart_date = '2025-08-01';
-    $formated_reportstart_date = date('d-m-Y', strtotime($reportstart_date));
-    $start_month = 8;
-    $start_month_name = date('M', mktime(0, 0, 0, $start_month, 8));
+  $programstart_date = '2025-07-31';
+  $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+  $reportstart_date = '2025-08-01';
+  $formated_reportstart_date = date('d-m-Y', strtotime($reportstart_date));
+  $start_month = 8;
+  $start_month_name = date('M', mktime(0, 0, 0, $start_month, 8));
 } elseif (in_array($_SESSION['DIVISION_ID'], ['4', '5', '6', '7', '8', '9'])) {
-    $programstart_date = '2025-09-30';
-    $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
-    $reportstart_date = '2025-10-01';
-    $formated_reportstart_date = date('d-m-Y', strtotime($reportstart_date));
-    $start_month = 10;
-    $start_month_name = date('M', mktime(0, 0, 0, $start_month, 10));
+  $programstart_date = '2025-09-30';
+  $formated_programstart_date = date('d-m-Y', strtotime($programstart_date));
+  $reportstart_date = '2025-10-01';
+  $formated_reportstart_date = date('d-m-Y', strtotime($reportstart_date));
+  $start_month = 10;
+  $start_month_name = date('M', mktime(0, 0, 0, $start_month, 10));
 }
 date_default_timezone_set('Asia/Kolkata');
 ?>
@@ -281,18 +281,38 @@ date_default_timezone_set('Asia/Kolkata');
                   <?php if ($_SESSION['TYPE'] == 'DIVISION' && $_SESSION['JOB_TITLE'] == 'DME') { ?>
                     <li class="nav-item">
                       <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
+                          aria-expanded="false" style="font-size: 15px;">
                           <b>Inventory</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
-                          <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
-                          <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add bus Inventory</a></li>
-                          <li><a class="dropdown-item" href="division_bus_inventory_view.php">View Bus Inventory</a></li>
-                          <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
-                          <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
-                          <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">Basic Details</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
+                              <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
+                            </ul>
+                          </li>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">2024-25</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="division_bus_inventory_view.php">View Bus Inventory</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
+                            </ul>
+                          </li>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">2025-26</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
+                              <!--<li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>-->
+                              <li><a class="dropdown-item" href="division_bus_inventory_view_2025_26.php">View Bus Inventory</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_print_2025_26.php">Print Inventory Details</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_pdf_2025_26.php">Download Inventory Report PDF</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_excel_2025_26.php">Download Inventory Report EXCEL</a></li>
+                            </ul>
+                          </li>
                         </ul>
                       </div>
                     </li>

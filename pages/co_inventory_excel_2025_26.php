@@ -54,17 +54,17 @@ $query = "SELECT bi.*,
     am.progressive_km as alternator_progressive_km,
     ram.progressive_km as rear_axle_progressive_km,
     bct.bus_type
-FROM bus_inventory bi
-LEFT JOIN bus_registration br ON bi.bus_number = br.bus_number
+FROM bus_inventory_2025_26 bi
+LEFT JOIN bus_registration_2025_26 br ON bi.bus_number = br.bus_number
 LEFT JOIN bus_scrap_data bs ON bi.bus_number = bs.bus_number
-LEFT JOIN engine_master em ON bi.engine_id = em.id
-LEFT JOIN fip_hpp_master fm ON bi.fiphpp_id = fm.id
-LEFT JOIN gearbox_master gm ON bi.gearbox_id = gm.id
-LEFT JOIN starter_master sm ON bi.starter_id = sm.id
-LEFT JOIN alternator_master am ON bi.alternator_id = am.id
-LEFT JOIN rear_axle_master ram ON bi.rear_axel_id = ram.id
-LEFT JOIN battery_master b1 ON bi.battery_1_id = b1.id
-LEFT JOIN battery_master b2 ON bi.battery_2_id = b2.id
+LEFT JOIN 2025_26_engine_master em ON bi.engine_id = em.id
+LEFT JOIN 2025_26_fip_hpp_master fm ON bi.fiphpp_id = fm.id
+LEFT JOIN 2025_26_gearbox_master gm ON bi.gearbox_id = gm.id
+LEFT JOIN 2025_26_starter_master sm ON bi.starter_id = sm.id
+LEFT JOIN 2025_26_alternator_master am ON bi.alternator_id = am.id
+LEFT JOIN 2025_26_rear_axle_master ram ON bi.rear_axel_id = ram.id
+LEFT JOIN 2025_26_battery_master b1 ON bi.battery_1_id = b1.id
+LEFT JOIN 2025_26_battery_master b2 ON bi.battery_2_id = b2.id
 LEFT JOIN location l ON bi.division_id = l.division_id AND bi.depot_id = l.depot_id
 LEFT JOIN engine_types et ON em.engine_type_id = et.id
 LEFT JOIN fip_types ft ON fm.fip_hpp_type_id = ft.id
@@ -184,7 +184,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         $sheet->setCellValue(colLetter($col++) . $rowNum, 'NA');
     }
 
-    if ($row['bus_sub_category'] == 'Jn-NURM Midi City' || $row['bus_sub_category'] == 'Branded DULT City') {
+    if ($row['bus_sub_category'] == 'Jn-NURM Midi City' || $row['bus_sub_category'] == 'Branded DULT City' ||  $row['bus_sub_category'] == 'Double Door City') {
         if ($row['bus_sub_category'] == 'Jn-NURM Midi City') {
             if ($row['led_board'] == 'YES') {
                 $sheet->setCellValue(colLetter($col++) . $rowNum, $row['led_board']);
@@ -265,7 +265,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 }
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="bus_inventory_details.xlsx"');
+header('Content-Disposition: attachment;filename="bus_inventory_details_2025_26.xlsx"');
 header('Cache-Control: max-age=0');
 
 $writer = new Xlsx($spreadsheet);

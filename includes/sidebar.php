@@ -246,16 +246,32 @@ date_default_timezone_set('Asia/Kolkata');
                     </li>
                     <li class="nav-item">
                       <div class="dropdown">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" aria-expanded="false"
-                          style="font-size: 15px;">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1"
+                          aria-expanded="false" style="font-size: 15px;">
                           <b>Inventory</b>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                          <li><a class="dropdown-item" href="co_inventory_details_view.php">View Inventory Details</a></li>
-                          <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
-                          <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
-                          <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
-                          <li><a class="dropdown-item" href="co_inventory_report_depotwise.php">Inventory report depotwise</a>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">2024-25</a>
+                            <ul class="dropdown-menu">
+                              <li><a class="dropdown-item" href="co_inventory_details_view.php">View Inventory Details</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
+                            </ul>
+                          </li>
+                          <li class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">2025-26</a>
+                            <ul class="dropdown-menu">
+                              <!--<li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
+                              <li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>-->
+                              <li><a class="dropdown-item" href="co_inventory_details_view_2025_26.php">View Inventory Details</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_print_2025_26.php">Print Inventory Details</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_pdf_2025_26.php">Download Inventory Report PDF</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_excel_2025_26.php">Download Inventory Report EXCEL</a></li>
+                              <li><a class="dropdown-item" href="co_inventory_report_depotwise.php">Inventory report depotwise</a>
+                            </ul>
+                          </li>
                         </ul>
                       </div>
                     </li>

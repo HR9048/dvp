@@ -404,7 +404,7 @@ include 'includes/connection.php';
                                                 <div class="modal-body">
                                                     <div class="table-responsive">
                                                         <table class="table table-striped" id="difference-modal-body">
-                                                            
+
                                                         </table>
                                                     </div>
                                                 </div>
@@ -557,9 +557,151 @@ include 'includes/connection.php';
                                 </div>
                             </div>
                         </div>
+                        <div class="card">
+                            <div class="card-header" id="headingNine">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left collapsed" type="button"
+                                        data-toggle="collapse" data-target="#collapseNine" aria-expanded="false"
+                                        aria-controls="collapseNine">
+                                        Inventory 2025-26 <i class="fas fa-chevron-down float-right"></i>
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseNine" class="collapse" aria-labelledby="headingNine"
+                                data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center my-3">
+                                        <h4 class="mb-0" id="bd-heading">
+                                            Inventory 2025-26 Details
+                                        </h4>
+                                    </div>
+                                    <div class="container5">
+                                        <?php
+                                        // Fetch data from dvp_data for vehicle held
+                                        $held_query = "SELECT 
+        division_name as division_id, 
+        depot_name as depot_id, 
+        COUNT(bus_number) AS vehicle_held
+    FROM bus_registration_2025_26
+    GROUP BY division_name, depot_name";
 
+                                        $held_result = mysqli_query($db, $held_query);
+                                        $vehicle_held_data = [];
 
-                        <!--<div class="card">
+                                        while ($row = mysqli_fetch_assoc($held_result)) {
+                                            $key = $row['division_id'] . '_' . $row['depot_id'];
+                                            $vehicle_held_data[$key] = (int)$row['vehicle_held'];
+                                        }
+
+                                        // Fetch inventory submitted from bus_inventory
+                                        $query = "SELECT 
+        l.division_id,
+        l.division AS division_name,
+        l.depot_id,
+        l.depot AS depot_name,
+        COUNT(DISTINCT bi.bus_number) AS inventory_submitted
+    FROM location l
+    LEFT JOIN bus_inventory_2025_26 bi 
+        ON l.depot_id = bi.depot_id AND l.division_id = bi.division_id
+    WHERE l.division_id NOT IN (0) 
+    GROUP BY l.division_id, l.depot_id
+    ORDER BY l.division_id, l.depot_id";
+
+                                        $result = mysqli_query($db, $query);
+                                        ?>
+
+                                        <div class="container1">
+                                            <table class="table table-bordered table-striped">
+                                                <thead class="thead-dark">
+                                                    <tr>
+                                                        <th>Sl No</th>
+                                                        <th>Division</th>
+                                                        <th>Depot</th>
+                                                        <th>Vehicles As on 31-03-2026</th>
+                                                        <th>Inventory Submitted</th>
+                                                        <th>Difference</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php
+                                                    $sl = 1;
+                                                    $prev_division = '';
+                                                    $div_total_held = 0;
+                                                    $div_total_inventory = 0;
+                                                    $div_total_diff = 0;
+                                                    $overall_held = 0;
+                                                    $overall_inventory = 0;
+                                                    $overall_diff = 0;
+
+                                                    while ($row = mysqli_fetch_assoc($result)) {
+                                                        $division_id = $row['division_id'];
+                                                        $depot_id = $row['depot_id'];
+                                                        $curr_division = $row['division_name'];
+                                                        $depot_name = $row['depot_name'];
+                                                        $inventory_submitted = $row['inventory_submitted'];
+
+                                                        $key = $division_id . '_' . $depot_id;
+                                                        $vehicle_held = $vehicle_held_data[$key] ?? 0;
+                                                        $difference = $vehicle_held - $inventory_submitted;
+
+                                                        // Check if division changed
+                                                        if ($prev_division !== '' && $curr_division !== $prev_division) {
+                                                            echo "<tr style='font-weight: bold; background-color: #f2f2f2;'>
+                            <td colspan='3'>Total for {$prev_division}</td>
+                            <td>{$div_total_held}</td>
+                            <td>{$div_total_inventory}</td>
+                            <td>{$div_total_diff}</td>
+                          </tr>";
+                                                            $div_total_held = $div_total_inventory = $div_total_diff = 0;
+                                                        }
+
+                                                        echo "<tr>
+                        <td>{$sl}</td>
+                        <td>{$curr_division}</td>
+                        <td>{$depot_name}</td>
+                        <td>{$vehicle_held}</td>
+                        <td>{$inventory_submitted}</td>
+                        <td>{$difference}</td>
+                      </tr>";
+
+                                                        $div_total_held += $vehicle_held;
+                                                        $div_total_inventory += $inventory_submitted;
+                                                        $div_total_diff += $difference;
+
+                                                        $overall_held += $vehicle_held;
+                                                        $overall_inventory += $inventory_submitted;
+                                                        $overall_diff += $difference;
+
+                                                        $prev_division = $curr_division;
+                                                        $sl++;
+                                                    }
+
+                                                    // Final division subtotal
+                                                    if ($prev_division !== '') {
+                                                        echo "<tr style='font-weight: bold; background-color: #f2f2f2;'>
+                        <td colspan='3'>Total for {$prev_division}</td>
+                        <td>{$div_total_held}</td>
+                        <td>{$div_total_inventory}</td>
+                        <td>{$div_total_diff}</td>
+                      </tr>";
+                                                    }
+
+                                                    // Overall total row
+                                                    echo "<tr style='font-weight: bold; background-color: #d9edf7;'>
+                    <td colspan='3'>Overall Total</td>
+                    <td>{$overall_held}</td>
+                    <td>{$overall_inventory}</td>
+                    <td>{$overall_diff}</td>
+                  </tr>";
+                                                    ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--<div class="card">
                             <div class="card-header" id="headingSix">
                                 <h2 class="mb-0">
                                     <button class="btn btn-link btn-block text-left collapsed" type="button"
@@ -593,225 +735,225 @@ include 'includes/connection.php';
                                 </div>
                             </div>
                         </div>-->
-                    </div>
-                </div>
-                <script>
-
-                </script>
-
-                <!-- Include Bootstrap JavaScript -->
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
-                    crossorigin="anonymous"></script>
-                <!-- Modal for PDF -->
-                <div class="modal fade" id="operationalStatisticsMod" tabindex="-1" role="dialog"
-                    aria-labelledby="modalTitle" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Operational Statistics</h5>
-                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <iframe id="pdfViewer" src="" width="100%" height="500px"></iframe>
-                                <p id="mobileWarning" style="display: none; text-align: center; color: red;">
-                                    PDF preview may not work in some mobile browsers. <a id="openPdfDirectly" href="#"
-                                        target="_blank">Click here to view</a>.
-                                </p>
-                            </div>
-                            <a id="downloadBtn" href="#" class="btn btn-primary" download>Download PDF</a>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
                         </div>
                     </div>
-                </div>
-                <!-- Vehicle KMPL Details Modal -->
-                <div class="modal fade" id="kmplDetailsModal" tabindex="-1" role="dialog"
-                    aria-labelledby="kmplDetailsLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="kmplDetailsLabel">Vehicle KMPL Details</h5>
-                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body" id="kmplDetailsBody">
-                                <!-- Data will be inserted here dynamically -->
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <script>
 
-                <!-- Bootstrap Modal for Late Departures -->
-                <div class="modal fade" id="late-modal" tabindex="-1" aria-labelledby="late-modal-title"
-                    aria-hidden="true">
-                    <div class="modal-dialog custom-modal">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="late-modal-title">Late Departures Details</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped" id="late-modal-body">
-                                        
-                                    </table>
+                    </script>
+
+                    <!-- Include Bootstrap JavaScript -->
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
+                        crossorigin="anonymous"></script>
+                    <!-- Modal for PDF -->
+                    <div class="modal fade" id="operationalStatisticsMod" tabindex="-1" role="dialog"
+                        aria-labelledby="modalTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Operational Statistics</h5>
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <iframe id="pdfViewer" src="" width="100%" height="500px"></iframe>
+                                    <p id="mobileWarning" style="display: none; text-align: center; color: red;">
+                                        PDF preview may not work in some mobile browsers. <a id="openPdfDirectly" href="#"
+                                            target="_blank">Click here to view</a>.
+                                    </p>
+                                </div>
+                                <a id="downloadBtn" href="#" class="btn btn-primary" download>Download PDF</a>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
                         </div>
                     </div>
-                </div>
-
-
-                <div id="scheduleModal" class="modal fade" tabindex="-1" role="dialog">
-                    <div class="modal-dialog modal-xl" role="document">
-                        <!-- Added modal-xl for large width -->
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title"><span id="modalDepotName"></span> |
-                                    Schedules: <span id="modalScheduleCount">0</span> |
-                                    Departures: <span id="modalDepartureCount">0</span>
-                                </h5> <!-- Added span -->
-                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body text-center">
-                                <!-- Data will be inserted here via AJAX -->
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="BDModal" class="modal fade" tabindex="-1" role="dialog">
-                    <div class="modal-dialog modal-xl" role="document">
-                        <!-- Added modal-xl for large width -->
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title"><span id="modalBDDepotName"></span></h5> <!-- Added span -->
-                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body text-center">
-                                <!-- Data will be inserted here via AJAX -->
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Schedule Details Modal -->
-                <div class="modal fade" id="schedule-details-modal" tabindex="-1"
-                    aria-labelledby="schedule-details-modal-title" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-fullscreen-md-down">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="schedule-details-modal-title">
-                                    Sch No: <span id="modal-sch-no"></span> |
-                                    Description: <span id="modal-description"></span> |
-                                    Service Class: <span id="modal-service-class"></span> |
-                                    Sch Dep Time: <span id="modal-sch-dep-time"></span>
-                                </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <!-- Loading message -->
-                                <div id="loading-message" class="text-center">
-                                    <p>Loading schedule details...</p>
+                    <!-- Vehicle KMPL Details Modal -->
+                    <div class="modal fade" id="kmplDetailsModal" tabindex="-1" role="dialog"
+                        aria-labelledby="kmplDetailsLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="kmplDetailsLabel">Vehicle KMPL Details</h5>
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
                                 </div>
-
-                                <!-- Data Table (Hidden Initially) -->
-                                <div class="table-responsive">
-                                    <table class="table table-striped d-none" id="schedule-details-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Dep Time</th>
-                                                <th>Time Diff</th>
-                                                <th>Driver Fixed</th>
-                                                <th>Vehicle Fixed</th>
-                                                <th>Reason for Late Dep</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="schedule-details-modal-body"> 
-                                            <!-- Data will be injected here -->
-                                        </tbody>
-                                    </table>
+                                <div class="modal-body" id="kmplDetailsBody">
+                                    <!-- Data will be inserted here dynamically -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+
+                    <!-- Bootstrap Modal for Late Departures -->
+                    <div class="modal fade" id="late-modal" tabindex="-1" aria-labelledby="late-modal-title"
+                        aria-hidden="true">
+                        <div class="modal-dialog custom-modal">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="late-modal-title">Late Departures Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped" id="late-modal-body">
+
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div id="offroadModal" class="modal fade" tabindex="-1" role="dialog">
-                    <div class="modal-dialog modal-xl" role="document">
-                        <!-- Full-width modal -->
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Off-Road Vehicles</h5>
-                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body text-center">
-                                <!-- Data will be inserted here via AJAX -->
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+
+                    <div id="scheduleModal" class="modal fade" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-xl" role="document">
+                            <!-- Added modal-xl for large width -->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><span id="modalDepotName"></span> |
+                                        Schedules: <span id="modalScheduleCount">0</span> |
+                                        Departures: <span id="modalDepartureCount">0</span>
+                                    </h5> <!-- Added span -->
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <!-- Data will be inserted here via AJAX -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div id="BDModal" class="modal fade" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-xl" role="document">
+                            <!-- Added modal-xl for large width -->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><span id="modalBDDepotName"></span></h5> <!-- Added span -->
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <!-- Data will be inserted here via AJAX -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Details Modal -->
+                    <div class="modal fade" id="schedule-details-modal" tabindex="-1"
+                        aria-labelledby="schedule-details-modal-title" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="schedule-details-modal-title">
+                                        Sch No: <span id="modal-sch-no"></span> |
+                                        Description: <span id="modal-description"></span> |
+                                        Service Class: <span id="modal-service-class"></span> |
+                                        Sch Dep Time: <span id="modal-sch-dep-time"></span>
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- Loading message -->
+                                    <div id="loading-message" class="text-center">
+                                        <p>Loading schedule details...</p>
+                                    </div>
+
+                                    <!-- Data Table (Hidden Initially) -->
+                                    <div class="table-responsive">
+                                        <table class="table table-striped d-none" id="schedule-details-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Dep Time</th>
+                                                    <th>Time Diff</th>
+                                                    <th>Driver Fixed</th>
+                                                    <th>Vehicle Fixed</th>
+                                                    <th>Reason for Late Dep</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="schedule-details-modal-body">
+                                                <!-- Data will be injected here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="offroadModal" class="modal fade" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-xl" role="document">
+                            <!-- Full-width modal -->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Off-Road Vehicles</h5>
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <!-- Data will be inserted here via AJAX -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+
+                    </script>
+
+
                 </div>
-                <script>
-
-                </script>
-
-
+                <footer id="sticky-footer" class="flex-shrink-0 py-4">
+                    <div class="text-center">
+                        <span>© Copyright 2024 KKRTC | All Rights Reserved</span>
+                    </div>
+                </footer>
             </div>
-            <footer id="sticky-footer" class="flex-shrink-0 py-4">
-                <div class="text-center">
-                    <span>© Copyright 2024 KKRTC | All Rights Reserved</span>
-                </div>
-            </footer>
         </div>
-    </div>
-    <!-- End of Footer -->
-    <!-- Scroll to Top Button-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous">
-    </script>
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
+        <!-- End of Footer -->
+        <!-- Scroll to Top Button-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js" crossorigin="anonymous">
+        </script>
+        <a class="scroll-to-top rounded" href="#page-top">
+            <i class="fas fa-angle-up"></i>
+        </a>
 
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js">
-    </script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js">
+        </script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
-    <script src="script.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+        </script>
+        <script src="script.js"></script>
 </body>
 
 </html>

@@ -416,12 +416,21 @@ date_default_timezone_set('Asia/Kolkata');
                                                     <li class="dropdown-submenu">
                                                         <a class="dropdown-item dropdown-toggle" href="#">2024-25</a>
                                                         <ul class="dropdown-menu">
-                                                            <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
-                                                            <li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>
                                                             <li><a class="dropdown-item" href="depot_bus_inventory_view.php">View Bus Inventory</a></li>
                                                             <li><a class="dropdown-item" href="co_inventory_print.php">Print Inventory Details</a></li>
                                                             <li><a class="dropdown-item" href="co_inventory_pdf.php">Download Inventory Report PDF</a></li>
                                                             <li><a class="dropdown-item" href="co_inventory_excel.php">Download Inventory Report EXCEL</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li class="dropdown-submenu">
+                                                        <a class="dropdown-item dropdown-toggle" href="#">2025-26</a>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
+                                                            <!--<li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>-->
+                                                            <li><a class="dropdown-item" href="depot_bus_inventory_view_2025_26.php">View Bus Inventory</a></li>
+                                                            <li><a class="dropdown-item" href="co_inventory_print_2025_26.php">Print Inventory Details</a></li>
+                                                            <li><a class="dropdown-item" href="co_inventory_pdf_2025_26.php">Download Inventory Report PDF</a></li>
+                                                            <li><a class="dropdown-item" href="co_inventory_excel_2025_26.php">Download Inventory Report EXCEL</a></li>
                                                         </ul>
                                                     </li>
                                                 </ul>

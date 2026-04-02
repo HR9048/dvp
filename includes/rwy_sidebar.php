@@ -95,18 +95,18 @@ confirm_logged_in();
             </li>
 
             <li class="nav-item">
-                <a class="nav-link1" href="co_inventory_details_view.php">
+                <a class="nav-link1" href="co_inventory_details_view_2025_26.php">
                     <i class="fas fa-fw fa-retweet"></i>
                     <span>View vehicle Inventory</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link1" href="co_inventory_print.php">
+                <a class="nav-link1" href="co_inventory_print_2025_26.php">
                     <i class="fas fa-fw fa-retweet"></i>
                     <span>Print/PDF Inventorty Details</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link1" href="co_inventory_excel.php">
+                <a class="nav-link1" href="co_inventory_excel_2025_26.php">
                     <i class="fas fa-fw fa-cogs"></i>
                     <span>Download Excel Inventory Report</span></a>
             </li>

@@ -110,6 +110,7 @@ WHERE NOT EXISTS (
                     <select class="form-control" id="engine_no" name="engine_no" required>
                         <option value="">-- Select Engine Number --</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="reloadEngine()">🔄</button>
                 </div>
                 <div class="col-md-6">
                     <label for="engine_no_progressive_km" class="form-label">Engine Progressive KM (As on 31-03-2026)</label>
@@ -123,6 +124,7 @@ WHERE NOT EXISTS (
                     <select class="form-control" id="fiphpp_no" name="fiphpp_no" required>
                         <option value="">-- Select FIP/HPP Number --</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="reloadFipHpp()">🔄</button>
                 </div>
                 <div class="col-md-6">
                     <label for="fiphpp_no_progressive_km" class="form-label">FIP/FPP Progressive KM (As on 31-03-2026)</label>
@@ -136,6 +138,7 @@ WHERE NOT EXISTS (
                     <select class="form-control" id="gearbox_no" name="gearbox_no" required>
                         <option value="">-- Select Gear Box Number --</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="reloadGearbox()">🔄</button>
                 </div>
                 <div class="col-md-6">
                     <label for="gearbox_no_progressive_km" class="form-label">Gear Box Progressive KM (As on 31-03-2026)</label>
@@ -149,6 +152,7 @@ WHERE NOT EXISTS (
                     <select class="form-control" id="starter_no" name="starter_no" required>
                         <option value="">-- Select Starter Number --</option>
                     </select>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="reloadStarter()">🔄</button>
                 </div>
                 <div class="col-md-6">
                     <label for="starter_no_progressive_km" class="form-label">Starter Progressive KM (As on 31-03-2026)</label>
@@ -163,6 +167,7 @@ WHERE NOT EXISTS (
                     <select class="form-control" id="alternator_no" name="alternator_no" required>
                         <option value="">-- Select Alternator Number --</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="reloadAlternator()">🔄</button>
                 </div>
                 <div class="col-md-6">
                     <label for="alternator_no_progressive_km" class="form-label">Alternator Progressive KM (As on 31-03-2026)</label>
@@ -177,6 +182,7 @@ WHERE NOT EXISTS (
                     <select class="form-control" id="rear_axel_no" name="rear_axel_no" required>
                         <option value="">-- Select Rear Axel Number --</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="reloadReaeAxel()">🔄</button>
                 </div>
                 <div class="col-md-6">
                     <label for="rear_axel_no_progressive_km" class="form-label">Rear Axel Progressive KM (As on 31-03-2026)</label>
@@ -191,6 +197,7 @@ WHERE NOT EXISTS (
                     <select class="form-control" id="battery_1_no" name="battery_1_no" required onchange="initBatterySelection()">
                         <option value="">-- Select Battery 1 Number --</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="reloadBattery1()">🔄</button>
                 </div>
                 <div class="col-md-6">
                     <label for="battery_1_no_progressive_km" class="form-label">Battery 1 Progressive KM (As on 31-03-2026)</label>
@@ -204,6 +211,7 @@ WHERE NOT EXISTS (
                     <select class="form-control" id="battery_2_no" name="battery_2_no" required onchange="initBatterySelection()">
                         <option value="">-- Select Battery 2 Number --</option>
                     </select>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="reloadBattery2()">🔄</button>
                 </div>
                 <div class="col-md-6">
                     <label for="battery_2_no_progressive_km" class="form-label">Battery 2 Progressive KM (As on 31-03-2026)</label>
@@ -996,6 +1004,66 @@ WHERE NOT EXISTS (
 
             // Run once to handle pre-selected or default states
             handleBatteryChange();
+        }
+
+        function getBusContext() {
+            let make = $('#make').val();
+            let norms = $('#emission_norms').val();
+
+            if (!make || !norms) {
+                alert("Please select Bus Number first");
+                return null;
+            }
+
+            return {
+                make,
+                norms
+            };
+        }
+
+        function reloadEngine() {
+            let ctx = getBusContext();
+            if (!ctx) return;
+
+            $('#engine_no').html('<option>Loading...</option>');
+
+            loadEngines(ctx.make, ctx.norms);
+        }
+        function reloadFipHpp() {
+            let ctx = getBusContext();
+            if (!ctx) return;
+
+            $('#fiphpp_no').html('<option>Loading...</option>');
+
+            loadFipHpp(ctx.make, ctx.norms);
+        }
+        function reloadGearbox() {
+            let ctx = getBusContext();
+            if (!ctx) return;
+
+            $('#gearbox_no').html('<option>Loading...</option>');
+
+            loadGearBox(ctx.make, ctx.norms);
+        }
+        function reloadStarter() {
+            $('#starter_no').html('<option>Loading...</option>');
+            loadStartter();
+        }
+        function reloadAlternator() {
+            $('#alternator_no').html('<option>Loading...</option>');
+            loadAlternator();
+        }
+        function reloadReaeAxel() {
+            $('#rear_axel_no').html('<option>Loading...</option>');
+            loadReaeAxel();
+        }
+        function reloadBattery1() {
+            $('#battery_1_no').html('<option>Loading...</option>');
+            loadBattery();
+        }
+        function reloadBattery2() {
+            $('#battery_2_no').html('<option>Loading...</option>');
+            loadBattery();
         }
     </script>
 <?php

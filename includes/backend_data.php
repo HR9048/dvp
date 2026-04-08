@@ -6063,7 +6063,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     }
     if ($emission_norms == 'BS-6') {
         $vlts_unit_present = $_POST['vlts_unit_present'];
-        $vlts_unit_make = $_POST['vlts_unit_make'];
+        if ($vlts_unit_present == 'YES') {
+            $vlts_unit_make = $_POST['vlts_unit_make'];
+        } else {
+            $vlts_unit_make = null;
+        }
     } else {
         $vlts_unit_present = null;
         $vlts_unit_make = null;
@@ -6153,7 +6157,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     }
     if ($emission_norms == 'BS-6') {
         if (empty($vlts_unit_present)) $missing_fields[] = "VLTS Unit Present";
-        if (empty($vlts_unit_make)) $missing_fields[] = "VLTS Unit Make";
+        if ($vlts_unit_present == 'YES') {
+            if (empty($vlts_unit_make)) $missing_fields[] = "VLTS Unit Make";
+        }
     }
     if ($emission_norms == 'BS-6' || $emission_norms == 'BS-4') {
         if (empty($fdas_fdss_present)) $missing_fields[] = "FDAS FDSS Present";
@@ -12755,4 +12761,810 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 
     echo json_encode(['status' => 'success', 'message' => 'BD record deleted successfully']);
     exit;
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_chassis_for_edit") {
+
+    include '../includes/connection.php';
+
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+
+    $fetchQuery = "SELECT chassis_number 
+                   FROM bus_registration_2025_26 
+                   WHERE bus_number='$bus_number'";
+
+    $fetchResult = mysqli_query($db, $fetchQuery);
+
+    if ($fetchResult && mysqli_num_rows($fetchResult) > 0) {
+
+        $data = mysqli_fetch_assoc($fetchResult);
+
+        echo json_encode([
+            'status' => 'success',
+            'chassis_number' => $data['chassis_number']
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'No chassis found'
+        ]);
+    }
+
+    exit;
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "update_chassis_number") {
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+    $new_chassis = mysqli_real_escape_string($db, $_POST['new_chassis']);
+
+    //update data in bus_registration_2025_26 table and bus_registration table
+    $updateQuery1 = "UPDATE bus_registration_2025_26 SET chassis_number='$new_chassis' WHERE bus_number='$bus_number'";
+    $updateQuery2 = "UPDATE bus_registration SET chassis_number='$new_chassis' WHERE bus_number='$bus_number'";
+    mysqli_query($db, $updateQuery1);
+    mysqli_query($db, $updateQuery2);
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Chassis number updated successfully'
+    ]);
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "search_assembly_for_view") {
+
+    $assembly_type = $_POST['assembly_type'];
+    $card_number   = trim($_POST['card_number']);
+    $serial_number = trim($_POST['serial_number']);
+
+    // ✅ Allowed types
+    $allowedTypes = [
+        "alternator",
+        "battery",
+        "engine",
+        "fip_hpp",
+        "gear_box",
+        "rear_axle",
+        "starter"
+    ];
+
+    if (!in_array($assembly_type, $allowedTypes)) {
+        echo "<div class='alert alert-danger'>Invalid assembly type</div>";
+        exit;
+    }
+
+    // =========================
+    // TABLE NAME FIX
+    // =========================
+    if ($assembly_type === 'gear_box') {
+
+        $tablename = "2025_26_gearbox_master";
+        $number_col = "gear_box_number";
+        $card_col   = "gear_box_card_number";
+        $inventory_name_col = ["gearbox_id"]; // array for consistency
+
+    } else if ($assembly_type === 'battery') {
+
+        $tablename = "2025_26_" . $assembly_type . "_master";
+        $number_col = $assembly_type . "_number";
+        $card_col   = $assembly_type . "_card_number";
+
+        // ✅ TWO COLUMNS
+        $inventory_name_col = ["battery_1_id", "battery_2_id"];
+    } else if ($assembly_type === 'fip_hpp') {
+
+        $tablename = "2025_26_" . $assembly_type . "_master";
+        $number_col = $assembly_type . "_number";
+        $card_col   = $assembly_type . "_card_number";
+        $inventory_name_col = ["fiphpp_id"];
+    } else if ($assembly_type === 'rear_axle') {
+
+        $tablename = "2025_26_" . $assembly_type . "_master";
+        $number_col = $assembly_type . "_number";
+        $card_col   = $assembly_type . "_card_number";
+        $inventory_name_col = ["rear_axel_id"];
+    } else {
+
+        $tablename = "2025_26_" . $assembly_type . "_master";
+        $number_col = $assembly_type . "_number";
+        $card_col   = $assembly_type . "_card_number";
+        $inventory_name_col = [$assembly_type . "_id"];
+    }
+
+    // =========================
+    // PREPARE QUERY
+    // =========================
+    $sql = "SELECT * FROM `$tablename` 
+            WHERE ( `$number_col` = ? 
+               OR `$card_col` = ? ) AND deleted != 1
+            LIMIT 1";
+
+    $stmt = mysqli_prepare($db, $sql);
+    mysqli_stmt_bind_param($stmt, "ss", $serial_number, $card_number);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+
+        $data = mysqli_fetch_assoc($result);
+        $assembly_id = $data['id'] ?? 0;
+
+        // =========================
+        // ❌ EXCLUDE THESE FIELDS
+        // =========================
+        $exclude = [
+            'id',
+            'start_date',
+            'end_date',
+            'scrap_status',
+            'scrap_date',
+            'created_by',
+            'created_at',
+            'updated_at',
+            'deleted',
+            'allotted',
+            'division_id',
+            'depot_id'
+        ];
+
+        // =========================
+        // ✅ FETCH DEPOT & DIVISION
+        // =========================
+        $depot_name = '';
+        $division_name = '';
+
+        if (!empty($data['depot_id'])) {
+            $d = mysqli_query($db, "SELECT depot as depot_name FROM location WHERE depot_id='{$data['depot_id']}'");
+            if ($row = mysqli_fetch_assoc($d)) {
+                $depot_name = $row['depot_name'];
+            }
+        }
+
+        if (!empty($data['division_id'])) {
+            $d = mysqli_query($db, "SELECT division as division_name FROM location WHERE division_id='{$data['division_id']}'");
+            if ($row = mysqli_fetch_assoc($d)) {
+                $division_name = $row['division_name'];
+            }
+        }
+
+        // =========================
+        // OUTPUT
+        // =========================
+        echo "<div class='card shadow'>";
+        echo "<div class='card-header bg-success text-white'>Assembly Details</div>";
+        echo "<div class='card-body'>";
+
+        echo "<table class='table table-bordered table-sm'>";
+
+        foreach ($data as $key => $value) {
+
+            if (in_array($key, $exclude)) continue;
+
+            // ✅ Format column name
+            $label = ucwords(str_replace('_', ' ', $key));
+
+            echo "<tr>
+                    <th style='width:30%'>$label</th>
+                    <td>" . htmlspecialchars($value) . "</td>
+                  </tr>";
+        }
+
+        // ✅ Add Depot & Division
+        if ($division_name) {
+            echo "<tr>
+                    <th>Division</th>
+                    <td>$division_name</td>
+                  </tr>";
+        }
+
+        if ($depot_name) {
+            echo "<tr>
+                    <th>Depot</th>
+                    <td>$depot_name</td>
+                  </tr>";
+        }
+
+        echo "</table>";
+        echo "</div></div>";
+
+        // =========================
+        // 🚍 FETCH BUS DETAILS IF ALLOTTED
+        // =========================
+
+        if (empty($data['allotted']) || $data['allotted'] != 1) {
+            echo "<div class='alert alert-info mt-3'>Assembly is not allotted to any bus yet</div>";
+            exit;
+        }
+        // =========================
+        // BUILD WHERE CONDITION
+        // =========================
+        if (is_array($inventory_name_col)) {
+
+            // battery case (multiple columns)
+            $conditions = [];
+            foreach ($inventory_name_col as $col) {
+                $conditions[] = "bi.`$col` = ?";
+            }
+            $whereClause = implode(" OR ", $conditions);
+        } else {
+
+            // single column
+            $whereClause = "bi.`$inventory_name_col` = ?";
+        }
+
+
+        // =========================
+        // FINAL QUERY
+        // =========================
+        $busQuery = "SELECT 
+    bi.bus_number,
+    l.division,
+    l.depot,
+    bi.date_of_fc,
+    bi.bus_progressive_km,
+
+    -- Engine
+    e.engine_number,
+    e.engine_card_number,
+
+    -- Battery
+    b1.battery_number AS battery_1_number,
+    b1.battery_card_number AS battery_1_card_number,
+
+    b2.battery_number AS battery_2_number,
+    b2.battery_card_number AS battery_2_card_number,
+
+    -- Alternator
+    a.alternator_number,
+    a.alternator_card_number,
+
+    -- FIP HPP
+    f.fip_hpp_number,
+    f.fip_hpp_card_number,
+
+    -- Gearbox
+    g.gear_box_number,
+    g.gear_box_card_number,
+
+    -- Rear Axle
+    r.rear_axle_number,
+    r.rear_axle_card_number,
+
+    -- Starter
+    s.starter_number,
+    s.starter_card_number
+
+FROM bus_inventory_2025_26 bi
+
+LEFT JOIN location l 
+    ON l.division_id = bi.division_id AND l.depot_id = bi.depot_id
+
+LEFT JOIN 2025_26_engine_master e 
+    ON e.id = bi.engine_id
+
+LEFT JOIN 2025_26_battery_master b1 
+    ON b1.id = bi.battery_1_id
+
+LEFT JOIN 2025_26_battery_master b2 
+    ON b2.id = bi.battery_2_id
+
+LEFT JOIN 2025_26_alternator_master a 
+    ON a.id = bi.alternator_id
+
+LEFT JOIN 2025_26_fip_hpp_master f 
+    ON f.id = bi.fiphpp_id
+
+LEFT JOIN 2025_26_gearbox_master g 
+    ON g.id = bi.gearbox_id
+
+LEFT JOIN 2025_26_rear_axle_master r 
+    ON r.id = bi.rear_axel_id
+
+LEFT JOIN 2025_26_starter_master s 
+    ON s.id = bi.starter_id
+
+WHERE $whereClause
+LIMIT 1";
+
+        $busStmt = mysqli_prepare($db, $busQuery);
+
+        if ($busStmt) {
+
+            if (is_array($inventory_name_col)) {
+
+                // ✅ MULTIPLE PLACEHOLDERS (battery case)
+                $types = str_repeat("i", count($inventory_name_col)); // "ii"
+                $params = array_fill(0, count($inventory_name_col), $assembly_id);
+
+                mysqli_stmt_bind_param($busStmt, $types, ...$params);
+            } else {
+
+                // ✅ SINGLE PLACEHOLDER
+                mysqli_stmt_bind_param($busStmt, "i", $assembly_id);
+            }
+
+            mysqli_stmt_execute($busStmt);
+
+            $busResult = mysqli_stmt_get_result($busStmt);
+
+            if ($busResult && mysqli_num_rows($busResult) > 0) {
+
+                $busData = mysqli_fetch_assoc($busResult);
+
+                echo "<div class='card mt-3 border-primary'>";
+                echo "<div class='card-header bg-primary text-white'>🚍 Attached Bus Details</div>";
+                echo "<div class='card-body'>";
+
+                echo "<table class='table table-bordered table-sm'>";
+
+                foreach ($busData as $key => $value) {
+
+                    if (in_array($key, ['id', 'created_at', 'updated_at', 'deleted'])) continue;
+
+                    $label = ucwords(str_replace('_', ' ', $key));
+
+                    echo "<tr>
+                    <th style='width:30%'>$label</th>
+                    <td>" . htmlspecialchars($value) . "</td>
+                  </tr>";
+                }
+
+                echo "</table>";
+                echo "</div></div>";
+            } else {
+                echo "<div class='alert alert-info mt-3'>Assembly is allotted but bus details not found</div>";
+            }
+
+            mysqli_stmt_close($busStmt);
+        }
+    } else {
+        echo "<div class='alert alert-warning'>No record found</div>";
+    }
+
+    mysqli_stmt_close($stmt);
+    exit;
+}
+
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_bus_inventory_details_for_edit") {
+    ob_start();
+    ini_set('display_errors', 0);
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+
+    $query = "SELECT br.make, br.emission_norms, bi.* FROM bus_inventory_2025_26 bi LEFT JOIN bus_registration_2025_26 br on br.bus_number = bi.bus_number WHERE bi.bus_number='$bus_number' LIMIT 1";
+
+    $result = mysqli_query($db, $query);
+
+    if (!$result) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => mysqli_error($db)
+        ]);
+        exit;
+    }
+
+    $html = "";
+
+    if (mysqli_num_rows($result) > 0) {
+
+        $data = mysqli_fetch_assoc($result);
+
+        if ((int)$data['updated_row'] == 1) {
+
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'This inventory record is marked as updated. Only once update is given.'
+                ]);
+                exit;
+            }
+
+        // ✅ OPEN FORM
+        $html .= "<form id='editInventoryForm'>";
+
+        /* ================= FC DATE ================= */
+        $fc_date = $data['date_of_fc'] ?? '';
+
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>FC Date</label>
+            <div class='col-md-4'>
+                <input type='date' class='form-control' name='old_date_of_fc' value='$fc_date' readonly>
+            </div>
+            <div class='col-md-6'>
+                <input type='date' class='form-control' name='date_of_fc' value='$fc_date'>
+            </div>
+        </div>";
+
+        /* ================= BUS KM ================= */
+        $km = $data['bus_progressive_km'] ?? '';
+
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>Bus Progressive KM</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' name='old_bus_progressive_km' value='$km' readonly>
+            </div>
+            <div class='col-md-6'>
+                <input type='text' class='form-control' name='bus_progressive_km' value='$km'>
+            </div>
+        </div>";
+
+        $bus_make = $data['make'] ?? '';
+        $bus_model = $data['emission_norms'] ?? '';
+
+        /* ================= ENGINE ================= */
+        $engine_id = $data['engine_id'];
+
+        $engineQ = mysqli_query($db, "SELECT id, engine_number, engine_card_number FROM 2025_26_engine_master WHERE deleted != '1' AND engine_make = '$bus_make' AND engine_model = '$bus_model' AND (allotted != '1' OR id = '$engine_id')");
+        $engineRow = mysqli_fetch_assoc(mysqli_query($db, "SELECT engine_number, engine_card_number FROM 2025_26_engine_master WHERE id='$engine_id'"));
+
+        $engineDisplay = ($engineRow['engine_number'] ?? '') . ' (' . ($engineRow['engine_card_number'] ?? '') . ')';
+        $html .= "<input type='hidden' class='form-control' name='old_engine_id' value='" . htmlspecialchars($engine_id) . "' readonly>";
+
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>Engine</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' value='" . htmlspecialchars($engineDisplay) . "' readonly>
+            </div>
+            <div class='col-md-6'>
+                <select class='form-control select2' name='engine_id'>";
+
+        while ($e = mysqli_fetch_assoc($engineQ)) {
+            $selected = ($e['id'] == $engine_id) ? "selected" : "";
+            $display = $e['engine_number'] . ' (' . $e['engine_card_number'] . ')';
+            $html .= "<option value='{$e['id']}' $selected>$display</option>";
+        }
+
+        $html .= "</select></div></div>";
+
+        /* ================= FIP HPP (FIXED COLUMN) ================= */
+        $fip_hpp_id = $data['fiphpp_id'];
+
+        $fipQ = mysqli_query($db, "SELECT id, fip_hpp_number, fip_hpp_card_number FROM 2025_26_fip_hpp_master WHERE deleted != '1' AND fip_hpp_bus_make = '$bus_make' AND fip_hpp_model = '$bus_model' AND (allotted != '1' OR id = '$fip_hpp_id')");
+        $fipRow = mysqli_fetch_assoc(mysqli_query($db, "SELECT fip_hpp_number, fip_hpp_card_number FROM 2025_26_fip_hpp_master WHERE id='$fip_hpp_id'"));
+        $html .= "<input type='hidden' class='form-control' name='old_fiphpp_id' value='" . htmlspecialchars($fip_hpp_id) . "' readonly>";
+
+        $fipDisplay = ($fipRow['fip_hpp_number'] ?? '') . ' (' . ($fipRow['fip_hpp_card_number'] ?? '') . ')';
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>FIP HPP</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' value='" . htmlspecialchars($fipDisplay) . "' readonly>
+            </div>
+            <div class='col-md-6'>
+                <select class='form-control select2' name='fiphpp_id'>";
+        while ($f = mysqli_fetch_assoc($fipQ)) {
+            $selected = ($f['id'] == $fip_hpp_id) ? "selected" : "";
+            $display = $f['fip_hpp_number'] . ' (' . $f['fip_hpp_card_number'] . ')';
+            $html .= "<option value='{$f['id']}' $selected>$display</option>";
+        }
+        $html .= "</select></div></div>";
+
+        /* ================= GEARBOX (FIXED COLUMN) ================= */
+        $gearbox_id = $data['gearbox_id'];
+
+        $gbQ = mysqli_query($db, "SELECT id, gear_box_number, gear_box_card_number FROM 2025_26_gearbox_master WHERE deleted != '1' AND gear_box_make = '$bus_make' AND gear_box_model = '$bus_model' AND (allotted != '1' OR id = '$gearbox_id')");
+        $gbRow = mysqli_fetch_assoc(mysqli_query($db, "SELECT gear_box_number, gear_box_card_number FROM 2025_26_gearbox_master WHERE id='$gearbox_id'"));
+
+        $gbDisplay = ($gbRow['gear_box_number'] ?? '') . ' (' . ($gbRow['gear_box_card_number'] ?? '') . ')';
+        $html .= "<input type='hidden' class='form-control' name='old_gearbox_id' value='" . htmlspecialchars($gearbox_id) . "' readonly>";
+
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>Gearbox</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' value='" . htmlspecialchars($gbDisplay) . "' readonly>
+            </div>
+            <div class='col-md-6'>
+                <select class='form-control select2' name='gearbox_id'>";
+
+        while ($g = mysqli_fetch_assoc($gbQ)) {
+            $selected = ($g['id'] == $gearbox_id) ? "selected" : "";
+            $display = $g['gear_box_number'] . ' (' . $g['gear_box_card_number'] . ')';
+            $html .= "<option value='{$g['id']}' $selected>$display</option>";
+        }
+
+        $html .= "</select></div></div>";
+
+        /* ================= STARTER (FIXED) ================= */
+        $starter_id = $data['starter_id'];
+
+        $starterQ = mysqli_query($db, "SELECT id, starter_number, starter_card_number FROM 2025_26_starter_master WHERE deleted != '1' AND (allotted != '1' OR id = '$starter_id')");
+        $starterRow = mysqli_fetch_assoc(mysqli_query($db, "SELECT starter_number, starter_card_number FROM 2025_26_starter_master WHERE id='$starter_id'"));
+
+        $starterDisplay = ($starterRow['starter_number'] ?? '') . ' (' . ($starterRow['starter_card_number'] ?? '') . ')';
+        $html .= "<input type='hidden' class='form-control' name='old_starter_id' value='" . htmlspecialchars($starter_id) . "' readonly>";
+
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>Starter</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' value='" . htmlspecialchars($starterDisplay) . "' readonly>
+            </div>
+            <div class='col-md-6'>
+                <select class='form-control select2' name='starter_id'>";
+
+        while ($s = mysqli_fetch_assoc($starterQ)) {
+            $selected = ($s['id'] == $starter_id) ? "selected" : "";
+            $display = $s['starter_number'] . ' (' . $s['starter_card_number'] . ')';
+            $html .= "<option value='{$s['id']}' $selected>$display</option>";
+        }
+
+        $html .= "</select></div></div>";
+
+        /* ================= ALTERNATOR (FIXED) ================= */
+        $alternator_id = $data['alternator_id'];
+        $alternatorQ = mysqli_query($db, "SELECT id, alternator_number, alternator_card_number FROM 2025_26_alternator_master WHERE deleted != '1' AND (allotted != '1' OR id = '$alternator_id')");
+        $alternatorRow = mysqli_fetch_assoc(mysqli_query($db, "SELECT alternator_number, alternator_card_number FROM 2025_26_alternator_master WHERE id='$alternator_id'"));
+        $alternatorDisplay = ($alternatorRow['alternator_number'] ?? '') . ' (' . ($alternatorRow['alternator_card_number'] ?? '') . ')';
+        $html .= "<input type='hidden' class='form-control' name='old_alternator_id' value='" . htmlspecialchars($alternator_id) . "' readonly>";
+
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>Alternator</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' value='" . htmlspecialchars($alternatorDisplay) . "' readonly>
+            </div>
+            <div class='col-md-6'>
+                <select class='form-control select2' name='alternator_id'>";
+
+        while ($a = mysqli_fetch_assoc($alternatorQ)) {
+            $selected = ($a['id'] == $alternator_id) ? "selected" : "";
+            $display = $a['alternator_number'] . ' (' . $a['alternator_card_number'] . ')';
+            $html .= "<option value='{$a['id']}' $selected>$display</option>";
+        }
+
+        $html .= "</select></div></div>";
+        /* ================= REAR AXLE (FIXED) ================= */
+        $rear_axle_id = $data['rear_axel_id'];
+        $rearAxleQ = mysqli_query($db, "SELECT id, rear_axle_number, rear_axle_card_number FROM 2025_26_rear_axle_master WHERE deleted != '1' AND (allotted != '1' OR id = '$rear_axle_id')");
+        $rearAxleRow = mysqli_fetch_assoc(mysqli_query($db, "SELECT rear_axle_number, rear_axle_card_number FROM 2025_26_rear_axle_master WHERE id='$rear_axle_id'"));
+        $rearAxleDisplay = ($rearAxleRow['rear_axle_number'] ?? '') . ' (' . ($rearAxleRow['rear_axle_card_number'] ?? '') . ')';
+        $html .= "<input type='hidden' class='form-control' name='old_rear_axle_id' value='" . htmlspecialchars($rear_axle_id) . "' readonly>";
+
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>Rear Axle</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' value='" . htmlspecialchars($rearAxleDisplay) . "' readonly>
+            </div>
+            <div class='col-md-6'>
+                <select class='form-control select2' name='rear_axle_id'>";
+        while ($r = mysqli_fetch_assoc($rearAxleQ)) {
+            $selected = ($r['id'] == $rear_axle_id) ? "selected" : "";
+            $display = $r['rear_axle_number'] . ' (' . $r['rear_axle_card_number'] . ')';
+            $html .= "<option value='{$r['id']}' $selected>$display</option>";
+        }
+        $html .= "</select></div></div>";
+
+        /* ================= BATTERY (TWO COLUMNS) ================= */
+        $battery_1_id = $data['battery_1_id'];
+        $battery_2_id = $data['battery_2_id'];
+        $batteryQ = mysqli_query($db, "SELECT id, battery_number, battery_card_number FROM 2025_26_battery_master WHERE deleted != '1' AND (allotted != '1' OR id IN ('$battery_1_id', '$battery_2_id'))");
+        $batteries = [];
+        while ($b = mysqli_fetch_assoc($batteryQ)) {
+            $batteries[$b['id']] = $b['battery_number'] . ' (' . $b['battery_card_number'] . ')';
+        }
+        $html .= "<input type='hidden' class='form-control' name='old_battery_1_id' value='" . htmlspecialchars($battery_1_id) . "' readonly>";
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>Battery 1</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' value='" . htmlspecialchars($batteries[$battery_1_id] ?? '') . "' readonly>
+            </div>
+            <div class='col-md-6'>
+                <select class='form-control select2' name='battery_1_id'>";
+        foreach ($batteries as $id => $display) {
+            $selected = ($id == $battery_1_id) ? "selected" : "";
+            $html .= "<option value='$id' $selected>$display</option>";
+        }
+        $html .= "</select></div></div>";
+        $html .= "<input type='hidden' class='form-control' name='old_battery_2_id' value='" . htmlspecialchars($battery_2_id) . "' readonly>";
+
+        $html .= "<div class='row mb-3'>
+            <label class='col-md-2'>Battery 2</label>
+            <div class='col-md-4'>
+                <input type='text' class='form-control' value='" . htmlspecialchars($batteries[$battery_2_id] ?? '') . "' readonly>
+            </div>
+            <div class='col-md-6'>
+                <select class='form-control select2' name='battery_2_id'>";
+        foreach ($batteries as $id => $display) {
+            $selected = ($id == $battery_2_id) ? "selected" : "";
+            $html .= "<option value='$id' $selected>$display</option>";
+        }
+        $html .= "</select></div></div>";
+
+
+
+        $html .= "<button type='submit' class='btn btn-primary' id='update_assembly_list'>Update</button>";
+    } else {
+        $html .= "<div class='alert alert-warning'>No record found</div>";
+    }
+
+    echo json_encode([
+        'status' => 'success',
+        'html' => $html
+    ]);
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "update_bus_inventory_2025_26") {
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+    $old_date_of_fc = mysqli_real_escape_string($db, $_POST['old_date_of_fc']);
+    $date_of_fc = mysqli_real_escape_string($db, $_POST['date_of_fc']);
+    $old_bus_progressive_km = mysqli_real_escape_string($db, $_POST['old_bus_progressive_km']);
+    $bus_progressive_km = mysqli_real_escape_string($db, $_POST['bus_progressive_km']);
+    $old_engine_id = mysqli_real_escape_string($db, $_POST['old_engine_id']);
+    $engine_id = mysqli_real_escape_string($db, $_POST['engine_id']);
+    $old_fiphpp_id = mysqli_real_escape_string($db, $_POST['old_fiphpp_id']);
+    $fiphpp_id = mysqli_real_escape_string($db, $_POST['fiphpp_id']);
+    $old_gearbox_id = mysqli_real_escape_string($db, $_POST['old_gearbox_id']);
+    $gearbox_id = mysqli_real_escape_string($db, $_POST['gearbox_id']);
+    $old_starter_id = mysqli_real_escape_string($db, $_POST['old_starter_id']);
+    $starter_id = mysqli_real_escape_string($db, $_POST['starter_id']);
+    $old_alternator_id = mysqli_real_escape_string($db, $_POST['old_alternator_id']);
+    $alternator_id = mysqli_real_escape_string($db, $_POST['alternator_id']);
+    $old_rear_axle_id = mysqli_real_escape_string($db, $_POST['old_rear_axle_id']);
+    $rear_axle_id = mysqli_real_escape_string($db, $_POST['rear_axle_id']);
+    $old_battery_1_id = mysqli_real_escape_string($db, $_POST['old_battery_1_id']);
+    $battery_1_id = mysqli_real_escape_string($db, $_POST['battery_1_id']);
+    $old_battery_2_id = mysqli_real_escape_string($db, $_POST['old_battery_2_id']);
+    $battery_2_id = mysqli_real_escape_string($db, $_POST['battery_2_id']);
+
+    if (empty($date_of_fc) || empty($bus_progressive_km)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'FC Date and Bus KM cannot be empty'
+        ]);
+        exit;
+    }
+    if (!is_numeric($bus_progressive_km)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Bus KM must be a number'
+        ]);
+        exit;
+    }
+    if (empty($engine_id) || empty($fiphpp_id) || empty($gearbox_id) || empty($starter_id) || empty($alternator_id) || empty($rear_axle_id) || empty($battery_1_id) || empty($battery_2_id)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'All inventory fields must be selected'
+        ]);
+        exit;
+    }
+    function clean($val)
+    {
+        return trim((string)$val);
+    }
+
+    if (
+        clean($date_of_fc) == clean($old_date_of_fc) &&
+        clean($bus_progressive_km) == clean($old_bus_progressive_km) &&
+        clean($engine_id) == clean($old_engine_id) &&
+        clean($fiphpp_id) == clean($old_fiphpp_id) &&
+        clean($gearbox_id) == clean($old_gearbox_id) &&
+        clean($starter_id) == clean($old_starter_id) &&
+        clean($alternator_id) == clean($old_alternator_id) &&
+        clean($rear_axle_id) == clean($old_rear_axle_id) &&
+        clean($battery_1_id) == clean($old_battery_1_id) &&
+        clean($battery_2_id) == clean($old_battery_2_id)
+    ) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'No changes detected'
+        ]);
+        exit;
+    }
+
+    //before update check the selected inventory items are not allotted to any other bus
+
+    $checkQuery = "SELECT DISTINCT bus_number 
+FROM bus_inventory_2025_26 
+WHERE bus_number != '$bus_number'
+AND (
+    engine_id = '$engine_id' OR
+    fiphpp_id = '$fiphpp_id' OR
+    gearbox_id = '$gearbox_id' OR
+    starter_id = '$starter_id' OR
+    alternator_id = '$alternator_id' OR
+    rear_axel_id = '$rear_axle_id' OR
+    battery_1_id = '$battery_1_id' OR
+    battery_2_id = '$battery_1_id' OR
+    battery_1_id = '$battery_2_id' OR
+    battery_2_id = '$battery_2_id'
+)";
+    $checkResult = mysqli_query($db, $checkQuery);
+
+    if (!$checkResult) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Check Query Error: ' . mysqli_error($db)
+        ]);
+        exit;
+    }
+
+    if (mysqli_num_rows($checkResult) > 0) {
+
+        $conflictingBuses = [];
+
+        while ($row = mysqli_fetch_assoc($checkResult)) {
+            $conflictingBuses[] = $row['bus_number'];
+        }
+
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Selected inventory items are already allotted to buses: ' . implode(", ", $conflictingBuses)
+        ]);
+        exit;
+    }
+
+    // update fc date and progressive km
+    $updatefirstquery = "UPDATE bus_inventory_2025_26 SET date_of_fc='$date_of_fc', bus_progressive_km='$bus_progressive_km' WHERE bus_number='$bus_number'";
+    mysqli_query($db, $updatefirstquery);
+
+    function updateAssembly($db, $bus_number, $part_name, $old_id, $new_id, $division_id, $depot_id, $part_count)
+    {
+        if ($old_id == $new_id) return; // no change
+
+        // 🔴 1. DELETE OLD TRACK
+        mysqli_query($db, "
+        DELETE FROM inventory_item_track_2025_26 
+        WHERE bus_number='$bus_number' 
+        AND part_name='$part_name' 
+        AND part_id='$old_id'
+        AND bus_number = '$bus_number'
+    ");
+
+        // 🔴 2. FREE OLD PART
+        mysqli_query($db, "
+        UPDATE $part_name 
+        SET allotted = 0 
+        WHERE id='$old_id'
+    ");
+
+        // 🟢 3. ALLOT NEW PART
+        mysqli_query($db, "
+        UPDATE $part_name 
+        SET allotted = 1 
+        WHERE id='$new_id'
+    ");
+
+        // 🟢 4. INSERT TRACK
+        $count = $part_count;
+        mysqli_query($db, "
+        INSERT INTO inventory_item_track_2025_26 
+        (part_name, part_id, part_count, bus_number, from_date, to_date, division_id, depot_id)
+        VALUES 
+        ('$part_name', '$new_id', '$count', '$bus_number', CURDATE(), NULL, '$division_id', '$depot_id')
+    ");
+    }
+
+    $division_id = $_SESSION['DIVISION_ID'];
+    $depot_id = $_SESSION['DEPOT_ID'];
+
+    // ENGINE
+    updateAssembly($db, $bus_number, '2025_26_engine_master', $old_engine_id, $engine_id, $division_id, $depot_id, '1');
+
+    // FIP HPP
+    updateAssembly($db, $bus_number, '2025_26_fip_hpp_master', $old_fiphpp_id, $fiphpp_id, $division_id, $depot_id, '1');
+
+    // GEARBOX
+    updateAssembly($db, $bus_number, '2025_26_gearbox_master', $old_gearbox_id, $gearbox_id, $division_id, $depot_id, '1');
+
+    // STARTER
+    updateAssembly($db, $bus_number, '2025_26_starter_master', $old_starter_id, $starter_id, $division_id, $depot_id, '1');
+
+    // ALTERNATOR
+    updateAssembly($db, $bus_number, '2025_26_alternator_master', $old_alternator_id, $alternator_id, $division_id, $depot_id, '1');
+
+    // REAR AXLE
+    updateAssembly($db, $bus_number, '2025_26_rear_axle_master', $old_rear_axle_id, $rear_axle_id, $division_id, $depot_id, '1');
+
+    // BATTERY 1
+    updateAssembly($db, $bus_number, '2025_26_battery_master', $old_battery_1_id, $battery_1_id, $division_id, $depot_id, '1');
+
+    // BATTERY 2
+    updateAssembly($db, $bus_number, '2025_26_battery_master', $old_battery_2_id, $battery_2_id, $division_id, $depot_id, '2');
+
+    mysqli_query($db, "UPDATE bus_inventory_2025_26 SET
+        engine_id='$engine_id',
+        fiphpp_id='$fiphpp_id',
+        gearbox_id='$gearbox_id',
+        starter_id='$starter_id',
+        alternator_id='$alternator_id',
+        rear_axel_id='$rear_axle_id',
+        battery_1_id='$battery_1_id',
+        battery_2_id='$battery_2_id',
+        updated_row = '1'
+    WHERE bus_number='$bus_number'");
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Bus inventory updated successfully'
+    ]);
 }

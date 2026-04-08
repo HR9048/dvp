@@ -411,6 +411,8 @@ date_default_timezone_set('Asia/Kolkata');
                                                         <ul class="dropdown-menu">
                                                             <li><a class="dropdown-item" href="depot_inventory_parts.php">Add Assemblies</a></li>
                                                             <li><a class="dropdown-item" href="depot_inventory_parts_view.php">View Assemblies</a></li>
+                                                            <li><a class="dropdown-item" href="depot_search_assembly.php">Search Assemblies</a></li>
+                                                            <li><a class="dropdown-item" href="depot_edit_chassis.php">Edit Chassis Number</a></li>
                                                         </ul>
                                                     </li>
                                                     <li class="dropdown-submenu">
@@ -426,6 +428,7 @@ date_default_timezone_set('Asia/Kolkata');
                                                         <a class="dropdown-item dropdown-toggle" href="#">2025-26</a>
                                                         <ul class="dropdown-menu">
                                                             <li><a class="dropdown-item" href="depot_bus_inventory_add.php">Add Bus Inventory</a></li>
+                                                            <li><a class="dropdown-item" href="depot_bus_inventory_edit_2025_26.php">Edit Bus Inventory</a></li>
                                                             <!--<li><a class="dropdown-item" href="depot_bus_inventory_adds.php">Add Scraped Bus Inventory</a></li>-->
                                                             <li><a class="dropdown-item" href="depot_bus_inventory_view_2025_26.php">View Bus Inventory</a></li>
                                                             <li><a class="dropdown-item" href="co_inventory_print_2025_26.php">Print Inventory Details</a></li>

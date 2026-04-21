@@ -2868,7 +2868,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         $query = "SELECT em.id, em.engine_card_number, em.engine_number, em.engine_make, em.engine_model, et.type as engine_type, em.engine_condition, em.progressive_km
         FROM 2025_26_engine_master em
         JOIN engine_types et ON em.engine_type_id = et.id
-        WHERE em.depot_id = ? AND em.division_id = ? AND em.deleted != '1' and em.scrap_status != '1' and em.allotted != '1'";
+        WHERE em.depot_id = ? AND em.division_id = ? AND em.deleted != '1' and em.scrap_status != '1'";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
         mysqli_stmt_execute($stmt);
@@ -3166,7 +3166,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         $query = "SELECT gm.id, gm.gear_box_card_number, gm.gear_box_number, gm.gear_box_make, gm.gear_box_model, gt.type as gear_box_type, gm.gear_box_condition, gm.progressive_km
                   FROM 2025_26_gearbox_master gm
                   JOIN gearbox_types gt ON gm.gear_box_type_id = gt.id
-                  WHERE gm.depot_id = ? AND gm.division_id = ?  AND gm.deleted != '1' and gm.scrap_status != '1' and gm.allotted != '1'";
+                  WHERE gm.depot_id = ? AND gm.division_id = ?  AND gm.deleted != '1' and gm.scrap_status != '1'";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
         mysqli_stmt_execute($stmt);
@@ -3464,7 +3464,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         $query = "SELECT fm.id, fm.fip_hpp_card_number, fm.fip_hpp_number, fm.fip_hpp_make, fm.fip_hpp_model, ft.type as fip_hpp_type, fm.fip_hpp_condition, fm.progressive_km
                   FROM 2025_26_fip_hpp_master fm
                   JOIN fip_types ft ON fm.fip_hpp_type_id = ft.id
-                  WHERE fm.depot_id = ? AND fm.division_id = ?  AND fm.deleted != '1' and fm.scrap_status != '1' and fm.allotted != '1'";
+                  WHERE fm.depot_id = ? AND fm.division_id = ?  AND fm.deleted != '1' and fm.scrap_status != '1'";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
         mysqli_stmt_execute($stmt);
@@ -3770,7 +3770,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         //return the table of starter data
         $query = "SELECT sm.id, sm.starter_card_number, sm.starter_number, sm.starter_make, sm.starter_condition, sm.progressive_km
                   FROM 2025_26_starter_master sm
-                  WHERE sm.depot_id = ? AND sm.division_id = ? and sm.deleted != '1' and sm.scrap_status != '1' and sm.allotted != '1'";
+                  WHERE sm.depot_id = ? AND sm.division_id = ? and sm.deleted != '1' and sm.scrap_status != '1'";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
         mysqli_stmt_execute($stmt);
@@ -3999,7 +3999,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         //return the table of alternator data
         $query = "SELECT am.id,am.alternator_card_number, am.alternator_number, am.alternator_make, am.alternator_condition, am.progressive_km
                   FROM 2025_26_alternator_master am
-                  WHERE am.depot_id = ? AND am.division_id = ? and am.deleted != '1' and am.scrap_status != '1' and am.allotted != '1'";
+                  WHERE am.depot_id = ? AND am.division_id = ? and am.deleted != '1' and am.scrap_status != '1'";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
         mysqli_stmt_execute($stmt);
@@ -4223,7 +4223,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         //return the table of rear axle data
         $query = "SELECT ram.id, ram.rear_axle_card_number, ram.rear_axle_number, ram.rear_axle_make, ram.rear_axle_condition, ram.progressive_km
                   FROM 2025_26_rear_axle_master ram
-                  WHERE ram.depot_id = ? AND ram.division_id = ? and ram.deleted != '1' and ram.scrap_status != '1' and ram.allotted != '1'";
+                  WHERE ram.depot_id = ? AND ram.division_id = ? and ram.deleted != '1' and ram.scrap_status != '1'";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
         mysqli_stmt_execute($stmt);
@@ -4448,7 +4448,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         //return the table of battery data
         $query = "SELECT bm.id, bm.battery_card_number, bm.battery_number, bm.battery_make, bm.progressive_km
                   FROM 2025_26_battery_master bm
-                  WHERE bm.depot_id = ? AND bm.division_id = ? and bm.deleted != '1' and bm.scrap_status != '1' and bm.allotted != '1'";
+                  WHERE bm.depot_id = ? AND bm.division_id = ? and bm.deleted != '1' and bm.scrap_status != '1'";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
         mysqli_stmt_execute($stmt);
@@ -4659,7 +4659,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         //return the table of tyre data
         $query = "SELECT tm.id, tm.tyre_card_number, tm.tyre_number, tm.tyre_make, tm.tyre_size, tm.tyre_brand, tm.tyre_condition, tm.progressive_km
                   FROM tyre_master tm
-                  WHERE tm.depot_id = ? AND tm.division_id = ? AND tm.deleted != '1' and tm.scrap_status != '1' and tm.allotted != '1'";
+                  WHERE tm.depot_id = ? AND tm.division_id = ? AND tm.deleted != '1' and tm.scrap_status != '1'";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "ii", $depot_id, $division_id);
         mysqli_stmt_execute($stmt);
@@ -13121,7 +13121,7 @@ LIMIT 1";
 }
 
 
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_bus_inventory_details_for_edit") {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "fetch_bus_assembly_details_for_edit") {
     ob_start();
     ini_set('display_errors', 0);
     $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
@@ -13146,12 +13146,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 
         if ((int)$data['updated_row'] == 1) {
 
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'This inventory record is marked as updated. Only once update is given.'
-                ]);
-                exit;
-            }
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'This inventory record is marked as updated. Only once update is given.'
+            ]);
+            exit;
+        }
 
         // ✅ OPEN FORM
         $html .= "<form id='editInventoryForm'>";
@@ -13373,7 +13373,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         'html' => $html
     ]);
 }
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "update_bus_inventory_2025_26") {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "update_bus_assembly_2025_26") {
     $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
     $old_date_of_fc = mysqli_real_escape_string($db, $_POST['old_date_of_fc']);
     $date_of_fc = mysqli_real_escape_string($db, $_POST['date_of_fc']);
@@ -13567,4 +13567,657 @@ AND (
         'status' => 'success',
         'message' => 'Bus inventory updated successfully'
     ]);
+}
+if (
+    $_SERVER["REQUEST_METHOD"] === "POST"
+    && isset($_POST['action'])
+    && $_POST['action'] === "fetch_bus_inventory_details_for_edit"
+) {
+
+    ob_start();
+    ini_set('display_errors', 0);
+
+    $bus_number = mysqli_real_escape_string($db, $_POST['bus_number']);
+
+    $query = "SELECT 
+                br.make,
+                br.emission_norms,
+                br.wheel_base,
+                br.bus_sub_category,
+                bi.*,
+                bs.bus_type
+              FROM bus_inventory_2025_26 bi
+              LEFT JOIN bus_registration_2025_26 br 
+                    ON br.bus_number = bi.bus_number
+              LEFT JOIN bus_seat_category bs 
+                    ON br.bus_sub_category = bs.bus_sub_category
+              WHERE bi.bus_number = '$bus_number'
+              LIMIT 1";
+
+    $result = mysqli_query($db, $query);
+
+    if (!$result) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => mysqli_error($db)
+        ]);
+        exit;
+    }
+
+    if (mysqli_num_rows($result) == 0) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'No record found'
+        ]);
+        exit;
+    }
+
+    $data = mysqli_fetch_assoc($result);
+
+    if ((int)$data['inventory_updated'] == 1) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'This inventory record is marked as updated. Only once update is given.'
+        ]);
+        exit;
+    }
+
+    // Existing Values
+    $make = $data['make'];
+    $emission_norms = $data['emission_norms'];
+    $wheel_base = $data['wheel_base'];
+    $speed_governor           = $data['speed_governor'] ?? '';
+    $speed_governor_model     = $data['speed_governor_model'] ?? '';
+    $speed_governor_serial_no = $data['speed_governor_serial_no'] ?? '';
+
+    $ac_unit   = $data['ac_unit'] ?? '';
+    $ac_model  = $data['ac_model'] ?? '';
+    $bus_type  = $data['bus_type'] ?? '';
+    $category  = $data['bus_sub_category'] ?? '';
+
+    $led_board              = $data['led_board'] ?? '';
+    $led_board_make         = $data['led_board_make'] ?? '';
+    $led_board_front        = $data['led_board_front'] ?? '';
+    $led_board_front_inside = $data['led_board_front_inside'] ?? '';
+    $led_board_rear         = $data['led_board_rear'] ?? '';
+    $led_board_lhs_outside  = $data['led_board_lhs_outside'] ?? '';
+
+    $camera_f_saloon        = strtoupper(trim($data['camera_f_saloon'] ?? ''));
+    $camera_f_outside       = strtoupper(trim($data['camera_f_outside'] ?? ''));
+    $camera_r_saloon        = strtoupper(trim($data['camera_r_saloon'] ?? ''));
+    $camera_r_outside       = strtoupper(trim($data['camera_r_outside'] ?? ''));
+    $camera_monitor         = strtoupper(trim($data['camera_monitor'] ?? ''));
+    $camera_storage_unit    = strtoupper(trim($data['camera_storage_unit'] ?? ''));
+
+    $pis_mike_amplefier     = strtoupper(trim($data['pis_mike_amplefier'] ?? ''));
+
+    $vlts_unit_present      = strtoupper(trim($data['vlts_unit_present'] ?? ''));
+    $vlts_unit_make         = strtoupper(trim($data['vlts_unit_make'] ?? ''));
+
+    $fdas_fdss_present      = strtoupper(trim($data['fdas_fdss_present'] ?? ''));
+
+    $fire_extinguisher_nos       = trim($data['fire_extinguisher_nos'] ?? '');
+    $fire_extinguisher_total_kg  = trim($data['fire_extinguisher_total_kg'] ?? '');
+    $first_aid_box_status        = strtoupper(trim($data['first_aid_box_status'] ?? ''));
+
+
+    $showSpeed = ($speed_governor === 'FITTED') ? 'block' : 'none';
+    $showAC    = (strtoupper($bus_type) === 'AC') ? 'block' : 'none';
+
+    $html = '';
+    $html .= '<form id="editInventoryForm">';
+    $html .= '<input type="hidden" name="bus_number" value="' . htmlspecialchars($bus_number) . '">';
+    $html .= '<input type="hidden" name="make" id="make" value="' . htmlspecialchars($make) . '">';
+    $html .= '<input type="hidden" name="emission_norms" id="emission_norms" value="' . htmlspecialchars($emission_norms) . '">';
+    $html .= '<input type="hidden" name="wheel_base" id="wheel_base" value="' . htmlspecialchars($wheel_base) . '">';
+    $html .= '<input type="hidden" name="bus_type" id="bus_type" value="' . htmlspecialchars($bus_type) . '">';
+    $html .= '<input type="hidden" name="bus_category" id="bus_category" value="' . htmlspecialchars($category) . '">';
+
+    $html .= '<div class="row">';
+
+    /* Speed Governor */
+    $html .= '
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Speed Governor</label>
+        <select class="form-control" name="speed_governor" id="speed_governor" onchange="toggleSpeedGovernorFields()" required>
+            <option value="">-- Select Speed Governor Condition --</option>
+            <option value="FITTED" ' . ($speed_governor == 'FITTED' ? 'selected' : '') . '>FITTED</option>
+            <option value="NOT FITTED" ' . ($speed_governor == 'NOT FITTED' ? 'selected' : '') . '>NOT FITTED</option>
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3" id="speed_governor_model_div" style="display:' . $showSpeed . ';">
+        <label class="form-label">Speed Governor Model</label>
+        <select class="form-control" name="speed_governor_model" id="speed_governor_model">
+            <option value="">-- Select Speed Governor Model --</option>
+            <option value="ACTIA" ' . ($speed_governor_model == 'ACTIA' ? 'selected' : '') . '>ACTIA</option>
+            <option value="PRICOL" ' . ($speed_governor_model == 'PRICOL' ? 'selected' : '') . '>PRICOL</option>
+            <option value="ROSMERTA" ' . ($speed_governor_model == 'ROSMERTA' ? 'selected' : '') . '>ROSMERTA</option>
+            <option value="ECU" ' . ($speed_governor_model == 'ECU' ? 'selected' : '') . '>ECU</option>
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3" id="speed_governor_serial_div" style="display:' . $showSpeed . ';">
+        <label class="form-label">Speed Governor Serial No</label>
+        <input type="text" class="form-control"
+               name="speed_governor_serial_no"
+               id="speed_governor_serial_no"
+               value="' . htmlspecialchars($speed_governor_serial_no) . '">
+    </div>';
+
+    /* AC */
+    $html .= '
+    <div class="col-md-6 mb-3" id="ac_unit_container" style="display:' . $showAC . ';">
+        <label class="form-label">AC Unit</label>
+        <select class="form-control" name="ac_unit" id="ac_unit">
+            <option value="">-- Select AC Unit Condition --</option>
+            <option value="WORKING" ' . ($ac_unit == 'WORKING' ? 'selected' : '') . '>WORKING</option>
+            <option value="NOT WORKING" ' . ($ac_unit == 'NOT WORKING' ? 'selected' : '') . '>NOT WORKING</option>
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3" id="ac_model_container" style="display:' . $showAC . ';">
+        <label class="form-label">AC Model</label>
+        <select class="form-control" name="ac_model" id="ac_model">
+            <option value="">-- Select AC Model --</option>
+            <option value="CARRIER" ' . ($ac_model == 'CARRIER' ? 'selected' : '') . '>CARRIER</option>
+            <option value="HIGER" ' . ($ac_model == 'HIGER' ? 'selected' : '') . '>HIGER</option>
+            <option value="SPHAROS" ' . ($ac_model == 'SPHAROS' ? 'selected' : '') . '>SPHAROS</option>
+            <option value="EBERSPAECHER" ' . ($ac_model == 'EBERSPAECHER' ? 'selected' : '') . '>EBERSPAECHER</option>
+            <option value="JTAC" ' . ($ac_model == 'JTAC' ? 'selected' : '') . '>JTAC</option>
+        </select>
+    </div>';
+
+    /* LED Board */
+    $html .= '
+<div class="col-md-6 mb-3" id="led_board_section" style="display:none;">
+    <label class="form-label">LED Destination Board Present</label>
+    <select class="form-control" id="led_board" name="led_board">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($led_board === 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($led_board === 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+    <div class="col-md-6 mb-3 led-fields" id="led_board_make_section" style="display:none;">
+        <label class="form-label">LED Board Make</label>
+        <select class="form-control" id="led_board_make" name="led_board_make">
+            <option value="">-- Select Make --</option>
+            <option value="AUTOMATERS" ' . ($led_board_make == 'AUTOMATERS' ? 'selected' : '') . '>AUTOMATERS</option>
+            <option value="POWER ELECTRONICS" ' . ($led_board_make == 'POWER ELECTRONICS' ? 'selected' : '') . '>POWER ELECTRONICS</option>
+            <option value="HANNOVER" ' . ($led_board_make == 'HANNOVER' ? 'selected' : '') . '>HANNOVER</option>
+            <option value="ACCOLADE ELE" ' . ($led_board_make == 'ACCOLADE ELE' ? 'selected' : '') . '>ACCOLADE ELE</option>
+            <option value="ARGEE" ' . ($led_board_make == 'ARGEE' ? 'selected' : '') . '>ARGEE</option>
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3 led-fields" id="led_board_front_section" style="display:none;">
+        <label class="form-label">LED Destination Front</label>
+        <select class="form-control" id="led_board_front" name="led_board_front">
+            <option value="">-- Select Status --</option>
+            <option value="YES" ' . ($led_board_front == 'YES' ? 'selected' : '') . '>YES</option>
+            <option value="NO" ' . ($led_board_front == 'NO' ? 'selected' : '') . '>NO</option>
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3 led-fields dult-only" id="led_board_front_inside_section" style="display:none;">
+        <label class="form-label">LED Destination Front Inside</label>
+        <select class="form-control" id="led_board_front_inside" name="led_board_front_inside">
+            <option value="">-- Select Status --</option>
+            <option value="YES" ' . ($led_board_front_inside == 'YES' ? 'selected' : '') . '>YES</option>
+            <option value="NO" ' . ($led_board_front_inside == 'NO' ? 'selected' : '') . '>NO</option>
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3 led-fields" id="led_board_rear_section" style="display:none;">
+        <label class="form-label">LED Destination Rear</label>
+        <select class="form-control" id="led_board_rear" name="led_board_rear">
+            <option value="">-- Select Status --</option>
+            <option value="YES" ' . ($led_board_rear == 'YES' ? 'selected' : '') . '>YES</option>
+            <option value="NO" ' . ($led_board_rear == 'NO' ? 'selected' : '') . '>NO</option>
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3 led-fields dult-only" id="led_board_lhs_outside_section" style="display:none;">
+        <label class="form-label">LED Destination LHS Outside</label>
+        <select class="form-control" id="led_board_lhs_outside" name="led_board_lhs_outside">
+            <option value="">-- Select Status --</option>
+            <option value="YES" ' . ($led_board_lhs_outside == 'YES' ? 'selected' : '') . '>YES</option>
+            <option value="NO" ' . ($led_board_lhs_outside == 'NO' ? 'selected' : '') . '>NO</option>
+        </select>
+    </div>';
+
+    $html .= '
+
+<!-- Camera Fields -->
+<div class="col-md-6 camera-fields" id="camera_f_saloon_section" style="display:none;">
+    <label class="form-label">Camera Present Front Saloon</label>
+    <select class="form-control" id="camera_f_saloon" name="camera_f_saloon">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($camera_f_saloon == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($camera_f_saloon == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+<div class="col-md-6 camera-fields" id="camera_f_outside_section" style="display:none;">
+    <label class="form-label">Camera Present Front Outside</label>
+    <select class="form-control" id="camera_f_outside" name="camera_f_outside">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($camera_f_outside == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($camera_f_outside == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+<div class="col-md-6 camera-fields" id="camera_r_saloon_section" style="display:none;">
+    <label class="form-label">Camera Present Rear Saloon</label>
+    <select class="form-control" id="camera_r_saloon" name="camera_r_saloon">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($camera_r_saloon == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($camera_r_saloon == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+<div class="col-md-6 camera-fields" id="camera_r_outside_section" style="display:none;">
+    <label class="form-label">Camera Present Rear Outside</label>
+    <select class="form-control" id="camera_r_outside" name="camera_r_outside">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($camera_r_outside == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($camera_r_outside == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+<div class="col-md-6 camera-fields" id="camera_monitor_section" style="display:none;">
+    <label class="form-label">Camera Monitor Present</label>
+    <select class="form-control" id="camera_monitor" name="camera_monitor">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($camera_monitor == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($camera_monitor == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+<div class="col-md-6 camera-fields" id="camera_storage_unit_section" style="display:none;">
+    <label class="form-label">Camera DVR / Storage Unit Present</label>
+    <select class="form-control" id="camera_storage_unit" name="camera_storage_unit">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($camera_storage_unit == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($camera_storage_unit == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+
+<!-- PIS -->
+<div class="col-md-6 pis-fields" id="pis_mike_amplefier_section" style="display:none;">
+    <label class="form-label">Mike with Amplifier</label>
+    <select class="form-control" id="pis_mike_amplefier" name="pis_mike_amplefier">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($pis_mike_amplefier == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($pis_mike_amplefier == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+
+<!-- VLTS -->
+<div class="col-md-6" id="vlts_unit_present_section" style="display:none;">
+    <label class="form-label">VLTS Unit Present</label>
+    <select class="form-control" id="vlts_unit_present" name="vlts_unit_present">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($vlts_unit_present == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($vlts_unit_present == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+<div class="col-md-6" id="vlts_unit_make_section" style="display:none;">
+    <label class="form-label">VLTS Unit Make</label>
+    <select class="form-control" id="vlts_unit_make" name="vlts_unit_make">
+        <option value="">-- Select Make --</option>
+        <option value="AUTOMATERS" ' . ($vlts_unit_make == 'AUTOMATERS' ? 'selected' : '') . '>AUTOMATERS</option>
+        <option value="POWER ELECTRONICS" ' . ($vlts_unit_make == 'POWER ELECTRONICS' ? 'selected' : '') . '>POWER ELECTRONICS</option>
+        <option value="HANNOVER" ' . ($vlts_unit_make == 'HANNOVER' ? 'selected' : '') . '>HANNOVER</option>
+        <option value="ACCOLADE ELE" ' . ($vlts_unit_make == 'ACCOLADE ELE' ? 'selected' : '') . '>ACCOLADE ELE</option>
+        <option value="ARGEE" ' . ($vlts_unit_make == 'ARGEE' ? 'selected' : '') . '>ARGEE</option>
+    </select>
+</div>
+
+
+<!-- FDAS -->
+<div class="col-md-6" id="fdas_fdss_section" style="display:none;">
+    <label class="form-label">FDAS/FDSS Present</label>
+    <select class="form-control" id="fdas_fdss_present" name="fdas_fdss_present">
+        <option value="">-- Select Status --</option>
+        <option value="YES" ' . ($fdas_fdss_present == 'YES' ? 'selected' : '') . '>YES</option>
+        <option value="NO" ' . ($fdas_fdss_present == 'NO' ? 'selected' : '') . '>NO</option>
+    </select>
+</div>
+
+
+<!-- Fire Extinguisher -->
+<div class="col-md-6">
+    <label class="form-label">Fire Extinguisher Nos</label>
+    <select class="form-control" id="fire_extinguisher_nos" name="fire_extinguisher_nos" required>
+        <option value="">-- Select Status --</option>
+        <option value="1" ' . ($fire_extinguisher_nos == '1' ? 'selected' : '') . '>1</option>
+        <option value="2" ' . ($fire_extinguisher_nos == '2' ? 'selected' : '') . '>2</option>
+        <option value="3" ' . ($fire_extinguisher_nos == '3' ? 'selected' : '') . '>3</option>
+        <option value="NIL" ' . ($fire_extinguisher_nos == 'NIL' ? 'selected' : '') . '>NIL</option>
+    </select>
+</div>
+
+<div class="col-md-6">
+    <label class="form-label">Fire Extinguisher Total in Kgs</label>
+    <input type="number"
+           class="form-control"
+           id="fire_extinguisher_total_kg"
+           name="fire_extinguisher_total_kg"
+           value="' . htmlspecialchars($fire_extinguisher_total_kg) . '" required>
+</div>
+
+
+<!-- First Aid -->
+<div class="col-md-6">
+    <label class="form-label">First Aid Box</label>
+    <select class="form-control" id="first_aid_box_status" name="first_aid_box_status" required>
+        <option value="">-- Select Status --</option>
+        <option value="FITTED WITH KIT" ' . ($first_aid_box_status == 'FITTED WITH KIT' ? 'selected' : '') . '>FITTED WITH KIT</option>
+        <option value="FITTED WITHOUT KIT" ' . ($first_aid_box_status == 'FITTED WITHOUT KIT' ? 'selected' : '') . '>FITTED WITHOUT KIT</option>
+        <option value="NOT FITTED" ' . ($first_aid_box_status == 'NOT FITTED' ? 'selected' : '') . '>NOT FITTED</option>
+    </select>
+</div>
+
+';
+
+    $html .= '</div>';
+
+    $html .= '
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Update</button>
+    </div>
+    </form>';
+
+    echo json_encode([
+        'status' => 'success',
+        'html'   => $html
+    ]);
+    exit;
+}
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === "update_bus_inventory_2025_26") {
+    $busNumber = $_POST['bus_number'];
+    $make = $_POST['make'];
+    $emission_norms = $_POST['emission_norms'];
+    $bus_category = $_POST['bus_category'];
+    $wheel_base = $_POST['wheel_base'];
+    $bus_type = $_POST['bus_type'];
+    $speed_governor = $_POST['speed_governor'];
+
+
+    if ($speed_governor == 'FITTED') {
+        $speed_governor_model = $_POST['speed_governor_model'];
+        $speed_governor_serial_no = $_POST['speed_governor_serial_no'];
+    } else {
+        $speed_governor_model = null;
+        $speed_governor_serial_no = null;
+    }
+    if ($bus_type == 'AC') {
+        $ac_unit = $_POST['ac_unit'];
+        $ac_model = $_POST['ac_model'];
+    } else {
+        $ac_unit = null;
+        $ac_model = null;
+    }
+
+    if ($bus_category == 'Jn-NURM Midi City' || $bus_category == 'Branded DULT City' || $bus_category == 'Double Door City') {
+        if ($bus_category == 'Jn-NURM Midi City') {
+            $led_board = $_POST['led_board'];
+            if ($led_board == 'YES') {
+                $led_board_make = $_POST['led_board_make'];
+                $led_board_front = $_POST['led_board_front'];
+                $led_board_front_inside = null;
+                $led_board_rear = $_POST['led_board_rear'];
+                $led_board_lhs_outside = null;
+            } else {
+                $led_board_make = null;
+                $led_board_front = null;
+                $led_board_front_inside = null;
+                $led_board_rear = null;
+                $led_board_lhs_outside = null;
+            }
+        } elseif ($bus_category == 'Branded DULT City' || $bus_category == 'Double Door City') {
+            $led_board = $_POST['led_board'];
+            if ($led_board == 'YES') {
+                $led_board_make = $_POST['led_board_make'];
+                $led_board_front = $_POST['led_board_front'];
+                $led_board_front_inside = $_POST['led_board_front_inside'];
+                $led_board_rear = $_POST['led_board_rear'];
+                $led_board_lhs_outside = $_POST['led_board_lhs_outside'];
+            } else {
+                $led_board_make = null;
+                $led_board_front = null;
+                $led_board_front_inside = null;
+                $led_board_rear = null;
+                $led_board_lhs_outside = null;
+            }
+        }
+    } else {
+        $led_board = null;
+        $led_board_make = null;
+        $led_board_front = null;
+        $led_board_front_inside = null;
+        $led_board_rear = null;
+        $led_board_lhs_outside = null;
+    }
+    if ($bus_category == 'Jn-NURM Midi City' || $emission_norms == 'BS-6') {
+        $camera_f_saloon = $_POST['camera_f_saloon'];
+        $camera_f_outside = $_POST['camera_f_outside'];
+        $camera_r_saloon = $_POST['camera_r_saloon'];
+        $camera_r_outside = $_POST['camera_r_outside'];
+        $camera_monitor = $_POST['camera_monitor'];
+        $camera_storage_unit = $_POST['camera_storage_unit'];
+    } else {
+        $camera_f_saloon = null;
+        $camera_f_outside = null;
+        $camera_r_saloon = null;
+        $camera_r_outside = null;
+        $camera_monitor = null;
+        $camera_storage_unit = null;
+    }
+    if ($bus_category == 'Jn-NURM Midi City' || $emission_norms == 'BS-6' || $emission_norms == 'BS-4') {
+        $pis_mike_amplefier = $_POST['pis_mike_amplefier'];
+    } else {
+        $pis_mike_amplefier = null;
+    }
+    if ($emission_norms == 'BS-6') {
+        $vlts_unit_present = $_POST['vlts_unit_present'];
+        if ($vlts_unit_present == 'YES') {
+            $vlts_unit_make = $_POST['vlts_unit_make'];
+        } else {
+            $vlts_unit_make = null;
+        }
+    } else {
+        $vlts_unit_present = null;
+        $vlts_unit_make = null;
+    }
+    if ($emission_norms == 'BS-6' || $emission_norms == 'BS-4') {
+        $fdas_fdss_present = $_POST['fdas_fdss_present'];
+    } else {
+        $fdas_fdss_present = null;
+    }
+    $fire_extinguisher_nos = $_POST['fire_extinguisher_nos'];
+    $fire_extinguisher_total_kg = $_POST['fire_extinguisher_total_kg'];
+    $first_aid_box_status = $_POST['first_aid_box_status'];
+
+    //validate the inputs depend on condition if any value is not found if condition also true then return a response of erro which fields are missing
+    $missing_fields = [];
+    if (empty($busNumber)) $missing_fields[] = "Bus Number";
+    if (empty($make)) $missing_fields[] = "Make";
+    if (empty($emission_norms)) $missing_fields[] = "Emission Norms";
+    if (empty($bus_category)) $missing_fields[] = "Bus Category";
+    if (empty($wheel_base)) $missing_fields[] = "Wheel Base";
+    if (empty($bus_type)) $missing_fields[] = "Bus Type";
+    if (empty($speed_governor)) $missing_fields[] = "Speed Governor";
+    if ($speed_governor == 'FITTED') {
+        if (empty($speed_governor_model)) $missing_fields[] = "Speed Governor Model";
+        if (empty($speed_governor_serial_no)) $missing_fields[] = "Speed Governor Serial No";
+    }
+    if ($bus_type == 'AC') {
+        if (empty($ac_unit)) $missing_fields[] = "AC Unit";
+        if (empty($ac_model)) $missing_fields[] = "AC Model";
+    }
+    if ($bus_category == 'Jn-NURM Midi City' || $bus_category == 'Branded DULT City' || $bus_category == 'Double Door City') {
+        if ($bus_category == 'Jn-NURM Midi City') {
+            if (empty($led_board)) $missing_fields[] = "LED Board";
+            if ($led_board == 'YES') {
+                if (empty($led_board_make)) $missing_fields[] = "LED Board Make";
+                if (empty($led_board_front)) $missing_fields[] = "LED Board Front";
+                if (empty($led_board_rear)) $missing_fields[] = "LED Board Rear";
+            }
+        } elseif ($bus_category == 'Branded DULT City' || $bus_category == 'Double Door City') {
+            if (empty($led_board)) $missing_fields[] = "LED Board";
+            if ($led_board == 'YES') {
+                if (empty($led_board_make)) $missing_fields[] = "LED Board Make";
+                if (empty($led_board_front)) $missing_fields[] = "LED Board Front";
+                if (empty($led_board_front_inside)) $missing_fields[] = "LED Board Front Inside";
+                if (empty($led_board_rear)) $missing_fields[] = "LED Board Rear";
+                if (empty($led_board_lhs_outside)) $missing_fields[] = "LED Board LHS Outside";
+            }
+        }
+    }
+    if ($bus_category == 'Jn-NURM Midi City' || $emission_norms == 'BS-6') {
+        if (empty($camera_f_saloon)) $missing_fields[] = "Camera Front Saloon";
+        if (empty($camera_f_outside)) $missing_fields[] = "Camera Front Outside";
+        if (empty($camera_r_saloon)) $missing_fields[] = "Camera Rear Saloon";
+        if (empty($camera_r_outside)) $missing_fields[] = "Camera Rear Outside";
+        if (empty($camera_monitor)) $missing_fields[] = "Camera Monitor";
+        if (empty($camera_storage_unit)) $missing_fields[] = "Camera Storage Unit";
+    }
+    if ($bus_category == 'Jn-NURM Midi City' || $emission_norms == 'BS-6' || $emission_norms == 'BS-4') {
+        if (empty($pis_mike_amplefier)) $missing_fields[] = "PIS Mike Amplifier";
+    }
+    if ($emission_norms == 'BS-6') {
+        if (empty($vlts_unit_present)) $missing_fields[] = "VLTS Unit Present";
+        if ($vlts_unit_present == 'YES') {
+            if (empty($vlts_unit_make)) $missing_fields[] = "VLTS Unit Make";
+        }
+    }
+    if ($emission_norms == 'BS-6' || $emission_norms == 'BS-4') {
+        if (empty($fdas_fdss_present)) $missing_fields[] = "FDAS FDSS Present";
+    }
+    if (empty($fire_extinguisher_nos)) $missing_fields[] = "Fire Extinguisher Nos";
+    if ($fire_extinguisher_total_kg === '' || !isset($fire_extinguisher_total_kg)) {
+        $missing_fields[] = "Fire Extinguisher Total KG";
+    }
+    if (empty($first_aid_box_status)) $missing_fields[] = "First Aid Box Status";
+
+
+    // If there are missing fields, return an error response
+    if (!empty($missing_fields)) {
+        echo json_encode(["status" => "error", "message" => "Missing fields: " . implode(", ", $missing_fields)]);
+        exit;
+    }
+
+    // Check if the bus number already exists in the bus_inventory table
+    $query = "SELECT id FROM bus_inventory_2025_26 WHERE bus_number = ? AND deleted != '1' AND inventory_updated='1'";
+    $stmt = $db->prepare($query);
+    $stmt->bind_param("s", $busNumber);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows > 0) {
+        echo json_encode(["status" => "error", "message" => "Bus Inventory Details alreday Updated."]);
+        $stmt->close();
+        exit;
+    }
+
+
+    $db->begin_transaction();
+
+    try {
+
+        // ===================== FINAL INVENTORY UPDATE =====================
+
+        $sqlinventory = "UPDATE bus_inventory_2025_26 SET
+    speed_governor = ?,
+    speed_governor_model = ?,
+    speed_governor_serial_no = ?,
+    ac_unit = ?,
+    ac_model = ?,
+    led_board = ?,
+    led_board_make = ?,
+    led_board_front = ?,
+    led_board_front_inside = ?,
+    led_board_rear = ?,
+    led_board_lhs_outside = ?,
+    camera_f_saloon = ?,
+    camera_f_outside = ?,
+    camera_r_saloon = ?,
+    camera_r_outside = ?,
+    camera_monitor = ?,
+    camera_storage_unit = ?,
+    pis_mike_amplefier = ?,
+    vlts_unit_present = ?,
+    vlts_unit_make = ?,
+    fdas_fdss_present = ?,
+    fire_extinguisher_nos = ?,
+    fire_extinguisher_total_kg = ?,
+    first_aid_box_status = ?,
+    inventory_updated = 1
+WHERE bus_number = ?";
+
+        $stmt = $db->prepare($sqlinventory);
+
+        if (!$stmt) {
+            throw new Exception($db->error);
+        }
+
+        $stmt->bind_param(
+            "sssssssssssssssssssssssss",
+            $speed_governor,
+            $speed_governor_model,
+            $speed_governor_serial_no,
+            $ac_unit,
+            $ac_model,
+            $led_board,
+            $led_board_make,
+            $led_board_front,
+            $led_board_front_inside,
+            $led_board_rear,
+            $led_board_lhs_outside,
+            $camera_f_saloon,
+            $camera_f_outside,
+            $camera_r_saloon,
+            $camera_r_outside,
+            $camera_monitor,
+            $camera_storage_unit,
+            $pis_mike_amplefier,
+            $vlts_unit_present,
+            $vlts_unit_make,
+            $fdas_fdss_present,
+            $fire_extinguisher_nos,
+            $fire_extinguisher_total_kg,
+            $first_aid_box_status,
+            $busNumber
+        );
+
+        if (!$stmt->execute()) {
+            throw new Exception($stmt->error);
+        }
+
+        $stmt->close();
+
+        // ===================== COMMIT =====================
+        $db->commit();
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Bus inventory data Updated successfully."
+        ]);
+    } catch (Exception $e) {
+
+        // ===================== ROLLBACK =====================
+        $db->rollback();
+
+        echo json_encode([
+            "status" => "error",
+            "message" => "Transaction Failed: " . $e->getMessage()
+        ]);
+    }
+
+    exit;
 }
